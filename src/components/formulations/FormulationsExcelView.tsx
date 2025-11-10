@@ -141,6 +141,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
   const hasChanges = Object.keys(editedData).length > 0;
 
   const getCellValue = (formulation: FormulationWithNestedData, field: string): string | boolean | number => {
+    if (!formulation.formulation_id) return "";
     if (editedData[formulation.formulation_id]?.[field as keyof FormulationTable] !== undefined) {
       const value = editedData[formulation.formulation_id][field as keyof FormulationTable];
       if (field === "is_active") return value as boolean;
@@ -284,7 +285,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
             <tbody>
               {formulations.map((formulation) => {
                 const isEditing = editingCell?.rowId === formulation.formulation_id;
-                const rowHasChanges = !!editedData[formulation.formulation_id];
+                const rowHasChanges = !!formulation.formulation_id && !!editedData[formulation.formulation_id];
 
                 return (
                   <tr
@@ -304,13 +305,13 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                     </td>
                     <td
                       className="p-3 border-r cursor-pointer"
-                      onClick={() => handleCellClick(formulation.formulation_id, "product_name")}
+                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "product_name")}
                     >
                       {isEditing && editingCell?.field === "product_name" ? (
                         <Input
-                          value={getCellValue(formulation, "product_name")}
+                          value={String(getCellValue(formulation, "product_name"))}
                           onChange={(e) =>
-                            handleCellChange(
+                            formulation.formulation_id && handleCellChange(
                               formulation.formulation_id,
                               "product_name",
                               e.target.value
@@ -320,11 +321,13 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                           onKeyDown={(e) => {
                             if (e.key === "Enter") setEditingCell(null);
                             if (e.key === "Escape") {
+                              if (!formulation.formulation_id) return;
+                              const id = formulation.formulation_id;
                               setEditedData((prev) => {
                                 const newData = { ...prev };
-                                delete newData[formulation.formulation_id]?.product_name;
-                                if (Object.keys(newData[formulation.formulation_id] || {}).length === 0) {
-                                  delete newData[formulation.formulation_id];
+                                delete newData[id]?.product_name;
+                                if (Object.keys(newData[id] || {}).length === 0) {
+                                  delete newData[id];
                                 }
                                 return newData;
                               });
@@ -342,11 +345,11 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                     </td>
                     <td
                       className="p-3 border-r cursor-pointer"
-                      onClick={() => handleCellClick(formulation.formulation_id, "short_name")}
+                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "short_name")}
                     >
                       {isEditing && editingCell?.field === "short_name" ? (
                         <Input
-                          value={getCellValue(formulation, "short_name")}
+                          value={String(getCellValue(formulation, "short_name"))}
                           onChange={(e) =>
                             handleCellChange(
                               formulation.formulation_id,
@@ -358,6 +361,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                           onKeyDown={(e) => {
                             if (e.key === "Enter") setEditingCell(null);
                             if (e.key === "Escape") {
+                              if (!formulation.formulation_id) return;
                               setEditedData((prev) => {
                                 const newData = { ...prev };
                                 delete newData[formulation.formulation_id]?.short_name;
@@ -380,11 +384,11 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                     </td>
                     <td
                       className="p-3 border-r cursor-pointer"
-                      onClick={() => handleCellClick(formulation.formulation_id, "product_category")}
+                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "product_category")}
                     >
                       {isEditing && editingCell?.field === "product_category" ? (
                         <Select
-                          value={getCellValue(formulation, "product_category")}
+                          value={String(getCellValue(formulation, "product_category"))}
                           onValueChange={(value) =>
                             handleCellChange(
                               formulation.formulation_id,
@@ -413,11 +417,11 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                     </td>
                     <td
                       className="p-3 border-r cursor-pointer"
-                      onClick={() => handleCellClick(formulation.formulation_id, "formulation_type")}
+                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "formulation_type")}
                     >
                       {isEditing && editingCell?.field === "formulation_type" ? (
                         <Input
-                          value={getCellValue(formulation, "formulation_type")}
+                          value={String(getCellValue(formulation, "formulation_type"))}
                           onChange={(e) =>
                             handleCellChange(
                               formulation.formulation_id,
@@ -429,6 +433,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                           onKeyDown={(e) => {
                             if (e.key === "Enter") setEditingCell(null);
                             if (e.key === "Escape") {
+                              if (!formulation.formulation_id) return;
                               setEditedData((prev) => {
                                 const newData = { ...prev };
                                 delete newData[formulation.formulation_id]?.formulation_type;
@@ -451,18 +456,19 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                     </td>
                     <td
                       className="p-3 border-r cursor-pointer"
-                      onClick={() => handleCellClick(formulation.formulation_id, "uom")}
+                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "uom")}
                     >
                       {isEditing && editingCell?.field === "uom" ? (
                         <Input
-                          value={getCellValue(formulation, "uom")}
+                          value={String(getCellValue(formulation, "uom"))}
                           onChange={(e) =>
-                            handleCellChange(formulation.formulation_id, "uom", e.target.value)
+                            formulation.formulation_id && handleCellChange(formulation.formulation_id, "uom", e.target.value)
                           }
                           onBlur={() => setEditingCell(null)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") setEditingCell(null);
                             if (e.key === "Escape") {
+                              if (!formulation.formulation_id) return;
                               setEditedData((prev) => {
                                 const newData = { ...prev };
                                 delete newData[formulation.formulation_id]?.uom;
@@ -485,13 +491,13 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                     </td>
                     <td
                       className="p-3 cursor-pointer"
-                      onClick={() => handleCellClick(formulation.formulation_id, "status")}
+                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "status")}
                     >
                       {isEditing && editingCell?.field === "status" ? (
                         <Select
-                          value={getCellValue(formulation, "status")}
+                          value={String(getCellValue(formulation, "status"))}
                           onValueChange={(value) =>
-                            handleCellChange(formulation.formulation_id, "status", value)
+                            formulation.formulation_id && handleCellChange(formulation.formulation_id, "status", value)
                           }
                           onOpenChange={(open) => !open && setEditingCell(null)}
                         >
@@ -522,13 +528,13 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                     </td>
                     <td
                       className="p-3 border-r cursor-pointer"
-                      onClick={() => handleCellClick(formulation.formulation_id, "status_rationale")}
+                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "status_rationale")}
                     >
                       {isEditing && editingCell?.field === "status_rationale" ? (
                         <Textarea
-                          value={getCellValue(formulation, "status_rationale")}
+                          value={String(getCellValue(formulation, "status_rationale"))}
                           onChange={(e) =>
-                            handleCellChange(
+                            formulation.formulation_id && handleCellChange(
                               formulation.formulation_id,
                               "status_rationale",
                               e.target.value
@@ -537,6 +543,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                           onBlur={() => setEditingCell(null)}
                           onKeyDown={(e) => {
                             if (e.key === "Escape") {
+                              if (!formulation.formulation_id) return;
                               setEditedData((prev) => {
                                 const newData = { ...prev };
                                 delete newData[formulation.formulation_id]?.status_rationale;
@@ -560,13 +567,13 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                     </td>
                     <td
                       className="p-3 border-r cursor-pointer"
-                      onClick={() => handleCellClick(formulation.formulation_id, "is_active")}
+                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "is_active")}
                     >
                       {isEditing && editingCell?.field === "is_active" ? (
                         <Switch
                           checked={getCellValue(formulation, "is_active") as boolean}
                           onCheckedChange={(checked) =>
-                            handleCellChange(formulation.formulation_id, "is_active", checked)
+                            formulation.formulation_id && handleCellChange(formulation.formulation_id, "is_active", checked)
                           }
                           onBlur={() => setEditingCell(null)}
                         />

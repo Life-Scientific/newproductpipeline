@@ -150,14 +150,14 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
           <div className="space-y-2">
             <Label htmlFor="country_id">Country</Label>
             <Select
-              value={formData.country_id}
-              onValueChange={(value) => setFormData({ ...formData, country_id: value })}
+              value={formData.country_id || "__none__"}
+              onValueChange={(value) => setFormData({ ...formData, country_id: value === "__none__" ? "" : value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select country" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="__none__">None</SelectItem>
                 {countries.map((c) => (
                   <SelectItem key={c.country_id} value={c.country_id}>
                     {c.country_name} ({c.country_code})

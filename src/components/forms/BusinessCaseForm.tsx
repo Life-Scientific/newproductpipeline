@@ -257,11 +257,13 @@ export function BusinessCaseForm({
                       <SelectValue placeholder="Select formulation-country" />
                     </SelectTrigger>
                     <SelectContent>
-                      {formulationCountryOptions.map((fc) => (
-                        <SelectItem key={fc.formulation_country_id} value={fc.formulation_country_id}>
-                          {fc.display_name}
-                        </SelectItem>
-                      ))}
+                      {formulationCountryOptions
+                        .filter((fc) => fc.formulation_country_id)
+                        .map((fc) => (
+                          <SelectItem key={fc.formulation_country_id!} value={fc.formulation_country_id!}>
+                            {fc.display_name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -287,11 +289,13 @@ export function BusinessCaseForm({
                         <SelectValue placeholder="Select formulation-country first" />
                       </SelectTrigger>
                       <SelectContent>
-                        {formulationCountryOptions.map((fc) => (
-                          <SelectItem key={fc.formulation_country_id} value={fc.formulation_country_id}>
-                            {fc.display_name}
-                          </SelectItem>
-                        ))}
+                        {formulationCountryOptions
+                          .filter((fc) => fc.formulation_country_id)
+                          .map((fc) => (
+                            <SelectItem key={fc.formulation_country_id!} value={fc.formulation_country_id!}>
+                              {fc.display_name}
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -314,14 +318,16 @@ export function BusinessCaseForm({
                           <SelectValue placeholder="Select label" />
                         </SelectTrigger>
                         <SelectContent>
-                          {formulationCountryLabelOptions.map((label) => (
-                            <SelectItem
-                              key={label.formulation_country_label_id}
-                              value={label.formulation_country_label_id}
-                            >
-                              {label.display_name}
-                            </SelectItem>
-                          ))}
+                          {formulationCountryLabelOptions
+                            .filter((label) => label.formulation_country_label_id)
+                            .map((label) => (
+                              <SelectItem
+                                key={label.formulation_country_label_id!}
+                                value={label.formulation_country_label_id!}
+                              >
+                                {label.display_name}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -467,16 +473,16 @@ export function BusinessCaseForm({
             <div className="space-y-2">
               <Label htmlFor="confidence_level">Confidence Level</Label>
               <Select
-                value={formData.confidence_level}
+                value={formData.confidence_level || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, confidence_level: value })
+                  setFormData({ ...formData, confidence_level: value === "__none__" ? "" : value })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select confidence" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="__none__">None</SelectItem>
                   {CONFIDENCE_LEVELS.map((level) => (
                     <SelectItem key={level} value={level}>
                       {level}

@@ -12,12 +12,12 @@ import { DeleteConfirmDialog } from "@/components/forms/DeleteConfirmDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/queries";
 import { Pencil, Trash2 } from "lucide-react";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 type BusinessCaseTable = Database["public"]["Tables"]["business_case"]["Row"];
 
-function BusinessCaseActionsCell({ businessCase }: { businessCase: BusinessCase }) {
+function BusinessCaseActionsCell({ businessCase }: { businessCase: EnrichedBusinessCase }) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [businessCaseData, setBusinessCaseData] = useState<BusinessCaseTable | null>(null);
@@ -26,6 +26,7 @@ function BusinessCaseActionsCell({ businessCase }: { businessCase: BusinessCase 
   const [isPending, startTransition] = useTransition();
 
   const handleEdit = async () => {
+    if (!businessCase.business_case_id) return;
     const supabase = createClient();
     const { data } = await supabase
       .from("business_case")
@@ -39,10 +40,11 @@ function BusinessCaseActionsCell({ businessCase }: { businessCase: BusinessCase 
   };
 
   const handleDelete = () => {
+    if (!businessCase.business_case_id) return;
     startTransition(async () => {
       try {
         const { deleteBusinessCase } = await import("@/lib/actions/business-cases");
-        const result = await deleteBusinessCase(businessCase.business_case_id);
+        const result = await deleteBusinessCase(businessCase.business_case_id!);
         if (result.error) {
           toast({
             title: "Error",
@@ -108,13 +110,14 @@ function BusinessCaseActionsCell({ businessCase }: { businessCase: BusinessCase 
   );
 }
 
-const columns: ColumnDef<BusinessCase>[] = [
+const columns: ColumnDef<EnrichedBusinessCase>[] = [
   {
     accessorKey: "display_name",
     header: "Business Case",
     cell: ({ row }) => {
       const name = row.getValue("display_name") as string;
       const businessCaseId = row.original.business_case_id;
+      if (!businessCaseId) return <span>{name || "—"}</span>;
       return (
         <Link
           href={`/business-cases/${businessCaseId}`}
@@ -283,7 +286,7 @@ const columns: ColumnDef<BusinessCase>[] = [
 ];
 
 interface BusinessCasesListProps {
-  businessCases: BusinessCase[];
+  businessCases: EnrichedBusinessCase[];
 }
 
 export function BusinessCasesList({ businessCases }: BusinessCasesListProps) {

@@ -16,6 +16,12 @@ type IngredientUsage = Database["public"]["Views"]["vw_ingredient_usage"]["Row"]
 type ActivePortfolio = Database["public"]["Views"]["vw_active_portfolio"]["Row"];
 type PortfolioGaps = Database["public"]["Views"]["vw_portfolio_gaps"]["Row"];
 
+// Enriched BusinessCase type with formulation_id and country_id
+export type EnrichedBusinessCase = BusinessCase & {
+  formulation_id: string | null;
+  country_id: string | null;
+};
+
 export interface FormulationWithNestedData extends Formulation {
   countries_count: number;
   countries_list: string;
@@ -375,6 +381,64 @@ export async function getFormulationCountryDetails(formulationId: string) {
   return data as FormulationCountryDetail[];
 }
 
+/**
+ * Helper function to enrich business cases with formulation_id and country_id
+ * by looking them up from the formulation_country table
+ */
+async function enrichBusinessCases(
+  businessCases: BusinessCase[]
+): Promise<EnrichedBusinessCase[]> {
+  if (!businessCases || businessCases.length === 0) {
+    return [];
+  }
+
+  const supabase = await createClient();
+  
+  // Get unique formulation_country_ids
+  const countryIds = [
+    ...new Set(
+      businessCases
+        .map((bc) => bc.formulation_country_id)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+
+  if (countryIds.length === 0) {
+    return businessCases.map((bc) => ({
+      ...bc,
+      formulation_id: null,
+      country_id: null,
+    }));
+  }
+
+  // Batch fetch formulation_id and country_id for all formulation_country_ids
+  const { data: countryData } = await supabase
+    .from("formulation_country")
+    .select("formulation_country_id, formulation_id, country_id")
+    .in("formulation_country_id", countryIds);
+
+  // Create maps for quick lookup
+  const countryIdToFormulationId = new Map<string, string>();
+  const countryIdToCountryId = new Map<string, string>();
+  countryData?.forEach((fc) => {
+    if (fc.formulation_country_id) {
+      countryIdToFormulationId.set(fc.formulation_country_id, fc.formulation_id);
+      countryIdToCountryId.set(fc.formulation_country_id, fc.country_id);
+    }
+  });
+
+  // Enrich business cases
+  return businessCases.map((bc) => ({
+    ...bc,
+    formulation_id: bc.formulation_country_id
+      ? countryIdToFormulationId.get(bc.formulation_country_id) || null
+      : null,
+    country_id: bc.formulation_country_id
+      ? countryIdToCountryId.get(bc.formulation_country_id) || null
+      : null,
+  }));
+}
+
 export async function getBusinessCases() {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -387,7 +451,7 @@ export async function getBusinessCases() {
     throw new Error(`Failed to fetch business cases: ${error.message}`);
   }
 
-  return data as BusinessCase[];
+  return enrichBusinessCases(data || []);
 }
 
 export async function getBusinessCaseById(businessCaseId: string) {
@@ -403,20 +467,12 @@ export async function getBusinessCaseById(businessCaseId: string) {
     throw new Error(`Failed to fetch business case: ${error.message}`);
   }
 
-  // If we have formulation_country_id but no formulation_id, fetch it
-  if (data && data.formulation_country_id && !(data as any).formulation_id) {
-    const { data: fcData } = await supabase
-      .from("formulation_country")
-      .select("formulation_id")
-      .eq("formulation_country_id", data.formulation_country_id)
-      .single();
-    
-    if (fcData) {
-      (data as any).formulation_id = fcData.formulation_id;
-    }
+  if (!data) {
+    return null;
   }
 
-  return data as BusinessCase | null;
+  const enriched = await enrichBusinessCases([data]);
+  return enriched[0] || null;
 }
 
 export async function getCountries() {
@@ -497,7 +553,7 @@ export async function getFormulationBusinessCases(formulationId: string) {
     throw new Error(`Failed to fetch business cases: ${error.message}`);
   }
 
-  return data as BusinessCase[];
+  return enrichBusinessCases(data || []);
 }
 
 export async function getFormulationBusinessCasesForTree(formulationId: string) {
@@ -519,7 +575,7 @@ export async function getFormulationBusinessCasesForTree(formulationId: string) 
     throw new Error(`Failed to fetch business cases: ${error.message}`);
   }
 
-  return data as BusinessCase[];
+  return enrichBusinessCases(data || []);
 }
 
 export async function getFormulationStatusHistory(formulationId: string) {
@@ -548,6 +604,19 @@ export async function getFormulationProtectionStatus(formulationId: string) {
     .from("vw_protection_status")
     .select("*")
     .eq("formulation_code", formulation.formulation_code);
+
+  if (error) {
+    throw new Error(`Failed to fetch protection status: ${error.message}`);
+  }
+
+  return data as ProtectionStatus[];
+}
+
+export async function getAllProtectionStatus() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("vw_protection_status")
+    .select("*");
 
   if (error) {
     throw new Error(`Failed to fetch protection status: ${error.message}`);
@@ -664,7 +733,7 @@ export async function getRevenueProjections() {
     throw new Error(`Failed to fetch revenue projections: ${error.message}`);
   }
 
-  return data as BusinessCase[];
+  return enrichBusinessCases(data || []);
 }
 
 export async function getFormulationCountryById(formulationCountryId: string) {
@@ -752,6 +821,7 @@ export async function getPortfolioGaps() {
 
   return data as PortfolioGaps[];
 }
+
 
 
 

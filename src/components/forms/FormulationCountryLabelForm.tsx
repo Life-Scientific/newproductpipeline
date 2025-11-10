@@ -228,11 +228,13 @@ export function FormulationCountryLabelForm({
                   <SelectValue placeholder="Select formulation-country" />
                 </SelectTrigger>
                 <SelectContent>
-                  {formulationCountries.map((fc) => (
-                    <SelectItem key={fc.formulation_country_id} value={fc.formulation_country_id}>
-                      {fc.display_name}
-                    </SelectItem>
-                  ))}
+                    {formulationCountries
+                      .filter((fc) => fc.formulation_country_id)
+                      .map((fc) => (
+                        <SelectItem key={fc.formulation_country_id!} value={fc.formulation_country_id!}>
+                          {fc.display_name}
+                        </SelectItem>
+                      ))}
                 </SelectContent>
               </Select>
             </div>
@@ -263,16 +265,16 @@ export function FormulationCountryLabelForm({
             <div className="space-y-2">
               <Label htmlFor="reference_product_id">Reference Product</Label>
               <Select
-                value={formData.reference_product_id}
+                value={formData.reference_product_id || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, reference_product_id: value })
+                  setFormData({ ...formData, reference_product_id: value === "__none__" ? "" : value })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select reference product" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="__none__">None</SelectItem>
                   {referenceProducts.map((rp) => (
                     <SelectItem key={rp.reference_product_id} value={rp.reference_product_id}>
                       {rp.product_name}
@@ -286,16 +288,16 @@ export function FormulationCountryLabelForm({
           <div className="space-y-2">
             <Label htmlFor="registration_status">Registration Status</Label>
             <Select
-              value={formData.registration_status}
+              value={formData.registration_status || "__none__"}
               onValueChange={(value) =>
-                setFormData({ ...formData, registration_status: value })
+                setFormData({ ...formData, registration_status: value === "__none__" ? "" : value })
               }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="__none__">None</SelectItem>
                 {REGISTRATION_STATUSES.map((status) => (
                   <SelectItem key={status} value={status}>
                     {status}

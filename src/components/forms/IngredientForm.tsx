@@ -180,14 +180,14 @@ export function IngredientForm({
           <div className="space-y-2">
             <Label htmlFor="supply_risk">Supply Risk</Label>
             <Select
-              value={formData.supply_risk}
-              onValueChange={(value) => setFormData({ ...formData, supply_risk: value })}
+              value={formData.supply_risk || "__none__"}
+              onValueChange={(value) => setFormData({ ...formData, supply_risk: value === "__none__" ? "" : value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select supply risk" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="__none__">None</SelectItem>
                 {SUPPLY_RISKS.map((risk) => (
                   <SelectItem key={risk} value={risk}>
                     {risk}

@@ -165,14 +165,14 @@ export function ReferenceProductForm({
             <div className="space-y-2">
               <Label htmlFor="supplier_id">Supplier</Label>
               <Select
-                value={formData.supplier_id}
-                onValueChange={(value) => setFormData({ ...formData, supplier_id: value })}
+                value={formData.supplier_id || "__none__"}
+                onValueChange={(value) => setFormData({ ...formData, supplier_id: value === "__none__" ? "" : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select supplier" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="__none__">None</SelectItem>
                   {suppliers.map((s) => (
                     <SelectItem key={s.supplier_id} value={s.supplier_id}>
                       {s.supplier_name}

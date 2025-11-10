@@ -10,12 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, ExternalLink } from "lucide-react";
-import type { Database } from "@/lib/supabase/database.types";
-
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+import type { EnrichedBusinessCase } from "@/lib/db/queries";
 
 interface BusinessCaseListItemProps {
-  businessCase: BusinessCase;
+  businessCase: EnrichedBusinessCase;
 }
 
 export function BusinessCaseListItem({ businessCase }: BusinessCaseListItemProps) {
@@ -83,7 +81,7 @@ export function BusinessCaseListItem({ businessCase }: BusinessCaseListItemProps
                   handleNestedClick(
                     e,
                     `/business-cases?fiscal_year=${encodeURIComponent(
-                      businessCase.fiscal_year
+                      businessCase.fiscal_year!
                     )}`
                   )
                 }

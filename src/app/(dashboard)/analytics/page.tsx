@@ -1,10 +1,11 @@
-import { getFormulations, getBusinessCases, getRevenueProjections, getActivePortfolio } from "@/lib/db/queries";
+import { getFormulations, getBusinessCases, getRevenueProjections, getActivePortfolio, getAllProtectionStatus } from "@/lib/db/queries";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Section } from "@/components/layout/Section";
 import { CardGrid } from "@/components/layout/CardGrid";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { PortfolioMetrics } from "@/components/analytics/PortfolioMetrics";
 import { RevenueProjections } from "@/components/analytics/RevenueProjections";
+import { PortfolioPrioritization } from "@/components/analytics/PortfolioPrioritization";
 import { RevenueChart } from "@/components/charts/RevenueChart";
 import { StatusPieChart } from "@/components/charts/StatusPieChart";
 import { MarginTrendChart } from "@/components/charts/MarginTrendChart";
@@ -16,11 +17,12 @@ import type { Database } from "@/lib/supabase/database.types";
 type RegistrationPipeline = Database["public"]["Views"]["vw_registration_pipeline"]["Row"];
 
 export default async function AnalyticsPage() {
-  const [formulations, businessCases, revenueProjections, activePortfolio] = await Promise.all([
+  const [formulations, businessCases, revenueProjections, activePortfolio, protectionStatus] = await Promise.all([
     getFormulations(),
     getBusinessCases(),
     getRevenueProjections(),
     getActivePortfolio(),
+    getAllProtectionStatus().catch(() => []), // Gracefully handle errors
   ]);
 
   const supabase = await createClient();
@@ -64,6 +66,14 @@ export default async function AnalyticsPage() {
           businessCases={businessCases}
           activePortfolioCount={activePortfolio?.length || 0}
           registrationPipelineCount={registrationPipelineCount}
+        />
+      </Section>
+
+      <Section>
+        <PortfolioPrioritization
+          formulations={formulations}
+          businessCases={businessCases}
+          protectionStatus={protectionStatus}
         />
       </Section>
 

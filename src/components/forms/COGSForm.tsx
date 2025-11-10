@@ -187,20 +187,22 @@ export function COGSForm({
                   <SelectValue placeholder="Select formulation" />
                 </SelectTrigger>
                 <SelectContent>
-                  {formulations.map((f) => (
-                    <SelectItem key={f.formulation_id} value={f.formulation_id}>
-                      {f.formulation_code} - {f.product_name}
-                    </SelectItem>
-                  ))}
+                  {formulations
+                    .filter((f) => f.formulation_id)
+                    .map((f) => (
+                      <SelectItem key={f.formulation_id!} value={f.formulation_id!}>
+                        {f.formulation_code} - {f.product_name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="formulation_country_id">Country (Optional)</Label>
               <Select
-                value={formData.formulation_country_id}
+                value={formData.formulation_country_id || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, formulation_country_id: value })
+                  setFormData({ ...formData, formulation_country_id: value === "__none__" ? "" : value })
                 }
                 disabled={!formData.formulation_id}
               >
@@ -208,12 +210,14 @@ export function COGSForm({
                   <SelectValue placeholder="Global (no country)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Global (no country)</SelectItem>
-                  {formulationCountries.map((fc) => (
-                    <SelectItem key={fc.formulation_country_id} value={fc.formulation_country_id}>
-                      {fc.country_name}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="__none__">Global (no country)</SelectItem>
+                  {formulationCountries
+                    .filter((fc) => fc.formulation_country_id)
+                    .map((fc) => (
+                      <SelectItem key={fc.formulation_country_id!} value={fc.formulation_country_id!}>
+                        {fc.country_name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">

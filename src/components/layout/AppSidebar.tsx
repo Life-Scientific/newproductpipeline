@@ -1,19 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   FlaskConical,
   TrendingUp,
   FileCheck,
   Database,
-  Menu,
   BarChart3,
   DollarSign,
   Beaker,
   FileText,
   GitCompare,
+  User,
+  LogOut,
+  ChevronUp,
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,8 +32,18 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { createClient } from "@/lib/supabase/client";
 
-const menuItems = [
+const coreMenuItems = [
   {
     title: "Dashboard",
     url: "/",
@@ -46,6 +59,9 @@ const menuItems = [
     url: "/business-cases",
     icon: TrendingUp,
   },
+];
+
+const regulatoryMenuItems = [
   {
     title: "Registration Pipeline",
     url: "/registration",
@@ -56,16 +72,22 @@ const menuItems = [
     url: "/labels",
     icon: FileText,
   },
-  {
-    title: "Compare",
-    url: "/formulations/compare",
-    icon: GitCompare,
-  },
+];
+
+const analysisMenuItems = [
   {
     title: "Analytics",
     url: "/analytics",
     icon: BarChart3,
   },
+  {
+    title: "Compare",
+    url: "/formulations/compare",
+    icon: GitCompare,
+  },
+];
+
+const referenceMenuItems = [
   {
     title: "COGS",
     url: "/cogs",
@@ -85,53 +107,198 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+    });
+  }, [supabase]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  };
+
+  const isActive = (url: string) => {
+    if (url === "/") {
+      return pathname === "/";
+    }
+    return pathname?.startsWith(url);
+  };
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1.5">
-          <div className="flex aspect-square size-6 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <Menu className="size-3.5" />
+    <Sidebar collapsible="icon" className="border-r">
+      <SidebarHeader className="border-b">
+        <div className="flex items-center gap-2 px-2 py-3">
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+            LS
           </div>
-          <div className="grid flex-1 text-left text-xs leading-tight">
-            <span className="truncate font-semibold">LS Portfolio</span>
-            <span className="truncate text-[10px] text-sidebar-foreground/70">
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-semibold">Portfolio Manager</span>
+            <span className="truncate text-xs text-sidebar-foreground/70">
               Life Scientific
             </span>
           </div>
+          <SidebarTrigger className="ml-auto" />
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="gap-2">
+        {/* Core Navigation */}
         <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
+            Core
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => {
-                const isActive = pathname === item.url || 
-                  (item.url !== "/" && pathname?.startsWith(item.url));
-                return (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      tooltip={item.title}
-                      size="sm"
-                    >
-                      <Link href={item.url}>
-                        <item.icon className="size-4" />
-                        <span className="text-xs">{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              {coreMenuItems.map((item) => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={item.title}
+                    size="default"
+                  >
+                    <Link href={item.url}>
+                      <item.icon className="size-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Regulatory */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
+            Regulatory
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {regulatoryMenuItems.map((item) => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={item.title}
+                    size="default"
+                  >
+                    <Link href={item.url}>
+                      <item.icon className="size-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Analysis */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
+            Analysis
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {analysisMenuItems.map((item) => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={item.title}
+                    size="default"
+                  >
+                    <Link href={item.url}>
+                      <item.icon className="size-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Reference Data */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
+            Reference
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {referenceMenuItems.map((item) => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={item.title}
+                    size="default"
+                  >
+                    <Link href={item.url}>
+                      <item.icon className="size-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <div className="px-2 py-1 text-[10px] text-sidebar-foreground/60">
-          LS Portfolio
-        </div>
+      <SidebarFooter className="border-t p-2">
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2 h-auto p-2.5 hover:bg-sidebar-accent"
+              >
+                <Avatar className="h-8 w-8 shrink-0">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                    {user.email?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-1 flex-col items-start text-left text-sm">
+                  <span className="truncate font-medium">
+                    {user.email?.split("@")[0] || "User"}
+                  </span>
+                  <span className="truncate text-xs text-sidebar-foreground/60">
+                    {user.email}
+                  </span>
+                </div>
+                <ChevronUp className="ml-auto h-4 w-4 text-sidebar-foreground/50 shrink-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" side="right">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {user.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => router.push("/login")}
+          >
+            Sign In
+          </Button>
+        )}
       </SidebarFooter>
     </Sidebar>
   );

@@ -262,13 +262,15 @@ export function FormulationCountryForm({
                 <SelectTrigger>
                   <SelectValue placeholder="Select formulation" />
                 </SelectTrigger>
-                <SelectContent>
-                  {formulations.map((f) => (
-                    <SelectItem key={f.formulation_id} value={f.formulation_id}>
-                      {f.formulation_code} - {f.product_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                    <SelectContent>
+                      {formulations
+                        .filter((f) => f.formulation_id)
+                        .map((f) => (
+                          <SelectItem key={f.formulation_id!} value={f.formulation_id!}>
+                            {f.formulation_code} - {f.product_name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
@@ -299,16 +301,16 @@ export function FormulationCountryForm({
             <div className="space-y-2">
               <Label htmlFor="registration_pathway">Registration Pathway</Label>
               <Select
-                value={formData.registration_pathway}
+                value={formData.registration_pathway || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, registration_pathway: value })
+                  setFormData({ ...formData, registration_pathway: value === "__none__" ? "" : value })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select pathway" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="__none__">None</SelectItem>
                   {REGISTRATION_PATHWAYS.map((pathway) => (
                     <SelectItem key={pathway} value={pathway}>
                       {pathway}
@@ -320,16 +322,16 @@ export function FormulationCountryForm({
             <div className="space-y-2">
               <Label htmlFor="registration_status">Registration Status</Label>
               <Select
-                value={formData.registration_status}
+                value={formData.registration_status || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, registration_status: value })
+                  setFormData({ ...formData, registration_status: value === "__none__" ? "" : value })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="__none__">None</SelectItem>
                   {REGISTRATION_STATUSES.map((status) => (
                     <SelectItem key={status} value={status}>
                       {status}
@@ -439,16 +441,16 @@ export function FormulationCountryForm({
                     <div key={targetId} className="flex items-center gap-2">
                       <Label className="text-sm w-32">{target?.target_name}:</Label>
                       <Select
-                        value={targetEfficacy[targetId] || ""}
+                        value={targetEfficacy[targetId] || "__none__"}
                         onValueChange={(value) =>
-                          setTargetEfficacy({ ...targetEfficacy, [targetId]: value })
+                          setTargetEfficacy({ ...targetEfficacy, [targetId]: value === "__none__" ? "" : value })
                         }
                       >
                         <SelectTrigger className="w-40">
                           <SelectValue placeholder="Efficacy" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="__none__">None</SelectItem>
                           {EFFICACY_LEVELS.map((level) => (
                             <SelectItem key={level} value={level}>
                               {level}
