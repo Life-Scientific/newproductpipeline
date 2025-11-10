@@ -17,12 +17,12 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, X } from "lucide-react";
 import type { Database } from "@/lib/supabase/database.types";
+import type { FormulationWithNestedData } from "@/lib/db/queries";
 
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type FormulationTable = Database["public"]["Tables"]["formulations"]["Row"];
 
 interface FormulationsExcelViewProps {
-  formulations: Formulation[];
+  formulations: FormulationWithNestedData[];
 }
 
 const STATUS_OPTIONS = ["Not Yet Considered", "Selected", "Monitoring", "Killed"];
@@ -140,14 +140,16 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
 
   const hasChanges = Object.keys(editedData).length > 0;
 
-  const getCellValue = (formulation: Formulation, field: string): string | boolean => {
+  const getCellValue = (formulation: FormulationWithNestedData, field: string): string | boolean | number => {
     if (editedData[formulation.formulation_id]?.[field as keyof FormulationTable] !== undefined) {
       const value = editedData[formulation.formulation_id][field as keyof FormulationTable];
       if (field === "is_active") return value as boolean;
       return (value as string) || "";
     }
     if (field === "is_active") return true; // Default from view
-    return (formulation[field as keyof Formulation] as string) || "";
+    const value = formulation[field as keyof FormulationWithNestedData];
+    if (typeof value === "number") return value;
+    return (value as string) || "";
   };
 
   return (
@@ -226,8 +228,56 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                 <th className="p-3 text-left text-sm font-semibold border-r min-w-[120px]">
                   Updated At
                 </th>
-                <th className="p-3 text-left text-sm font-semibold min-w-[120px]">
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[120px]">
                   Created By
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[80px]">
+                  # Countries
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                  Countries
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[80px]">
+                  # Labels
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[250px]">
+                  Labels
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[100px]">
+                  # Business Cases
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[120px]">
+                  Total Revenue
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[120px]">
+                  Total Margin
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[80px]">
+                  # COGS
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[100px]">
+                  Latest COGS
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                  Reg Statuses
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                  Protection Status
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[120px]">
+                  Earliest EMD
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[100px]">
+                  Latest TME FY
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                  Reference Products
+                </th>
+                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                  Crops
+                </th>
+                <th className="p-3 text-left text-sm font-semibold min-w-[200px]">
+                  Targets
                 </th>
               </tr>
             </thead>
@@ -554,6 +604,60 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                         : "—"}
                     </td>
                     <td className="p-3 text-xs text-muted-foreground">—</td>
+                    <td className="p-3 border-r text-center font-medium">
+                      {formulation.countries_count || 0}
+                    </td>
+                    <td className="p-3 border-r text-xs text-muted-foreground">
+                      {formulation.countries_list || "—"}
+                    </td>
+                    <td className="p-3 border-r text-center font-medium">
+                      {formulation.labels_count || 0}
+                    </td>
+                    <td className="p-3 border-r text-xs text-muted-foreground">
+                      {formulation.labels_list || "—"}
+                    </td>
+                    <td className="p-3 border-r text-center font-medium">
+                      {formulation.business_cases_count || 0}
+                    </td>
+                    <td className="p-3 border-r text-xs font-medium">
+                      {formulation.total_revenue
+                        ? `€${(formulation.total_revenue / 1000).toFixed(0)}K`
+                        : "—"}
+                    </td>
+                    <td className="p-3 border-r text-xs font-medium">
+                      {formulation.total_margin
+                        ? `€${(formulation.total_margin / 1000).toFixed(0)}K`
+                        : "—"}
+                    </td>
+                    <td className="p-3 border-r text-center">
+                      {formulation.cogs_count || 0}
+                    </td>
+                    <td className="p-3 border-r text-xs">
+                      {formulation.latest_cogs ? `€${formulation.latest_cogs.toFixed(2)}` : "—"}
+                    </td>
+                    <td className="p-3 border-r text-xs text-muted-foreground">
+                      {formulation.registration_statuses || "—"}
+                    </td>
+                    <td className="p-3 border-r text-xs text-muted-foreground">
+                      {formulation.protection_status || "—"}
+                    </td>
+                    <td className="p-3 border-r text-xs text-muted-foreground">
+                      {formulation.earliest_emd
+                        ? new Date(formulation.earliest_emd).toLocaleDateString()
+                        : "—"}
+                    </td>
+                    <td className="p-3 border-r text-xs font-medium">
+                      {formulation.latest_tme_fy || "—"}
+                    </td>
+                    <td className="p-3 border-r text-xs text-muted-foreground">
+                      {formulation.reference_products || "—"}
+                    </td>
+                    <td className="p-3 border-r text-xs text-muted-foreground">
+                      {formulation.crops_list || "—"}
+                    </td>
+                    <td className="p-3 text-xs text-muted-foreground">
+                      {formulation.targets_list || "—"}
+                    </td>
                   </tr>
                 );
               })}

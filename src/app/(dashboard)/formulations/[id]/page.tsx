@@ -19,6 +19,7 @@ import { FormulationCOGS } from "@/components/formulations/FormulationCOGS";
 import { FormulationBusinessCases } from "@/components/formulations/FormulationBusinessCases";
 import { FormulationStatusHistory } from "@/components/formulations/FormulationStatusHistory";
 import { FormulationRegulatory } from "@/components/formulations/FormulationRegulatory";
+import { FormulationTimeline } from "@/components/formulations/FormulationTimeline";
 import { HierarchicalBreadcrumb } from "@/components/navigation/HierarchicalBreadcrumb";
 import { FormulationTreeView } from "@/components/navigation/FormulationTreeView";
 import { getFormulationBusinessCasesForTree } from "@/lib/db/queries";
@@ -165,16 +166,13 @@ export default async function FormulationDetailPage({
 
         {/* Main Content - Consolidated tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-6">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="tree">Tree View</TabsTrigger>
-            <TabsTrigger value="financial">Financial</TabsTrigger>
-            <TabsTrigger value="regulatory">Regulatory</TabsTrigger>
-            <TabsTrigger value="composition">Composition</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
 
-          {/* Overview Tab - Consolidated info */}
+          {/* Overview Tab - All consolidated info */}
           <TabsContent value="overview" className="space-y-4 sm:space-y-6">
             <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
               {/* Basic Details */}
@@ -250,7 +248,21 @@ export default async function FormulationDetailPage({
               </Card>
             </div>
 
-            {/* Countries Preview */}
+            {/* 10-Year Timeline */}
+            {businessCases.length > 0 && (
+              <FormulationTimeline businessCases={businessCases} />
+            )}
+
+            {/* Ingredients */}
+            <FormulationIngredients ingredients={ingredients} />
+
+            {/* Business Cases */}
+            <FormulationBusinessCases businessCases={businessCases} />
+
+            {/* COGS */}
+            <FormulationCOGS cogs={cogs} />
+
+            {/* Countries */}
             {countryDetails.length > 0 && (
               <Card>
                 <CardHeader className="space-y-1.5">
@@ -258,76 +270,6 @@ export default async function FormulationDetailPage({
                   <CardDescription>Formulation registrations by country</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="space-y-2">
-                    {countryDetails.slice(0, 5).map((detail) => (
-                      <div
-                        key={detail.formulation_country_id}
-                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors gap-4"
-                      >
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <div className="font-medium text-sm">{detail.country_name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {detail.registration_pathway || "No pathway"} • {detail.target_market_entry_fy || "No target FY"}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {detail.registration_status && (
-                            <Badge variant="outline" className="text-xs">
-                              {detail.registration_status}
-                            </Badge>
-                          )}
-                          <Badge variant="secondary" className="text-xs">
-                            {labels.filter(l => l.formulation_country_id === detail.formulation_country_id).length} labels
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {countryDetails.length > 5 && (
-                    <div className="pt-2 border-t">
-                      <Button variant="ghost" className="w-full" asChild>
-                        <Link href={`#countries`} onClick={(e) => {
-                          e.preventDefault();
-                          const element = document.querySelector('[value="regulatory"]') as HTMLElement | null;
-                          element?.click();
-                        }}>
-                          View all {countryDetails.length} countries →
-                        </Link>
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          {/* Tree View Tab */}
-          <TabsContent value="tree" className="space-y-4 sm:space-y-6">
-            <FormulationTreeView
-              formulationId={id}
-              formulationCode={formulation.formulation_code || ""}
-              formulationName={formulation.product_name || ""}
-              countries={countryDetails}
-              labels={labels}
-              businessCases={businessCasesForTree}
-            />
-          </TabsContent>
-
-          {/* Financial Tab - Business Cases & COGS */}
-          <TabsContent value="financial" className="space-y-4 sm:space-y-6">
-            <FormulationBusinessCases businessCases={businessCases} />
-            <FormulationCOGS cogs={cogs} />
-          </TabsContent>
-
-          {/* Regulatory Tab - Countries, Labels, Protection */}
-          <TabsContent value="regulatory" className="space-y-4 sm:space-y-6">
-            <Card>
-              <CardHeader className="space-y-1.5">
-                <CardTitle>Countries</CardTitle>
-                <CardDescription>Formulation registrations by country</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {countryDetails.length > 0 ? (
                   <div className="space-y-2">
                     {countryDetails.map((detail) => (
                       <div
@@ -347,24 +289,34 @@ export default async function FormulationDetailPage({
                               {detail.registration_status}
                             </Badge>
                           )}
+                          <Badge variant="secondary" className="text-xs">
+                            {labels.filter(l => l.formulation_country_id === detail.formulation_country_id).length} labels
+                          </Badge>
                         </div>
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No country registrations found.</p>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Regulatory - Labels & Protection */}
             <FormulationRegulatory
               protectionStatus={protectionStatus}
               labels={labels}
             />
           </TabsContent>
 
-          {/* Composition Tab - Ingredients */}
-          <TabsContent value="composition" className="space-y-4 sm:space-y-6">
-            <FormulationIngredients ingredients={ingredients} />
+          {/* Tree View Tab */}
+          <TabsContent value="tree" className="space-y-4 sm:space-y-6">
+            <FormulationTreeView
+              formulationId={id}
+              formulationCode={formulation.formulation_code || ""}
+              formulationName={formulation.product_name || ""}
+              countries={countryDetails}
+              labels={labels}
+              businessCases={businessCasesForTree}
+            />
           </TabsContent>
 
           {/* History Tab */}

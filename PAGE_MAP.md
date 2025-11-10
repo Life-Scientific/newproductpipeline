@@ -115,6 +115,28 @@ The application uses Next.js App Router with the following structure:
   - `getFormulationLabels()`
   - `getFormulationBusinessCasesForTree()`
 
+#### `/formulations/compare`
+- **Path**: `src/app/(dashboard)/formulations/compare/page.tsx`
+- **Purpose**: Compare multiple formulations side-by-side
+- **Access**: Authenticated users
+- **Features**:
+  - Select up to 5 formulations to compare
+  - Side-by-side comparison table showing:
+    - Basic info (code, name, category, type, status)
+    - Financial metrics (revenue, margin, margin %)
+    - Counts (business cases, countries, labels, ingredients, COGS entries)
+  - Add/remove formulations dynamically
+  - Links to individual formulation detail pages
+- **Components**: `FormulationComparison`
+- **Data Sources**: 
+  - `getFormulations()`
+  - API routes for detailed data:
+    - `/api/formulations/[id]/business-cases`
+    - `/api/formulations/[id]/ingredients`
+    - `/api/formulations/[id]/countries`
+    - `/api/formulations/[id]/labels`
+    - `/api/formulations/[id]/cogs`
+
 ---
 
 ### Business Cases
@@ -246,6 +268,41 @@ The application uses Next.js App Router with the following structure:
 - **Method**: GET
 - **Returns**: Full formulation data from `formulations` table
 - **Use Case**: Used for editing formulations (provides fields not in aggregated views)
+
+#### `/api/formulations/[id]/business-cases`
+- **Path**: `src/app/api/formulations/[id]/business-cases/route.ts`
+- **Purpose**: Fetch business cases for a formulation
+- **Method**: GET
+- **Returns**: Array of business cases
+- **Use Case**: Used by comparison page
+
+#### `/api/formulations/[id]/ingredients`
+- **Path**: `src/app/api/formulations/[id]/ingredients/route.ts`
+- **Purpose**: Fetch ingredients for a formulation
+- **Method**: GET
+- **Returns**: Array of formulation ingredients
+- **Use Case**: Used by comparison page
+
+#### `/api/formulations/[id]/countries`
+- **Path**: `src/app/api/formulations/[id]/countries/route.ts`
+- **Purpose**: Fetch countries for a formulation
+- **Method**: GET
+- **Returns**: Array of formulation country details
+- **Use Case**: Used by comparison page
+
+#### `/api/formulations/[id]/labels`
+- **Path**: `src/app/api/formulations/[id]/labels/route.ts`
+- **Purpose**: Fetch labels for a formulation
+- **Method**: GET
+- **Returns**: Array of formulation country labels
+- **Use Case**: Used by comparison page
+
+#### `/api/formulations/[id]/cogs`
+- **Path**: `src/app/api/formulations/[id]/cogs/route.ts`
+- **Purpose**: Fetch COGS data for a formulation
+- **Method**: GET
+- **Returns**: Array of COGS entries
+- **Use Case**: Used by comparison page
 
 ---
 

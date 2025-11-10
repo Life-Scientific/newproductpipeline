@@ -12,6 +12,8 @@ import {
   BarChart3,
   DollarSign,
   Beaker,
+  FileText,
+  GitCompare,
 } from "lucide-react";
 import {
   Sidebar,
@@ -48,6 +50,16 @@ const menuItems = [
     title: "Registration Pipeline",
     url: "/registration",
     icon: FileCheck,
+  },
+  {
+    title: "Labels",
+    url: "/labels",
+    icon: FileText,
+  },
+  {
+    title: "Compare",
+    url: "/formulations/compare",
+    icon: GitCompare,
   },
   {
     title: "Analytics",

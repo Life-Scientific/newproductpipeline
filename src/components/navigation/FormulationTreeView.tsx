@@ -169,37 +169,50 @@ export function FormulationTreeView({
                     onOpenChange={() => toggleCountry(countryId)}
                   >
                     <div className="space-y-2">
-                      <CollapsibleTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start h-auto p-2 sm:p-3 hover:bg-muted border rounded-lg text-sm sm:text-base"
+                      <div className="flex items-center gap-2">
+                        <CollapsibleTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 flex-shrink-0"
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                            ) : (
+                              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                            )}
+                          </Button>
+                        </CollapsibleTrigger>
+                        <Link
+                          href={`/formulation-countries/${countryId}`}
+                          className="flex-1"
                         >
-                          {isExpanded ? (
-                            <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 flex-shrink-0" />
-                          ) : (
-                            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 flex-shrink-0" />
-                          )}
-                          <Globe className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-muted-foreground flex-shrink-0" />
-                          <span className="font-medium truncate">{country.country_name}</span>
-                          {country.registration_status && (
-                            <Badge variant="outline" className="ml-1 sm:ml-2 text-xs hidden sm:inline-flex">
-                              {country.registration_status}
-                            </Badge>
-                          )}
-                          <div className="ml-auto flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                            {countryLabels.length > 0 && (
-                              <Badge variant="secondary" className="text-xs">
-                                {countryLabels.length}L
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start h-auto p-2 sm:p-3 hover:bg-muted border rounded-lg text-sm sm:text-base"
+                          >
+                            <Globe className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-muted-foreground flex-shrink-0" />
+                            <span className="font-medium truncate">{country.country_name}</span>
+                            {country.registration_status && (
+                              <Badge variant="outline" className="ml-1 sm:ml-2 text-xs hidden sm:inline-flex">
+                                {country.registration_status}
                               </Badge>
                             )}
-                            {countryBusinessCases.length > 0 && (
-                              <Badge variant="default" className="text-xs">
-                                {countryBusinessCases.length}BC
-                              </Badge>
-                            )}
-                          </div>
-                        </Button>
-                      </CollapsibleTrigger>
+                            <div className="ml-auto flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                              {countryLabels.length > 0 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {countryLabels.length}L
+                                </Badge>
+                              )}
+                              {countryBusinessCases.length > 0 && (
+                                <Badge variant="default" className="text-xs">
+                                  {countryBusinessCases.length}BC
+                                </Badge>
+                              )}
+                            </div>
+                          </Button>
+                        </Link>
+                      </div>
 
                       <CollapsibleContent>
                         <div className="ml-3 sm:ml-6 space-y-3 border-l-2 border-muted pl-2 sm:pl-4">
@@ -253,68 +266,119 @@ export function FormulationTreeView({
                                     onOpenChange={() => toggleLabel(labelId)}
                                   >
                                     <div className="space-y-2">
-                                      <CollapsibleTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          className="w-full justify-start h-auto p-2 hover:bg-muted/50 border rounded-md text-xs sm:text-sm"
+                                      <div className="flex items-center gap-2">
+                                        <CollapsibleTrigger asChild>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-6 w-6 flex-shrink-0"
+                                          >
+                                            {isLabelExpanded ? (
+                                              <ChevronDown className="h-3 w-3" />
+                                            ) : (
+                                              <ChevronRight className="h-3 w-3" />
+                                            )}
+                                          </Button>
+                                        </CollapsibleTrigger>
+                                        <Link
+                                          href={`/labels/${labelId}`}
+                                          className="flex-1"
                                         >
-                                          {isLabelExpanded ? (
-                                            <ChevronDown className="h-3 w-3 mr-1 sm:mr-2 flex-shrink-0" />
-                                          ) : (
-                                            <ChevronRight className="h-3 w-3 mr-1 sm:mr-2 flex-shrink-0" />
-                                          )}
-                                          <FileText className="h-3 w-3 mr-1 sm:mr-2 text-muted-foreground flex-shrink-0" />
-                                          <span className="truncate">
-                                            {label.label_name || `Label ${label.label_variant}`}
-                                          </span>
-                                          {label.label_variant && (
-                                            <Badge variant="outline" className="text-xs ml-1 sm:ml-2 hidden sm:inline-flex">
-                                              {label.label_variant}
-                                            </Badge>
-                                          )}
-                                          {label.registration_status && (
-                                            <Badge variant="secondary" className="text-xs ml-1 sm:ml-2 hidden sm:inline-flex">
-                                              {label.registration_status}
-                                            </Badge>
-                                          )}
-                                          {labelBusinessCases.length > 0 && (
-                                            <Badge variant="default" className="text-xs ml-auto flex-shrink-0">
-                                              {labelBusinessCases.length}BC
-                                            </Badge>
-                                          )}
-                                        </Button>
-                                      </CollapsibleTrigger>
+                                          <Button
+                                            variant="ghost"
+                                            className="w-full justify-start h-auto p-2 hover:bg-muted/50 border rounded-md text-xs sm:text-sm"
+                                          >
+                                            <FileText className="h-3 w-3 mr-1 sm:mr-2 text-muted-foreground flex-shrink-0" />
+                                            <span className="truncate">
+                                              {label.label_name || `Label ${label.label_variant}`}
+                                            </span>
+                                            {label.label_variant && (
+                                              <Badge variant="outline" className="text-xs ml-1 sm:ml-2 hidden sm:inline-flex">
+                                                {label.label_variant}
+                                              </Badge>
+                                            )}
+                                            {label.registration_status && (
+                                              <Badge variant="secondary" className="text-xs ml-1 sm:ml-2 hidden sm:inline-flex">
+                                                {label.registration_status}
+                                              </Badge>
+                                            )}
+                                            {labelBusinessCases.length > 0 && (
+                                              <Badge variant="default" className="text-xs ml-auto flex-shrink-0">
+                                                {labelBusinessCases.length}BC
+                                              </Badge>
+                                            )}
+                                          </Button>
+                                        </Link>
+                                      </div>
 
-                                      {/* Business Cases at Label Level */}
-                                      {labelBusinessCases.length > 0 && (
-                                        <CollapsibleContent>
-                                          <div className="ml-3 sm:ml-6 space-y-2 border-l-2 border-muted/50 pl-2 sm:pl-3">
-                                            {labelBusinessCases.map((bc) => (
-                                              <Link
-                                                key={bc.business_case_id}
-                                                href={`/business-cases?bc=${bc.business_case_id}`}
-                                                className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors border text-xs sm:text-sm"
-                                              >
-                                                <DollarSign className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                                <div className="flex-1 min-w-0">
-                                                  <div className="font-medium truncate">
-                                                    {bc.display_name || bc.business_case_name || "Business Case"}
-                                                  </div>
-                                                  <div className="text-xs text-muted-foreground">
-                                                    {bc.fiscal_year} • Y{bc.year_offset} • {bc.scenario_name || "Base"}
-                                                  </div>
-                                                </div>
-                                                <div className="text-right flex-shrink-0">
-                                                  <div className="text-xs font-semibold">{formatCurrency(bc.total_revenue)}</div>
-                                                  <div className="text-xs text-muted-foreground">
-                                                    {bc.margin_percent?.toFixed(1)}%
-                                                  </div>
-                                                </div>
-                                              </Link>
-                                            ))}
+                                      <CollapsibleContent>
+                                        <div className="ml-3 sm:ml-6 space-y-2 border-l-2 border-muted/50 pl-2 sm:pl-3">
+                                          {/* Label Details */}
+                                          <div className="p-2 rounded-md bg-muted/30 border text-xs space-y-1">
+                                            {label.reference_product_name && (
+                                              <div>
+                                                <span className="font-medium">Reference Product: </span>
+                                                <span>{label.reference_product_name}</span>
+                                              </div>
+                                            )}
+                                            {label.earliest_submission_date && (
+                                              <div>
+                                                <span className="font-medium">Earliest Submission: </span>
+                                                <span>{new Date(label.earliest_submission_date).toLocaleDateString()}</span>
+                                              </div>
+                                            )}
+                                            {label.actual_submission_date && (
+                                              <div>
+                                                <span className="font-medium">Actual Submission: </span>
+                                                <span>{new Date(label.actual_submission_date).toLocaleDateString()}</span>
+                                              </div>
+                                            )}
+                                            {label.actual_approval_date && (
+                                              <div>
+                                                <span className="font-medium">Approved: </span>
+                                                <span>{new Date(label.actual_approval_date).toLocaleDateString()}</span>
+                                              </div>
+                                            )}
                                           </div>
-                                        </CollapsibleContent>
-                                      )}
+
+                                          {/* Business Cases at Label Level */}
+                                          {labelBusinessCases.length > 0 && (
+                                            <div className="space-y-2">
+                                              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                                Business Cases
+                                              </div>
+                                              {labelBusinessCases.map((bc) => (
+                                                <Link
+                                                  key={bc.business_case_id}
+                                                  href={`/business-cases/${bc.business_case_id}`}
+                                                  className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors border text-xs sm:text-sm"
+                                                >
+                                                  <DollarSign className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                                  <div className="flex-1 min-w-0">
+                                                    <div className="font-medium truncate">
+                                                      {bc.display_name || bc.business_case_name || "Business Case"}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                      {bc.fiscal_year} • Y{bc.year_offset} • {bc.scenario_name || "Base"}
+                                                    </div>
+                                                  </div>
+                                                  <div className="text-right flex-shrink-0">
+                                                    <div className="text-xs font-semibold">{formatCurrency(bc.total_revenue)}</div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                      {bc.margin_percent?.toFixed(1)}%
+                                                    </div>
+                                                  </div>
+                                                </Link>
+                                              ))}
+                                            </div>
+                                          )}
+                                          {labelBusinessCases.length === 0 && (
+                                            <div className="text-xs text-muted-foreground p-2 border rounded-md bg-muted/30">
+                                              No business cases for this label
+                                            </div>
+                                          )}
+                                        </div>
+                                      </CollapsibleContent>
                                     </div>
                                   </Collapsible>
                                 );
