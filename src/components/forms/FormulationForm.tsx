@@ -129,17 +129,34 @@ export function FormulationForm({
           : await import("@/lib/actions/formulations").then((m) => m.createFormulation(form));
 
         if (action.error) {
-          toast({
-            title: "Error",
-            description: action.error,
-            variant: "destructive",
-          });
+          // Check if it's a duplicate error
+          if (action.duplicateFormulationCode) {
+            toast({
+              title: "Duplicate Product Detected",
+              description: action.error,
+              variant: "destructive",
+              duration: 10000,
+            });
+          } else {
+            toast({
+              title: "Error",
+              description: action.error,
+              variant: "destructive",
+            });
+          }
         } else {
+          // Show success with code assignment if available
+          const successMessage = formulation
+            ? action.formulationCode
+              ? `Formulation updated successfully. Code: ${action.formulationCode}`
+              : "Formulation updated successfully"
+            : action.formulationCode
+            ? `Formulation created successfully. Assigned code: ${action.formulationCode}`
+            : "Formulation created successfully. Add active ingredients to assign a code.";
+
           toast({
             title: "Success",
-            description: formulation
-              ? "Formulation updated successfully"
-              : "Formulation created successfully",
+            description: successMessage,
           });
           onOpenChange(false);
           if (onSuccess) onSuccess();
@@ -270,6 +287,24 @@ export function FormulationForm({
 
           <div className="border-t pt-4">
             <IngredientSelector ingredients={ingredients} onChange={setIngredients} />
+            {formulation?.formulation_code && (
+              <div className="mt-4 p-3 bg-muted rounded-lg">
+                <p className="text-sm font-medium">Assigned Code:</p>
+                <p className="text-lg font-mono font-semibold">{formulation.formulation_code}</p>
+                {formulation.base_code && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Base Code: {formulation.base_code} | Variant: {formulation.variant_suffix}
+                  </p>
+                )}
+              </div>
+            )}
+            {!formulation && ingredients.length > 0 && (
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  <strong>Note:</strong> A formulation code will be automatically assigned when you save this formulation with active ingredients.
+                </p>
+              </div>
+            )}
           </div>
 
           <DialogFooter>

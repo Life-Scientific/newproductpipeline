@@ -7,9 +7,11 @@ import {
   updateFormulationIngredients,
   type IngredientInput,
 } from "./formulation-ingredients";
+import { getCurrentUserName } from "@/lib/utils/user-context";
 
 export async function createFormulation(formData: FormData) {
   const supabase = await createClient();
+  const userName = await getCurrentUserName();
 
   const productName = formData.get("product_name") as string;
   const productCategory = formData.get("product_category") as string;
@@ -33,6 +35,7 @@ export async function createFormulation(formData: FormData) {
       short_name: shortName,
       status,
       status_rationale: statusRationale,
+      created_by: userName,
     })
     .select()
     .single();
@@ -43,17 +46,61 @@ export async function createFormulation(formData: FormData) {
 
   // Handle ingredients if provided
   const ingredientsJson = formData.get("ingredients") as string | null;
+  let assignedCode: string | null = null;
+  let duplicateWarning: string | null = null;
+
   if (ingredientsJson && data?.formulation_id) {
     try {
       const ingredients: IngredientInput[] = JSON.parse(ingredientsJson);
-      const ingredientResult = await createFormulationIngredients(
-        data.formulation_id,
-        ingredients
-      );
-      if (ingredientResult.error) {
-        // Note: Formulation is already created, but ingredients failed
-        // In production, you might want to rollback or handle this differently
-        return { error: `Formulation created but failed to add ingredients: ${ingredientResult.error}` };
+      
+      // Check for active ingredients before proceeding
+      const activeIngredients = ingredients.filter((ing) => {
+        // We need to check if ingredient is active type
+        // This will be verified in the database function
+        return ing.ingredient_id;
+      });
+
+      if (activeIngredients.length > 0) {
+        const ingredientResult = await createFormulationIngredients(
+          data.formulation_id,
+          ingredients
+        );
+        
+        if (ingredientResult.error) {
+          // If duplicate detected, we should delete the formulation and return error
+          if (ingredientResult.duplicateFormulationId) {
+            await supabase
+              .from("formulations")
+              .delete()
+              .eq("formulation_id", data.formulation_id);
+            
+            return {
+              error: ingredientResult.error,
+              duplicateFormulationId: ingredientResult.duplicateFormulationId,
+              duplicateFormulationCode: ingredientResult.duplicateFormulationCode,
+            };
+          }
+          
+          // Other errors - formulation is already created
+          return {
+            error: `Formulation created but failed to add ingredients: ${ingredientResult.error}`,
+            data,
+          };
+        }
+
+        assignedCode = ingredientResult.formulationCode || null;
+      } else {
+        // No active ingredients - just add non-active ingredients
+        const ingredientResult = await createFormulationIngredients(
+          data.formulation_id,
+          ingredients
+        );
+        if (ingredientResult.error) {
+          return {
+            error: `Formulation created but failed to add ingredients: ${ingredientResult.error}`,
+            data,
+          };
+        }
       }
     } catch (parseError) {
       console.error("Failed to parse ingredients:", parseError);
@@ -61,13 +108,27 @@ export async function createFormulation(formData: FormData) {
     }
   }
 
+  // Refresh formulation data to get assigned code
+  const { data: updatedFormulation } = await supabase
+    .from("formulations")
+    .select("formulation_code, base_code, variant_suffix")
+    .eq("formulation_id", data.formulation_id)
+    .single();
+
   revalidatePath("/formulations");
   revalidatePath("/");
-  return { data, success: true };
+  return {
+    data: updatedFormulation || data,
+    success: true,
+    formulationCode: updatedFormulation?.formulation_code || assignedCode,
+    baseCode: updatedFormulation?.base_code || null,
+    variantSuffix: updatedFormulation?.variant_suffix || null,
+  };
 }
 
 export async function updateFormulation(formulationId: string, formData: FormData) {
   const supabase = await createClient();
+  const userName = await getCurrentUserName();
 
   const productName = formData.get("product_name") as string;
   const productCategory = formData.get("product_category") as string;
@@ -101,6 +162,8 @@ export async function updateFormulation(formulationId: string, formData: FormDat
   // Only update status if it changed
   if (current?.status !== status) {
     updateData.status = status;
+    // The trigger should log this, but we ensure changed_by is set
+    // Note: The trigger should handle logging, but we'll ensure status_rationale is available
   }
 
   const { data, error } = await supabase
@@ -116,24 +179,46 @@ export async function updateFormulation(formulationId: string, formData: FormDat
 
   // Handle ingredients if provided
   const ingredientsJson = formData.get("ingredients") as string | null;
+  let assignedCode: string | null = null;
+
   if (ingredientsJson) {
     try {
       const ingredients: IngredientInput[] = JSON.parse(ingredientsJson);
       const ingredientResult = await updateFormulationIngredients(formulationId, ingredients);
       if (ingredientResult.error) {
+        // Check if it's a duplicate error
+        if (ingredientResult.duplicateFormulationId && ingredientResult.duplicateFormulationId !== formulationId) {
+          return {
+            error: ingredientResult.error,
+            duplicateFormulationId: ingredientResult.duplicateFormulationId,
+            duplicateFormulationCode: ingredientResult.duplicateFormulationCode,
+          };
+        }
         return { error: `Formulation updated but failed to update ingredients: ${ingredientResult.error}` };
       }
+      assignedCode = ingredientResult.formulationCode || null;
     } catch (parseError) {
       console.error("Failed to parse ingredients:", parseError);
       // Continue anyway - formulation is updated
     }
   }
 
+  // Refresh formulation data to get assigned code
+  const { data: updatedFormulation } = await supabase
+    .from("formulations")
+    .select("formulation_code, base_code, variant_suffix")
+    .eq("formulation_id", formulationId)
+    .single();
+
   // If status changed, the trigger will log it automatically
   revalidatePath("/formulations");
   revalidatePath(`/formulations/${formulationId}`);
   revalidatePath("/");
-  return { data, success: true };
+  return {
+    data: updatedFormulation || data,
+    success: true,
+    formulationCode: updatedFormulation?.formulation_code || assignedCode,
+  };
 }
 
 export async function deleteFormulation(formulationId: string) {

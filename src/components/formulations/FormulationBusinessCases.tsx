@@ -55,63 +55,112 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
               <TableHead>Margin %</TableHead>
               <TableHead>Confidence</TableHead>
               <TableHead>Scenario</TableHead>
+              <TableHead>Last Updated</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {businessCases.map((bc) => (
-              <TableRow key={bc.business_case_id}>
-                <TableCell className="font-medium">
-                  {bc.display_name || bc.business_case_name || "—"}
-                </TableCell>
-                <TableCell>{bc.country_name || "—"}</TableCell>
-                <TableCell>
-                  {bc.label_name ? (
-                    <div>
-                      <div>{bc.label_name}</div>
-                      <div className="text-xs text-muted-foreground">Variant: {bc.label_variant}</div>
-                    </div>
-                  ) : (
-                    "—"
-                  )}
-                </TableCell>
-                <TableCell>{bc.year_offset || "—"}</TableCell>
-                <TableCell>{bc.fiscal_year || "—"}</TableCell>
-                <TableCell>
-                  {bc.volume ? bc.volume.toLocaleString() : "—"}
-                </TableCell>
-                <TableCell>
-                  {bc.nsp ? `$${bc.nsp.toLocaleString()}` : "—"}
-                </TableCell>
-                <TableCell>
-                  {bc.cogs_per_unit ? `$${bc.cogs_per_unit.toLocaleString()}` : "—"}
-                </TableCell>
-                <TableCell className="font-medium">
-                  {bc.total_revenue ? `$${bc.total_revenue.toLocaleString()}` : "—"}
-                </TableCell>
-                <TableCell>
-                  {bc.total_margin ? `$${bc.total_margin.toLocaleString()}` : "—"}
-                </TableCell>
-                <TableCell>
-                  {bc.margin_percent !== null && bc.margin_percent !== undefined
-                    ? `${bc.margin_percent.toFixed(1)}%`
-                    : "—"}
-                </TableCell>
-                <TableCell>
-                  {bc.confidence_level ? (
-                    <Badge
-                      variant={(confidenceColors[bc.confidence_level] as any) || "outline"}
-                    >
-                      {bc.confidence_level}
-                    </Badge>
-                  ) : (
-                    "—"
-                  )}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {bc.scenario_name || "—"}
-                </TableCell>
-              </TableRow>
-            ))}
+            {businessCases.map((bc) => {
+              // Determine most recent update
+              const updates = [
+                { field: "Volume", by: bc.volume_last_updated_by, at: bc.volume_last_updated_at },
+                { field: "NSP", by: bc.nsp_last_updated_by, at: bc.nsp_last_updated_at },
+                { field: "COGS", by: bc.cogs_last_updated_by, at: bc.cogs_last_updated_at },
+              ].filter((u) => u.at);
+
+              const mostRecentUpdate = updates.sort((a, b) => 
+                new Date(b.at!).getTime() - new Date(a.at!).getTime()
+              )[0];
+
+              return (
+                <TableRow key={bc.business_case_id}>
+                  <TableCell className="font-medium">
+                    {bc.display_name || bc.business_case_name || "—"}
+                  </TableCell>
+                  <TableCell>{bc.country_name || "—"}</TableCell>
+                  <TableCell>
+                    {bc.label_name ? (
+                      <div>
+                        <div>{bc.label_name}</div>
+                        <div className="text-xs text-muted-foreground">Variant: {bc.label_variant}</div>
+                      </div>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell>{bc.year_offset || "—"}</TableCell>
+                  <TableCell>{bc.fiscal_year || "—"}</TableCell>
+                  <TableCell>
+                    {bc.volume ? bc.volume.toLocaleString() : "—"}
+                    {bc.volume_last_updated_by && (
+                      <div className="text-xs text-muted-foreground">
+                        by {bc.volume_last_updated_by}
+                        {bc.volume_last_updated_at && (
+                          <span> • {new Date(bc.volume_last_updated_at).toLocaleDateString()}</span>
+                        )}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {bc.nsp ? `$${bc.nsp.toLocaleString()}` : "—"}
+                    {bc.nsp_last_updated_by && (
+                      <div className="text-xs text-muted-foreground">
+                        by {bc.nsp_last_updated_by}
+                        {bc.nsp_last_updated_at && (
+                          <span> • {new Date(bc.nsp_last_updated_at).toLocaleDateString()}</span>
+                        )}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {bc.cogs_per_unit ? `$${bc.cogs_per_unit.toLocaleString()}` : "—"}
+                    {bc.cogs_last_updated_by && (
+                      <div className="text-xs text-muted-foreground">
+                        by {bc.cogs_last_updated_by}
+                        {bc.cogs_last_updated_at && (
+                          <span> • {new Date(bc.cogs_last_updated_at).toLocaleDateString()}</span>
+                        )}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {bc.total_revenue ? `$${bc.total_revenue.toLocaleString()}` : "—"}
+                  </TableCell>
+                  <TableCell>
+                    {bc.total_margin ? `$${bc.total_margin.toLocaleString()}` : "—"}
+                  </TableCell>
+                  <TableCell>
+                    {bc.margin_percent !== null && bc.margin_percent !== undefined
+                      ? `${bc.margin_percent.toFixed(1)}%`
+                      : "—"}
+                  </TableCell>
+                  <TableCell>
+                    {bc.confidence_level ? (
+                      <Badge
+                        variant={(confidenceColors[bc.confidence_level] as any) || "outline"}
+                      >
+                        {bc.confidence_level}
+                      </Badge>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {bc.scenario_name || "—"}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {mostRecentUpdate ? (
+                      <div>
+                        <div>{mostRecentUpdate.field}</div>
+                        <div>by {mostRecentUpdate.by}</div>
+                        <div>{new Date(mostRecentUpdate.at!).toLocaleDateString()}</div>
+                      </div>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
         {businessCases.some((bc) => bc.assumptions) && (

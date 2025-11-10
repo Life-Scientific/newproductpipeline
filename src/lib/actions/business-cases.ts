@@ -2,9 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getCurrentUserName } from "@/lib/utils/user-context";
 
 export async function createBusinessCase(formData: FormData) {
   const supabase = await createClient();
+  const userName = await getCurrentUserName();
 
   const formulationCountryId = formData.get("formulation_country_id") as string | null;
   const formulationCountryLabelId = formData.get("formulation_country_label_id") as string | null;
@@ -48,6 +50,7 @@ export async function createBusinessCase(formData: FormData) {
       scenario_name: scenarioName,
       assumptions,
       confidence_level: confidenceLevel,
+      created_by: userName,
     })
     .select()
     .single();

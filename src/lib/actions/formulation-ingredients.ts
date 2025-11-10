@@ -37,7 +37,60 @@ export async function createFormulationIngredients(
     return { error: error.message };
   }
 
-  return { success: true };
+  // Trigger code generation by calling the database function
+  // The trigger should handle this automatically, but we'll also call it explicitly
+  // to ensure code is assigned immediately
+  const { data: signature, error: sigError } = await supabase.rpc(
+    "calculate_active_signature_from_table",
+    { p_formulation_id: formulationId }
+  );
+
+  if (sigError) {
+    console.error("Failed to calculate active signature:", sigError);
+    // Don't fail the whole operation, but log the error
+  }
+
+  // Check for duplicate before assigning code
+  const { data: duplicateId, error: dupError } = await supabase.rpc(
+    "check_duplicate_formulation",
+    { p_temp_formulation_id: formulationId }
+  );
+
+  if (dupError) {
+    console.error("Failed to check for duplicates:", dupError);
+  }
+
+  // If duplicate found, return error with existing formulation code
+  if (duplicateId) {
+    const { data: existingFormulation } = await supabase
+      .from("formulations")
+      .select("formulation_code, product_name")
+      .eq("formulation_id", duplicateId)
+      .single();
+
+    if (existingFormulation) {
+      return {
+        error: `This product already exists as ${existingFormulation.formulation_code} (${existingFormulation.product_name}). Please use the existing product or change the concentration.`,
+        duplicateFormulationId: duplicateId,
+        duplicateFormulationCode: existingFormulation.formulation_code,
+      };
+    }
+  }
+
+  // The trigger trg_assign_formulation_code should handle code assignment
+  // But we'll verify it worked by checking the formulation
+  const { data: updatedFormulation } = await supabase
+    .from("formulations")
+    .select("formulation_code, base_code, variant_suffix")
+    .eq("formulation_id", formulationId)
+    .single();
+
+  return {
+    success: true,
+    formulationCode: updatedFormulation?.formulation_code || null,
+    baseCode: updatedFormulation?.base_code || null,
+    variantSuffix: updatedFormulation?.variant_suffix || null,
+  };
 }
 
 export async function updateFormulationIngredients(
@@ -62,6 +115,22 @@ export async function updateFormulationIngredients(
     if (result.error) {
       return result;
     }
+    // Return the code information if available
+    return result;
+  }
+
+  // If no ingredients, clear the code
+  const { error: updateError } = await supabase
+    .from("formulations")
+    .update({
+      base_code: "",
+      variant_suffix: "",
+      active_signature: null,
+    })
+    .eq("formulation_id", formulationId);
+
+  if (updateError) {
+    return { error: updateError.message };
   }
 
   return { success: true };

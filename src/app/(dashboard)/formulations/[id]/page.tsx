@@ -8,6 +8,8 @@ import {
   getFormulationProtectionStatus,
   getFormulationLabels,
 } from "@/lib/db/queries";
+import { getFormulationLaunchEligibility } from "@/lib/actions/protection-check";
+import { ProtectionDashboard } from "@/components/formulations/ProtectionDashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +54,7 @@ export default async function FormulationDetailPage({
     protectionStatus,
     labels,
     businessCasesForTree,
+    launchEligibility,
   ] = await Promise.all([
     getFormulationById(id),
     getFormulationCountryDetails(id),
@@ -62,6 +65,7 @@ export default async function FormulationDetailPage({
     getFormulationProtectionStatus(id),
     getFormulationLabels(id),
     getFormulationBusinessCasesForTree(id),
+    getFormulationLaunchEligibility(id).catch(() => []), // Gracefully handle errors
   ]);
 
   if (!formulation) {
@@ -298,6 +302,11 @@ export default async function FormulationDetailPage({
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {/* Launch Eligibility Dashboard */}
+            {countryDetails.length > 0 && (
+              <ProtectionDashboard eligibilityResults={launchEligibility} />
             )}
 
             {/* Regulatory - Labels & Protection */}
