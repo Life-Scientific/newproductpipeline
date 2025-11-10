@@ -13,11 +13,12 @@ export interface CardGridProps {
   className?: string;
 }
 
+// Explicit gap classes - Tailwind needs to see these statically
 const gapClasses = {
   sm: "gap-4 sm:gap-5",
-  md: "gap-6 sm:gap-6",
+  md: "gap-6",
   lg: "gap-6 sm:gap-8",
-};
+} as const;
 
 const columnClasses = {
   mobile: {
@@ -62,16 +63,25 @@ export function CardGrid({
       (desktop as keyof typeof columnClasses.desktop) || 4
     ] || columnClasses.desktop[4];
 
+  // Gap values in pixels - using inline styles to ensure they work
+  const gapPixels = {
+    sm: 16,
+    md: 24,
+    lg: 24,
+  };
+
   return (
     <div
       className={cn(
         "grid",
-        gapClasses[gap],
         mobileClass,
         tabletClass,
         desktopClass,
         className
       )}
+      style={{
+        gap: `${gapPixels[gap]}px`,
+      }}
     >
       {children}
     </div>
