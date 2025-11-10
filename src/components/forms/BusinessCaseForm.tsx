@@ -22,11 +22,14 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { getFormulationCountryDetails } from "@/lib/db/queries";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/database.types";
 
 type BusinessCase = Database["public"]["Tables"]["business_case"]["Row"];
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
+type FormulationCountryLabel = Database["public"]["Views"]["vw_formulation_country_label"]["Row"];
 
 interface BusinessCaseFormProps {
   businessCase?: BusinessCase | null;
@@ -60,6 +63,13 @@ export function BusinessCaseForm({
   const [formulationCountryOptions, setFormulationCountryOptions] = useState<
     FormulationCountryDetail[]
   >([]);
+  const [formulationCountryLabelOptions, setFormulationCountryLabelOptions] = useState<
+    FormulationCountryLabel[]
+  >([]);
+  const [linkType, setLinkType] = useState<"country" | "label">(
+    businessCase?.formulation_country_id ? "country" : "label"
+  );
+  const [helperFormulationCountryId, setHelperFormulationCountryId] = useState<string>("");
   const [formData, setFormData] = useState({
     formulation_country_id: businessCase?.formulation_country_id || defaultFormulationCountryId || "",
     formulation_country_label_id:
@@ -77,17 +87,53 @@ export function BusinessCaseForm({
   });
 
   useEffect(() => {
-    // Load formulation country options if needed
-    if (formData.formulation_country_id && !businessCase) {
-      // This would need to be done server-side or via API
-      // For now, we'll leave it empty
+    if (open) {
+      loadFormulationCountries();
+      if (formData.formulation_country_id) {
+        loadFormulationCountryLabels(formData.formulation_country_id);
+      }
     }
-  }, [formData.formulation_country_id, businessCase]);
+  }, [open]);
+
+  useEffect(() => {
+    if (formData.formulation_country_id) {
+      loadFormulationCountryLabels(formData.formulation_country_id);
+    } else {
+      setFormulationCountryLabelOptions([]);
+    }
+  }, [formData.formulation_country_id]);
+
+  const loadFormulationCountries = async () => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("vw_formulation_country_detail")
+      .select("formulation_country_id, display_name, formulation_code, country_name")
+      .order("display_name");
+    if (data) setFormulationCountryOptions(data as FormulationCountryDetail[]);
+  };
+
+  const loadFormulationCountryLabels = async (formulationCountryId: string) => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("vw_formulation_country_label")
+      .select("formulation_country_label_id, display_name, label_variant, label_name")
+      .eq("formulation_country_id", formulationCountryId)
+      .order("label_variant");
+    if (data) setFormulationCountryLabelOptions(data as FormulationCountryLabel[]);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.formulation_country_id && !formData.formulation_country_label_id) {
+    // Ensure only one link type is set
+    const submitData = { ...formData };
+    if (linkType === "label") {
+      submitData.formulation_country_id = "";
+    } else {
+      submitData.formulation_country_label_id = "";
+    }
+
+    if (!submitData.formulation_country_id && !submitData.formulation_country_label_id) {
       toast({
         title: "Error",
         description: "Must link to either formulation-country or label",
@@ -97,7 +143,7 @@ export function BusinessCaseForm({
     }
 
     const form = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
+    Object.entries(submitData).forEach(([key, value]) => {
       if (value) form.append(key, value.toString());
     });
 
@@ -149,7 +195,142 @@ export function BusinessCaseForm({
               : "Create a new financial projection"}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4 border-b pb-4">
+            <Label className="text-base font-semibold">Link to Product</Label>
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="link_country"
+                    name="link_type"
+                    checked={linkType === "country"}
+                    onChange={() => {
+                      setLinkType("country");
+                      setHelperFormulationCountryId("");
+                      setFormData({
+                        ...formData,
+                        formulation_country_label_id: "",
+                      });
+                    }}
+                  />
+                  <Label htmlFor="link_country">Formulation-Country</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="link_label"
+                    name="link_type"
+                    checked={linkType === "label"}
+                    onChange={() => {
+                      setLinkType("label");
+                      setHelperFormulationCountryId("");
+                      setFormData({
+                        ...formData,
+                        formulation_country_id: "",
+                        formulation_country_label_id: "",
+                      });
+                    }}
+                  />
+                  <Label htmlFor="link_label">Label</Label>
+                </div>
+              </div>
+
+              {linkType === "country" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="formulation_country_id">
+                    Formulation-Country <span className="text-destructive">*</span>
+                  </Label>
+                  <Select
+                    value={formData.formulation_country_id}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        formulation_country_id: value,
+                        formulation_country_label_id: "",
+                      })
+                    }
+                    required={linkType === "country"}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select formulation-country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {formulationCountryOptions.map((fc) => (
+                        <SelectItem key={fc.formulation_country_id} value={fc.formulation_country_id}>
+                          {fc.display_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="formulation_country_id_for_label">
+                      Formulation-Country (to select label) <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                      value={helperFormulationCountryId || formData.formulation_country_id}
+                      onValueChange={(value) => {
+                        setHelperFormulationCountryId(value);
+                        setFormData({
+                          ...formData,
+                          formulation_country_label_id: "",
+                        });
+                        loadFormulationCountryLabels(value);
+                      }}
+                      required={linkType === "label"}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select formulation-country first" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {formulationCountryOptions.map((fc) => (
+                          <SelectItem key={fc.formulation_country_id} value={fc.formulation_country_id}>
+                            {fc.display_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {(helperFormulationCountryId || formData.formulation_country_id) && (
+                    <div className="space-y-2">
+                      <Label htmlFor="formulation_country_label_id">
+                        Label <span className="text-destructive">*</span>
+                      </Label>
+                      <Select
+                        value={formData.formulation_country_label_id}
+                        onValueChange={(value) =>
+                          setFormData({
+                            ...formData,
+                            formulation_country_label_id: value,
+                          })
+                        }
+                        required={linkType === "label"}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select label" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {formulationCountryLabelOptions.map((label) => (
+                            <SelectItem
+                              key={label.formulation_country_label_id}
+                              value={label.formulation_country_label_id}
+                            >
+                              {label.display_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="business_case_name">Business Case Name</Label>
@@ -201,7 +382,19 @@ export function BusinessCaseForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fiscal_year">Fiscal Year</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="fiscal_year">Fiscal Year</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Auto-calculated from target market entry FY + year offset, but can be overridden</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <Input
                 id="fiscal_year"
                 value={formData.fiscal_year}
@@ -235,7 +428,19 @@ export function BusinessCaseForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cogs_per_unit">COGS per Unit</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="cogs_per_unit">COGS per Unit</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Auto-populated from COGS table based on fiscal year, but can be overridden</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <Input
                 id="cogs_per_unit"
                 type="number"

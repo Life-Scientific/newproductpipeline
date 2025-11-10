@@ -2,6 +2,7 @@ import { getBusinessCases } from "@/lib/db/queries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { BusinessCasesList } from "@/components/business-cases/BusinessCasesList";
+import { BusinessCaseFormButton } from "@/components/forms/BusinessCaseFormButton";
 
 export default async function BusinessCasesPage() {
   const businessCases = await getBusinessCases();
@@ -9,11 +10,14 @@ export default async function BusinessCasesPage() {
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <AnimatedPage>
-        <div className="space-y-2 mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold">Business Cases</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Financial projections and business case analysis
-          </p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold">Business Cases</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Financial projections and business case analysis
+            </p>
+          </div>
+          <BusinessCaseFormButton />
         </div>
 
         <Card>

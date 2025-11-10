@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { RegistrationPipelineList } from "@/components/registration/RegistrationPipelineList";
+import { RegistrationFormButton } from "@/components/forms/RegistrationFormButton";
 import type { Database } from "@/lib/supabase/database.types";
 
 type RegistrationPipeline = Database["public"]["Views"]["vw_registration_pipeline"]["Row"];
@@ -21,11 +22,14 @@ export default async function RegistrationPipelinePage() {
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <AnimatedPage>
-        <div className="space-y-2 mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold">Registration Pipeline</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Track regulatory submissions and approvals
-          </p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold">Registration Pipeline</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Track regulatory submissions and approvals
+            </p>
+          </div>
+          <RegistrationFormButton />
         </div>
 
         <Card>

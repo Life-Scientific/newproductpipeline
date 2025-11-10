@@ -9,6 +9,7 @@ import { RevenueChart } from "@/components/charts/RevenueChart";
 import { StatusPieChart } from "@/components/charts/StatusPieChart";
 import { MarginTrendChart } from "@/components/charts/MarginTrendChart";
 import { CountryCoverageChart } from "@/components/charts/CountryCoverageChart";
+import { BusinessCaseFormButton } from "@/components/forms/BusinessCaseFormButton";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -55,6 +56,7 @@ export default async function AnalyticsPage() {
       title="Analytics Dashboard"
       description="Portfolio insights and financial projections"
       variant="multi"
+      action={<BusinessCaseFormButton />}
     >
       <Section>
         <PortfolioMetrics

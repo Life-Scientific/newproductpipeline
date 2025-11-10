@@ -22,7 +22,7 @@ export function PageLayout({
   const containerClass =
     variant === "single"
       ? "container mx-auto p-4 sm:p-6"
-      : "container mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8";
+      : "container mx-auto p-4 sm:p-6";
 
   return (
     <div className={cn(containerClass, className)}>
@@ -45,7 +45,14 @@ export function PageLayout({
           </div>
           {action && <div className="flex-shrink-0">{action}</div>}
         </div>
-        {children}
+        <div 
+          className={variant === "multi" ? "flex flex-col" : ""}
+          style={variant === "multi" ? {
+            gap: "24px",
+          } as React.CSSProperties : undefined}
+        >
+          {children}
+        </div>
       </AnimatedPage>
     </div>
   );

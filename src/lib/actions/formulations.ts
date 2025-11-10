@@ -2,6 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import {
+  createFormulationIngredients,
+  updateFormulationIngredients,
+  type IngredientInput,
+} from "./formulation-ingredients";
 
 export async function createFormulation(formData: FormData) {
   const supabase = await createClient();
@@ -34,6 +39,26 @@ export async function createFormulation(formData: FormData) {
 
   if (error) {
     return { error: error.message };
+  }
+
+  // Handle ingredients if provided
+  const ingredientsJson = formData.get("ingredients") as string | null;
+  if (ingredientsJson && data?.formulation_id) {
+    try {
+      const ingredients: IngredientInput[] = JSON.parse(ingredientsJson);
+      const ingredientResult = await createFormulationIngredients(
+        data.formulation_id,
+        ingredients
+      );
+      if (ingredientResult.error) {
+        // Note: Formulation is already created, but ingredients failed
+        // In production, you might want to rollback or handle this differently
+        return { error: `Formulation created but failed to add ingredients: ${ingredientResult.error}` };
+      }
+    } catch (parseError) {
+      console.error("Failed to parse ingredients:", parseError);
+      // Continue anyway - formulation is created
+    }
   }
 
   revalidatePath("/formulations");
@@ -87,6 +112,21 @@ export async function updateFormulation(formulationId: string, formData: FormDat
 
   if (error) {
     return { error: error.message };
+  }
+
+  // Handle ingredients if provided
+  const ingredientsJson = formData.get("ingredients") as string | null;
+  if (ingredientsJson) {
+    try {
+      const ingredients: IngredientInput[] = JSON.parse(ingredientsJson);
+      const ingredientResult = await updateFormulationIngredients(formulationId, ingredients);
+      if (ingredientResult.error) {
+        return { error: `Formulation updated but failed to update ingredients: ${ingredientResult.error}` };
+      }
+    } catch (parseError) {
+      console.error("Failed to parse ingredients:", parseError);
+      // Continue anyway - formulation is updated
+    }
   }
 
   // If status changed, the trigger will log it automatically

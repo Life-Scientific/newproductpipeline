@@ -67,21 +67,27 @@ export function CardGrid({
   const gapPixels = {
     sm: 16,
     md: 24,
-    lg: 24,
+    lg: 32,
   };
+
+  const gapValue = gapPixels[gap];
 
   return (
     <div
       className={cn(
         "grid",
+        gapClasses[gap], // Keep Tailwind classes as fallback
         mobileClass,
         tabletClass,
         desktopClass,
         className
       )}
       style={{
-        gap: `${gapPixels[gap]}px`,
-      }}
+        "--grid-gap": `${gapValue}px`,
+        gap: `${gapValue}px`,
+        rowGap: `${gapValue}px`,
+        columnGap: `${gapValue}px`,
+      } as React.CSSProperties & { "--grid-gap": string }}
     >
       {children}
     </div>

@@ -1,11 +1,9 @@
 import { getFormulations } from "@/lib/db/queries";
-import { FormulationsListWithActions } from "@/components/formulations/FormulationsListWithActions";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { FormulationsPageContent } from "@/components/formulations/FormulationsPageContent";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
-import { FormulationForm } from "@/components/forms/FormulationForm";
 import { FormulationFormButton } from "@/components/forms/FormulationFormButton";
+import { FormulationsViewSwitcher } from "@/components/formulations/FormulationsViewSwitcher";
+import { Suspense } from "react";
 
 export default async function FormulationsPage() {
   const formulations = await getFormulations();
@@ -20,16 +18,17 @@ export default async function FormulationsPage() {
               Manage your product portfolio formulations
             </p>
           </div>
-          <FormulationFormButton />
+          <div className="flex items-center gap-3">
+            <Suspense fallback={<div className="h-9 w-32" />}>
+              <FormulationsViewSwitcher />
+            </Suspense>
+            <FormulationFormButton />
+          </div>
         </div>
 
-        <Card>
-          <CardContent className="p-0">
-            <div className="p-6">
-              <FormulationsListWithActions formulations={formulations} />
-            </div>
-          </CardContent>
-        </Card>
+        <Suspense fallback={<div>Loading...</div>}>
+          <FormulationsPageContent formulations={formulations} />
+        </Suspense>
       </AnimatedPage>
     </div>
   );

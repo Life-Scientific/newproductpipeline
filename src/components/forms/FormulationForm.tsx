@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import { IngredientSelector, type IngredientInput } from "./IngredientSelector";
+import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/database.types";
 
 type Formulation = Database["public"]["Tables"]["formulations"]["Row"];
@@ -53,6 +55,7 @@ export function FormulationForm({
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [ingredients, setIngredients] = useState<IngredientInput[]>([]);
   const [formData, setFormData] = useState({
     product_name: formulation?.product_name || "",
     product_category: formulation?.product_category || "",
@@ -63,12 +66,59 @@ export function FormulationForm({
     status_rationale: formulation?.status_rationale || "",
   });
 
+  useEffect(() => {
+    if (open && formulation) {
+      // Load existing ingredients when editing
+      loadExistingIngredients();
+    } else if (open && !formulation) {
+      // Reset ingredients when creating new
+      setIngredients([]);
+    }
+  }, [open, formulation]);
+
+  const loadExistingIngredients = async () => {
+    if (!formulation) return;
+    try {
+      const supabase = createClient();
+      const { data: existingIngredients, error } = await supabase
+        .from("formulation_ingredients")
+        .select(`
+          *,
+          ingredients (
+            ingredient_id,
+            ingredient_name,
+            ingredient_type
+          )
+        `)
+        .eq("formulation_id", formulation.formulation_id);
+
+      if (error) {
+        console.error("Failed to load ingredients:", error);
+        return;
+      }
+
+      const ingredientInputs: IngredientInput[] = (existingIngredients || []).map((ing) => ({
+        ingredient_id: ing.ingredient_id,
+        quantity: ing.quantity.toString(),
+        quantity_unit: ing.quantity_unit,
+        ingredient_role: ing.ingredient_role || "",
+        notes: ing.notes || "",
+      }));
+      setIngredients(ingredientInputs);
+    } catch (error) {
+      console.error("Failed to load ingredients:", error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
       if (value) form.append(key, value.toString());
     });
+
+    // Add ingredients data
+    form.append("ingredients", JSON.stringify(ingredients));
 
     startTransition(async () => {
       try {
@@ -107,16 +157,16 @@ export function FormulationForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{formulation ? "Edit Formulation" : "Create Formulation"}</DialogTitle>
           <DialogDescription>
             {formulation
-              ? "Update formulation details"
-              : "Create a new product formulation"}
+              ? "Update formulation details and ingredients"
+              : "Create a new product formulation with ingredients"}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="product_name">
@@ -218,11 +268,15 @@ export function FormulationForm({
             />
           </div>
 
+          <div className="border-t pt-4">
+            <IngredientSelector ingredients={ingredients} onChange={setIngredients} />
+          </div>
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending} size="lg" className="h-12 px-6">
               {isPending ? "Saving..." : formulation ? "Update" : "Create"}
             </Button>
           </DialogFooter>

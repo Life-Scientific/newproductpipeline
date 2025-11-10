@@ -120,3 +120,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Ensure CardGrid gaps are applied */
+.grid[style*="gap"] {
+  gap: var(--grid-gap, 24px) !important;
+}

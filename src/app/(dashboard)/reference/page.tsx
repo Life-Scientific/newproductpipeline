@@ -7,6 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 import { CountriesTable } from "@/components/reference/CountriesTable";
 import { CropsTable } from "@/components/reference/CropsTable";
 import { IngredientsTable } from "@/components/reference/IngredientsTable";
+import { CountryFormButton } from "@/components/forms/CountryFormButton";
+import { CropFormButton } from "@/components/forms/CropFormButton";
+import { IngredientFormButton } from "@/components/forms/IngredientFormButton";
 
 type Crop = Database["public"]["Tables"]["crops"]["Row"];
 type Ingredient = Database["public"]["Tables"]["ingredients"]["Row"];
@@ -49,10 +52,13 @@ export default async function ReferenceDataPage() {
           <TabsContent value="countries">
             <Card>
               <CardHeader>
-                <CardTitle>Countries</CardTitle>
-                <CardDescription>
-                  Manage country reference data
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Countries</CardTitle>
+                    <CardDescription>Manage country reference data</CardDescription>
+                  </div>
+                  <CountryFormButton />
+                </div>
               </CardHeader>
               <CardContent>
                 <CountriesTable countries={countries} />
@@ -63,10 +69,13 @@ export default async function ReferenceDataPage() {
           <TabsContent value="crops">
             <Card>
               <CardHeader>
-                <CardTitle>Crops</CardTitle>
-                <CardDescription>
-                  Manage crop reference data
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Crops</CardTitle>
+                    <CardDescription>Manage crop reference data</CardDescription>
+                  </div>
+                  <CropFormButton />
+                </div>
               </CardHeader>
               <CardContent>
                 <CropsTable crops={(crops || []) as Crop[]} />
@@ -77,10 +86,13 @@ export default async function ReferenceDataPage() {
           <TabsContent value="ingredients">
             <Card>
               <CardHeader>
-                <CardTitle>Ingredients</CardTitle>
-                <CardDescription>
-                  Manage ingredient reference data
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Ingredients</CardTitle>
+                    <CardDescription>Manage ingredient reference data</CardDescription>
+                  </div>
+                  <IngredientFormButton />
+                </div>
               </CardHeader>
               <CardContent>
                 <IngredientsTable ingredients={(ingredients || []) as Ingredient[]} />
