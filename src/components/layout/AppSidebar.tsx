@@ -55,6 +55,11 @@ const coreMenuItems = [
     icon: FlaskConical,
   },
   {
+    title: "Labels",
+    url: "/labels",
+    icon: FileText,
+  },
+  {
     title: "Business Cases",
     url: "/business-cases",
     icon: TrendingUp,
@@ -66,11 +71,6 @@ const regulatoryMenuItems = [
     title: "Registration Pipeline",
     url: "/registration",
     icon: FileCheck,
-  },
-  {
-    title: "Labels",
-    url: "/labels",
-    icon: FileText,
   },
 ];
 
@@ -174,7 +174,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Regulatory */}
-        <SidebarGroup>
+        {/* <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
             Regulatory
           </SidebarGroupLabel>
@@ -197,7 +197,7 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
-        </SidebarGroup>
+        </SidebarGroup> */}
 
         {/* Analysis */}
         <SidebarGroup>
