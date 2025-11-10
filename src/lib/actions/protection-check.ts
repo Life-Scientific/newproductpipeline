@@ -194,10 +194,10 @@ export async function checkLaunchEligibility(
 
   // If target year specified, check if launch is possible in that year
   const canLaunchInTargetYear =
-    canLaunch || (targetYear && latestExpiryDate && latestExpiryDate.getFullYear() < targetYear);
+    canLaunch || Boolean(targetYear && latestExpiryDate && latestExpiryDate.getFullYear() < targetYear);
 
   return {
-    canLaunch: canLaunchInTargetYear ?? canLaunch,
+    canLaunch: canLaunchInTargetYear,
     earliestLaunchDate,
     blockers,
     countryName,

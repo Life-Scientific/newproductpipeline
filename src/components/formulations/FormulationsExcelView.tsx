@@ -351,7 +351,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                         <Input
                           value={String(getCellValue(formulation, "short_name"))}
                           onChange={(e) =>
-                            handleCellChange(
+                            formulation.formulation_id && handleCellChange(
                               formulation.formulation_id,
                               "short_name",
                               e.target.value
@@ -362,11 +362,12 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                             if (e.key === "Enter") setEditingCell(null);
                             if (e.key === "Escape") {
                               if (!formulation.formulation_id) return;
+                              const id = formulation.formulation_id;
                               setEditedData((prev) => {
                                 const newData = { ...prev };
-                                delete newData[formulation.formulation_id]?.short_name;
-                                if (Object.keys(newData[formulation.formulation_id] || {}).length === 0) {
-                                  delete newData[formulation.formulation_id];
+                                delete newData[id]?.short_name;
+                                if (Object.keys(newData[id] || {}).length === 0) {
+                                  delete newData[id];
                                 }
                                 return newData;
                               });
@@ -390,7 +391,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                         <Select
                           value={String(getCellValue(formulation, "product_category"))}
                           onValueChange={(value) =>
-                            handleCellChange(
+                            formulation.formulation_id && handleCellChange(
                               formulation.formulation_id,
                               "product_category",
                               value
@@ -423,7 +424,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                         <Input
                           value={String(getCellValue(formulation, "formulation_type"))}
                           onChange={(e) =>
-                            handleCellChange(
+                            formulation.formulation_id && handleCellChange(
                               formulation.formulation_id,
                               "formulation_type",
                               e.target.value
@@ -434,11 +435,12 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                             if (e.key === "Enter") setEditingCell(null);
                             if (e.key === "Escape") {
                               if (!formulation.formulation_id) return;
+                              const id = formulation.formulation_id;
                               setEditedData((prev) => {
                                 const newData = { ...prev };
-                                delete newData[formulation.formulation_id]?.formulation_type;
-                                if (Object.keys(newData[formulation.formulation_id] || {}).length === 0) {
-                                  delete newData[formulation.formulation_id];
+                                delete newData[id]?.formulation_type;
+                                if (Object.keys(newData[id] || {}).length === 0) {
+                                  delete newData[id];
                                 }
                                 return newData;
                               });
@@ -469,11 +471,12 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                             if (e.key === "Enter") setEditingCell(null);
                             if (e.key === "Escape") {
                               if (!formulation.formulation_id) return;
+                              const id = formulation.formulation_id;
                               setEditedData((prev) => {
                                 const newData = { ...prev };
-                                delete newData[formulation.formulation_id]?.uom;
-                                if (Object.keys(newData[formulation.formulation_id] || {}).length === 0) {
-                                  delete newData[formulation.formulation_id];
+                                delete newData[id]?.uom;
+                                if (Object.keys(newData[id] || {}).length === 0) {
+                                  delete newData[id];
                                 }
                                 return newData;
                               });
@@ -517,7 +520,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                           <Badge
                             variant={
                               (statusColors[
-                                getCellValue(formulation, "status") || "Not Yet Considered"
+                                String(getCellValue(formulation, "status")) || "Not Yet Considered"
                               ] as any) || "secondary"
                             }
                           >
@@ -544,11 +547,12 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                           onKeyDown={(e) => {
                             if (e.key === "Escape") {
                               if (!formulation.formulation_id) return;
+                              const id = formulation.formulation_id;
                               setEditedData((prev) => {
                                 const newData = { ...prev };
-                                delete newData[formulation.formulation_id]?.status_rationale;
-                                if (Object.keys(newData[formulation.formulation_id] || {}).length === 0) {
-                                  delete newData[formulation.formulation_id];
+                                delete newData[id]?.status_rationale;
+                                if (Object.keys(newData[id] || {}).length === 0) {
+                                  delete newData[id];
                                 }
                                 return newData;
                               });

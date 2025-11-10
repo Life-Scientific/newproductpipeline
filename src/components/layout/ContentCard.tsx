@@ -50,7 +50,7 @@ export function ContentCard({
       </CardHeader>
       <CardContent className={variantClass.content}>
         {variant === "table" ? (
-          <div className={variantClass.inner}>{children}</div>
+          <div className={variantClasses.table.inner}>{children}</div>
         ) : (
           children
         )}
