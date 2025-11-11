@@ -103,7 +103,8 @@ export function BusinessCasesProjectionTable({ businessCases }: BusinessCasesPro
               <TableHead className="sticky left-0 bg-background z-10 min-w-[150px]">Formulation</TableHead>
               <TableHead className="sticky left-[150px] bg-background z-10 min-w-[120px]">Country</TableHead>
               <TableHead className="sticky left-[270px] bg-background z-10 min-w-[150px]">Use Group</TableHead>
-              <TableHead className="sticky left-[420px] bg-background z-10 min-w-[120px]">Target</TableHead>
+              <TableHead className="sticky left-[420px] bg-background z-10 min-w-[120px]">Target Market Year</TableHead>
+              <TableHead className="min-w-[180px]">Metric</TableHead>
               {fiscalYearColumns.map((col) => (
                 <TableHead key={col.key} className="min-w-[100px] text-center">
                   {col.label}

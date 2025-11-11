@@ -57,8 +57,8 @@ export function FormulationForm({
   const [isPending, startTransition] = useTransition();
   const [ingredients, setIngredients] = useState<IngredientInput[]>([]);
   const [formData, setFormData] = useState({
-    product_name: formulation?.product_name || "",
-    product_category: formulation?.product_category || "",
+    formulation_name: formulation?.formulation_name || "",
+    formulation_category: formulation?.formulation_category || "",
     formulation_type: formulation?.formulation_type || "",
     uom: formulation?.uom || "L",
     short_name: formulation?.short_name || "",
@@ -68,10 +68,29 @@ export function FormulationForm({
 
   useEffect(() => {
     if (open && formulation) {
+      // Update form data when formulation changes
+      setFormData({
+        formulation_name: formulation.formulation_name || "",
+        formulation_category: formulation.formulation_category || "",
+        formulation_type: formulation.formulation_type || "",
+        uom: formulation.uom || "L",
+        short_name: formulation.short_name || "",
+        status: formulation.status || "Not Yet Considered",
+        status_rationale: formulation.status_rationale || "",
+      });
       // Load existing ingredients when editing
       loadExistingIngredients();
     } else if (open && !formulation) {
-      // Reset ingredients when creating new
+      // Reset form data and ingredients when creating new
+      setFormData({
+        formulation_name: "",
+        formulation_category: "",
+        formulation_type: "",
+        uom: "L",
+        short_name: "",
+        status: "Not Yet Considered",
+        status_rationale: "",
+      });
       setIngredients([]);
     }
   }, [open, formulation]);
@@ -113,9 +132,14 @@ export function FormulationForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value) form.append(key, value.toString());
-    });
+    // Manually append all form fields to ensure Select values are included
+    form.append("formulation_name", formData.formulation_name);
+    form.append("formulation_category", formData.formulation_category);
+    if (formData.formulation_type) form.append("formulation_type", formData.formulation_type);
+    if (formData.uom) form.append("uom", formData.uom);
+    if (formData.short_name) form.append("short_name", formData.short_name);
+    form.append("status", formData.status);
+    if (formData.status_rationale) form.append("status_rationale", formData.status_rationale);
 
     // Add ingredients data
     form.append("ingredients", JSON.stringify(ingredients));
@@ -186,26 +210,27 @@ export function FormulationForm({
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="product_name">
-                Product Name <span className="text-destructive">*</span>
+              <Label htmlFor="formulation_name">
+                Formulation Name <span className="text-destructive">*</span>
               </Label>
               <Input
-                id="product_name"
-                value={formData.product_name}
+                id="formulation_name"
+                name="formulation_name"
+                value={formData.formulation_name}
                 onChange={(e) =>
-                  setFormData({ ...formData, product_name: e.target.value })
+                  setFormData({ ...formData, formulation_name: e.target.value })
                 }
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="product_category">
-                Product Category <span className="text-destructive">*</span>
+              <Label htmlFor="formulation_category">
+                Formulation Category <span className="text-destructive">*</span>
               </Label>
               <Select
-                value={formData.product_category}
+                value={formData.formulation_category}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, product_category: value })
+                  setFormData({ ...formData, formulation_category: value })
                 }
                 required
               >

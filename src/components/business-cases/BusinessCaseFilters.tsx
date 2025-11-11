@@ -52,12 +52,73 @@ export function BusinessCaseFilters({ onFilterChange }: BusinessCaseFiltersProps
 
   // Load use groups when formulation or country changes
   useEffect(() => {
-    if (filters.formulationIds.length > 0 || filters.countryIds.length > 0) {
-      // This is a simplified version - in reality you'd want to load use groups
-      // based on the selected formulations/countries
-      // For now, we'll leave it empty and let the user select from all
+    if (filters.formulationIds.length === 0 && filters.countryIds.length === 0) {
       setUseGroupOptions([]);
+      return;
     }
+
+    const supabase = createClient();
+    
+    // Build query to get formulation_country_ids that match selected countries and formulations
+    let query = supabase
+      .from("formulation_country")
+      .select("formulation_country_id")
+      .eq("is_active", true);
+
+    if (filters.countryIds.length > 0) {
+      query = query.in("country_id", filters.countryIds);
+    }
+
+    if (filters.formulationIds.length > 0) {
+      query = query.in("formulation_id", filters.formulationIds);
+    }
+
+    query
+      .then(({ data: fcData, error: fcError }) => {
+        if (fcError) {
+          console.error("Failed to load formulation countries:", fcError);
+          setUseGroupOptions([]);
+          return;
+        }
+
+        if (!fcData || fcData.length === 0) {
+          setUseGroupOptions([]);
+          return;
+        }
+
+        const fcIds = fcData.map(fc => fc.formulation_country_id).filter(Boolean) as string[];
+
+        // Get use groups for these formulation_country_ids
+        return supabase
+          .from("formulation_country_use_group")
+          .select("formulation_country_use_group_id, use_group_name, use_group_variant")
+          .in("formulation_country_id", fcIds)
+          .eq("is_active", true)
+          .order("use_group_variant");
+      })
+      .then(({ data: useGroups, error: ugError }) => {
+        if (ugError) {
+          console.error("Failed to load use groups:", ugError);
+          setUseGroupOptions([]);
+          return;
+        }
+
+        if (useGroups) {
+          const options: MultiSelectOption[] = useGroups.map((ug) => ({
+            value: ug.formulation_country_use_group_id,
+            label: ug.use_group_name
+              ? `${ug.use_group_variant} - ${ug.use_group_name}`
+              : ug.use_group_variant,
+          }));
+          setUseGroupOptions(options);
+        } else {
+          setUseGroupOptions([]);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to load use groups:", error);
+        setUseGroupOptions([]);
+      });
   }, [filters.formulationIds, filters.countryIds]);
 
   const handleFilterChange = (key: keyof typeof filters, value: string[]) => {
@@ -112,7 +173,7 @@ export function BusinessCaseFilters({ onFilterChange }: BusinessCaseFiltersProps
           <MultiSelect
             options={formulations.map((f) => ({
               value: f.formulation_id,
-              label: f.formulation_code || f.formulation_name || f.formulation_id,
+              label: f.product_name || f.formulation_code || f.formulation_id,
             }))}
             selected={filters.formulationIds}
             onChange={(selected) => handleFilterChange("formulationIds", selected)}

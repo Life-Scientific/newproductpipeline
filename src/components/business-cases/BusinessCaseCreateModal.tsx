@@ -46,6 +46,7 @@ export function BusinessCaseCreateModal({
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<"select" | "data">("select");
   const [formulations, setFormulations] = useState<Formulation[]>([]);
+  const [allFormulations, setAllFormulations] = useState<Formulation[]>([]); // Store all formulations for filtering
   const [countries, setCountries] = useState<Country[]>([]);
   const [useGroupOptions, setUseGroupOptions] = useState<MultiSelectOption[]>([]);
   
@@ -82,7 +83,10 @@ export function BusinessCaseCreateModal({
             });
             return;
           }
-          if (formResult.data) setFormulations(formResult.data);
+          if (formResult.data) {
+            setAllFormulations(formResult.data);
+            setFormulations(formResult.data); // Initially show all formulations
+          }
           if (countryResult.data) setCountries(countryResult.data);
         })
         .catch((error) => {
@@ -94,6 +98,41 @@ export function BusinessCaseCreateModal({
         });
     }
   }, [open, toast]);
+
+  // Filter formulations by selected country
+  useEffect(() => {
+    if (formData.country_id) {
+      const supabase = createClient();
+      
+      // Get formulation_ids for this country
+      supabase
+        .from("formulation_country")
+        .select("formulation_id")
+        .eq("country_id", formData.country_id)
+        .eq("is_active", true)
+        .then(({ data: fcData, error }) => {
+          if (error) {
+            console.error("Failed to load formulation countries:", error);
+            setFormulations([]);
+            return;
+          }
+
+          if (fcData && fcData.length > 0) {
+            const formulationIds = fcData.map(fc => fc.formulation_id).filter(Boolean) as string[];
+            // Filter formulations to only show those available for this country
+            const filteredFormulations = allFormulations.filter(f => 
+              formulationIds.includes(f.formulation_id)
+            );
+            setFormulations(filteredFormulations);
+          } else {
+            setFormulations([]);
+          }
+        });
+    } else {
+      // No country selected, show all formulations
+      setFormulations(allFormulations);
+    }
+  }, [formData.country_id, allFormulations]);
 
   // Load use groups when formulation and country are selected
   useEffect(() => {
@@ -195,10 +234,10 @@ export function BusinessCaseCreateModal({
 
   // Handle Next button - check for existing business case
   const handleNext = async () => {
-    if (!formData.formulation_id || !formData.country_id || formData.use_group_ids.length === 0) {
+    if (!formData.country_id || !formData.formulation_id || formData.use_group_ids.length === 0) {
       toast({
         title: "Validation Error",
-        description: "Please select formulation, country, and at least one use group",
+        description: "Please select country, formulation, and at least one use group",
         variant: "destructive",
       });
       return;
@@ -334,9 +373,37 @@ export function BusinessCaseCreateModal({
   const uom = selectedFormulation?.uom || "L";
   const currency = selectedCountry?.currency_code || "USD";
 
+  // Calculate metrics helper function (similar to edit modal)
+  const calculateMetrics = (yearOffset: number) => {
+    const year = yearData[yearOffset];
+    const volume = parseFloat(year?.volume || "0") || 0;
+    const nsp = parseFloat(year?.nsp || "0") || 0;
+    const cogs = 0; // COGS will be populated from database after creation
+
+    const revenue = volume * nsp;
+    const margin = revenue - volume * cogs;
+    const marginPercent = revenue > 0 ? (margin / revenue) * 100 : 0;
+
+    return {
+      revenue,
+      margin,
+      marginPercent,
+    };
+  };
+
+  // Calculate effective start fiscal year for display
+  const effectiveStartFiscalYear = (() => {
+    if (!targetMarketEntry) return null;
+    const match = targetMarketEntry.match(/FY(\d{2})/);
+    if (!match) return null;
+    const startYear = parseInt(match[1], 10);
+    const effectiveStartYear = startYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : startYear;
+    return `FY${String(effectiveStartYear).padStart(2, "0")}`;
+  })();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className={step === "data" ? "max-w-[90vw] max-h-[90vh] overflow-y-auto" : "max-w-4xl max-h-[90vh] overflow-y-auto"}>
         <DialogHeader>
           <DialogTitle>Create/Update Business Case</DialogTitle>
         </DialogHeader>
@@ -345,38 +412,14 @@ export function BusinessCaseCreateModal({
           <div className="space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="formulation_id">
-                  Formulation <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                  value={formData.formulation_id}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, formulation_id: value, country_id: "", use_group_ids: [] })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select formulation" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {formulations.map((f) => (
-                      <SelectItem key={f.formulation_id} value={f.formulation_id}>
-                        {f.formulation_code || f.formulation_name || f.formulation_id}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="country_id">
                   Country <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={formData.country_id}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, country_id: value, use_group_ids: [] })
+                    setFormData({ ...formData, country_id: value, formulation_id: "", use_group_ids: [] })
                   }
-                  disabled={!formData.formulation_id}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select country" />
@@ -392,6 +435,36 @@ export function BusinessCaseCreateModal({
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="formulation_id">
+                  Formulation <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={formData.formulation_id}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, formulation_id: value, use_group_ids: [] })
+                  }
+                  disabled={!formData.country_id}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select formulation" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {formulations.length === 0 && formData.country_id ? (
+                      <SelectItem value="__no_formulations__" disabled>
+                        No formulations available for this country
+                      </SelectItem>
+                    ) : (
+                      formulations.map((f) => (
+                        <SelectItem key={f.formulation_id} value={f.formulation_id}>
+                          {f.product_name || f.formulation_code || f.formulation_id}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="use_group_ids">
                   Use Group <span className="text-destructive">*</span>
                 </Label>
@@ -402,7 +475,7 @@ export function BusinessCaseCreateModal({
                     setFormData({ ...formData, use_group_ids: selected })
                   }
                   placeholder="Select use groups"
-                  disabled={!formData.country_id}
+                  disabled={!formData.country_id || !formData.formulation_id}
                 />
               </div>
 
@@ -443,6 +516,16 @@ export function BusinessCaseCreateModal({
                 ℹ️ Existing business case found for this combination. Current values are pre-populated. Modify any values you wish to update.
               </div>
             )}
+
+            {/* Header with formulation details */}
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">
+                {selectedFormulation?.formulation_name || "Formulation"} | {selectedCountry?.country_name || "Country"} | Target Market Entry: {targetMarketEntry}
+                {effectiveStartFiscalYear && effectiveStartFiscalYear !== targetMarketEntry && (
+                  <> | Effective Start: {effectiveStartFiscalYear}</>
+                )}
+              </div>
+            </div>
 
             <div className="overflow-x-auto">
               <Table>
@@ -522,6 +605,60 @@ export function BusinessCaseCreateModal({
                         />
                       </TableCell>
                     ))}
+                  </TableRow>
+
+                  {/* Revenue row (calculated, read-only) */}
+                  <TableRow>
+                    <TableCell className="font-medium">Total Revenue ({currency})</TableCell>
+                    {fiscalYearColumns.map((col) => {
+                      const metrics = calculateMetrics(col.yearOffset);
+                      return (
+                        <TableCell key={col.yearOffset} className="p-1">
+                          <Input
+                            type="text"
+                            value={metrics.revenue > 0 ? `$${metrics.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
+                            disabled
+                            className="h-9 bg-muted cursor-not-allowed opacity-70"
+                          />
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+
+                  {/* Margin row (calculated, read-only) */}
+                  <TableRow>
+                    <TableCell className="font-medium">Total Gross Margin ({currency})</TableCell>
+                    {fiscalYearColumns.map((col) => {
+                      const metrics = calculateMetrics(col.yearOffset);
+                      return (
+                        <TableCell key={col.yearOffset} className="p-1">
+                          <Input
+                            type="text"
+                            value={metrics.margin > 0 ? `$${metrics.margin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
+                            disabled
+                            className="h-9 bg-muted cursor-not-allowed opacity-70"
+                          />
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+
+                  {/* Margin % row (calculated, read-only) */}
+                  <TableRow>
+                    <TableCell className="font-medium">Margin %</TableCell>
+                    {fiscalYearColumns.map((col) => {
+                      const metrics = calculateMetrics(col.yearOffset);
+                      return (
+                        <TableCell key={col.yearOffset} className="p-1">
+                          <Input
+                            type="text"
+                            value={metrics.marginPercent > 0 ? `${metrics.marginPercent.toFixed(2)}%` : ""}
+                            disabled
+                            className="h-9 bg-muted cursor-not-allowed opacity-70"
+                          />
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 </TableBody>
               </Table>

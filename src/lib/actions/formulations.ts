@@ -13,23 +13,23 @@ export async function createFormulation(formData: FormData) {
   const supabase = await createClient();
   const userName = await getCurrentUserName();
 
-  const productName = formData.get("product_name") as string;
-  const productCategory = formData.get("product_category") as string;
+  const formulationName = formData.get("formulation_name") as string;
+  const formulationCategory = formData.get("formulation_category") as string;
   const formulationType = formData.get("formulation_type") as string | null;
   const uom = formData.get("uom") as string | null;
   const shortName = formData.get("short_name") as string | null;
   const status = (formData.get("status") as string) || "Not Yet Considered";
   const statusRationale = formData.get("status_rationale") as string | null;
 
-  if (!productName || !productCategory) {
-    return { error: "Product name and category are required" };
+  if (!formulationName || !formulationCategory) {
+    return { error: "Formulation name and category are required" };
   }
 
   const { data, error } = await supabase
     .from("formulations")
     .insert({
-      product_name: productName,
-      product_category: productCategory,
+      formulation_name: formulationName,
+      formulation_category: formulationCategory,
       formulation_type: formulationType,
       uom: uom || "L",
       short_name: shortName,
@@ -130,16 +130,16 @@ export async function updateFormulation(formulationId: string, formData: FormDat
   const supabase = await createClient();
   const userName = await getCurrentUserName();
 
-  const productName = formData.get("product_name") as string;
-  const productCategory = formData.get("product_category") as string;
+  const formulationName = formData.get("formulation_name") as string;
+  const formulationCategory = formData.get("formulation_category") as string;
   const formulationType = formData.get("formulation_type") as string | null;
   const uom = formData.get("uom") as string | null;
   const shortName = formData.get("short_name") as string | null;
   const status = formData.get("status") as string;
   const statusRationale = formData.get("status_rationale") as string | null;
 
-  if (!productName || !productCategory || !status) {
-    return { error: "Product name, category, and status are required" };
+  if (!formulationName || !formulationCategory || !status) {
+    return { error: "Formulation name, category, and status are required" };
   }
 
   // Get current status to track changes
@@ -150,8 +150,8 @@ export async function updateFormulation(formulationId: string, formData: FormDat
     .single();
 
   const updateData: any = {
-    product_name: productName,
-    product_category: productCategory,
+    formulation_name: formulationName,
+    formulation_category: formulationCategory,
     formulation_type: formulationType,
     uom: uom || "L",
     short_name: shortName,
