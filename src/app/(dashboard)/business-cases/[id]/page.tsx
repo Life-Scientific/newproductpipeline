@@ -164,14 +164,6 @@ export default async function BusinessCaseDetailPage({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-muted-foreground">
-                    Business Case Type
-                  </p>
-                  <p className="text-sm">
-                    {businessCase.business_case_type || "—"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">
                     Year Offset
                   </p>
                   <p className="text-sm">
@@ -193,24 +185,6 @@ export default async function BusinessCaseDetailPage({
                   <p className="text-sm">
                     {businessCase.scenario_name || "Base Case"}
                   </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    Confidence Level
-                  </p>
-                  {businessCase.confidence_level ? (
-                    <Badge
-                      variant={
-                        (confidenceColors[
-                          businessCase.confidence_level
-                        ] as any) || "outline"
-                      }
-                    >
-                      {businessCase.confidence_level}
-                    </Badge>
-                  ) : (
-                    <p className="text-sm">—</p>
-                  )}
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-muted-foreground">

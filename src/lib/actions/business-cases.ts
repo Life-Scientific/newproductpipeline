@@ -8,10 +8,10 @@ export async function createBusinessCase(formData: FormData) {
   const supabase = await createClient();
   const userName = await getCurrentUserName();
 
-  const formulationCountryId = formData.get("formulation_country_id") as string | null;
-  const formulationCountryUseGroupId = formData.get("formulation_country_use_group_id") as string | null;
+  const formulationId = formData.get("formulation_id") as string | null;
+  const countryId = formData.get("country_id") as string | null;
+  const useGroupIds = formData.getAll("use_group_ids") as string[];
   const businessCaseName = formData.get("business_case_name") as string | null;
-  const businessCaseType = (formData.get("business_case_type") as string) || "Single Use Group";
   const yearOffset = Number(formData.get("year_offset"));
   const volume = formData.get("volume") ? Number(formData.get("volume")) : null;
   const nsp = formData.get("nsp") ? Number(formData.get("nsp")) : null;
@@ -20,27 +20,47 @@ export async function createBusinessCase(formData: FormData) {
   const scenarioId = formData.get("scenario_id") as string | null;
   const scenarioName = formData.get("scenario_name") as string | null;
   const assumptions = formData.get("assumptions") as string | null;
-  const confidenceLevel = formData.get("confidence_level") as string | null;
 
-  if (!formulationCountryId && !formulationCountryUseGroupId) {
-    return { error: "Must link to either formulation-country or use group" };
+  if (!formulationId || !countryId) {
+    return { error: "Formulation and country are required" };
   }
 
-  if (formulationCountryId && formulationCountryUseGroupId) {
-    return { error: "Cannot link to both formulation-country and use group" };
+  if (!useGroupIds || useGroupIds.length === 0) {
+    return { error: "At least one use group must be selected" };
   }
 
   if (!yearOffset || yearOffset < 1 || yearOffset > 10) {
     return { error: "Year offset must be between 1 and 10" };
   }
 
-  const { data, error } = await supabase
+  // Find formulation_country_id
+  const { data: formulationCountry, error: fcError } = await supabase
+    .from("formulation_country")
+    .select("formulation_country_id")
+    .eq("formulation_id", formulationId)
+    .eq("country_id", countryId)
+    .single();
+
+  if (fcError || !formulationCountry) {
+    return { error: "Formulation-country combination not found" };
+  }
+
+  // Find formulation_country_use_group_ids for the selected use groups
+  const { data: useGroups, error: ugError } = await supabase
+    .from("formulation_country_use_group")
+    .select("formulation_country_use_group_id, use_group_variant")
+    .eq("formulation_country_id", formulationCountry.formulation_country_id)
+    .in("use_group_variant", useGroupIds);
+
+  if (ugError || !useGroups || useGroups.length === 0) {
+    return { error: "Selected use groups not found for this formulation-country combination" };
+  }
+
+  // Create business case
+  const { data: businessCase, error: bcError } = await supabase
     .from("business_case")
     .insert({
-      formulation_country_id: formulationCountryId || null,
-      formulation_country_use_group_id: formulationCountryUseGroupId || null,
       business_case_name: businessCaseName,
-      business_case_type: businessCaseType,
       year_offset: yearOffset,
       volume,
       nsp,
@@ -49,27 +69,47 @@ export async function createBusinessCase(formData: FormData) {
       scenario_id: scenarioId,
       scenario_name: scenarioName,
       assumptions,
-      confidence_level: confidenceLevel,
       created_by: userName,
     })
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (bcError || !businessCase) {
+    return { error: bcError?.message || "Failed to create business case" };
+  }
+
+  // Insert into junction table
+  const junctionEntries = useGroups.map((ug) => ({
+    business_case_id: businessCase.business_case_id,
+    formulation_country_use_group_id: ug.formulation_country_use_group_id,
+  }));
+
+  const { error: junctionError } = await supabase
+    .from("business_case_use_groups")
+    .insert(junctionEntries);
+
+  if (junctionError) {
+    // Rollback: delete the business case if junction insert fails
+    await supabase
+      .from("business_case")
+      .delete()
+      .eq("business_case_id", businessCase.business_case_id);
+    return { error: `Failed to link use groups: ${junctionError.message}` };
   }
 
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
-  return { data, success: true };
+  return { data: businessCase, success: true };
 }
 
 export async function updateBusinessCase(businessCaseId: string, formData: FormData) {
   const supabase = await createClient();
 
+  const formulationId = formData.get("formulation_id") as string | null;
+  const countryId = formData.get("country_id") as string | null;
+  const useGroupIds = formData.getAll("use_group_ids") as string[];
   const businessCaseName = formData.get("business_case_name") as string | null;
-  const businessCaseType = formData.get("business_case_type") as string | null;
   const yearOffset = formData.get("year_offset") ? Number(formData.get("year_offset")) : null;
   const volume = formData.get("volume") ? Number(formData.get("volume")) : null;
   const nsp = formData.get("nsp") ? Number(formData.get("nsp")) : null;
@@ -78,18 +118,17 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
   const scenarioId = formData.get("scenario_id") as string | null;
   const scenarioName = formData.get("scenario_name") as string | null;
   const assumptions = formData.get("assumptions") as string | null;
-  const confidenceLevel = formData.get("confidence_level") as string | null;
 
   if (yearOffset && (yearOffset < 1 || yearOffset > 10)) {
     return { error: "Year offset must be between 1 and 10" };
   }
 
+  // Update business case fields
   const updateData: any = {
     updated_at: new Date().toISOString(),
   };
 
   if (businessCaseName !== null) updateData.business_case_name = businessCaseName;
-  if (businessCaseType !== null) updateData.business_case_type = businessCaseType;
   if (yearOffset !== null) updateData.year_offset = yearOffset;
   if (volume !== null) updateData.volume = volume;
   if (nsp !== null) updateData.nsp = nsp;
@@ -98,7 +137,6 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
   if (scenarioId !== null) updateData.scenario_id = scenarioId;
   if (scenarioName !== null) updateData.scenario_name = scenarioName;
   if (assumptions !== null) updateData.assumptions = assumptions;
-  if (confidenceLevel !== null) updateData.confidence_level = confidenceLevel;
 
   const { data, error } = await supabase
     .from("business_case")
@@ -109,6 +147,56 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
 
   if (error) {
     return { error: error.message };
+  }
+
+  // Update use groups if provided
+  if (formulationId && countryId && useGroupIds && useGroupIds.length > 0) {
+    // Find formulation_country_id
+    const { data: formulationCountry, error: fcError } = await supabase
+      .from("formulation_country")
+      .select("formulation_country_id")
+      .eq("formulation_id", formulationId)
+      .eq("country_id", countryId)
+      .single();
+
+    if (fcError || !formulationCountry) {
+      return { error: "Formulation-country combination not found" };
+    }
+
+    // Find formulation_country_use_group_ids
+    const { data: useGroups, error: ugError } = await supabase
+      .from("formulation_country_use_group")
+      .select("formulation_country_use_group_id, use_group_variant")
+      .eq("formulation_country_id", formulationCountry.formulation_country_id)
+      .in("use_group_variant", useGroupIds);
+
+    if (ugError || !useGroups || useGroups.length === 0) {
+      return { error: "Selected use groups not found for this formulation-country combination" };
+    }
+
+    // Delete existing junction entries
+    const { error: deleteError } = await supabase
+      .from("business_case_use_groups")
+      .delete()
+      .eq("business_case_id", businessCaseId);
+
+    if (deleteError) {
+      return { error: `Failed to update use groups: ${deleteError.message}` };
+    }
+
+    // Insert new junction entries
+    const junctionEntries = useGroups.map((ug) => ({
+      business_case_id: businessCaseId,
+      formulation_country_use_group_id: ug.formulation_country_use_group_id,
+    }));
+
+    const { error: insertError } = await supabase
+      .from("business_case_use_groups")
+      .insert(junctionEntries);
+
+    if (insertError) {
+      return { error: `Failed to link use groups: ${insertError.message}` };
+    }
   }
 
   revalidatePath("/business-cases");

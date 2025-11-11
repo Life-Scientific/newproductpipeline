@@ -383,7 +383,7 @@ export async function getFormulationCountryDetails(formulationId: string) {
 
 /**
  * Helper function to enrich business cases with formulation_id and country_id
- * by looking them up from the formulation_country table
+ * by looking them up through the junction table
  */
 async function enrichBusinessCases(
   businessCases: BusinessCase[]
@@ -394,16 +394,16 @@ async function enrichBusinessCases(
 
   const supabase = await createClient();
   
-  // Get unique formulation_country_ids
-  const countryIds = [
+  // Get unique business_case_ids
+  const businessCaseIds = [
     ...new Set(
       businessCases
-        .map((bc) => bc.formulation_country_id)
+        .map((bc) => bc.business_case_id)
         .filter((id): id is string => Boolean(id))
     ),
   ];
 
-  if (countryIds.length === 0) {
+  if (businessCaseIds.length === 0) {
     return businessCases.map((bc) => ({
       ...bc,
       formulation_id: null,
@@ -411,31 +411,90 @@ async function enrichBusinessCases(
     }));
   }
 
-  // Batch fetch formulation_id and country_id for all formulation_country_ids
+  // Fetch formulation_id and country_id through junction table
+  // We need to join through business_case_use_groups -> formulation_country_use_group -> formulation_country
+  // Since Supabase doesn't support deep nested selects easily, we'll do it in steps
+  
+  // First, get the formulation_country_use_group_ids for these business cases
+  const { data: junctionData } = await supabase
+    .from("business_case_use_groups")
+    .select("business_case_id, formulation_country_use_group_id")
+    .in("business_case_id", businessCaseIds);
+
+  if (!junctionData || junctionData.length === 0) {
+    return businessCases.map((bc) => ({
+      ...bc,
+      formulation_id: null,
+      country_id: null,
+    }));
+  }
+
+  // Get unique formulation_country_use_group_ids
+  const useGroupIds = [
+    ...new Set(
+      junctionData
+        .map((j) => j.formulation_country_use_group_id)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+
+  // Get formulation_country_ids from use groups
+  const { data: useGroupData } = await supabase
+    .from("formulation_country_use_group")
+    .select("formulation_country_use_group_id, formulation_country_id")
+    .in("formulation_country_use_group_id", useGroupIds);
+
+  // Get unique formulation_country_ids
+  const formulationCountryIds = [
+    ...new Set(
+      useGroupData
+        ?.map((ug) => ug.formulation_country_id)
+        .filter((id): id is string => Boolean(id)) || []
+    ),
+  ];
+
+  // Get formulation_id and country_id from formulation_country
   const { data: countryData } = await supabase
     .from("formulation_country")
     .select("formulation_country_id, formulation_id, country_id")
-    .in("formulation_country_id", countryIds);
+    .in("formulation_country_id", formulationCountryIds);
 
-  // Create maps for quick lookup
-  const countryIdToFormulationId = new Map<string, string>();
-  const countryIdToCountryId = new Map<string, string>();
+  // Create maps for lookup
+  const useGroupToFormulationCountry = new Map<string, string>();
+  useGroupData?.forEach((ug) => {
+    if (ug.formulation_country_use_group_id && ug.formulation_country_id) {
+      useGroupToFormulationCountry.set(ug.formulation_country_use_group_id, ug.formulation_country_id);
+    }
+  });
+
+  const formulationCountryToFormulationId = new Map<string, string>();
+  const formulationCountryToCountryId = new Map<string, string>();
   countryData?.forEach((fc) => {
     if (fc.formulation_country_id) {
-      countryIdToFormulationId.set(fc.formulation_country_id, fc.formulation_id);
-      countryIdToCountryId.set(fc.formulation_country_id, fc.country_id);
+      formulationCountryToFormulationId.set(fc.formulation_country_id, fc.formulation_id);
+      formulationCountryToCountryId.set(fc.formulation_country_id, fc.country_id);
+    }
+  });
+
+  // Create maps for business cases (use first match for each business case)
+  const businessCaseToFormulationId = new Map<string, string>();
+  const businessCaseToCountryId = new Map<string, string>();
+  
+  junctionData.forEach((j) => {
+    if (j.business_case_id && j.formulation_country_use_group_id) {
+      const fcId = useGroupToFormulationCountry.get(j.formulation_country_use_group_id);
+      if (fcId && !businessCaseToFormulationId.has(j.business_case_id)) {
+        businessCaseToFormulationId.set(j.business_case_id, formulationCountryToFormulationId.get(fcId) || "");
+        businessCaseToCountryId.set(j.business_case_id, formulationCountryToCountryId.get(fcId) || "");
+      }
     }
   });
 
   // Enrich business cases
   return businessCases.map((bc) => ({
     ...bc,
-    formulation_id: bc.formulation_country_id
-      ? countryIdToFormulationId.get(bc.formulation_country_id) || null
-      : null,
-    country_id: bc.formulation_country_id
-      ? countryIdToCountryId.get(bc.formulation_country_id) || null
-      : null,
+    formulation_id: businessCaseToFormulationId.get(bc.business_case_id) || null,
+    country_id: businessCaseToCountryId.get(bc.business_case_id) || null,
   }));
 }
 

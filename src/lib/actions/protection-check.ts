@@ -31,7 +31,7 @@ export async function checkLaunchEligibility(
   // Get formulation details
   const { data: formulation, error: formError } = await supabase
     .from("formulations")
-    .select("formulation_id, formulation_code, product_name")
+    .select("formulation_id, formulation_code, formulation_name")
     .eq("formulation_id", formulationId)
     .single();
 

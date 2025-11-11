@@ -191,10 +191,6 @@ const columns: ColumnDef<EnrichedBusinessCase>[] = [
     header: "Variant",
   },
   {
-    accessorKey: "business_case_type",
-    header: "Type",
-  },
-  {
     accessorKey: "year_offset",
     header: "Year Offset",
   },
@@ -261,22 +257,6 @@ const columns: ColumnDef<EnrichedBusinessCase>[] = [
   {
     accessorKey: "scenario_name",
     header: "Scenario",
-  },
-  {
-    accessorKey: "confidence_level",
-    header: "Confidence",
-    cell: ({ row }) => {
-      const level = row.getValue("confidence_level") as string | null;
-      if (!level) return "—";
-      const colors: Record<string, string> = {
-        High: "default",
-        Medium: "secondary",
-        Low: "outline",
-      };
-      return (
-        <Badge variant={colors[level] as any || "outline"}>{level}</Badge>
-      );
-    },
   },
   {
     id: "actions",

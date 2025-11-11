@@ -126,13 +126,13 @@ export default async function FormulationDetailPage({
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                Labels
+                Use Groups
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              <div className="text-2xl font-bold">{labels.length}</div>
+              <div className="text-2xl font-bold">{useGroups.length}</div>
               <p className="text-xs text-muted-foreground">
-                {labels.filter(l => l.registration_status === "Approved").length} approved
+                {useGroups.filter(l => l.registration_status === "Approved").length} approved
               </p>
             </CardContent>
           </Card>

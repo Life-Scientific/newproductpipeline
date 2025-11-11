@@ -11,11 +11,6 @@ interface FormulationBusinessCasesProps {
   businessCases: BusinessCase[];
 }
 
-const confidenceColors: Record<string, string> = {
-  High: "default",
-  Medium: "secondary",
-  Low: "outline",
-};
 
 export function FormulationBusinessCases({ businessCases }: FormulationBusinessCasesProps) {
   if (businessCases.length === 0) {
@@ -53,7 +48,6 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
               <TableHead>Revenue</TableHead>
               <TableHead>Margin</TableHead>
               <TableHead>Margin %</TableHead>
-              <TableHead>Confidence</TableHead>
               <TableHead>Scenario</TableHead>
               <TableHead>Last Updated</TableHead>
             </TableRow>
@@ -132,17 +126,6 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                     {bc.margin_percent !== null && bc.margin_percent !== undefined
                       ? `${bc.margin_percent.toFixed(1)}%`
                       : "—"}
-                  </TableCell>
-                  <TableCell>
-                    {bc.confidence_level ? (
-                      <Badge
-                        variant={(confidenceColors[bc.confidence_level] as any) || "outline"}
-                      >
-                        {bc.confidence_level}
-                      </Badge>
-                    ) : (
-                      "—"
-                    )}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {bc.scenario_name || "—"}
