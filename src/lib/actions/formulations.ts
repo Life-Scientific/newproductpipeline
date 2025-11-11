@@ -21,8 +21,8 @@ export async function createFormulation(formData: FormData) {
   const status = (formData.get("status") as string) || "Not Yet Considered";
   const statusRationale = formData.get("status_rationale") as string | null;
 
-  if (!formulationName || !formulationCategory) {
-    return { error: "Formulation name and category are required" };
+  if (!formulationName || !formulationCategory || !formulationType || !uom) {
+    return { error: "Formulation name, category, type, and unit of measure are required" };
   }
 
   const { data, error } = await supabase
@@ -44,68 +44,186 @@ export async function createFormulation(formData: FormData) {
     return { error: error.message };
   }
 
-  // Handle ingredients if provided
+  // Handle ingredients - REQUIRED
   const ingredientsJson = formData.get("ingredients") as string | null;
   let assignedCode: string | null = null;
   let duplicateWarning: string | null = null;
 
-  if (ingredientsJson && data?.formulation_id) {
+  // Validate: Ingredients are required
+  if (!ingredientsJson) {
+    await supabase
+      .from("formulations")
+      .delete()
+      .eq("formulation_id", data.formulation_id);
+    return { error: "At least one ingredient is required" };
+  }
+
+  if (data?.formulation_id) {
     try {
       const ingredients: IngredientInput[] = JSON.parse(ingredientsJson);
       
-      // Check for active ingredients before proceeding
-      const activeIngredients = ingredients.filter((ing) => {
-        // We need to check if ingredient is active type
-        // This will be verified in the database function
-        return ing.ingredient_id;
-      });
-
-      if (activeIngredients.length > 0) {
-        const ingredientResult = await createFormulationIngredients(
-          data.formulation_id,
-          ingredients
-        );
-        
-        if (ingredientResult.error) {
-          // If duplicate detected, we should delete the formulation and return error
-          if (ingredientResult.duplicateFormulationId) {
-            await supabase
-              .from("formulations")
-              .delete()
-              .eq("formulation_id", data.formulation_id);
-            
-            return {
-              error: ingredientResult.error,
-              duplicateFormulationId: ingredientResult.duplicateFormulationId,
-              duplicateFormulationCode: ingredientResult.duplicateFormulationCode,
-            };
-          }
-          
-          // Other errors - formulation is already created
-          return {
-            error: `Formulation created but failed to add ingredients: ${ingredientResult.error}`,
-            data,
-          };
-        }
-
-        assignedCode = ingredientResult.formulationCode || null;
-      } else {
-        // No active ingredients - just add non-active ingredients
-        const ingredientResult = await createFormulationIngredients(
-          data.formulation_id,
-          ingredients
-        );
-        if (ingredientResult.error) {
-          return {
-            error: `Formulation created but failed to add ingredients: ${ingredientResult.error}`,
-            data,
-          };
-        }
+      // Validate: Require at least one ingredient
+      if (ingredients.length === 0) {
+        await supabase
+          .from("formulations")
+          .delete()
+          .eq("formulation_id", data.formulation_id);
+        return { error: "At least one ingredient is required" };
       }
+      
+      // Validate: Require at least one active ingredient
+      // Fetch ingredient types to check for active ingredients
+      const ingredientIds = ingredients.map(ing => ing.ingredient_id);
+      const { data: ingredientData } = await supabase
+        .from("ingredients")
+        .select("ingredient_id, ingredient_type")
+        .in("ingredient_id", ingredientIds);
+
+      const hasActiveIngredient = ingredientData?.some(
+        (ing) => ing.ingredient_type === "Active"
+      );
+
+      if (!hasActiveIngredient) {
+        // Delete the formulation since validation failed
+        await supabase
+          .from("formulations")
+          .delete()
+          .eq("formulation_id", data.formulation_id);
+        
+        return { error: "At least one active ingredient is required" };
+      }
+
+      // Add ingredients
+      const ingredientResult = await createFormulationIngredients(
+        data.formulation_id,
+        ingredients
+      );
+      
+      if (ingredientResult.error) {
+        // If duplicate detected, we should delete the formulation and return error
+        if (ingredientResult.duplicateFormulationId) {
+          await supabase
+            .from("formulations")
+            .delete()
+            .eq("formulation_id", data.formulation_id);
+          
+          return {
+            error: ingredientResult.error,
+            duplicateFormulationId: ingredientResult.duplicateFormulationId,
+            duplicateFormulationCode: ingredientResult.duplicateFormulationCode,
+          };
+        }
+        
+        // Other errors - formulation is already created
+        return {
+          error: `Formulation created but failed to add ingredients: ${ingredientResult.error}`,
+          data,
+        };
+      }
+
+      assignedCode = ingredientResult.formulationCode || null;
     } catch (parseError) {
       console.error("Failed to parse ingredients:", parseError);
       // Continue anyway - formulation is created
     }
+  }
+
+  // Handle crops - REQUIRED
+  const cropsJson = formData.get("crops") as string | null;
+  if (!cropsJson) {
+    await supabase
+      .from("formulations")
+      .delete()
+      .eq("formulation_id", data.formulation_id);
+    return { error: "At least one crop is required" };
+  }
+
+  try {
+    const crops: Array<{ crop_id: string; notes?: string }> = JSON.parse(cropsJson);
+    
+    // Validate: Require at least one crop
+    if (crops.length === 0) {
+      await supabase
+        .from("formulations")
+        .delete()
+        .eq("formulation_id", data.formulation_id);
+      return { error: "At least one crop is required" };
+    }
+
+    // Add crops
+    const cropInserts = crops.map((crop) => ({
+      formulation_id: data.formulation_id,
+      crop_id: crop.crop_id,
+      notes: crop.notes || null,
+    }));
+
+    const { error: cropsError } = await supabase
+      .from("formulation_crops")
+      .insert(cropInserts);
+
+    if (cropsError) {
+      await supabase
+        .from("formulations")
+        .delete()
+        .eq("formulation_id", data.formulation_id);
+      return { error: `Failed to add crops: ${cropsError.message}` };
+    }
+  } catch (parseError) {
+    console.error("Failed to parse crops:", parseError);
+    await supabase
+      .from("formulations")
+      .delete()
+      .eq("formulation_id", data.formulation_id);
+    return { error: "Failed to parse crops data" };
+  }
+
+  // Handle targets - REQUIRED
+  const targetsJson = formData.get("targets") as string | null;
+  if (!targetsJson) {
+    await supabase
+      .from("formulations")
+      .delete()
+      .eq("formulation_id", data.formulation_id);
+    return { error: "At least one target is required" };
+  }
+
+  try {
+    const targets: Array<{ target_id: string; notes?: string }> = JSON.parse(targetsJson);
+    
+    // Validate: Require at least one target
+    if (targets.length === 0) {
+      await supabase
+        .from("formulations")
+        .delete()
+        .eq("formulation_id", data.formulation_id);
+      return { error: "At least one target is required" };
+    }
+
+    // Add targets
+    const targetInserts = targets.map((target) => ({
+      formulation_id: data.formulation_id,
+      target_id: target.target_id,
+      notes: target.notes || null,
+    }));
+
+    const { error: targetsError } = await supabase
+      .from("formulation_targets")
+      .insert(targetInserts);
+
+    if (targetsError) {
+      await supabase
+        .from("formulations")
+        .delete()
+        .eq("formulation_id", data.formulation_id);
+      return { error: `Failed to add targets: ${targetsError.message}` };
+    }
+  } catch (parseError) {
+    console.error("Failed to parse targets:", parseError);
+    await supabase
+      .from("formulations")
+      .delete()
+      .eq("formulation_id", data.formulation_id);
+    return { error: "Failed to parse targets data" };
   }
 
   // Refresh formulation data to get assigned code
@@ -138,8 +256,8 @@ export async function updateFormulation(formulationId: string, formData: FormDat
   const status = formData.get("status") as string;
   const statusRationale = formData.get("status_rationale") as string | null;
 
-  if (!formulationName || !formulationCategory || !status) {
-    return { error: "Formulation name, category, and status are required" };
+  if (!formulationName || !formulationCategory || !formulationType || !uom || !status) {
+    return { error: "Formulation name, category, type, unit of measure, and status are required" };
   }
 
   // Get current status to track changes
@@ -184,6 +302,25 @@ export async function updateFormulation(formulationId: string, formData: FormDat
   if (ingredientsJson) {
     try {
       const ingredients: IngredientInput[] = JSON.parse(ingredientsJson);
+      
+      // Validate: Require at least one active ingredient
+      if (ingredients.length > 0) {
+        // Fetch ingredient types to check for active ingredients
+        const ingredientIds = ingredients.map(ing => ing.ingredient_id);
+        const { data: ingredientData } = await supabase
+          .from("ingredients")
+          .select("ingredient_id, ingredient_type")
+          .in("ingredient_id", ingredientIds);
+
+        const hasActiveIngredient = ingredientData?.some(
+          (ing) => ing.ingredient_type === "Active"
+        );
+
+        if (!hasActiveIngredient) {
+          return { error: "At least one active ingredient is required" };
+        }
+      }
+      
       const ingredientResult = await updateFormulationIngredients(formulationId, ingredients);
       if (ingredientResult.error) {
         // Check if it's a duplicate error
@@ -201,6 +338,90 @@ export async function updateFormulation(formulationId: string, formData: FormDat
       console.error("Failed to parse ingredients:", parseError);
       // Continue anyway - formulation is updated
     }
+  }
+
+  // Handle crops - REQUIRED
+  const cropsJson = formData.get("crops") as string | null;
+  if (!cropsJson) {
+    return { error: "At least one crop is required" };
+  }
+
+  try {
+    const crops: Array<{ crop_id: string; notes?: string }> = JSON.parse(cropsJson);
+    
+    // Validate: Require at least one crop
+    if (crops.length === 0) {
+      return { error: "At least one crop is required" };
+    }
+
+    // Delete existing crops and insert new ones
+    const { error: deleteCropsError } = await supabase
+      .from("formulation_crops")
+      .delete()
+      .eq("formulation_id", formulationId);
+
+    if (deleteCropsError) {
+      return { error: `Failed to update crops: ${deleteCropsError.message}` };
+    }
+
+    const cropInserts = crops.map((crop) => ({
+      formulation_id: formulationId,
+      crop_id: crop.crop_id,
+      notes: crop.notes || null,
+    }));
+
+    const { error: cropsError } = await supabase
+      .from("formulation_crops")
+      .insert(cropInserts);
+
+    if (cropsError) {
+      return { error: `Failed to add crops: ${cropsError.message}` };
+    }
+  } catch (parseError) {
+    console.error("Failed to parse crops:", parseError);
+    return { error: "Failed to parse crops data" };
+  }
+
+  // Handle targets - REQUIRED
+  const targetsJson = formData.get("targets") as string | null;
+  if (!targetsJson) {
+    return { error: "At least one target is required" };
+  }
+
+  try {
+    const targets: Array<{ target_id: string; notes?: string }> = JSON.parse(targetsJson);
+    
+    // Validate: Require at least one target
+    if (targets.length === 0) {
+      return { error: "At least one target is required" };
+    }
+
+    // Delete existing targets and insert new ones
+    const { error: deleteTargetsError } = await supabase
+      .from("formulation_targets")
+      .delete()
+      .eq("formulation_id", formulationId);
+
+    if (deleteTargetsError) {
+      return { error: `Failed to update targets: ${deleteTargetsError.message}` };
+    }
+
+    const targetInserts = targets.map((target) => ({
+      formulation_id: formulationId,
+      target_id: target.target_id,
+      notes: target.notes || null,
+    }));
+
+    const { error: targetsError } = await supabase
+      .from("formulation_targets")
+      .insert(targetInserts);
+
+    if (targetsError) {
+      return { error: `Failed to add targets: ${targetsError.message}` };
+    }
+  } catch (parseError) {
+    console.error("Failed to parse targets:", parseError);
+    return { error: "Failed to parse targets data" };
   }
 
   // Refresh formulation data to get assigned code
