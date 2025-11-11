@@ -41,6 +41,7 @@ export type Database = {
       business_case: {
         Row: {
           assumptions: string | null
+          business_case_group_id: string
           business_case_id: string
           business_case_name: string | null
           cogs_last_updated_at: string | null
@@ -48,11 +49,11 @@ export type Database = {
           cogs_per_unit: number | null
           created_at: string | null
           created_by: string | null
-          fiscal_year: string | null
           margin_percent: number | null
           nsp: number | null
           nsp_last_updated_at: string | null
           nsp_last_updated_by: string | null
+          status: string | null
           total_cogs: number | null
           total_margin: number | null
           total_revenue: number | null
@@ -64,6 +65,7 @@ export type Database = {
         }
         Insert: {
           assumptions?: string | null
+          business_case_group_id: string
           business_case_id?: string
           business_case_name?: string | null
           cogs_last_updated_at?: string | null
@@ -71,11 +73,11 @@ export type Database = {
           cogs_per_unit?: number | null
           created_at?: string | null
           created_by?: string | null
-          fiscal_year?: string | null
           margin_percent?: number | null
           nsp?: number | null
           nsp_last_updated_at?: string | null
           nsp_last_updated_by?: string | null
+          status?: string | null
           total_cogs?: number | null
           total_margin?: number | null
           total_revenue?: number | null
@@ -87,6 +89,7 @@ export type Database = {
         }
         Update: {
           assumptions?: string | null
+          business_case_group_id?: string
           business_case_id?: string
           business_case_name?: string | null
           cogs_last_updated_at?: string | null
@@ -94,11 +97,11 @@ export type Database = {
           cogs_per_unit?: number | null
           created_at?: string | null
           created_by?: string | null
-          fiscal_year?: string | null
           margin_percent?: number | null
           nsp?: number | null
           nsp_last_updated_at?: string | null
           nsp_last_updated_by?: string | null
+          status?: string | null
           total_cogs?: number | null
           total_margin?: number | null
           total_revenue?: number | null
@@ -232,13 +235,6 @@ export type Database = {
             columns: ["formulation_country_id"]
             isOneToOne: false
             referencedRelation: "formulation_country"
-            referencedColumns: ["formulation_country_id"]
-          },
-          {
-            foreignKeyName: "cogs_formulation_country_id_fkey"
-            columns: ["formulation_country_id"]
-            isOneToOne: false
-            referencedRelation: "vw_active_portfolio"
             referencedColumns: ["formulation_country_id"]
           },
           {
@@ -393,13 +389,6 @@ export type Database = {
             referencedColumns: ["country_id"]
           },
           {
-            foreignKeyName: "data_protections_country_id_fkey"
-            columns: ["country_id"]
-            isOneToOne: false
-            referencedRelation: "vw_portfolio_by_country"
-            referencedColumns: ["country_id"]
-          },
-          {
             foreignKeyName: "data_protections_ingredient_id_fkey"
             columns: ["ingredient_id"]
             isOneToOne: false
@@ -479,7 +468,6 @@ export type Database = {
           keyedin_project_ids: string | null
           registration_pathway: string | null
           registration_status: string | null
-          target_market_entry_fy: string | null
           updated_at: string | null
         }
         Insert: {
@@ -496,7 +484,6 @@ export type Database = {
           keyedin_project_ids?: string | null
           registration_pathway?: string | null
           registration_status?: string | null
-          target_market_entry_fy?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -513,7 +500,6 @@ export type Database = {
           keyedin_project_ids?: string | null
           registration_pathway?: string | null
           registration_status?: string | null
-          target_market_entry_fy?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -529,13 +515,6 @@ export type Database = {
             columns: ["country_id"]
             isOneToOne: false
             referencedRelation: "vw_business_case"
-            referencedColumns: ["country_id"]
-          },
-          {
-            foreignKeyName: "formulation_country_country_id_fkey"
-            columns: ["country_id"]
-            isOneToOne: false
-            referencedRelation: "vw_portfolio_by_country"
             referencedColumns: ["country_id"]
           },
           {
@@ -593,13 +572,6 @@ export type Database = {
             columns: ["formulation_country_id"]
             isOneToOne: false
             referencedRelation: "formulation_country"
-            referencedColumns: ["formulation_country_id"]
-          },
-          {
-            foreignKeyName: "formulation_country_crops_formulation_country_id_fkey"
-            columns: ["formulation_country_id"]
-            isOneToOne: false
-            referencedRelation: "vw_active_portfolio"
             referencedColumns: ["formulation_country_id"]
           },
           {
@@ -666,13 +638,6 @@ export type Database = {
             foreignKeyName: "formulation_country_targets_formulation_country_id_fkey"
             columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: "vw_active_portfolio"
-            referencedColumns: ["formulation_country_id"]
-          },
-          {
-            foreignKeyName: "formulation_country_targets_formulation_country_id_fkey"
-            columns: ["formulation_country_id"]
-            isOneToOne: false
             referencedRelation: "vw_formulation_country_detail"
             referencedColumns: ["formulation_country_id"]
           },
@@ -720,6 +685,7 @@ export type Database = {
           is_active: boolean | null
           reference_product_id: string | null
           registration_status: string | null
+          target_market_entry_fy: string | null
           updated_at: string | null
           use_group_name: string | null
           use_group_variant: string
@@ -737,6 +703,7 @@ export type Database = {
           is_active?: boolean | null
           reference_product_id?: string | null
           registration_status?: string | null
+          target_market_entry_fy?: string | null
           updated_at?: string | null
           use_group_name?: string | null
           use_group_variant: string
@@ -754,6 +721,7 @@ export type Database = {
           is_active?: boolean | null
           reference_product_id?: string | null
           registration_status?: string | null
+          target_market_entry_fy?: string | null
           updated_at?: string | null
           use_group_name?: string | null
           use_group_variant?: string
@@ -764,13 +732,6 @@ export type Database = {
             columns: ["formulation_country_id"]
             isOneToOne: false
             referencedRelation: "formulation_country"
-            referencedColumns: ["formulation_country_id"]
-          },
-          {
-            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
-            columns: ["formulation_country_id"]
-            isOneToOne: false
-            referencedRelation: "vw_active_portfolio"
             referencedColumns: ["formulation_country_id"]
           },
           {
@@ -888,13 +849,6 @@ export type Database = {
             columns: ["formulation_country_id"]
             isOneToOne: false
             referencedRelation: "formulation_country"
-            referencedColumns: ["formulation_country_id"]
-          },
-          {
-            foreignKeyName: "formulation_data_protections_formulation_country_id_fkey"
-            columns: ["formulation_country_id"]
-            isOneToOne: false
-            referencedRelation: "vw_active_portfolio"
             referencedColumns: ["formulation_country_id"]
           },
           {
@@ -1039,13 +993,6 @@ export type Database = {
             columns: ["formulation_country_id"]
             isOneToOne: false
             referencedRelation: "formulation_country"
-            referencedColumns: ["formulation_country_id"]
-          },
-          {
-            foreignKeyName: "formulation_patents_formulation_country_id_fkey"
-            columns: ["formulation_country_id"]
-            isOneToOne: false
-            referencedRelation: "vw_active_portfolio"
             referencedColumns: ["formulation_country_id"]
           },
           {
@@ -1334,13 +1281,6 @@ export type Database = {
             referencedColumns: ["country_id"]
           },
           {
-            foreignKeyName: "patent_protections_country_id_fkey"
-            columns: ["country_id"]
-            isOneToOne: false
-            referencedRelation: "vw_portfolio_by_country"
-            referencedColumns: ["country_id"]
-          },
-          {
             foreignKeyName: "patent_protections_ingredient_id_fkey"
             columns: ["ingredient_id"]
             isOneToOne: false
@@ -1449,13 +1389,6 @@ export type Database = {
             referencedRelation: "vw_business_case"
             referencedColumns: ["country_id"]
           },
-          {
-            foreignKeyName: "suppliers_country_id_fkey"
-            columns: ["country_id"]
-            isOneToOne: false
-            referencedRelation: "vw_portfolio_by_country"
-            referencedColumns: ["country_id"]
-          },
         ]
       }
       targets: {
@@ -1493,23 +1426,24 @@ export type Database = {
           country_code: string | null
           country_name: string | null
           crops_used_on: string | null
-          display_name: string | null
           formulation_code: string | null
-          formulation_country_id: string | null
-          last_updated: string | null
+          has_approval: boolean | null
+          is_in_active_portfolio: boolean | null
+          max_margin: number | null
+          max_revenue: number | null
           product_category: string | null
           product_name: string | null
           registration_pathway: string | null
+          registration_status: string | null
           target_market_entry_fy: string | null
           targets: string | null
-          total_margin: number | null
-          total_revenue: number | null
         }
         Relationships: []
       }
       vw_business_case: {
         Row: {
           assumptions: string | null
+          business_case_group_id: string | null
           business_case_id: string | null
           business_case_name: string | null
           cogs_last_updated_at: string | null
@@ -1520,6 +1454,7 @@ export type Database = {
           country_name: string | null
           created_at: string | null
           created_by: string | null
+          currency_code: string | null
           display_name: string | null
           fiscal_year: string | null
           formulation_code: string | null
@@ -1529,9 +1464,12 @@ export type Database = {
           nsp: number | null
           nsp_last_updated_at: string | null
           nsp_last_updated_by: string | null
+          status: string | null
+          target_market_entry_fy: string | null
           total_cogs: number | null
           total_margin: number | null
           total_revenue: number | null
+          uom: string | null
           updated_at: string | null
           use_group_name: string | null
           use_group_variant: string | null
@@ -1545,6 +1483,7 @@ export type Database = {
       vw_business_case_detail: {
         Row: {
           assumptions: string | null
+          business_case_group_id: string | null
           business_case_id: string | null
           cogs_last_updated_at: string | null
           cogs_last_updated_by: string | null
@@ -1560,6 +1499,7 @@ export type Database = {
           nsp_last_updated_by: string | null
           product_category: string | null
           product_name: string | null
+          status: string | null
           target_market_entry_fy: string | null
           total_cogs: number | null
           total_margin: number | null
@@ -1603,13 +1543,6 @@ export type Database = {
             columns: ["formulation_country_id"]
             isOneToOne: false
             referencedRelation: "formulation_country"
-            referencedColumns: ["formulation_country_id"]
-          },
-          {
-            foreignKeyName: "cogs_formulation_country_id_fkey"
-            columns: ["formulation_country_id"]
-            isOneToOne: false
-            referencedRelation: "vw_active_portfolio"
             referencedColumns: ["formulation_country_id"]
           },
           {
@@ -1744,13 +1677,6 @@ export type Database = {
             foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
             columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: "vw_active_portfolio"
-            referencedColumns: ["formulation_country_id"]
-          },
-          {
-            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
-            columns: ["formulation_country_id"]
-            isOneToOne: false
             referencedRelation: "vw_formulation_country_detail"
             referencedColumns: ["formulation_country_id"]
           },
@@ -1842,13 +1768,27 @@ export type Database = {
       }
       vw_portfolio_by_country: {
         Row: {
-          country_code: string | null
-          country_id: string | null
           country_name: string | null
-          formulation_count: number | null
+          crops: string | null
+          currency_code: string | null
+          emd: string | null
+          formulation_code: string | null
+          formulation_status: string | null
+          has_approval: boolean | null
+          is_eu_approved_formulation: boolean | null
+          is_in_active_portfolio: boolean | null
+          is_novel: boolean | null
+          max_margin: number | null
+          max_revenue: number | null
+          product_category: string | null
+          product_name: string | null
+          registration_pathway: string | null
+          registration_status: string | null
+          target_market_entry_fy: string | null
           total_margin: number | null
           total_revenue: number | null
           use_group_count: number | null
+          use_group_variants: string | null
         }
         Relationships: []
       }

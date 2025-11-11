@@ -830,6 +830,330 @@ export async function getIngredientUsage() {
   return data as IngredientUsage[];
 }
 
+// New types for projection table
+export interface BusinessCaseGroupData {
+  business_case_group_id: string;
+  formulation_id: string;
+  formulation_name: string;
+  formulation_code: string | null;
+  uom: string | null;
+  country_id: string;
+  country_name: string;
+  country_code: string;
+  currency_code: string;
+  use_group_id: string;
+  use_group_name: string | null;
+  use_group_variant: string | null;
+  target_market_entry: string | null; // Fiscal year like "FY26"
+  years_data: Record<string, {
+    volume: number | null;
+    nsp: number | null;
+    cogs_per_unit: number | null;
+    total_revenue: number | null;
+    total_margin: number | null;
+    margin_percent: number | null;
+  }>;
+}
+
+export interface BusinessCaseYearData {
+  business_case_id: string;
+  business_case_group_id: string;
+  year_offset: number;
+  fiscal_year: string | null;
+  volume: number | null;
+  nsp: number | null;
+  cogs_per_unit: number | null;
+  total_revenue: number | null;
+  total_cogs: number | null;
+  total_margin: number | null;
+  margin_percent: number | null;
+  formulation_name: string | null;
+  uom: string | null;
+  country_name: string | null;
+  currency_code: string | null;
+  use_group_name: string | null;
+  use_group_variant: string | null;
+}
+
+/**
+ * Helper function to calculate effective start fiscal year
+ * If target_market_entry is in the past, start from current fiscal year
+ */
+function getEffectiveStartFiscalYear(targetMarketEntry: string | null): number {
+  const CURRENT_FISCAL_YEAR = 26; // FY26 - update this as time progresses
+  
+  if (!targetMarketEntry) {
+    return CURRENT_FISCAL_YEAR;
+  }
+  
+  const match = targetMarketEntry.match(/FY(\d{2})/);
+  if (!match) {
+    return CURRENT_FISCAL_YEAR;
+  }
+  
+  const targetYear = parseInt(match[1], 10);
+  return targetYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : targetYear;
+}
+
+/**
+ * Get business cases grouped by business_case_group_id for projection table display
+ */
+export async function getBusinessCasesForProjectionTable(): Promise<BusinessCaseGroupData[]> {
+  const supabase = await createClient();
+  
+  // Fetch all active business cases with their relationships
+  const { data, error } = await supabase
+    .from("vw_business_case")
+    .select("*")
+    .eq("status", "active")
+    .order("formulation_name", { ascending: true })
+    .order("country_name", { ascending: true })
+    .order("use_group_name", { ascending: true })
+    .order("year_offset", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to fetch business cases: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  // Fetch target_market_entry_fy for each use group
+  // target_market_entry_fy is now stored at the formulation_country_use_group level
+  const businessCaseIds = data.map(bc => bc.business_case_id).filter(Boolean) as string[];
+  const { data: junctionData } = await supabase
+    .from("business_case_use_groups")
+    .select("business_case_id, formulation_country_use_group_id")
+    .in("business_case_id", businessCaseIds);
+
+  const useGroupIds = Array.from(new Set(junctionData?.map(j => j.formulation_country_use_group_id).filter(Boolean) || []));
+  
+  const { data: useGroupData } = await supabase
+    .from("formulation_country_use_group")
+    .select("formulation_country_use_group_id, target_market_entry_fy")
+    .in("formulation_country_use_group_id", useGroupIds);
+
+  // Create map for lookup: business_case_id -> target_market_entry_fy
+  const businessCaseToTargetEntry = new Map<string, string | null>();
+  junctionData?.forEach((j) => {
+    if (j.business_case_id && j.formulation_country_use_group_id) {
+      const useGroup = useGroupData?.find(ug => ug.formulation_country_use_group_id === j.formulation_country_use_group_id);
+      if (useGroup) {
+        businessCaseToTargetEntry.set(j.business_case_id, useGroup.target_market_entry_fy || null);
+      }
+    }
+  });
+
+  // Group by business_case_group_id
+  const groups = new Map<string, BusinessCaseGroupData>();
+  const CURRENT_FISCAL_YEAR = 26; // FY26
+  
+  data.forEach((bc) => {
+    if (!bc.business_case_group_id || !bc.formulation_id || !bc.country_id) {
+      return; // Skip incomplete records
+    }
+
+    const groupId = bc.business_case_group_id;
+    
+    if (!groups.has(groupId)) {
+      // Get target_market_entry_fy for this business case
+      const targetMarketEntry = businessCaseToTargetEntry.get(bc.business_case_id || "") || null;
+      const effectiveStartYear = getEffectiveStartFiscalYear(targetMarketEntry);
+      
+      groups.set(groupId, {
+        business_case_group_id: groupId,
+        formulation_id: bc.formulation_id,
+        formulation_name: bc.formulation_name || "",
+        formulation_code: bc.formulation_code,
+        uom: bc.uom || null,
+        country_id: bc.country_id,
+        country_name: bc.country_name || "",
+        country_code: bc.country_code || "",
+        currency_code: bc.currency_code || "USD",
+        use_group_id: "", // Will populate below
+        use_group_name: bc.use_group_name || null,
+        use_group_variant: bc.use_group_variant || null,
+        target_market_entry: targetMarketEntry, // Store original target_market_entry
+        years_data: {},
+      });
+    }
+
+    const group = groups.get(groupId)!;
+    
+    // Calculate effective fiscal year for display
+    // If target_market_entry is in the past, map year_offset to current year onwards
+    // We need to remap the year_offset to the effective start year
+    const targetMarketEntry = group.target_market_entry;
+    const effectiveStartYear = getEffectiveStartFiscalYear(targetMarketEntry);
+    
+    // Calculate display fiscal year: effectiveStartYear + (year_offset - 1)
+    // This ensures year_offset 1 maps to effectiveStartYear (FY26 if target is in past)
+    const displayFiscalYear = effectiveStartYear + ((bc.year_offset || 1) - 1);
+    const displayFiscalYearStr = `FY${String(displayFiscalYear).padStart(2, "0")}`;
+    
+    // Always overwrite with the current year_offset's data
+    // This ensures we're using the correct mapping regardless of stored fiscal_year
+    group.years_data[displayFiscalYearStr] = {
+      volume: bc.volume,
+      nsp: bc.nsp,
+      cogs_per_unit: bc.cogs_per_unit,
+      total_revenue: bc.total_revenue,
+      total_margin: bc.total_margin,
+      margin_percent: bc.margin_percent,
+    };
+  });
+
+  // Update groups with use_group_id (using formulation_country_use_group_id as identifier)
+  // junctionData was already fetched above, reuse it
+  const bcToUseGroup = new Map<string, string>();
+  junctionData?.forEach((j) => {
+    if (j.business_case_id && j.formulation_country_use_group_id) {
+      bcToUseGroup.set(j.business_case_id, j.formulation_country_use_group_id);
+    }
+  });
+
+  data.forEach((bc) => {
+    if (bc.business_case_group_id && bc.business_case_id) {
+      const group = groups.get(bc.business_case_group_id);
+      if (group) {
+        const useGroupId = bcToUseGroup.get(bc.business_case_id);
+        if (useGroupId && !group.use_group_id) {
+          group.use_group_id = useGroupId; // Use formulation_country_use_group_id as identifier
+        }
+      }
+    }
+  });
+
+  return Array.from(groups.values());
+}
+
+/**
+ * Get all 10 years of data for a specific business case group
+ */
+export async function getBusinessCaseGroup(groupId: string): Promise<BusinessCaseYearData[]> {
+  const supabase = await createClient();
+  
+  const { data, error } = await supabase
+    .from("vw_business_case")
+    .select("*")
+    .eq("business_case_group_id", groupId)
+    .eq("status", "active")
+    .order("year_offset", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to fetch business case group: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  return data.map((bc) => ({
+    business_case_id: bc.business_case_id || "",
+    business_case_group_id: bc.business_case_group_id || "",
+    year_offset: bc.year_offset || 1,
+    fiscal_year: bc.fiscal_year, // Calculated from target_market_entry_fy + year_offset
+    target_market_entry_fy: bc.target_market_entry_fy || null, // Original from use group
+    volume: bc.volume,
+    nsp: bc.nsp,
+    cogs_per_unit: bc.cogs_per_unit,
+    total_revenue: bc.total_revenue,
+    total_cogs: bc.total_cogs,
+    total_margin: bc.total_margin,
+    margin_percent: bc.margin_percent,
+    formulation_name: bc.formulation_name || null,
+    uom: bc.uom || null,
+    country_name: bc.country_name || null,
+    currency_code: bc.currency_code || null,
+    use_group_name: bc.use_group_name || null,
+    use_group_variant: bc.use_group_variant || null,
+  }));
+}
+
+/**
+ * Check if an active business case exists for a formulation-country-use_group combination
+ * Note: use_group_id here refers to formulation_country_use_group_id
+ */
+export async function checkExistingBusinessCase(
+  formulationId: string,
+  countryId: string,
+  useGroupId: string // This is actually formulation_country_use_group_id
+): Promise<string | null> {
+  const supabase = await createClient();
+  
+  // Find business cases linked to this use group
+  const { data: junctionData } = await supabase
+    .from("business_case_use_groups")
+    .select("business_case_id")
+    .eq("formulation_country_use_group_id", useGroupId)
+    .limit(1);
+
+  if (!junctionData || junctionData.length === 0) {
+    return null;
+  }
+
+  // Get business_case_group_id from one of the business cases
+  const { data: bcData } = await supabase
+    .from("business_case")
+    .select("business_case_group_id")
+    .eq("business_case_id", junctionData[0].business_case_id)
+    .eq("status", "active")
+    .single();
+
+  return bcData?.business_case_group_id || null;
+}
+
+/**
+ * Validate that all selected use groups have the same target_market_entry_fy
+ * Returns { isValid: boolean, targetEntry: string | null, error: string | null }
+ */
+export async function validateUseGroupTargetEntryConsistency(
+  useGroupIds: string[]
+): Promise<{ isValid: boolean; targetEntry: string | null; error: string | null }> {
+  const supabase = await createClient();
+  
+  if (!useGroupIds || useGroupIds.length === 0) {
+    return { isValid: false, targetEntry: null, error: "At least one use group must be selected" };
+  }
+
+  // Fetch target_market_entry_fy for all selected use groups
+  const { data: useGroupData, error } = await supabase
+    .from("formulation_country_use_group")
+    .select("formulation_country_use_group_id, target_market_entry_fy")
+    .in("formulation_country_use_group_id", useGroupIds);
+
+  if (error) {
+    return { isValid: false, targetEntry: null, error: `Failed to fetch use groups: ${error.message}` };
+  }
+
+  if (!useGroupData || useGroupData.length === 0) {
+    return { isValid: false, targetEntry: null, error: "No use groups found" };
+  }
+
+  // Get unique non-null target_market_entry_fy values
+  const targetEntries = useGroupData
+    .map(ug => ug.target_market_entry_fy)
+    .filter((entry): entry is string => entry !== null && entry !== undefined);
+
+  if (targetEntries.length === 0) {
+    return { isValid: false, targetEntry: null, error: "Selected use groups do not have target market entry fiscal year set" };
+  }
+
+  // Check if all values are the same
+  const uniqueEntries = Array.from(new Set(targetEntries));
+  
+  if (uniqueEntries.length > 1) {
+    return {
+      isValid: false,
+      targetEntry: null,
+      error: `All selected use groups must have the same target market entry fiscal year. Found values: ${uniqueEntries.join(", ")}`
+    };
+  }
+
+  return { isValid: true, targetEntry: uniqueEntries[0], error: null };
+}
+
 export async function getRevenueProjections() {
   const supabase = await createClient();
   const { data, error } = await supabase
