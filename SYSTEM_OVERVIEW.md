@@ -8,16 +8,16 @@ A comprehensive database system for managing agricultural product portfolios, re
 ### Database Layers (5 interconnected layers)
 1. **Reference Data** - Countries, crops, ingredients, suppliers (lookup tables)
 2. **Core Products** - Formulations with ingredient compositions
-3. **Market Approvals** - Formulation-country-label combinations (regulatory tracking)
+3. **Market Approvals** - Formulation-country-use group combinations (regulatory tracking)
 4. **Business Cases** - Financial modeling and projections
 5. **Regulatory Submissions** - Patents, data protections, timelines
 
 ### Key Design Principles
 - **Single Source of Truth** - All data in one normalized database
 - **Auto-Code Generation** - Formulations automatically get codes based on active ingredients
-- **Dual-Level Tracking** - Formulation-country (market level) + Labels (registration level)
+- **Dual-Level Tracking** - Formulation-country (market level) + Use Groups (registration level)
 - **Git-Style Tracking** - Timestamps and user tracking for business case changes
-- **Flexible Linking** - Business cases can link to formulation-country OR label level
+- **Flexible Linking** - Business cases can link to formulation-country OR use group level
 
 ---
 
@@ -45,16 +45,16 @@ A comprehensive database system for managing agricultural product portfolios, re
   - Registration status, pathway (Article 33/34), portfolio flags
   - Timeline: EMD, target market entry FY
   
-- **formulation_country_label** - Specific label registration
-  - Label variants (A, B, C) per formulation-country
+- **formulation_country_use_group** - Specific use group registration
+  - Use group variants (A, B, C) per formulation-country
   - Reference product links
   - Dual timelines: earliest predicted vs actual dates
   
-- **formulation_country_label_crops** - Crops registered for this label (intended use)
+- **formulation_country_use_group_crops** - Crops registered for this use group (intended use)
 
 ### Business & Financial Tables
 - **business_case** - Financial projections
-  - Links to EITHER `formulation_country_id` OR `formulation_country_label_id`
+  - Links to EITHER `formulation_country_id` OR `formulation_country_use_group_id`
   - Year offset (1-10 years from market entry)
   - Volume, NSP, COGS → auto-calculates revenue, margin, margin%
   - Git-style tracking: `volume_last_updated_at/by`, `nsp_last_updated_at/by`, etc.
@@ -73,7 +73,7 @@ A comprehensive database system for managing agricultural product portfolios, re
 ### Supporting Tables
 - **base_code_registry** - Tracks base codes for auto-generation
 - **formulation_status_history** - Audit trail of status changes
-- **business_case_labels** - Links multiple labels to aggregate business cases
+- **business_case_use_groups** - Links multiple use groups to aggregate business cases
 - **ingredient_suppliers** - Supplier relationships with costs
 - **external_links** - URLs/documentation links
 
@@ -242,12 +242,12 @@ CREATE TABLE formulation_country (
   UNIQUE(formulation_id, country_id)
 );
 
--- Formulation-Country-Label
-CREATE TABLE formulation_country_label (
-  formulation_country_label_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- Formulation-Country-Use Group
+CREATE TABLE formulation_country_use_group (
+  formulation_country_use_group_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   formulation_country_id UUID NOT NULL REFERENCES formulation_country(formulation_country_id) ON DELETE CASCADE,
-  label_variant VARCHAR(10) NOT NULL,
-  label_name VARCHAR(255),
+  use_group_variant VARCHAR(10) NOT NULL,
+  use_group_name VARCHAR(255),
   reference_product_id UUID REFERENCES reference_products(reference_product_id),
   earliest_submission_date DATE,
   earliest_approval_date DATE,
@@ -259,15 +259,15 @@ CREATE TABLE formulation_country_label (
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(formulation_country_id, label_variant)
+  UNIQUE(formulation_country_id, use_group_variant)
 );
 
--- Label Crops (intended use)
-CREATE TABLE formulation_country_label_crops (
-  formulation_country_label_id UUID REFERENCES formulation_country_label(formulation_country_label_id) ON DELETE CASCADE,
+-- Use Group Crops (intended use)
+CREATE TABLE formulation_country_use_group_crops (
+  formulation_country_use_group_id UUID REFERENCES formulation_country_use_group(formulation_country_use_group_id) ON DELETE CASCADE,
   crop_id UUID REFERENCES crops(crop_id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  PRIMARY KEY (formulation_country_label_id, crop_id)
+  PRIMARY KEY (formulation_country_use_group_id, crop_id)
 );
 
 -- Formulation-Country Crops (normal use)
@@ -328,9 +328,9 @@ CREATE TABLE cogs (
 CREATE TABLE business_case (
   business_case_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   formulation_country_id UUID REFERENCES formulation_country(formulation_country_id) ON DELETE CASCADE,
-  formulation_country_label_id UUID REFERENCES formulation_country_label(formulation_country_label_id) ON DELETE CASCADE,
+  formulation_country_use_group_id UUID REFERENCES formulation_country_use_group(formulation_country_use_group_id) ON DELETE CASCADE,
   business_case_name VARCHAR(255),
-  business_case_type VARCHAR(50) DEFAULT 'Single Label' CHECK (business_case_type IN ('Single Label', 'All Labels (Formulation-Country)', 'Multiple Labels', 'Product Portfolio')),
+  business_case_type VARCHAR(50) DEFAULT 'Single Use Group' CHECK (business_case_type IN ('Single Use Group', 'All Use Groups (Formulation-Country)', 'Multiple Use Groups', 'Product Portfolio')),
   year_offset INT NOT NULL CHECK (year_offset BETWEEN 1 AND 10),
   volume DECIMAL(12,2),
   nsp DECIMAL(12,2),
@@ -360,19 +360,19 @@ CREATE TABLE business_case (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT chk_business_case_link CHECK (
-    (formulation_country_id IS NOT NULL AND formulation_country_label_id IS NULL) OR
-    (formulation_country_id IS NULL AND formulation_country_label_id IS NOT NULL)
+    (formulation_country_id IS NOT NULL AND formulation_country_use_group_id IS NULL) OR
+    (formulation_country_id IS NULL AND formulation_country_use_group_id IS NOT NULL)
   ),
-  UNIQUE(formulation_country_id, formulation_country_label_id, year_offset, scenario_id)
+  UNIQUE(formulation_country_id, formulation_country_use_group_id, year_offset, scenario_id)
 );
 
--- Business Case Labels (for aggregate cases)
-CREATE TABLE business_case_labels (
+-- Business Case Use Groups (for aggregate cases)
+CREATE TABLE business_case_use_groups (
   business_case_id UUID REFERENCES business_case(business_case_id) ON DELETE CASCADE,
-  formulation_country_label_id UUID REFERENCES formulation_country_label(formulation_country_label_id) ON DELETE CASCADE,
+  formulation_country_use_group_id UUID REFERENCES formulation_country_use_group(formulation_country_use_group_id) ON DELETE CASCADE,
   weighting DECIMAL(5,2),
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  PRIMARY KEY (business_case_id, formulation_country_label_id)
+  PRIMARY KEY (business_case_id, formulation_country_use_group_id)
 );
 ```
 
@@ -525,8 +525,8 @@ EXECUTE FUNCTION log_status_change();
 formulations
   └─ formulation_ingredients → ingredients
   └─ formulation_country → countries
-      └─ formulation_country_label → reference_products
-          └─ formulation_country_label_crops → crops
+      └─ formulation_country_use_group → reference_products
+          └─ formulation_country_use_group_crops → crops
       └─ formulation_country_crops → crops
       └─ formulation_country_targets → targets
       └─ business_case
@@ -540,7 +540,7 @@ ingredients
   └─ patent_protections → countries
 
 business_case
-  └─ business_case_labels → formulation_country_label
+  └─ business_case_use_groups → formulation_country_use_group
 ```
 
 ---
@@ -555,7 +555,7 @@ All views prefixed with `vw_*` are designed for frontend tools (Retool/SOFTR). K
 - `vw_registration_pipeline` - Registration status by pathway
 - `vw_business_case` - Business cases with readable names
 - `vw_cogs` - COGS with readable names
-- `vw_formulation_country_label` - Labels with readable names
+- `vw_formulation_country_use_group` - Use groups with readable names
 
 **Analysis Views:**
 - `vw_target_coverage` - Target coverage by country
@@ -634,9 +634,9 @@ All views prefixed with `vw_*` are designed for frontend tools (Retool/SOFTR). K
 
 ## Key Relationships & Patterns
 
-### Formulation → Country → Label Hierarchy
+### Formulation → Country → Use Group Hierarchy
 ```
-formulations (1) ──→ (many) formulation_country ──→ (many) formulation_country_label
+formulations (1) ──→ (many) formulation_country ──→ (many) formulation_country_use_group
      │                        │                                    │
      │                        │                                    │
      └── ingredients          └── crops (normal use)              └── crops (intended use)
@@ -647,12 +647,12 @@ formulations (1) ──→ (many) formulation_country ──→ (many) formulati
 
 ### Business Case Linking Pattern
 Business cases can link at TWO levels:
-- **Formulation-Country level** - "All labels for this product in this country"
-- **Label level** - "Specific label registration"
+- **Formulation-Country level** - "All use groups for this product in this country"
+- **Use Group level** - "Specific use group registration"
 
 This allows:
-- Single label projections (year 1, year 2...)
-- Multi-label aggregations (via `business_case_labels` junction table)
+- Single use group projections (year 1, year 2...)
+- Multi-use group aggregations (via `business_case_use_groups` junction table)
 
 ### COGS Hierarchy
 ```
@@ -675,7 +675,7 @@ All views prefixed with `vw_*` are designed for frontend tools (Retool/SOFTR).
 - `vw_registration_pipeline` - Registration status by pathway (Article 33 vs 34)
 - `vw_business_case` - Business cases with readable formulation/country names
 - `vw_cogs` - COGS with readable names
-- `vw_formulation_country_label` - Labels with readable names
+- `vw_formulation_country_use_group` - Use groups with readable names
 
 **Analysis Views:**
 - `vw_target_coverage` - What targets are covered by country
@@ -704,12 +704,12 @@ All views prefixed with `vw_*` are designed for frontend tools (Retool/SOFTR).
 2. Set registration pathway (Article 33 or 34)
 3. Add crops (normal usage) → `formulation_country_crops`
 4. Add targets → `formulation_country_targets`
-5. Create labels → `formulation_country_label` (variant A, B, C...)
-6. Add label crops (intended use) → `formulation_country_label_crops`
+5. Create use groups → `formulation_country_use_group` (variant A, B, C...)
+6. Add use group crops (intended use) → `formulation_country_use_group_crops`
 
 ### 3. Creating Business Case
 1. INSERT into `business_case`
-2. Link to `formulation_country_id` OR `formulation_country_label_id`
+2. Link to `formulation_country_id` OR `formulation_country_use_group_id`
 3. Set `year_offset` (1-10)
 4. Trigger auto-populates `cogs_per_unit` and `fiscal_year`
 5. Set `volume` and `nsp` → auto-calculates revenue, margin, margin%
@@ -729,18 +729,18 @@ All views prefixed with `vw_*` are designed for frontend tools (Retool/SOFTR).
 - Changes logged in `formulation_status_history`
 
 ### Business Case
-- Must link to EITHER formulation_country OR label (not both, not neither)
+- Must link to EITHER formulation_country OR use group (not both, not neither)
 - Year offset: 1-10
-- Business case type: 'Single Label', 'All Labels (Formulation-Country)', 'Multiple Labels', 'Product Portfolio'
+- Business case type: 'Single Use Group', 'All Use Groups (Formulation-Country)', 'Multiple Use Groups', 'Product Portfolio'
 - Confidence level: 'Low', 'Medium', 'High', NULL
 
 ### Registration Status
 - Values: 'Not Started', 'In Progress', 'Submitted', 'Approved', 'Rejected', 'Withdrawn', NULL
-- Tracked at both formulation_country and label levels
+- Tracked at both formulation_country and use group levels
 
 ### Duplicate Prevention
 - `check_duplicate_formulation()` prevents same active ingredients + quantities
-- Unique constraints on (formulation_id, country_id), (formulation_country_id, label_variant)
+- Unique constraints on (formulation_id, country_id), (formulation_country_id, use_group_variant)
 
 ---
 
@@ -784,7 +784,7 @@ All views prefixed with `vw_*` are designed for frontend tools (Retool/SOFTR).
 ## Common Custom Features to Build
 
 ### 1. Notification System
-- Trigger on `formulation_country_label` date changes
+- Trigger on `formulation_country_use_group` date changes
 - Alert when `earliest_approval_date` changes
 - Notify stakeholders of status changes
 
@@ -833,7 +833,7 @@ All views prefixed with `vw_*` are designed for frontend tools (Retool/SOFTR).
 2. **Respect auto-generation** - Don't manually set formulation_code, let triggers handle it
 3. **Use UUIDs for writes** - Foreign keys are UUIDs, views provide readable names
 4. **Leverage triggers** - Business case COGS auto-population, status logging, etc.
-5. **Follow the hierarchy** - Formulation → Country → Label (don't skip levels)
+5. **Follow the hierarchy** - Formulation → Country → Use Group (don't skip levels)
 6. **Check constraints** - Status values, business case types, etc. are constrained
 7. **Use generated columns** - Revenue, margin, margin% are auto-calculated
 8. **Track changes** - Use git-style fields for audit trails
@@ -842,7 +842,7 @@ All views prefixed with `vw_*` are designed for frontend tools (Retool/SOFTR).
 
 - ❌ Querying `formulation_country` table directly (use `vw_formulation_country_detail`)
 - ❌ Manually setting `formulation_code` (let triggers handle it)
-- ❌ Creating business case without linking to formulation_country OR label
+- ❌ Creating business case without linking to formulation_country OR use group
 - ❌ Forgetting to set `is_active = true` when creating new records
 - ❌ Not using `display_name` columns from views (they're pre-formatted)
 
@@ -850,7 +850,7 @@ All views prefixed with `vw_*` are designed for frontend tools (Retool/SOFTR).
 
 1. Create test formulation → verify code generation
 2. Add to country → verify crops/targets can be added
-3. Create label → verify reference product linking
+3. Create use group → verify reference product linking
 4. Create business case → verify COGS auto-population
 5. Update volume → verify git-style tracking updates
 

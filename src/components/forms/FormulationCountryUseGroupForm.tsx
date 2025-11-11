@@ -25,13 +25,13 @@ import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-selec
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/database.types";
 
-type FormulationCountryLabel = Database["public"]["Tables"]["formulation_country_label"]["Row"];
+type FormulationCountryUseGroup = Database["public"]["Tables"]["formulation_country_use_group"]["Row"];
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 type Crop = Database["public"]["Tables"]["crops"]["Row"];
 type ReferenceProduct = Database["public"]["Tables"]["reference_products"]["Row"];
 
-interface FormulationCountryLabelFormProps {
-  formulationCountryLabel?: FormulationCountryLabel | null;
+interface FormulationCountryUseGroupFormProps {
+  formulationCountryUseGroup?: FormulationCountryUseGroup | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
@@ -47,13 +47,13 @@ const REGISTRATION_STATUSES = [
   "Withdrawn",
 ];
 
-export function FormulationCountryLabelForm({
-  formulationCountryLabel,
+export function FormulationCountryUseGroupForm({
+  formulationCountryUseGroup,
   open,
   onOpenChange,
   onSuccess,
   defaultFormulationCountryId,
-}: FormulationCountryLabelFormProps) {
+}: FormulationCountryUseGroupFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -64,27 +64,27 @@ export function FormulationCountryLabelForm({
 
   const [formData, setFormData] = useState({
     formulation_country_id:
-      formulationCountryLabel?.formulation_country_id || defaultFormulationCountryId || "",
-    label_variant: formulationCountryLabel?.label_variant || "",
-    label_name: formulationCountryLabel?.label_name || "",
-    reference_product_id: formulationCountryLabel?.reference_product_id || "",
-    registration_status: formulationCountryLabel?.registration_status || "",
-    earliest_submission_date: formulationCountryLabel?.earliest_submission_date || "",
-    earliest_approval_date: formulationCountryLabel?.earliest_approval_date || "",
-    earliest_market_entry_date: formulationCountryLabel?.earliest_market_entry_date || "",
-    actual_submission_date: formulationCountryLabel?.actual_submission_date || "",
-    actual_approval_date: formulationCountryLabel?.actual_approval_date || "",
-    actual_market_entry_date: formulationCountryLabel?.actual_market_entry_date || "",
+      formulationCountryUseGroup?.formulation_country_id || defaultFormulationCountryId || "",
+    use_group_variant: formulationCountryUseGroup?.use_group_variant || "",
+    use_group_name: formulationCountryUseGroup?.use_group_name || "",
+    reference_product_id: formulationCountryUseGroup?.reference_product_id || "",
+    registration_status: formulationCountryUseGroup?.registration_status || "",
+    earliest_submission_date: formulationCountryUseGroup?.earliest_submission_date || "",
+    earliest_approval_date: formulationCountryUseGroup?.earliest_approval_date || "",
+    earliest_market_entry_date: formulationCountryUseGroup?.earliest_market_entry_date || "",
+    actual_submission_date: formulationCountryUseGroup?.actual_submission_date || "",
+    actual_approval_date: formulationCountryUseGroup?.actual_approval_date || "",
+    actual_market_entry_date: formulationCountryUseGroup?.actual_market_entry_date || "",
   });
 
   useEffect(() => {
     if (open) {
       loadData();
-      if (formulationCountryLabel) {
+      if (formulationCountryUseGroup) {
         loadExistingCrops();
       }
     }
-  }, [open, formulationCountryLabel]);
+  }, [open, formulationCountryUseGroup]);
 
   const loadData = async () => {
     const supabase = createClient();
@@ -114,13 +114,13 @@ export function FormulationCountryLabelForm({
   };
 
   const loadExistingCrops = async () => {
-    if (!formulationCountryLabel) return;
+    if (!formulationCountryUseGroup) return;
     const supabase = createClient();
 
     const { data: cropsData } = await supabase
-      .from("formulation_country_label_crops")
+      .from("formulation_country_use_group_crops")
       .select("crop_id")
-      .eq("formulation_country_label_id", formulationCountryLabel.formulation_country_label_id);
+      .eq("formulation_country_use_group_id", formulationCountryUseGroup.formulation_country_use_group_id);
     if (cropsData) {
       setSelectedCrops(cropsData.map((c) => c.crop_id));
     }
@@ -129,10 +129,10 @@ export function FormulationCountryLabelForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.formulation_country_id || !formData.label_variant) {
+    if (!formData.formulation_country_id || !formData.use_group_variant) {
       toast({
         title: "Error",
-        description: "Formulation-country and label variant are required",
+        description: "Formulation-country and use group variant are required",
         variant: "destructive",
       });
       return;
@@ -149,15 +149,15 @@ export function FormulationCountryLabelForm({
 
     startTransition(async () => {
       try {
-        const action = formulationCountryLabel
-          ? await import("@/lib/actions/formulation-country-label").then((m) =>
-              m.updateFormulationCountryLabel(
-                formulationCountryLabel.formulation_country_label_id,
+        const action = formulationCountryUseGroup
+          ? await import("@/lib/actions/formulation-country-use-group").then((m) =>
+              m.updateFormulationCountryUseGroup(
+                formulationCountryUseGroup.formulation_country_use_group_id,
                 form
               )
             )
-          : await import("@/lib/actions/formulation-country-label").then((m) =>
-              m.createFormulationCountryLabel(form)
+          : await import("@/lib/actions/formulation-country-use-group").then((m) =>
+              m.createFormulationCountryUseGroup(form)
             );
 
         if (action.error) {
@@ -169,9 +169,9 @@ export function FormulationCountryLabelForm({
         } else {
           toast({
             title: "Success",
-            description: formulationCountryLabel
-              ? "Label updated successfully"
-              : "Label created successfully",
+            description: formulationCountryUseGroup
+              ? "Use group updated successfully"
+              : "Use group created successfully",
           });
           onOpenChange(false);
           if (onSuccess) onSuccess();
@@ -202,12 +202,12 @@ export function FormulationCountryLabelForm({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {formulationCountryLabel ? "Edit Label Registration" : "Add Label Registration"}
+            {formulationCountryUseGroup ? "Edit Use Group Registration" : "Add Use Group Registration"}
           </DialogTitle>
           <DialogDescription>
-            {formulationCountryLabel
-              ? "Update label registration details"
-              : "Create a new label registration for a formulation-country combination"}
+            {formulationCountryUseGroup
+              ? "Update use group registration details"
+              : "Create a new use group registration for a formulation-country combination"}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -222,7 +222,7 @@ export function FormulationCountryLabelForm({
                   setFormData({ ...formData, formulation_country_id: value })
                 }
                 required
-                disabled={!!formulationCountryLabel}
+                disabled={!!formulationCountryUseGroup}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select formulation-country" />
@@ -239,27 +239,27 @@ export function FormulationCountryLabelForm({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="label_variant">
-                Label Variant <span className="text-destructive">*</span>
+              <Label htmlFor="use_group_variant">
+                Use Group Variant <span className="text-destructive">*</span>
               </Label>
               <Input
-                id="label_variant"
-                value={formData.label_variant}
-                onChange={(e) => setFormData({ ...formData, label_variant: e.target.value })}
+                id="use_group_variant"
+                value={formData.use_group_variant}
+                onChange={(e) => setFormData({ ...formData, use_group_variant: e.target.value })}
                 placeholder="A, B, C, etc."
                 required
-                disabled={!!formulationCountryLabel}
+                disabled={!!formulationCountryUseGroup}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="label_name">Label Name</Label>
+              <Label htmlFor="use_group_name">Use Group Name</Label>
               <Input
-                id="label_name"
-                value={formData.label_name}
-                onChange={(e) => setFormData({ ...formData, label_name: e.target.value })}
+                id="use_group_name"
+                value={formData.use_group_name}
+                onChange={(e) => setFormData({ ...formData, use_group_name: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -391,7 +391,7 @@ export function FormulationCountryLabelForm({
               options={cropOptions}
               selected={selectedCrops}
               onChange={setSelectedCrops}
-              placeholder="Select crops for this label..."
+              placeholder="Select crops for this use group..."
             />
           </div>
 
@@ -400,7 +400,7 @@ export function FormulationCountryLabelForm({
               Cancel
             </Button>
             <Button type="submit" disabled={isPending} size="lg" className="h-12 px-6">
-              {isPending ? "Saving..." : formulationCountryLabel ? "Update" : "Create"}
+              {isPending ? "Saving..." : formulationCountryUseGroup ? "Update" : "Create"}
             </Button>
           </DialogFooter>
         </form>
@@ -408,3 +408,4 @@ export function FormulationCountryLabelForm({
     </Dialog>
   );
 }
+

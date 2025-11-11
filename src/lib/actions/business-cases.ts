@@ -9,9 +9,9 @@ export async function createBusinessCase(formData: FormData) {
   const userName = await getCurrentUserName();
 
   const formulationCountryId = formData.get("formulation_country_id") as string | null;
-  const formulationCountryLabelId = formData.get("formulation_country_label_id") as string | null;
+  const formulationCountryUseGroupId = formData.get("formulation_country_use_group_id") as string | null;
   const businessCaseName = formData.get("business_case_name") as string | null;
-  const businessCaseType = (formData.get("business_case_type") as string) || "Single Label";
+  const businessCaseType = (formData.get("business_case_type") as string) || "Single Use Group";
   const yearOffset = Number(formData.get("year_offset"));
   const volume = formData.get("volume") ? Number(formData.get("volume")) : null;
   const nsp = formData.get("nsp") ? Number(formData.get("nsp")) : null;
@@ -22,12 +22,12 @@ export async function createBusinessCase(formData: FormData) {
   const assumptions = formData.get("assumptions") as string | null;
   const confidenceLevel = formData.get("confidence_level") as string | null;
 
-  if (!formulationCountryId && !formulationCountryLabelId) {
-    return { error: "Must link to either formulation-country or label" };
+  if (!formulationCountryId && !formulationCountryUseGroupId) {
+    return { error: "Must link to either formulation-country or use group" };
   }
 
-  if (formulationCountryId && formulationCountryLabelId) {
-    return { error: "Cannot link to both formulation-country and label" };
+  if (formulationCountryId && formulationCountryUseGroupId) {
+    return { error: "Cannot link to both formulation-country and use group" };
   }
 
   if (!yearOffset || yearOffset < 1 || yearOffset > 10) {
@@ -38,7 +38,7 @@ export async function createBusinessCase(formData: FormData) {
     .from("business_case")
     .insert({
       formulation_country_id: formulationCountryId || null,
-      formulation_country_label_id: formulationCountryLabelId || null,
+      formulation_country_use_group_id: formulationCountryUseGroupId || null,
       business_case_name: businessCaseName,
       business_case_type: businessCaseType,
       year_offset: yearOffset,

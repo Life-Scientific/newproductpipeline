@@ -10,7 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import type { Database } from "@/lib/supabase/database.types";
 
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
-type FormulationCountryLabel = Database["public"]["Views"]["vw_formulation_country_label"]["Row"];
+type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
 interface FormulationTreeViewProps {
@@ -18,7 +18,7 @@ interface FormulationTreeViewProps {
   formulationCode: string;
   formulationName: string;
   countries: FormulationCountryDetail[];
-  labels: FormulationCountryLabel[];
+  useGroups: FormulationCountryUseGroup[];
   businessCases: BusinessCase[];
 }
 
@@ -27,11 +27,11 @@ export function FormulationTreeView({
   formulationCode,
   formulationName,
   countries,
-  labels,
+  useGroups,
   businessCases,
 }: FormulationTreeViewProps) {
   const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
-  const [expandedLabels, setExpandedLabels] = useState<Set<string>>(new Set());
+  const [expandedUseGroups, setExpandedUseGroups] = useState<Set<string>>(new Set());
 
   // Auto-expand first country if only one exists
   useEffect(() => {
@@ -50,25 +50,25 @@ export function FormulationTreeView({
     setExpandedCountries(newExpanded);
   };
 
-  const toggleLabel = (labelId: string) => {
-    const newExpanded = new Set(expandedLabels);
-    if (newExpanded.has(labelId)) {
-      newExpanded.delete(labelId);
+  const toggleUseGroup = (useGroupId: string) => {
+    const newExpanded = new Set(expandedUseGroups);
+    if (newExpanded.has(useGroupId)) {
+      newExpanded.delete(useGroupId);
     } else {
-      newExpanded.add(labelId);
+      newExpanded.add(useGroupId);
     }
-    setExpandedLabels(newExpanded);
+    setExpandedUseGroups(newExpanded);
   };
 
-  // Group labels by country ID
-  const labelsByCountry = labels.reduce((acc, label) => {
-    const countryId = label.formulation_country_id || "";
+  // Group use groups by country ID
+  const useGroupsByCountry = useGroups.reduce((acc, useGroup) => {
+    const countryId = useGroup.formulation_country_id || "";
     if (!acc[countryId]) {
       acc[countryId] = [];
     }
-    acc[countryId].push(label);
+    acc[countryId].push(useGroup);
     return acc;
-  }, {} as Record<string, FormulationCountryLabel[]>);
+  }, {} as Record<string, FormulationCountryUseGroup[]>);
 
   // Group business cases by country ID (where formulation_country_id is not null)
   const businessCasesByCountry = businessCases.reduce((acc, bc) => {
@@ -82,14 +82,14 @@ export function FormulationTreeView({
     return acc;
   }, {} as Record<string, BusinessCase[]>);
 
-  // Group business cases by label ID (where formulation_country_label_id is not null)
-  const businessCasesByLabel = businessCases.reduce((acc, bc) => {
-    if (bc.formulation_country_label_id) {
-      const labelId = bc.formulation_country_label_id;
-      if (!acc[labelId]) {
-        acc[labelId] = [];
+  // Group business cases by use group ID (where formulation_country_use_group_id is not null)
+  const businessCasesByUseGroup = businessCases.reduce((acc, bc) => {
+    if (bc.formulation_country_use_group_id) {
+      const useGroupId = bc.formulation_country_use_group_id;
+      if (!acc[useGroupId]) {
+        acc[useGroupId] = [];
       }
-      acc[labelId].push(bc);
+      acc[useGroupId].push(bc);
     }
     return acc;
   }, {} as Record<string, BusinessCase[]>);
@@ -119,8 +119,8 @@ export function FormulationTreeView({
               <p className="text-lg font-semibold">{countries.length}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Labels</p>
-              <p className="text-lg font-semibold">{labels.length}</p>
+              <p className="text-xs text-muted-foreground">Use Groups</p>
+              <p className="text-lg font-semibold">{useGroups.length}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Business Cases</p>
@@ -158,7 +158,7 @@ export function FormulationTreeView({
             <div className="ml-2 sm:ml-4 space-y-2">
               {countries.map((country) => {
                 const countryId = country.formulation_country_id || "";
-                const countryLabels = labelsByCountry[countryId] || [];
+                const countryUseGroups = useGroupsByCountry[countryId] || [];
                 const countryBusinessCases = businessCasesByCountry[countryId] || [];
                 const isExpanded = expandedCountries.has(countryId);
 
@@ -199,9 +199,9 @@ export function FormulationTreeView({
                               </Badge>
                             )}
                             <div className="ml-auto flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                              {countryLabels.length > 0 && (
+                              {countryUseGroups.length > 0 && (
                                 <Badge variant="secondary" className="text-xs">
-                                  {countryLabels.length}L
+                                  {countryUseGroups.length}UG
                                 </Badge>
                               )}
                               {countryBusinessCases.length > 0 && (
@@ -248,22 +248,22 @@ export function FormulationTreeView({
                             </div>
                           )}
 
-                          {/* Labels Level */}
-                          {countryLabels.length > 0 && (
+                          {/* Use Groups Level */}
+                          {countryUseGroups.length > 0 && (
                             <div className="space-y-2">
                               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                                Labels
+                                Use Groups
                               </div>
-                              {countryLabels.map((label) => {
-                                const labelId = label.formulation_country_label_id || "";
-                                const labelBusinessCases = businessCasesByLabel[labelId] || [];
-                                const isLabelExpanded = expandedLabels.has(labelId);
+                              {countryUseGroups.map((useGroup) => {
+                                const useGroupId = useGroup.formulation_country_use_group_id || "";
+                                const useGroupBusinessCases = businessCasesByUseGroup[useGroupId] || [];
+                                const isUseGroupExpanded = expandedUseGroups.has(useGroupId);
 
                                 return (
                                   <Collapsible
-                                    key={labelId}
-                                    open={isLabelExpanded}
-                                    onOpenChange={() => toggleLabel(labelId)}
+                                    key={useGroupId}
+                                    open={isUseGroupExpanded}
+                                    onOpenChange={() => toggleUseGroup(useGroupId)}
                                   >
                                     <div className="space-y-2">
                                       <div className="flex items-center gap-2">
@@ -273,7 +273,7 @@ export function FormulationTreeView({
                                             size="icon"
                                             className="h-6 w-6 flex-shrink-0"
                                           >
-                                            {isLabelExpanded ? (
+                                            {isUseGroupExpanded ? (
                                               <ChevronDown className="h-3 w-3" />
                                             ) : (
                                               <ChevronRight className="h-3 w-3" />
@@ -281,7 +281,7 @@ export function FormulationTreeView({
                                           </Button>
                                         </CollapsibleTrigger>
                                         <Link
-                                          href={`/labels/${labelId}`}
+                                          href={`/use-groups/${useGroupId}`}
                                           className="flex-1"
                                         >
                                           <Button
@@ -290,21 +290,21 @@ export function FormulationTreeView({
                                           >
                                             <FileText className="h-3 w-3 mr-1 sm:mr-2 text-muted-foreground flex-shrink-0" />
                                             <span className="truncate">
-                                              {label.label_name || `Label ${label.label_variant}`}
+                                              {useGroup.use_group_name || `Use Group ${useGroup.use_group_variant}`}
                                             </span>
-                                            {label.label_variant && (
+                                            {useGroup.use_group_variant && (
                                               <Badge variant="outline" className="text-xs ml-1 sm:ml-2 hidden sm:inline-flex">
-                                                {label.label_variant}
+                                                {useGroup.use_group_variant}
                                               </Badge>
                                             )}
-                                            {label.registration_status && (
+                                            {useGroup.registration_status && (
                                               <Badge variant="secondary" className="text-xs ml-1 sm:ml-2 hidden sm:inline-flex">
-                                                {label.registration_status}
+                                                {useGroup.registration_status}
                                               </Badge>
                                             )}
-                                            {labelBusinessCases.length > 0 && (
+                                            {useGroupBusinessCases.length > 0 && (
                                               <Badge variant="default" className="text-xs ml-auto flex-shrink-0">
-                                                {labelBusinessCases.length}BC
+                                                {useGroupBusinessCases.length}BC
                                               </Badge>
                                             )}
                                           </Button>
@@ -313,41 +313,41 @@ export function FormulationTreeView({
 
                                       <CollapsibleContent>
                                         <div className="ml-3 sm:ml-6 space-y-2 border-l-2 border-muted/50 pl-2 sm:pl-3">
-                                          {/* Label Details */}
+                                          {/* Use Group Details */}
                                           <div className="p-2 rounded-md bg-muted/30 border text-xs space-y-1">
-                                            {label.reference_product_name && (
+                                            {useGroup.reference_product_name && (
                                               <div>
                                                 <span className="font-medium">Reference Product: </span>
-                                                <span>{label.reference_product_name}</span>
+                                                <span>{useGroup.reference_product_name}</span>
                                               </div>
                                             )}
-                                            {label.earliest_submission_date && (
+                                            {useGroup.earliest_submission_date && (
                                               <div>
                                                 <span className="font-medium">Earliest Submission: </span>
-                                                <span>{new Date(label.earliest_submission_date).toLocaleDateString()}</span>
+                                                <span>{new Date(useGroup.earliest_submission_date).toLocaleDateString()}</span>
                                               </div>
                                             )}
-                                            {label.actual_submission_date && (
+                                            {useGroup.actual_submission_date && (
                                               <div>
                                                 <span className="font-medium">Actual Submission: </span>
-                                                <span>{new Date(label.actual_submission_date).toLocaleDateString()}</span>
+                                                <span>{new Date(useGroup.actual_submission_date).toLocaleDateString()}</span>
                                               </div>
                                             )}
-                                            {label.actual_approval_date && (
+                                            {useGroup.actual_approval_date && (
                                               <div>
                                                 <span className="font-medium">Approved: </span>
-                                                <span>{new Date(label.actual_approval_date).toLocaleDateString()}</span>
+                                                <span>{new Date(useGroup.actual_approval_date).toLocaleDateString()}</span>
                                               </div>
                                             )}
                                           </div>
 
-                                          {/* Business Cases at Label Level */}
-                                          {labelBusinessCases.length > 0 && (
+                                          {/* Business Cases at Use Group Level */}
+                                          {useGroupBusinessCases.length > 0 && (
                                             <div className="space-y-2">
                                               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                                                 Business Cases
                                               </div>
-                                              {labelBusinessCases.map((bc) => (
+                                              {useGroupBusinessCases.map((bc) => (
                                                 <Link
                                                   key={bc.business_case_id}
                                                   href={`/business-cases/${bc.business_case_id}`}
@@ -372,9 +372,9 @@ export function FormulationTreeView({
                                               ))}
                                             </div>
                                           )}
-                                          {labelBusinessCases.length === 0 && (
+                                          {useGroupBusinessCases.length === 0 && (
                                             <div className="text-xs text-muted-foreground p-2 border rounded-md bg-muted/30">
-                                              No business cases for this label
+                                              No business cases for this use group
                                             </div>
                                           )}
                                         </div>
@@ -386,10 +386,10 @@ export function FormulationTreeView({
                             </div>
                           )}
 
-                          {/* Show message if no labels or business cases */}
-                          {countryLabels.length === 0 && countryBusinessCases.length === 0 && (
+                          {/* Show message if no use groups or business cases */}
+                          {countryUseGroups.length === 0 && countryBusinessCases.length === 0 && (
                             <div className="text-xs text-muted-foreground p-2 border rounded-md bg-muted/30">
-                              No labels or business cases for this country
+                              No use groups or business cases for this country
                             </div>
                           )}
                         </div>

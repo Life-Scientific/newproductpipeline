@@ -3,12 +3,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function createFormulationCountryLabel(formData: FormData) {
+export async function createFormulationCountryUseGroup(formData: FormData) {
   const supabase = await createClient();
 
   const formulationCountryId = formData.get("formulation_country_id") as string;
-  const labelVariant = formData.get("label_variant") as string;
-  const labelName = formData.get("label_name") as string | null;
+  const useGroupVariant = formData.get("use_group_variant") as string;
+  const useGroupName = formData.get("use_group_name") as string | null;
   const referenceProductId = formData.get("reference_product_id") as string | null;
   const registrationStatus = formData.get("registration_status") as string | null;
   const earliestSubmissionDate = formData.get("earliest_submission_date") as string | null;
@@ -20,28 +20,28 @@ export async function createFormulationCountryLabel(formData: FormData) {
 
   const cropsJson = formData.get("crops") as string | null;
 
-  if (!formulationCountryId || !labelVariant) {
-    return { error: "Formulation-country and label variant are required" };
+  if (!formulationCountryId || !useGroupVariant) {
+    return { error: "Formulation-country and use group variant are required" };
   }
 
   // Check for duplicate
   const { data: existing } = await supabase
-    .from("formulation_country_label")
-    .select("formulation_country_label_id")
+    .from("formulation_country_use_group")
+    .select("formulation_country_use_group_id")
     .eq("formulation_country_id", formulationCountryId)
-    .eq("label_variant", labelVariant)
+    .eq("use_group_variant", useGroupVariant)
     .single();
 
   if (existing) {
-    return { error: "This label variant already exists for this formulation-country" };
+    return { error: "This use group variant already exists for this formulation-country" };
   }
 
   const { data, error } = await supabase
-    .from("formulation_country_label")
+    .from("formulation_country_use_group")
     .insert({
       formulation_country_id: formulationCountryId,
-      label_variant: labelVariant,
-      label_name: labelName,
+      use_group_variant: useGroupVariant,
+      use_group_name: useGroupName,
       reference_product_id: referenceProductId || null,
       registration_status: registrationStatus,
       earliest_submission_date: earliestSubmissionDate || null,
@@ -59,15 +59,15 @@ export async function createFormulationCountryLabel(formData: FormData) {
   }
 
   // Add crops (intended use)
-  if (cropsJson && data?.formulation_country_label_id) {
+  if (cropsJson && data?.formulation_country_use_group_id) {
     try {
       const crops: string[] = JSON.parse(cropsJson);
       if (crops.length > 0) {
         const cropInserts = crops.map((cropId) => ({
-          formulation_country_label_id: data.formulation_country_label_id,
+          formulation_country_use_group_id: data.formulation_country_use_group_id,
           crop_id: cropId,
         }));
-        await supabase.from("formulation_country_label_crops").insert(cropInserts);
+        await supabase.from("formulation_country_use_group_crops").insert(cropInserts);
       }
     } catch (parseError) {
       console.error("Failed to parse crops:", parseError);
@@ -76,17 +76,18 @@ export async function createFormulationCountryLabel(formData: FormData) {
 
   revalidatePath("/registration");
   revalidatePath("/formulations");
+  revalidatePath("/use-groups");
   return { data, success: true };
 }
 
-export async function updateFormulationCountryLabel(
-  formulationCountryLabelId: string,
+export async function updateFormulationCountryUseGroup(
+  formulationCountryUseGroupId: string,
   formData: FormData
 ) {
   const supabase = await createClient();
 
-  const labelVariant = formData.get("label_variant") as string | null;
-  const labelName = formData.get("label_name") as string | null;
+  const useGroupVariant = formData.get("use_group_variant") as string | null;
+  const useGroupName = formData.get("use_group_name") as string | null;
   const referenceProductId = formData.get("reference_product_id") as string | null;
   const registrationStatus = formData.get("registration_status") as string | null;
   const earliestSubmissionDate = formData.get("earliest_submission_date") as string | null;
@@ -102,8 +103,8 @@ export async function updateFormulationCountryLabel(
     updated_at: new Date().toISOString(),
   };
 
-  if (labelVariant !== null) updateData.label_variant = labelVariant;
-  if (labelName !== null) updateData.label_name = labelName;
+  if (useGroupVariant !== null) updateData.use_group_variant = useGroupVariant;
+  if (useGroupName !== null) updateData.use_group_name = useGroupName;
   if (referenceProductId !== null) updateData.reference_product_id = referenceProductId || null;
   if (registrationStatus !== null) updateData.registration_status = registrationStatus;
   if (earliestSubmissionDate !== null)
@@ -118,9 +119,9 @@ export async function updateFormulationCountryLabel(
     updateData.actual_market_entry_date = actualMarketEntryDate || null;
 
   const { data, error } = await supabase
-    .from("formulation_country_label")
+    .from("formulation_country_use_group")
     .update(updateData)
-    .eq("formulation_country_label_id", formulationCountryLabelId)
+    .eq("formulation_country_use_group_id", formulationCountryUseGroupId)
     .select()
     .single();
 
@@ -131,18 +132,18 @@ export async function updateFormulationCountryLabel(
   // Update crops - delete all and reinsert
   if (cropsJson !== null) {
     await supabase
-      .from("formulation_country_label_crops")
+      .from("formulation_country_use_group_crops")
       .delete()
-      .eq("formulation_country_label_id", formulationCountryLabelId);
+      .eq("formulation_country_use_group_id", formulationCountryUseGroupId);
 
     try {
       const crops: string[] = JSON.parse(cropsJson);
       if (crops.length > 0) {
         const cropInserts = crops.map((cropId) => ({
-          formulation_country_label_id: formulationCountryLabelId,
+          formulation_country_use_group_id: formulationCountryUseGroupId,
           crop_id: cropId,
         }));
-        await supabase.from("formulation_country_label_crops").insert(cropInserts);
+        await supabase.from("formulation_country_use_group_crops").insert(cropInserts);
       }
     } catch (parseError) {
       console.error("Failed to parse crops:", parseError);
@@ -151,16 +152,17 @@ export async function updateFormulationCountryLabel(
 
   revalidatePath("/registration");
   revalidatePath("/formulations");
+  revalidatePath("/use-groups");
   return { data, success: true };
 }
 
-export async function deleteFormulationCountryLabel(formulationCountryLabelId: string) {
+export async function deleteFormulationCountryUseGroup(formulationCountryUseGroupId: string) {
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("formulation_country_label")
+    .from("formulation_country_use_group")
     .delete()
-    .eq("formulation_country_label_id", formulationCountryLabelId);
+    .eq("formulation_country_use_group_id", formulationCountryUseGroupId);
 
   if (error) {
     return { error: error.message };
@@ -168,6 +170,7 @@ export async function deleteFormulationCountryLabel(formulationCountryLabelId: s
 
   revalidatePath("/registration");
   revalidatePath("/formulations");
+  revalidatePath("/use-groups");
   return { success: true };
 }
 

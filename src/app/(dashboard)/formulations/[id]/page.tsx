@@ -6,7 +6,7 @@ import {
   getFormulationBusinessCases,
   getFormulationStatusHistory,
   getFormulationProtectionStatus,
-  getFormulationLabels,
+  getFormulationUseGroups,
 } from "@/lib/db/queries";
 import { getFormulationLaunchEligibility } from "@/lib/actions/protection-check";
 import { ProtectionDashboard } from "@/components/formulations/ProtectionDashboard";
@@ -52,7 +52,7 @@ export default async function FormulationDetailPage({
     businessCases,
     statusHistory,
     protectionStatus,
-    labels,
+    useGroups,
     businessCasesForTree,
     launchEligibility,
   ] = await Promise.all([
@@ -63,7 +63,7 @@ export default async function FormulationDetailPage({
     getFormulationBusinessCases(id),
     getFormulationStatusHistory(id),
     getFormulationProtectionStatus(id),
-    getFormulationLabels(id),
+    getFormulationUseGroups(id),
     getFormulationBusinessCasesForTree(id),
     getFormulationLaunchEligibility(id).catch(() => []), // Gracefully handle errors
   ]);
@@ -294,7 +294,7 @@ export default async function FormulationDetailPage({
                             </Badge>
                           )}
                           <Badge variant="secondary" className="text-xs">
-                            {labels.filter(l => l.formulation_country_id === detail.formulation_country_id).length} labels
+                            {useGroups.filter(ug => ug.formulation_country_id === detail.formulation_country_id).length} use groups
                           </Badge>
                         </div>
                       </div>
@@ -309,10 +309,10 @@ export default async function FormulationDetailPage({
               <ProtectionDashboard eligibilityResults={launchEligibility} />
             )}
 
-            {/* Regulatory - Labels & Protection */}
+            {/* Regulatory - Use Groups & Protection */}
             <FormulationRegulatory
               protectionStatus={protectionStatus}
-              labels={labels}
+              useGroups={useGroups}
             />
           </TabsContent>
 
@@ -323,7 +323,7 @@ export default async function FormulationDetailPage({
               formulationCode={formulation.formulation_code || ""}
               formulationName={formulation.product_name || ""}
               countries={countryDetails}
-              labels={labels}
+              useGroups={useGroups}
               businessCases={businessCasesForTree}
             />
           </TabsContent>

@@ -44,7 +44,7 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Country</TableHead>
-              <TableHead>Label</TableHead>
+              <TableHead>Use Group</TableHead>
               <TableHead>Year Offset</TableHead>
               <TableHead>Fiscal Year</TableHead>
               <TableHead>Volume</TableHead>
@@ -78,10 +78,10 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                   </TableCell>
                   <TableCell>{bc.country_name || "—"}</TableCell>
                   <TableCell>
-                    {bc.label_name ? (
+                    {bc.use_group_name ? (
                       <div>
-                        <div>{bc.label_name}</div>
-                        <div className="text-xs text-muted-foreground">Variant: {bc.label_variant}</div>
+                        <div>{bc.use_group_name}</div>
+                        <div className="text-xs text-muted-foreground">Variant: {bc.use_group_variant}</div>
                       </div>
                     ) : (
                       "—"

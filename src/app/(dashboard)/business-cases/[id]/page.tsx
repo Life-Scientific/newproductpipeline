@@ -278,18 +278,18 @@ export default async function BusinessCaseDetailPage({
                   </div>
                 )}
 
-                {businessCase.label_name && businessCase.formulation_country_label_id && (
+                {businessCase.use_group_name && businessCase.formulation_country_use_group_id && (
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">
-                      Label
+                      Use Group
                     </p>
                     <Button variant="link" className="h-auto p-0" asChild>
-                      <Link href={`/labels/${businessCase.formulation_country_label_id}`}>
+                      <Link href={`/use-groups/${businessCase.formulation_country_use_group_id}`}>
                         <FileText className="mr-2 h-4 w-4" />
-                        {businessCase.label_name}
-                        {businessCase.label_variant && (
+                        {businessCase.use_group_name}
+                        {businessCase.use_group_variant && (
                           <Badge variant="secondary" className="ml-2 text-xs">
-                            {businessCase.label_variant}
+                            {businessCase.use_group_variant}
                           </Badge>
                         )}
                       </Link>

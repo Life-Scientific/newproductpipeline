@@ -10,7 +10,7 @@ type COGS = Database["public"]["Views"]["vw_cogs"]["Row"];
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 type StatusHistory = Database["public"]["Tables"]["formulation_status_history"]["Row"];
 type ProtectionStatus = Database["public"]["Views"]["vw_protection_status"]["Row"];
-type FormulationCountryLabel = Database["public"]["Views"]["vw_formulation_country_label"]["Row"];
+type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
 type IngredientUsage = Database["public"]["Views"]["vw_ingredient_usage"]["Row"];
 type ActivePortfolio = Database["public"]["Views"]["vw_active_portfolio"]["Row"];
@@ -25,8 +25,8 @@ export type EnrichedBusinessCase = BusinessCase & {
 export interface FormulationWithNestedData extends Formulation {
   countries_count: number;
   countries_list: string;
-  labels_count: number;
-  labels_list: string;
+  use_groups_count: number;
+  use_groups_list: string;
   business_cases_count: number;
   total_revenue: number;
   total_margin: number;
@@ -69,16 +69,16 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
   }
 
   // Get all related data in parallel
-  const [countriesResult, labelsResult, businessCasesResult, cogsResult, protectionResult] = await Promise.all([
+  const [countriesResult, useGroupsResult, businessCasesResult, cogsResult, protectionResult] = await Promise.all([
     supabase.from("vw_formulation_country_detail").select("formulation_code, country_name, registration_status, emd, target_market_entry_fy, normal_crop_usage, targets_treated"),
-    supabase.from("vw_formulation_country_label").select("formulation_code, label_name, label_variant, country_name, registration_status, reference_product_name"),
+    supabase.from("vw_formulation_country_use_group").select("formulation_code, use_group_name, use_group_variant, country_name, registration_status, reference_product_name"),
     supabase.from("vw_business_case").select("formulation_code, total_revenue, total_margin"),
     supabase.from("vw_cogs").select("formulation_code, cogs_value, fiscal_year"),
     supabase.from("vw_protection_status").select("formulation_code, country_name, earliest_active_patent_expiry, earliest_active_data_protection_expiry"),
   ]);
 
   const countriesData = countriesResult.data || [];
-  const labelsData = labelsResult.data || [];
+  const useGroupsData = useGroupsResult.data || [];
   const businessCasesData = businessCasesResult.data || [];
   const cogsData = cogsResult.data || [];
   const protectionData = protectionResult.data || [];
@@ -87,8 +87,8 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
   const aggregated = new Map<string, {
     countries: Set<string>;
     countriesList: Array<{ name: string; status: string; emd: string | null; tme: string | null }>;
-    labels: Set<string>;
-    labelsList: Array<{ name: string; variant: string; country: string; status: string; ref: string | null }>;
+    useGroups: Set<string>;
+    useGroupsList: Array<{ name: string; variant: string; country: string; status: string; ref: string | null }>;
     businessCases: number;
     totalRevenue: number;
     totalMargin: number;
@@ -105,8 +105,8 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       aggregated.set(item.formulation_code, {
         countries: new Set(),
         countriesList: [],
-        labels: new Set(),
-        labelsList: [],
+        useGroups: new Set(),
+        useGroupsList: [],
         businessCases: 0,
         totalRevenue: 0,
         totalMargin: 0,
@@ -139,15 +139,15 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
     }
   });
 
-  // Process labels
-  labelsData.forEach((item: any) => {
+  // Process use groups
+  useGroupsData.forEach((item: any) => {
     if (!item.formulation_code) return;
     if (!aggregated.has(item.formulation_code)) {
       aggregated.set(item.formulation_code, {
         countries: new Set(),
         countriesList: [],
-        labels: new Set(),
-        labelsList: [],
+        useGroups: new Set(),
+        useGroupsList: [],
         businessCases: 0,
         totalRevenue: 0,
         totalMargin: 0,
@@ -158,11 +158,11 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       });
     }
     const agg = aggregated.get(item.formulation_code)!;
-    const labelKey = `${item.label_variant || ""} (${item.country_name || ""})`;
-    agg.labels.add(labelKey);
-    agg.labelsList.push({
-      name: item.label_name || item.label_variant || "",
-      variant: item.label_variant || "",
+    const useGroupKey = `${item.use_group_variant || ""} (${item.country_name || ""})`;
+    agg.useGroups.add(useGroupKey);
+    agg.useGroupsList.push({
+      name: item.use_group_name || item.use_group_variant || "",
+      variant: item.use_group_variant || "",
       country: item.country_name || "",
       status: item.registration_status || "",
       ref: item.reference_product_name,
@@ -176,8 +176,8 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       aggregated.set(item.formulation_code, {
         countries: new Set(),
         countriesList: [],
-        labels: new Set(),
-        labelsList: [],
+        useGroups: new Set(),
+        useGroupsList: [],
         businessCases: 0,
         totalRevenue: 0,
         totalMargin: 0,
@@ -200,8 +200,8 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       aggregated.set(item.formulation_code, {
         countries: new Set(),
         countriesList: [],
-        labels: new Set(),
-        labelsList: [],
+        useGroups: new Set(),
+        useGroupsList: [],
         businessCases: 0,
         totalRevenue: 0,
         totalMargin: 0,
@@ -225,8 +225,8 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       aggregated.set(item.formulation_code, {
         countries: new Set(),
         countriesList: [],
-        labels: new Set(),
-        labelsList: [],
+        useGroups: new Set(),
+        useGroupsList: [],
         businessCases: 0,
         totalRevenue: 0,
         totalMargin: 0,
@@ -249,8 +249,8 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
     const agg = aggregated.get(formulation.formulation_code || "") || {
       countries: new Set<string>(),
       countriesList: [],
-      labels: new Set<string>(),
-      labelsList: [],
+      useGroups: new Set<string>(),
+      useGroupsList: [],
       businessCases: 0,
       totalRevenue: 0,
       totalMargin: 0,
@@ -263,8 +263,8 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
     // Get unique crops and targets from aggregated data
     const referenceProducts = new Set<string>();
 
-    agg.labelsList.forEach((label) => {
-      if (label.ref) referenceProducts.add(label.ref);
+    agg.useGroupsList.forEach((useGroup) => {
+      if (useGroup.ref) referenceProducts.add(useGroup.ref);
     });
 
     // Get EMD dates
@@ -315,8 +315,8 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       ...formulation,
       countries_count: agg.countries.size,
       countries_list: Array.from(agg.countries).join(", ") || "—",
-      labels_count: agg.labels.size,
-      labels_list: agg.labelsList.map((l) => `${l.variant} (${l.country})`).join("; ") || "—",
+      use_groups_count: agg.useGroups.size,
+      use_groups_list: agg.useGroupsList.map((ug) => `${ug.variant} (${ug.country})`).join("; ") || "—",
       business_cases_count: agg.businessCases,
       total_revenue: agg.totalRevenue,
       total_margin: agg.totalMargin,
@@ -625,7 +625,7 @@ export async function getAllProtectionStatus() {
   return data as ProtectionStatus[];
 }
 
-export async function getFormulationLabels(formulationId: string) {
+export async function getFormulationUseGroups(formulationId: string) {
   const supabase = await createClient();
   const formulation = await getFormulationById(formulationId);
   if (!formulation?.formulation_code) {
@@ -633,40 +633,40 @@ export async function getFormulationLabels(formulationId: string) {
   }
 
   const { data, error } = await supabase
-    .from("vw_formulation_country_label")
+    .from("vw_formulation_country_use_group")
     .select("*")
     .eq("formulation_code", formulation.formulation_code)
     .order("country_name", { ascending: true })
-    .order("label_name", { ascending: true });
+    .order("use_group_name", { ascending: true });
 
   if (error) {
-    throw new Error(`Failed to fetch labels: ${error.message}`);
+    throw new Error(`Failed to fetch use groups: ${error.message}`);
   }
 
-  return data as FormulationCountryLabel[];
+  return data as FormulationCountryUseGroup[];
 }
 
-export async function getAllLabels() {
+export async function getAllUseGroups() {
   const supabase = await createClient();
   
-  // Get all labels
-  const { data: labels, error } = await supabase
-    .from("vw_formulation_country_label")
+  // Get all use groups
+  const { data: useGroups, error } = await supabase
+    .from("vw_formulation_country_use_group")
     .select("*")
     .order("formulation_code", { ascending: true })
     .order("country_name", { ascending: true })
-    .order("label_name", { ascending: true });
+    .order("use_group_name", { ascending: true });
 
   if (error) {
-    throw new Error(`Failed to fetch labels: ${error.message}`);
+    throw new Error(`Failed to fetch use groups: ${error.message}`);
   }
 
-  if (!labels || labels.length === 0) {
+  if (!useGroups || useGroups.length === 0) {
     return [];
   }
 
   // Get unique formulation_country_ids and fetch formulation_ids
-  const countryIds = [...new Set(labels.map((l) => l.formulation_country_id).filter(Boolean))];
+  const countryIds = [...new Set(useGroups.map((ug) => ug.formulation_country_id).filter(Boolean))];
   
   const { data: countryData } = await supabase
     .from("formulation_country")
@@ -681,15 +681,15 @@ export async function getAllLabels() {
     }
   });
 
-  // Map labels to include formulation_id
-  const labelsWithFormulationId = labels.map((label) => ({
-    ...label,
-    formulation_id: label.formulation_country_id
-      ? countryIdToFormulationId.get(label.formulation_country_id) || null
+  // Map use groups to include formulation_id
+  const useGroupsWithFormulationId = useGroups.map((useGroup) => ({
+    ...useGroup,
+    formulation_id: useGroup.formulation_country_id
+      ? countryIdToFormulationId.get(useGroup.formulation_country_id) || null
       : null,
   }));
 
-  return labelsWithFormulationId as (FormulationCountryLabel & { formulation_id: string | null })[];
+  return useGroupsWithFormulationId as (FormulationCountryUseGroup & { formulation_id: string | null })[];
 }
 
 export async function getCOGSList() {
@@ -765,17 +765,17 @@ export async function getFormulationCountryById(formulationCountryId: string) {
   return data as (FormulationCountryDetail & { formulation_id?: string }) | null;
 }
 
-export async function getLabelById(labelId: string) {
+export async function getUseGroupById(useGroupId: string) {
   const supabase = await createClient();
   
   const { data, error } = await supabase
-    .from("vw_formulation_country_label")
+    .from("vw_formulation_country_use_group")
     .select("*")
-    .eq("formulation_country_label_id", labelId)
+    .eq("formulation_country_use_group_id", useGroupId)
     .single();
 
   if (error) {
-    throw new Error(`Failed to fetch label: ${error.message}`);
+    throw new Error(`Failed to fetch use group: ${error.message}`);
   }
 
   // Get formulation_id through formulation_country
@@ -791,7 +791,7 @@ export async function getLabelById(labelId: string) {
     }
   }
 
-  return data as (FormulationCountryLabel & { formulation_id?: string }) | null;
+  return data as (FormulationCountryUseGroup & { formulation_id?: string }) | null;
 }
 
 export async function getActivePortfolio() {

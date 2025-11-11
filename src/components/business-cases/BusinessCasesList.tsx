@@ -183,11 +183,11 @@ const columns: ColumnDef<EnrichedBusinessCase>[] = [
     },
   },
   {
-    accessorKey: "label_name",
-    header: "Label",
+    accessorKey: "use_group_name",
+    header: "Use Group",
   },
   {
-    accessorKey: "label_variant",
+    accessorKey: "use_group_variant",
     header: "Variant",
   },
   {

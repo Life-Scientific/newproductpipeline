@@ -55,8 +55,8 @@ const coreMenuItems = [
     icon: FlaskConical,
   },
   {
-    title: "Labels",
-    url: "/labels",
+    title: "Use Groups",
+    url: "/use-groups",
     icon: FileText,
   },
   {

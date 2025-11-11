@@ -27,7 +27,7 @@ interface ComparisonData {
   businessCases: any[];
   ingredients: any[];
   countries: any[];
-  labels: any[];
+  useGroups: any[];
   cogs: any[];
   protectionStatus: any[];
   statusHistory: any[];
@@ -72,7 +72,7 @@ export function FormulationComparison({ formulations }: FormulationComparisonPro
         businessCasesRes,
         ingredientsRes,
         countriesRes,
-        labelsRes,
+        useGroupsRes,
         cogsRes,
         protectionRes,
         statusHistoryRes,
@@ -80,7 +80,7 @@ export function FormulationComparison({ formulations }: FormulationComparisonPro
         fetch(`/api/formulations/${formulationId}/business-cases`).catch(() => null),
         fetch(`/api/formulations/${formulationId}/ingredients`).catch(() => null),
         fetch(`/api/formulations/${formulationId}/countries`).catch(() => null),
-        fetch(`/api/formulations/${formulationId}/labels`).catch(() => null),
+        fetch(`/api/formulations/${formulationId}/use-groups`).catch(() => null),
         fetch(`/api/formulations/${formulationId}/cogs`).catch(() => null),
         fetch(`/api/formulations/${formulationId}/protection`).catch(() => null),
         fetch(`/api/formulations/${formulationId}/status-history`).catch(() => null),
@@ -89,7 +89,7 @@ export function FormulationComparison({ formulations }: FormulationComparisonPro
       const businessCases = businessCasesRes?.ok ? await businessCasesRes.json() : [];
       const ingredients = ingredientsRes?.ok ? await ingredientsRes.json() : [];
       const countries = countriesRes?.ok ? await countriesRes.json() : [];
-      const labels = labelsRes?.ok ? await labelsRes.json() : [];
+      const useGroups = useGroupsRes?.ok ? await useGroupsRes.json() : [];
       const cogs = cogsRes?.ok ? await cogsRes.json() : [];
       const protectionStatus = protectionRes?.ok ? await protectionRes.json() : [];
       const statusHistory = statusHistoryRes?.ok ? await statusHistoryRes.json() : [];
@@ -104,7 +104,7 @@ export function FormulationComparison({ formulations }: FormulationComparisonPro
             businessCases,
             ingredients,
             countries,
-            labels,
+            useGroups,
             cogs,
             protectionStatus,
             statusHistory,
@@ -213,10 +213,10 @@ export function FormulationComparison({ formulations }: FormulationComparisonPro
 
   const getReferenceProducts = (formulationId: string) => {
     const data = comparisonData.get(formulationId);
-    if (!data || !data.labels) return [];
+    if (!data || !data.useGroups) return [];
     const refs = new Set(
-      data.labels
-        .map((l: any) => l.reference_product_name)
+      data.useGroups
+        .map((ug: any) => ug.reference_product_name)
         .filter((r: any) => r)
     );
     return Array.from(refs);
@@ -266,11 +266,11 @@ export function FormulationComparison({ formulations }: FormulationComparisonPro
 
   const getCropsList = (formulationId: string) => {
     const data = comparisonData.get(formulationId);
-    if (!data || !data.labels) return [];
+    if (!data || !data.useGroups) return [];
     const crops = new Set<string>();
-    data.labels.forEach((label: any) => {
-      if (label.crops && Array.isArray(label.crops)) {
-        label.crops.forEach((crop: string) => {
+    data.useGroups.forEach((useGroup: any) => {
+      if (useGroup.crops && Array.isArray(useGroup.crops)) {
+        useGroup.crops.forEach((crop: string) => {
           if (crop) crops.add(crop);
         });
       }
@@ -790,12 +790,12 @@ export function FormulationComparison({ formulations }: FormulationComparisonPro
               })}
             </TableRow>
             <TableRow>
-              <TableCell className="font-medium sticky left-0 bg-background z-10">Labels</TableCell>
+              <TableCell className="font-medium sticky left-0 bg-background z-10">Use Groups</TableCell>
               {selectedFormulations.map((formulation) => {
                 const data = formulation.formulation_id ? comparisonData.get(formulation.formulation_id) : undefined;
                 return (
-                  <TableCell key={`labels-${formulation.formulation_id}`} className="text-center">
-                    {data?.labels.length || 0}
+                  <TableCell key={`use-groups-${formulation.formulation_id}`} className="text-center">
+                    {data?.useGroups.length || 0}
                   </TableCell>
                 );
               })}

@@ -12,9 +12,9 @@ CREATE TABLE public.base_code_registry (
 CREATE TABLE public.business_case (
   business_case_id uuid NOT NULL DEFAULT gen_random_uuid(),
   formulation_country_id uuid,
-  formulation_country_label_id uuid,
+  formulation_country_use_group_id uuid,
   business_case_name character varying,
-  business_case_type character varying DEFAULT 'Single Label'::character varying CHECK (business_case_type::text = ANY (ARRAY['Single Label'::character varying, 'All Labels (Formulation-Country)'::character varying, 'Multiple Labels'::character varying, 'Product Portfolio'::character varying]::text[])),
+  business_case_type character varying DEFAULT 'Single Use Group'::character varying CHECK (business_case_type::text = ANY (ARRAY['Single Use Group'::character varying, 'All Use Groups (Formulation-Country)'::character varying, 'Multiple Use Groups'::character varying, 'Product Portfolio'::character varying]::text[])),
   year_offset integer NOT NULL CHECK (year_offset >= 1 AND year_offset <= 10),
   volume numeric,
   nsp numeric,
@@ -43,16 +43,16 @@ END,
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT business_case_pkey PRIMARY KEY (business_case_id),
   CONSTRAINT business_case_formulation_country_id_fkey FOREIGN KEY (formulation_country_id) REFERENCES public.formulation_country(formulation_country_id),
-  CONSTRAINT business_case_formulation_country_label_id_fkey FOREIGN KEY (formulation_country_label_id) REFERENCES public.formulation_country_label(formulation_country_label_id)
+  CONSTRAINT business_case_formulation_country_use_group_id_fkey FOREIGN KEY (formulation_country_use_group_id) REFERENCES public.formulation_country_use_group(formulation_country_use_group_id)
 );
-CREATE TABLE public.business_case_labels (
+CREATE TABLE public.business_case_use_groups (
   business_case_id uuid NOT NULL,
-  formulation_country_label_id uuid NOT NULL,
+  formulation_country_use_group_id uuid NOT NULL,
   weighting numeric,
   created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT business_case_labels_pkey PRIMARY KEY (business_case_id, formulation_country_label_id),
-  CONSTRAINT business_case_labels_business_case_id_fkey FOREIGN KEY (business_case_id) REFERENCES public.business_case(business_case_id),
-  CONSTRAINT business_case_labels_formulation_country_label_id_fkey FOREIGN KEY (formulation_country_label_id) REFERENCES public.formulation_country_label(formulation_country_label_id)
+  CONSTRAINT business_case_use_groups_pkey PRIMARY KEY (business_case_id, formulation_country_use_group_id),
+  CONSTRAINT business_case_use_groups_business_case_id_fkey FOREIGN KEY (business_case_id) REFERENCES public.business_case(business_case_id),
+  CONSTRAINT business_case_use_groups_formulation_country_use_group_id_fkey FOREIGN KEY (formulation_country_use_group_id) REFERENCES public.formulation_country_use_group(formulation_country_use_group_id)
 );
 CREATE TABLE public.cogs (
   cogs_id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -144,11 +144,11 @@ CREATE TABLE public.formulation_country_crops (
   CONSTRAINT formulation_country_crops_formulation_country_id_fkey FOREIGN KEY (formulation_country_id) REFERENCES public.formulation_country(formulation_country_id),
   CONSTRAINT formulation_country_crops_crop_id_fkey FOREIGN KEY (crop_id) REFERENCES public.crops(crop_id)
 );
-CREATE TABLE public.formulation_country_label (
-  formulation_country_label_id uuid NOT NULL DEFAULT gen_random_uuid(),
+CREATE TABLE public.formulation_country_use_group (
+  formulation_country_use_group_id uuid NOT NULL DEFAULT gen_random_uuid(),
   formulation_country_id uuid NOT NULL,
-  label_variant character varying NOT NULL,
-  label_name character varying,
+  use_group_variant character varying NOT NULL,
+  use_group_name character varying,
   reference_product_id uuid,
   earliest_submission_date date,
   earliest_approval_date date,
@@ -160,17 +160,17 @@ CREATE TABLE public.formulation_country_label (
   is_active boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT formulation_country_label_pkey PRIMARY KEY (formulation_country_label_id),
-  CONSTRAINT formulation_country_label_formulation_country_id_fkey FOREIGN KEY (formulation_country_id) REFERENCES public.formulation_country(formulation_country_id),
-  CONSTRAINT formulation_country_label_reference_product_id_fkey FOREIGN KEY (reference_product_id) REFERENCES public.reference_products(reference_product_id)
+  CONSTRAINT formulation_country_use_group_pkey PRIMARY KEY (formulation_country_use_group_id),
+  CONSTRAINT formulation_country_use_group_formulation_country_id_fkey FOREIGN KEY (formulation_country_id) REFERENCES public.formulation_country(formulation_country_id),
+  CONSTRAINT formulation_country_use_group_reference_product_id_fkey FOREIGN KEY (reference_product_id) REFERENCES public.reference_products(reference_product_id)
 );
-CREATE TABLE public.formulation_country_label_crops (
-  formulation_country_label_id uuid NOT NULL,
+CREATE TABLE public.formulation_country_use_group_crops (
+  formulation_country_use_group_id uuid NOT NULL,
   crop_id uuid NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT formulation_country_label_crops_pkey PRIMARY KEY (formulation_country_label_id, crop_id),
-  CONSTRAINT formulation_country_label_cro_formulation_country_label_id_fkey FOREIGN KEY (formulation_country_label_id) REFERENCES public.formulation_country_label(formulation_country_label_id),
-  CONSTRAINT formulation_country_label_crops_crop_id_fkey FOREIGN KEY (crop_id) REFERENCES public.crops(crop_id)
+  CONSTRAINT formulation_country_use_group_crops_pkey PRIMARY KEY (formulation_country_use_group_id, crop_id),
+  CONSTRAINT formulation_country_use_group_crops_formulation_country_use_group_id_fkey FOREIGN KEY (formulation_country_use_group_id) REFERENCES public.formulation_country_use_group(formulation_country_use_group_id),
+  CONSTRAINT formulation_country_use_group_crops_crop_id_fkey FOREIGN KEY (crop_id) REFERENCES public.crops(crop_id)
 );
 CREATE TABLE public.formulation_country_targets (
   formulation_country_id uuid NOT NULL,

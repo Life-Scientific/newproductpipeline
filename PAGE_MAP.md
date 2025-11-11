@@ -290,11 +290,11 @@ The application uses Next.js App Router with the following structure:
 - **Returns**: Array of formulation country details
 - **Use Case**: Used by comparison page
 
-#### `/api/formulations/[id]/labels`
-- **Path**: `src/app/api/formulations/[id]/labels/route.ts`
-- **Purpose**: Fetch labels for a formulation
+#### `/api/formulations/[id]/use-groups`
+- **Path**: `src/app/api/formulations/[id]/use-groups/route.ts`
+- **Purpose**: Fetch use groups for a formulation
 - **Method**: GET
-- **Returns**: Array of formulation country labels
+- **Returns**: Array of formulation country use groups
 - **Use Case**: Used by comparison page
 
 #### `/api/formulations/[id]/cogs`

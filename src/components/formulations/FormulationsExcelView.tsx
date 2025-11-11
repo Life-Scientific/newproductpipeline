@@ -239,10 +239,10 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                   Countries
                 </th>
                 <th className="p-3 text-left text-sm font-semibold border-r min-w-[80px]">
-                  # Labels
+                  # Use Groups
                 </th>
                 <th className="p-3 text-left text-sm font-semibold border-r min-w-[250px]">
-                  Labels
+                  Use Groups
                 </th>
                 <th className="p-3 text-left text-sm font-semibold border-r min-w-[100px]">
                   # Business Cases
@@ -622,10 +622,10 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                       {formulation.countries_list || "—"}
                     </td>
                     <td className="p-3 border-r text-center font-medium">
-                      {formulation.labels_count || 0}
+                      {formulation.use_groups_count || 0}
                     </td>
                     <td className="p-3 border-r text-xs text-muted-foreground">
-                      {formulation.labels_list || "—"}
+                      {formulation.use_groups_list || "—"}
                     </td>
                     <td className="p-3 border-r text-center font-medium">
                       {formulation.business_cases_count || 0}

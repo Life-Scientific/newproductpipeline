@@ -29,7 +29,7 @@ import type { Database } from "@/lib/supabase/database.types";
 
 type BusinessCase = Database["public"]["Tables"]["business_case"]["Row"];
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
-type FormulationCountryLabel = Database["public"]["Views"]["vw_formulation_country_label"]["Row"];
+type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 
 interface BusinessCaseFormProps {
   businessCase?: BusinessCase | null;
@@ -37,13 +37,13 @@ interface BusinessCaseFormProps {
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
   defaultFormulationCountryId?: string;
-  defaultFormulationCountryLabelId?: string;
+  defaultFormulationCountryUseGroupId?: string;
 }
 
 const BUSINESS_CASE_TYPES = [
-  "Single Label",
-  "All Labels (Formulation-Country)",
-  "Multiple Labels",
+  "Single Use Group",
+  "All Use Groups (Formulation-Country)",
+  "Multiple Use Groups",
   "Product Portfolio",
 ];
 
@@ -55,7 +55,7 @@ export function BusinessCaseForm({
   onOpenChange,
   onSuccess,
   defaultFormulationCountryId,
-  defaultFormulationCountryLabelId,
+  defaultFormulationCountryUseGroupId,
 }: BusinessCaseFormProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -63,19 +63,19 @@ export function BusinessCaseForm({
   const [formulationCountryOptions, setFormulationCountryOptions] = useState<
     FormulationCountryDetail[]
   >([]);
-  const [formulationCountryLabelOptions, setFormulationCountryLabelOptions] = useState<
-    FormulationCountryLabel[]
+  const [formulationCountryUseGroupOptions, setFormulationCountryUseGroupOptions] = useState<
+    FormulationCountryUseGroup[]
   >([]);
-  const [linkType, setLinkType] = useState<"country" | "label">(
-    businessCase?.formulation_country_id ? "country" : "label"
+  const [linkType, setLinkType] = useState<"country" | "use_group">(
+    businessCase?.formulation_country_id ? "country" : "use_group"
   );
   const [helperFormulationCountryId, setHelperFormulationCountryId] = useState<string>("");
   const [formData, setFormData] = useState({
     formulation_country_id: businessCase?.formulation_country_id || defaultFormulationCountryId || "",
-    formulation_country_label_id:
-      businessCase?.formulation_country_label_id || defaultFormulationCountryLabelId || "",
+    formulation_country_use_group_id:
+      businessCase?.formulation_country_use_group_id || defaultFormulationCountryUseGroupId || "",
     business_case_name: businessCase?.business_case_name || "",
-    business_case_type: businessCase?.business_case_type || "Single Label",
+    business_case_type: businessCase?.business_case_type || "Single Use Group",
     year_offset: businessCase?.year_offset?.toString() || "1",
     volume: businessCase?.volume?.toString() || "",
     nsp: businessCase?.nsp?.toString() || "",
@@ -90,16 +90,16 @@ export function BusinessCaseForm({
     if (open) {
       loadFormulationCountries();
       if (formData.formulation_country_id) {
-        loadFormulationCountryLabels(formData.formulation_country_id);
+        loadFormulationCountryUseGroups(formData.formulation_country_id);
       }
     }
   }, [open]);
 
   useEffect(() => {
     if (formData.formulation_country_id) {
-      loadFormulationCountryLabels(formData.formulation_country_id);
+      loadFormulationCountryUseGroups(formData.formulation_country_id);
     } else {
-      setFormulationCountryLabelOptions([]);
+      setFormulationCountryUseGroupOptions([]);
     }
   }, [formData.formulation_country_id]);
 
@@ -112,14 +112,14 @@ export function BusinessCaseForm({
     if (data) setFormulationCountryOptions(data as FormulationCountryDetail[]);
   };
 
-  const loadFormulationCountryLabels = async (formulationCountryId: string) => {
+  const loadFormulationCountryUseGroups = async (formulationCountryId: string) => {
     const supabase = createClient();
     const { data } = await supabase
-      .from("vw_formulation_country_label")
-      .select("formulation_country_label_id, display_name, label_variant, label_name")
+      .from("vw_formulation_country_use_group")
+      .select("formulation_country_use_group_id, display_name, use_group_variant, use_group_name")
       .eq("formulation_country_id", formulationCountryId)
-      .order("label_variant");
-    if (data) setFormulationCountryLabelOptions(data as FormulationCountryLabel[]);
+      .order("use_group_variant");
+    if (data) setFormulationCountryUseGroupOptions(data as FormulationCountryUseGroup[]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -127,16 +127,16 @@ export function BusinessCaseForm({
 
     // Ensure only one link type is set
     const submitData = { ...formData };
-    if (linkType === "label") {
+    if (linkType === "use_group") {
       submitData.formulation_country_id = "";
     } else {
-      submitData.formulation_country_label_id = "";
+      submitData.formulation_country_use_group_id = "";
     }
 
-    if (!submitData.formulation_country_id && !submitData.formulation_country_label_id) {
+    if (!submitData.formulation_country_id && !submitData.formulation_country_use_group_id) {
       toast({
         title: "Error",
-        description: "Must link to either formulation-country or label",
+        description: "Must link to either formulation-country or use group",
         variant: "destructive",
       });
       return;
@@ -211,7 +211,7 @@ export function BusinessCaseForm({
                       setHelperFormulationCountryId("");
                       setFormData({
                         ...formData,
-                        formulation_country_label_id: "",
+                        formulation_country_use_group_id: "",
                       });
                     }}
                   />
@@ -220,20 +220,20 @@ export function BusinessCaseForm({
                 <div className="flex items-center space-x-2">
                   <input
                     type="radio"
-                    id="link_label"
+                    id="link_use_group"
                     name="link_type"
-                    checked={linkType === "label"}
+                    checked={linkType === "use_group"}
                     onChange={() => {
-                      setLinkType("label");
+                      setLinkType("use_group");
                       setHelperFormulationCountryId("");
                       setFormData({
                         ...formData,
                         formulation_country_id: "",
-                        formulation_country_label_id: "",
+                        formulation_country_use_group_id: "",
                       });
                     }}
                   />
-                  <Label htmlFor="link_label">Label</Label>
+                  <Label htmlFor="link_use_group">Use Group</Label>
                 </div>
               </div>
 
@@ -248,7 +248,7 @@ export function BusinessCaseForm({
                       setFormData({
                         ...formData,
                         formulation_country_id: value,
-                        formulation_country_label_id: "",
+                        formulation_country_use_group_id: "",
                       })
                     }
                     required={linkType === "country"}
@@ -270,8 +270,8 @@ export function BusinessCaseForm({
               ) : (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="formulation_country_id_for_label">
-                      Formulation-Country (to select label) <span className="text-destructive">*</span>
+                    <Label htmlFor="formulation_country_id_for_use_group">
+                      Formulation-Country (to select use group) <span className="text-destructive">*</span>
                     </Label>
                     <Select
                       value={helperFormulationCountryId || formData.formulation_country_id}
@@ -279,11 +279,11 @@ export function BusinessCaseForm({
                         setHelperFormulationCountryId(value);
                         setFormData({
                           ...formData,
-                          formulation_country_label_id: "",
+                          formulation_country_use_group_id: "",
                         });
-                        loadFormulationCountryLabels(value);
+                        loadFormulationCountryUseGroups(value);
                       }}
-                      required={linkType === "label"}
+                      required={linkType === "use_group"}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select formulation-country first" />
@@ -301,31 +301,31 @@ export function BusinessCaseForm({
                   </div>
                   {(helperFormulationCountryId || formData.formulation_country_id) && (
                     <div className="space-y-2">
-                      <Label htmlFor="formulation_country_label_id">
-                        Label <span className="text-destructive">*</span>
+                      <Label htmlFor="formulation_country_use_group_id">
+                        Use Group <span className="text-destructive">*</span>
                       </Label>
                       <Select
-                        value={formData.formulation_country_label_id}
+                        value={formData.formulation_country_use_group_id}
                         onValueChange={(value) =>
                           setFormData({
                             ...formData,
-                            formulation_country_label_id: value,
+                            formulation_country_use_group_id: value,
                           })
                         }
-                        required={linkType === "label"}
+                        required={linkType === "use_group"}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select label" />
+                          <SelectValue placeholder="Select use group" />
                         </SelectTrigger>
                         <SelectContent>
-                          {formulationCountryLabelOptions
-                            .filter((label) => label.formulation_country_label_id)
-                            .map((label) => (
+                          {formulationCountryUseGroupOptions
+                            .filter((useGroup) => useGroup.formulation_country_use_group_id)
+                            .map((useGroup) => (
                               <SelectItem
-                                key={label.formulation_country_label_id!}
-                                value={label.formulation_country_label_id!}
+                                key={useGroup.formulation_country_use_group_id!}
+                                value={useGroup.formulation_country_use_group_id!}
                               >
-                                {label.display_name}
+                                {useGroup.display_name}
                               </SelectItem>
                             ))}
                         </SelectContent>

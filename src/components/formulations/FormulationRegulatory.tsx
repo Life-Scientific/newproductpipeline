@@ -7,18 +7,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Database } from "@/lib/supabase/database.types";
 
 type ProtectionStatus = Database["public"]["Views"]["vw_protection_status"]["Row"];
-type FormulationCountryLabel = Database["public"]["Views"]["vw_formulation_country_label"]["Row"];
+type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 
 interface FormulationRegulatoryProps {
   protectionStatus: ProtectionStatus[];
-  labels: FormulationCountryLabel[];
+  useGroups: FormulationCountryUseGroup[];
 }
 
 export function FormulationRegulatory({
   protectionStatus,
-  labels,
+  useGroups,
 }: FormulationRegulatoryProps) {
-  const hasData = protectionStatus.length > 0 || labels.length > 0;
+  const hasData = protectionStatus.length > 0 || useGroups.length > 0;
 
   if (!hasData) {
     return (
@@ -44,7 +44,7 @@ export function FormulationRegulatory({
         <Tabs defaultValue="protections" className="space-y-4">
           <TabsList>
             <TabsTrigger value="protections">Protections</TabsTrigger>
-            <TabsTrigger value="labels">Labels & Timeline</TabsTrigger>
+            <TabsTrigger value="use-groups">Use Groups & Timeline</TabsTrigger>
           </TabsList>
 
           <TabsContent value="protections" className="space-y-4">
@@ -121,13 +121,13 @@ export function FormulationRegulatory({
             )}
           </TabsContent>
 
-          <TabsContent value="labels" className="space-y-4">
-            {labels.length > 0 ? (
+          <TabsContent value="use-groups" className="space-y-4">
+            {useGroups.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Country</TableHead>
-                    <TableHead>Label Name</TableHead>
+                    <TableHead>Use Group Name</TableHead>
                     <TableHead>Variant</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Earliest Submission</TableHead>
@@ -140,59 +140,59 @@ export function FormulationRegulatory({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {labels.map((label) => (
-                    <TableRow key={label.formulation_country_label_id}>
-                      <TableCell className="font-medium">{label.country_name || "—"}</TableCell>
-                      <TableCell>{label.label_name || "—"}</TableCell>
+                  {useGroups.map((useGroup) => (
+                    <TableRow key={useGroup.formulation_country_use_group_id}>
+                      <TableCell className="font-medium">{useGroup.country_name || "—"}</TableCell>
+                      <TableCell>{useGroup.use_group_name || "—"}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{label.label_variant || "—"}</Badge>
+                        <Badge variant="outline">{useGroup.use_group_variant || "—"}</Badge>
                       </TableCell>
                       <TableCell>
-                        {label.registration_status ? (
-                          <Badge variant="secondary">{label.registration_status}</Badge>
+                        {useGroup.registration_status ? (
+                          <Badge variant="secondary">{useGroup.registration_status}</Badge>
                         ) : (
                           "—"
                         )}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {label.earliest_submission_date
-                          ? new Date(label.earliest_submission_date).toLocaleDateString()
+                        {useGroup.earliest_submission_date
+                          ? new Date(useGroup.earliest_submission_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {label.earliest_approval_date
-                          ? new Date(label.earliest_approval_date).toLocaleDateString()
+                        {useGroup.earliest_approval_date
+                          ? new Date(useGroup.earliest_approval_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {label.earliest_market_entry_date
-                          ? new Date(label.earliest_market_entry_date).toLocaleDateString()
+                        {useGroup.earliest_market_entry_date
+                          ? new Date(useGroup.earliest_market_entry_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {label.actual_submission_date
-                          ? new Date(label.actual_submission_date).toLocaleDateString()
+                        {useGroup.actual_submission_date
+                          ? new Date(useGroup.actual_submission_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {label.actual_approval_date
-                          ? new Date(label.actual_approval_date).toLocaleDateString()
+                        {useGroup.actual_approval_date
+                          ? new Date(useGroup.actual_approval_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {label.actual_market_entry_date
-                          ? new Date(label.actual_market_entry_date).toLocaleDateString()
+                        {useGroup.actual_market_entry_date
+                          ? new Date(useGroup.actual_market_entry_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {label.reference_product_name || "—"}
+                        {useGroup.reference_product_name || "—"}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             ) : (
-              <p className="text-sm text-muted-foreground">No label data found.</p>
+              <p className="text-sm text-muted-foreground">No use group data found.</p>
             )}
           </TabsContent>
         </Tabs>
