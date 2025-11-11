@@ -12,7 +12,7 @@ export function BusinessCaseFormButton() {
     <>
       <Button onClick={() => setOpen(true)} size="lg" className="h-12 px-6">
         <Plus className="mr-2 h-5 w-5" />
-        New Business Case
+        Create/Update Business Case
       </Button>
       <BusinessCaseForm open={open} onOpenChange={setOpen} />
     </>

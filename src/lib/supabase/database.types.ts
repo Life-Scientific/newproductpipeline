@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -53,8 +53,6 @@ export type Database = {
           nsp: number | null
           nsp_last_updated_at: string | null
           nsp_last_updated_by: string | null
-          scenario_id: string | null
-          scenario_name: string | null
           total_cogs: number | null
           total_margin: number | null
           total_revenue: number | null
@@ -78,8 +76,6 @@ export type Database = {
           nsp?: number | null
           nsp_last_updated_at?: string | null
           nsp_last_updated_by?: string | null
-          scenario_id?: string | null
-          scenario_name?: string | null
           total_cogs?: number | null
           total_margin?: number | null
           total_revenue?: number | null
@@ -103,8 +99,6 @@ export type Database = {
           nsp?: number | null
           nsp_last_updated_at?: string | null
           nsp_last_updated_by?: string | null
-          scenario_id?: string | null
-          scenario_name?: string | null
           total_cogs?: number | null
           total_margin?: number | null
           total_revenue?: number | null
@@ -286,6 +280,13 @@ export type Database = {
             foreignKeyName: "cogs_formulation_id_fkey"
             columns: ["formulation_id"]
             isOneToOne: false
+            referencedRelation: "vw_business_case"
+            referencedColumns: ["formulation_id"]
+          },
+          {
+            foreignKeyName: "cogs_formulation_id_fkey"
+            columns: ["formulation_id"]
+            isOneToOne: false
             referencedRelation: "vw_formulations_with_ingredients"
             referencedColumns: ["formulation_id"]
           },
@@ -385,6 +386,20 @@ export type Database = {
             referencedColumns: ["country_id"]
           },
           {
+            foreignKeyName: "data_protections_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "vw_business_case"
+            referencedColumns: ["country_id"]
+          },
+          {
+            foreignKeyName: "data_protections_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "vw_portfolio_by_country"
+            referencedColumns: ["country_id"]
+          },
+          {
             foreignKeyName: "data_protections_ingredient_id_fkey"
             columns: ["ingredient_id"]
             isOneToOne: false
@@ -431,6 +446,13 @@ export type Database = {
             columns: ["formulation_id"]
             isOneToOne: false
             referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
+          },
+          {
+            foreignKeyName: "external_links_formulation_id_fkey"
+            columns: ["formulation_id"]
+            isOneToOne: false
+            referencedRelation: "vw_business_case"
             referencedColumns: ["formulation_id"]
           },
           {
@@ -503,10 +525,31 @@ export type Database = {
             referencedColumns: ["country_id"]
           },
           {
+            foreignKeyName: "formulation_country_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "vw_business_case"
+            referencedColumns: ["country_id"]
+          },
+          {
+            foreignKeyName: "formulation_country_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "vw_portfolio_by_country"
+            referencedColumns: ["country_id"]
+          },
+          {
             foreignKeyName: "formulation_country_formulation_id_fkey"
             columns: ["formulation_id"]
             isOneToOne: false
             referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
+          },
+          {
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
+            isOneToOne: false
+            referencedRelation: "vw_business_case"
             referencedColumns: ["formulation_id"]
           },
           {
@@ -930,6 +973,13 @@ export type Database = {
             foreignKeyName: "formulation_ingredients_formulation_id_fkey"
             columns: ["formulation_id"]
             isOneToOne: false
+            referencedRelation: "vw_business_case"
+            referencedColumns: ["formulation_id"]
+          },
+          {
+            foreignKeyName: "formulation_ingredients_formulation_id_fkey"
+            columns: ["formulation_id"]
+            isOneToOne: false
             referencedRelation: "vw_formulations_with_ingredients"
             referencedColumns: ["formulation_id"]
           },
@@ -1062,6 +1112,13 @@ export type Database = {
             columns: ["formulation_id"]
             isOneToOne: false
             referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
+          },
+          {
+            foreignKeyName: "formulation_status_history_formulation_id_fkey"
+            columns: ["formulation_id"]
+            isOneToOne: false
+            referencedRelation: "vw_business_case"
             referencedColumns: ["formulation_id"]
           },
           {
@@ -1270,6 +1327,20 @@ export type Database = {
             referencedColumns: ["country_id"]
           },
           {
+            foreignKeyName: "patent_protections_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "vw_business_case"
+            referencedColumns: ["country_id"]
+          },
+          {
+            foreignKeyName: "patent_protections_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "vw_portfolio_by_country"
+            referencedColumns: ["country_id"]
+          },
+          {
             foreignKeyName: "patent_protections_ingredient_id_fkey"
             columns: ["ingredient_id"]
             isOneToOne: false
@@ -1371,6 +1442,20 @@ export type Database = {
             referencedRelation: "countries"
             referencedColumns: ["country_id"]
           },
+          {
+            foreignKeyName: "suppliers_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "vw_business_case"
+            referencedColumns: ["country_id"]
+          },
+          {
+            foreignKeyName: "suppliers_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "vw_portfolio_by_country"
+            referencedColumns: ["country_id"]
+          },
         ]
       }
       targets: {
@@ -1431,19 +1516,19 @@ export type Database = {
           cogs_last_updated_by: string | null
           cogs_per_unit: number | null
           country_code: string | null
+          country_id: string | null
           country_name: string | null
           created_at: string | null
           created_by: string | null
           display_name: string | null
           fiscal_year: string | null
           formulation_code: string | null
+          formulation_id: string | null
           formulation_name: string | null
           margin_percent: number | null
           nsp: number | null
           nsp_last_updated_at: string | null
           nsp_last_updated_by: string | null
-          scenario_id: string | null
-          scenario_name: string | null
           total_cogs: number | null
           total_margin: number | null
           total_revenue: number | null
@@ -1475,7 +1560,6 @@ export type Database = {
           nsp_last_updated_by: string | null
           product_category: string | null
           product_name: string | null
-          scenario_name: string | null
           target_market_entry_fy: string | null
           total_cogs: number | null
           total_margin: number | null
@@ -1561,6 +1645,13 @@ export type Database = {
             columns: ["formulation_id"]
             isOneToOne: false
             referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
+          },
+          {
+            foreignKeyName: "cogs_formulation_id_fkey"
+            columns: ["formulation_id"]
+            isOneToOne: false
+            referencedRelation: "vw_business_case"
             referencedColumns: ["formulation_id"]
           },
           {
@@ -1751,24 +1842,13 @@ export type Database = {
       }
       vw_portfolio_by_country: {
         Row: {
-          business_case_count: number | null
+          country_code: string | null
+          country_id: string | null
           country_name: string | null
-          currency_code: string | null
-          emd: string | null
-          formulation_code: string | null
-          formulation_status: string | null
-          has_approval: boolean | null
-          highest_supply_risk: string | null
-          is_eu_approved_formulation: boolean | null
-          is_in_active_portfolio: boolean | null
-          is_novel: boolean | null
-          product_category: string | null
-          product_name: string | null
-          registration_pathway: string | null
-          registration_status: string | null
-          target_market_entry_fy: string | null
+          formulation_count: number | null
+          total_margin: number | null
+          total_revenue: number | null
           use_group_count: number | null
-          use_group_variants: string | null
         }
         Relationships: []
       }
@@ -2013,4 +2093,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

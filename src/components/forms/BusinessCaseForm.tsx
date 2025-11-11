@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -276,13 +275,8 @@ export function BusinessCaseForm({
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {businessCase ? "Edit Business Case" : "Create Business Case"}
+            Create/Update Business Case
           </DialogTitle>
-          <DialogDescription>
-            {businessCase
-              ? "Update business case details"
-              : "Create a new financial projection"}
-          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4 border-b pb-4">
