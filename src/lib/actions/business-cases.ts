@@ -66,8 +66,6 @@ export async function createBusinessCase(formData: FormData) {
       nsp,
       cogs_per_unit: cogsPerUnit,
       fiscal_year: fiscalYear,
-      scenario_id: scenarioId,
-      scenario_name: scenarioName,
       assumptions,
       created_by: userName,
     })
@@ -115,8 +113,6 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
   const nsp = formData.get("nsp") ? Number(formData.get("nsp")) : null;
   const cogsPerUnit = formData.get("cogs_per_unit") ? Number(formData.get("cogs_per_unit")) : null;
   const fiscalYear = formData.get("fiscal_year") as string | null;
-  const scenarioId = formData.get("scenario_id") as string | null;
-  const scenarioName = formData.get("scenario_name") as string | null;
   const assumptions = formData.get("assumptions") as string | null;
 
   if (yearOffset && (yearOffset < 1 || yearOffset > 10)) {
@@ -134,8 +130,6 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
   if (nsp !== null) updateData.nsp = nsp;
   if (cogsPerUnit !== null) updateData.cogs_per_unit = cogsPerUnit;
   if (fiscalYear !== null) updateData.fiscal_year = fiscalYear;
-  if (scenarioId !== null) updateData.scenario_id = scenarioId;
-  if (scenarioName !== null) updateData.scenario_name = scenarioName;
   if (assumptions !== null) updateData.assumptions = assumptions;
 
   const { data, error } = await supabase

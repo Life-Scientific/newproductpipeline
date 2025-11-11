@@ -4,6 +4,10 @@ import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { BusinessCasesList } from "@/components/business-cases/BusinessCasesList";
 import { BusinessCaseFormButton } from "@/components/forms/BusinessCaseFormButton";
 
+// Force dynamic rendering to prevent caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function BusinessCasesPage() {
   const businessCases = await getBusinessCases();
 

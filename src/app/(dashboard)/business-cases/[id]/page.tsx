@@ -180,14 +180,6 @@ export default async function BusinessCaseDetailPage({
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-muted-foreground">
-                    Scenario
-                  </p>
-                  <p className="text-sm">
-                    {businessCase.scenario_name || "Base Case"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">
                     COGS per Unit
                   </p>
                   <p className="text-sm">

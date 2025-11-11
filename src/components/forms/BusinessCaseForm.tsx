@@ -67,7 +67,6 @@ export function BusinessCaseForm({
     nsp: businessCase?.nsp?.toString() || "",
     cogs_per_unit: businessCase?.cogs_per_unit?.toString() || "",
     fiscal_year: businessCase?.fiscal_year || "",
-    scenario_name: businessCase?.scenario_name || "",
     assumptions: businessCase?.assumptions || "",
   });
 
@@ -230,7 +229,6 @@ export function BusinessCaseForm({
     if (formData.nsp) form.append("nsp", formData.nsp);
     if (formData.cogs_per_unit) form.append("cogs_per_unit", formData.cogs_per_unit);
     if (formData.fiscal_year) form.append("fiscal_year", formData.fiscal_year);
-    if (formData.scenario_name) form.append("scenario_name", formData.scenario_name);
     if (formData.assumptions) form.append("assumptions", formData.assumptions);
 
     startTransition(async () => {
@@ -388,40 +386,28 @@ export function BusinessCaseForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="fiscal_year">Fiscal Year</Label>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Auto-calculated from target market entry FY + year offset, but can be overridden</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              <Input
-                id="fiscal_year"
-                value={formData.fiscal_year}
-                onChange={(e) =>
-                  setFormData({ ...formData, fiscal_year: e.target.value })
-                }
-                placeholder="FY2025"
-              />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="fiscal_year">Fiscal Year</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Auto-calculated from target market entry FY + year offset, but can be overridden</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="scenario_name">Scenario Name</Label>
-              <Input
-                id="scenario_name"
-                value={formData.scenario_name}
-                onChange={(e) =>
-                  setFormData({ ...formData, scenario_name: e.target.value })
-                }
-              />
-            </div>
+            <Input
+              id="fiscal_year"
+              value={formData.fiscal_year}
+              onChange={(e) =>
+                setFormData({ ...formData, fiscal_year: e.target.value })
+              }
+              placeholder="FY2025"
+            />
           </div>
 
           <div className="grid grid-cols-3 gap-4">

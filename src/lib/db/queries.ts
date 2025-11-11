@@ -382,6 +382,50 @@ export async function getFormulationCountryDetails(formulationId: string) {
 }
 
 /**
+ * Helper function to deduplicate business cases by keeping the latest one
+ * for each formulation-country-use_group-year combination
+ */
+function deduplicateBusinessCases(
+  businessCases: BusinessCase[]
+): BusinessCase[] {
+  if (!businessCases || businessCases.length === 0) {
+    return [];
+  }
+
+  // Group by formulation_code + country_name + use_group_variant + year_offset
+  const groups = new Map<string, BusinessCase[]>();
+  
+  businessCases.forEach((bc) => {
+    // Create a unique key for grouping
+    const key = `${bc.formulation_code || ""}_${bc.country_name || ""}_${bc.use_group_variant || ""}_${bc.year_offset || ""}`;
+    
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(bc);
+  });
+
+  // For each group, keep only the latest one (by updated_at, then created_at)
+  const deduplicated: BusinessCase[] = [];
+  
+  groups.forEach((group) => {
+    if (group.length === 1) {
+      deduplicated.push(group[0]);
+    } else {
+      // Sort by updated_at (descending), then created_at (descending)
+      const sorted = group.sort((a, b) => {
+        const aTime = a.updated_at ? new Date(a.updated_at).getTime() : (a.created_at ? new Date(a.created_at).getTime() : 0);
+        const bTime = b.updated_at ? new Date(b.updated_at).getTime() : (b.created_at ? new Date(b.created_at).getTime() : 0);
+        return bTime - aTime; // Latest first
+      });
+      deduplicated.push(sorted[0]); // Keep the latest one
+    }
+  });
+
+  return deduplicated;
+}
+
+/**
  * Helper function to enrich business cases with formulation_id and country_id
  * by looking them up through the junction table
  */
@@ -510,7 +554,9 @@ export async function getBusinessCases() {
     throw new Error(`Failed to fetch business cases: ${error.message}`);
   }
 
-  return enrichBusinessCases(data || []);
+  // Deduplicate before enrichment
+  const deduplicated = deduplicateBusinessCases(data || []);
+  return enrichBusinessCases(deduplicated);
 }
 
 export async function getBusinessCaseById(businessCaseId: string) {
@@ -612,7 +658,9 @@ export async function getFormulationBusinessCases(formulationId: string) {
     throw new Error(`Failed to fetch business cases: ${error.message}`);
   }
 
-  return enrichBusinessCases(data || []);
+  // Deduplicate before enrichment
+  const deduplicated = deduplicateBusinessCases(data || []);
+  return enrichBusinessCases(deduplicated);
 }
 
 export async function getFormulationBusinessCasesForTree(formulationId: string) {
@@ -634,7 +682,9 @@ export async function getFormulationBusinessCasesForTree(formulationId: string) 
     throw new Error(`Failed to fetch business cases: ${error.message}`);
   }
 
-  return enrichBusinessCases(data || []);
+  // Deduplicate before enrichment
+  const deduplicated = deduplicateBusinessCases(data || []);
+  return enrichBusinessCases(deduplicated);
 }
 
 export async function getFormulationStatusHistory(formulationId: string) {
@@ -792,7 +842,9 @@ export async function getRevenueProjections() {
     throw new Error(`Failed to fetch revenue projections: ${error.message}`);
   }
 
-  return enrichBusinessCases(data || []);
+  // Deduplicate before enrichment
+  const deduplicated = deduplicateBusinessCases(data || []);
+  return enrichBusinessCases(deduplicated);
 }
 
 export async function getFormulationCountryById(formulationCountryId: string) {
