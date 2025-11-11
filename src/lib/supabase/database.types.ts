@@ -213,27 +213,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "business_case_labels_business_case_id_fkey"
-            columns: ["business_case_id"]
-            isOneToOne: false
-            referencedRelation: "business_case"
-            referencedColumns: ["business_case_id"]
-          },
-          {
-            foreignKeyName: "business_case_labels_business_case_id_fkey"
-            columns: ["business_case_id"]
-            isOneToOne: false
-            referencedRelation: "vw_business_case"
-            referencedColumns: ["business_case_id"]
-          },
-          {
-            foreignKeyName: "business_case_labels_business_case_id_fkey"
-            columns: ["business_case_id"]
-            isOneToOne: false
-            referencedRelation: "vw_business_case_detail"
-            referencedColumns: ["business_case_id"]
-          },
-          {
             foreignKeyName: "business_case_use_groups_business_case_id_fkey"
             columns: ["business_case_id"]
             isOneToOne: false
@@ -881,13 +860,6 @@ export type Database = {
           formulation_country_use_group_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "formulation_country_label_crops_crop_id_fkey"
-            columns: ["crop_id"]
-            isOneToOne: false
-            referencedRelation: "crops"
-            referencedColumns: ["crop_id"]
-          },
           {
             foreignKeyName: "formulation_country_use_group_crops_crop_id_fkey"
             columns: ["crop_id"]
