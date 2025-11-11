@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
 import { BusinessCaseEditModal } from "./BusinessCaseEditModal";
+import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 
 interface BusinessCasesProjectionTableProps {
   businessCases: BusinessCaseGroupData[];
@@ -14,33 +15,30 @@ interface BusinessCasesProjectionTableProps {
 export function BusinessCasesProjectionTable({ businessCases }: BusinessCasesProjectionTableProps) {
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
 
-  // Helper function to get effective start fiscal year
-  // If target_market_entry is in the past, start from current fiscal year
-  const getEffectiveStartFiscalYear = (targetMarketEntry: string | null): number => {
-    const CURRENT_FISCAL_YEAR = 26; // FY26 - update this as time progresses
-    
-    if (!targetMarketEntry) {
+  // Helper function to get effective start fiscal year from stored value
+  // Use effective_start_fiscal_year from database (preserves creation context)
+  const getEffectiveStartFiscalYear = (effectiveStartFiscalYear: string | null): number => {
+    if (!effectiveStartFiscalYear) {
       return CURRENT_FISCAL_YEAR;
     }
     
-    const match = targetMarketEntry.match(/FY(\d{2})/);
+    const match = effectiveStartFiscalYear.match(/FY(\d{2})/);
     if (!match) {
       return CURRENT_FISCAL_YEAR;
     }
     
-    const targetYear = parseInt(match[1], 10);
-    return targetYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : targetYear;
+    return parseInt(match[1], 10);
   };
 
   // Calculate dynamic fiscal year columns
   const fiscalYearColumns = useMemo(() => {
-    const currentFY = 26; // FY26 - update this as time progresses
+    const currentFY = CURRENT_FISCAL_YEAR;
     const minFY = currentFY;
 
     // Find the maximum effective start year across all business cases
-    // This accounts for cases where target_market_entry is in the past
+    // Use stored effective_start_fiscal_year (preserves creation context)
     const maxEffectiveStartYear = businessCases.reduce((max, bc) => {
-      const effectiveStartYear = getEffectiveStartFiscalYear(bc.target_market_entry);
+      const effectiveStartYear = getEffectiveStartFiscalYear(bc.effective_start_fiscal_year);
       return Math.max(max, effectiveStartYear);
     }, currentFY);
 
@@ -167,8 +165,8 @@ export function BusinessCasesProjectionTable({ businessCases }: BusinessCasesPro
               ];
 
               return metricRows.map((metric, metricIndex) => {
-                // Calculate effective start year (current year if target is in the past)
-                const effectiveStartYear = getEffectiveStartFiscalYear(bc.target_market_entry);
+                // Use stored effective_start_fiscal_year (preserves creation context)
+                const effectiveStartYear = getEffectiveStartFiscalYear(bc.effective_start_fiscal_year);
                 
                 return (
                   <TableRow key={`${bc.business_case_group_id}-${metricIndex}`}>

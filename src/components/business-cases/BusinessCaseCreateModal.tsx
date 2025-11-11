@@ -29,6 +29,7 @@ import { createClient } from "@/lib/supabase/client";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Formulation, Country } from "@/lib/supabase/database.types";
+import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 
 interface BusinessCaseCreateModalProps {
   open: boolean;
@@ -311,13 +312,15 @@ export function BusinessCaseCreateModal({
   };
 
   // Calculate fiscal year columns from inherited target_market_entry_fy
+  // Note: The effective_start_fiscal_year will be calculated server-side at creation time
+  // This preview uses the same logic for display purposes
   const fiscalYearColumns = (() => {
     if (!targetMarketEntry) return [];
     const match = targetMarketEntry.match(/FY(\d{2})/);
     if (!match) return [];
     const startYear = parseInt(match[1], 10);
-    const CURRENT_FISCAL_YEAR = 26; // FY26
     // Apply effective start year logic: if target < current FY, use current FY
+    // This matches what will be stored as effective_start_fiscal_year
     const effectiveStartYear = startYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : startYear;
     return Array.from({ length: 10 }, (_, i) => ({
       yearOffset: i + 1,

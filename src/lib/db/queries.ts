@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
+import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type FormulationTable = Database["public"]["Tables"]["formulations"]["Row"];
@@ -844,7 +845,8 @@ export interface BusinessCaseGroupData {
   use_group_id: string;
   use_group_name: string | null;
   use_group_variant: string | null;
-  target_market_entry: string | null; // Fiscal year like "FY26"
+  target_market_entry: string | null; // Original target market entry fiscal year from use group (e.g., "FY20")
+  effective_start_fiscal_year: string | null; // Effective start fiscal year at creation time (e.g., "FY26" if created in FY26)
   years_data: Record<string, {
     volume: number | null;
     nsp: number | null;
@@ -876,12 +878,11 @@ export interface BusinessCaseYearData {
 }
 
 /**
- * Helper function to calculate effective start fiscal year
- * If target_market_entry is in the past, start from current fiscal year
+ * Helper function to extract year number from fiscal year string
+ * @deprecated Use effective_start_fiscal_year from database instead
+ * Kept for backward compatibility or fallback scenarios
  */
 function getEffectiveStartFiscalYear(targetMarketEntry: string | null): number {
-  const CURRENT_FISCAL_YEAR = 26; // FY26 - update this as time progresses
-  
   if (!targetMarketEntry) {
     return CURRENT_FISCAL_YEAR;
   }
@@ -893,6 +894,23 @@ function getEffectiveStartFiscalYear(targetMarketEntry: string | null): number {
   
   const targetYear = parseInt(match[1], 10);
   return targetYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : targetYear;
+}
+
+/**
+ * Helper function to extract year number from effective_start_fiscal_year string
+ * Use this when you have the stored effective_start_fiscal_year from database
+ */
+function getEffectiveStartYearFromStored(effectiveStartFiscalYear: string | null): number {
+  if (!effectiveStartFiscalYear) {
+    return CURRENT_FISCAL_YEAR;
+  }
+  
+  const match = effectiveStartFiscalYear.match(/FY(\d{2})/);
+  if (!match) {
+    return CURRENT_FISCAL_YEAR;
+  }
+  
+  return parseInt(match[1], 10);
 }
 
 /**
@@ -947,7 +965,6 @@ export async function getBusinessCasesForProjectionTable(): Promise<BusinessCase
 
   // Group by business_case_group_id
   const groups = new Map<string, BusinessCaseGroupData>();
-  const CURRENT_FISCAL_YEAR = 26; // FY26
   
   data.forEach((bc) => {
     if (!bc.business_case_group_id || !bc.formulation_id || !bc.country_id) {
@@ -957,9 +974,12 @@ export async function getBusinessCasesForProjectionTable(): Promise<BusinessCase
     const groupId = bc.business_case_group_id;
     
     if (!groups.has(groupId)) {
-      // Get target_market_entry_fy for this business case
+      // Get target_market_entry_fy for this business case (original from use group)
       const targetMarketEntry = businessCaseToTargetEntry.get(bc.business_case_id || "") || null;
-      const effectiveStartYear = getEffectiveStartFiscalYear(targetMarketEntry);
+      
+      // Use stored effective_start_fiscal_year from database (preserves creation context)
+      const effectiveStartFiscalYear = bc.effective_start_fiscal_year || null;
+      const effectiveStartYear = getEffectiveStartYearFromStored(effectiveStartFiscalYear);
       
       groups.set(groupId, {
         business_case_group_id: groupId,
@@ -975,20 +995,20 @@ export async function getBusinessCasesForProjectionTable(): Promise<BusinessCase
         use_group_name: bc.use_group_name || null,
         use_group_variant: bc.use_group_variant || null,
         target_market_entry: targetMarketEntry, // Store original target_market_entry
+        effective_start_fiscal_year: effectiveStartFiscalYear, // Store effective start (preserves creation context)
         years_data: {},
       });
     }
 
     const group = groups.get(groupId)!;
     
-    // Calculate effective fiscal year for display
-    // If target_market_entry is in the past, map year_offset to current year onwards
-    // We need to remap the year_offset to the effective start year
-    const targetMarketEntry = group.target_market_entry;
-    const effectiveStartYear = getEffectiveStartFiscalYear(targetMarketEntry);
+    // Use stored effective_start_fiscal_year for display calculations
+    // This preserves the fiscal year context when data was created
+    const effectiveStartFiscalYear = group.effective_start_fiscal_year || null;
+    const effectiveStartYear = getEffectiveStartYearFromStored(effectiveStartFiscalYear);
     
     // Calculate display fiscal year: effectiveStartYear + (year_offset - 1)
-    // This ensures year_offset 1 maps to effectiveStartYear (FY26 if target is in past)
+    // This ensures year_offset 1 maps to effectiveStartYear (e.g., FY26 if created in FY26)
     const displayFiscalYear = effectiveStartYear + ((bc.year_offset || 1) - 1);
     const displayFiscalYearStr = `FY${String(displayFiscalYear).padStart(2, "0")}`;
     
@@ -1053,8 +1073,9 @@ export async function getBusinessCaseGroup(groupId: string): Promise<BusinessCas
     business_case_id: bc.business_case_id || "",
     business_case_group_id: bc.business_case_group_id || "",
     year_offset: bc.year_offset || 1,
-    fiscal_year: bc.fiscal_year, // Calculated from target_market_entry_fy + year_offset
+    fiscal_year: bc.fiscal_year, // Calculated from effective_start_fiscal_year + year_offset
     target_market_entry_fy: bc.target_market_entry_fy || null, // Original from use group
+    effective_start_fiscal_year: bc.effective_start_fiscal_year || null, // Preserves creation context
     volume: bc.volume,
     nsp: bc.nsp,
     cogs_per_unit: bc.cogs_per_unit,
@@ -1200,6 +1221,68 @@ export async function getFormulationCountryById(formulationCountryId: string) {
   return data as (FormulationCountryDetail & { formulation_id?: string }) | null;
 }
 
+/**
+ * Get crops for a formulation (normal use - global superset)
+ */
+export async function getFormulationCrops(formulationId: string) {
+  const supabase = await createClient();
+  
+  const { data, error } = await supabase
+    .from("formulation_crops")
+    .select("crop_id, notes")
+    .eq("formulation_id", formulationId);
+
+  if (error) {
+    throw new Error(`Failed to fetch formulation crops: ${error.message}`);
+  }
+
+  // Get crop details
+  if (data && data.length > 0) {
+    const cropIds = data.map(fc => fc.crop_id).filter(Boolean) as string[];
+    const { data: crops } = await supabase
+      .from("crops")
+      .select("*")
+      .in("crop_id", cropIds)
+      .eq("is_active", true)
+      .order("crop_name");
+
+    return crops || [];
+  }
+
+  return [];
+}
+
+/**
+ * Get targets for a formulation (normal use - global superset)
+ */
+export async function getFormulationTargets(formulationId: string) {
+  const supabase = await createClient();
+  
+  const { data, error } = await supabase
+    .from("formulation_targets")
+    .select("target_id, notes")
+    .eq("formulation_id", formulationId);
+
+  if (error) {
+    throw new Error(`Failed to fetch formulation targets: ${error.message}`);
+  }
+
+  // Get target details
+  if (data && data.length > 0) {
+    const targetIds = data.map(ft => ft.target_id).filter(Boolean) as string[];
+    const { data: targets } = await supabase
+      .from("targets")
+      .select("*")
+      .in("target_id", targetIds)
+      .eq("is_active", true)
+      .order("target_name");
+
+    return targets || [];
+  }
+
+  return [];
+}
+
 export async function getUseGroupById(useGroupId: string) {
   const supabase = await createClient();
   
@@ -1227,6 +1310,304 @@ export async function getUseGroupById(useGroupId: string) {
   }
 
   return data as (FormulationCountryUseGroup & { formulation_id?: string }) | null;
+}
+
+/**
+ * Get crops for a use group with critical flags
+ */
+export async function getUseGroupCrops(useGroupId: string) {
+  const supabase = await createClient();
+  
+  const { data, error } = await supabase
+    .from("formulation_country_use_group_crops")
+    .select("crop_id, is_critical")
+    .eq("formulation_country_use_group_id", useGroupId);
+
+  if (error) {
+    throw new Error(`Failed to fetch use group crops: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  // Get crop details
+  const cropIds = data.map(ugc => ugc.crop_id).filter(Boolean) as string[];
+  const { data: crops } = await supabase
+    .from("crops")
+    .select("*")
+    .in("crop_id", cropIds)
+    .eq("is_active", true)
+    .order("crop_name");
+
+  // Merge with is_critical flag
+  return (crops || []).map(crop => {
+    const useGroupCrop = data.find(ugc => ugc.crop_id === crop.crop_id);
+    return {
+      ...crop,
+      is_critical: useGroupCrop?.is_critical || false,
+    };
+  });
+}
+
+/**
+ * Get targets for a use group with critical flags
+ */
+export async function getUseGroupTargets(useGroupId: string) {
+  const supabase = await createClient();
+  
+  const { data, error } = await supabase
+    .from("formulation_country_use_group_targets")
+    .select("target_id, is_critical")
+    .eq("formulation_country_use_group_id", useGroupId);
+
+  if (error) {
+    throw new Error(`Failed to fetch use group targets: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  // Get target details
+  const targetIds = data.map(ugt => ugt.target_id).filter(Boolean) as string[];
+  const { data: targets } = await supabase
+    .from("targets")
+    .select("*")
+    .in("target_id", targetIds)
+    .eq("is_active", true)
+    .order("target_name");
+
+  // Merge with is_critical flag
+  return (targets || []).map(target => {
+    const useGroupTarget = data.find(ugt => ugt.target_id === target.target_id);
+    return {
+      ...target,
+      is_critical: useGroupTarget?.is_critical || false,
+    };
+  });
+}
+
+/**
+ * Validate that use group crops are subset of formulation crops
+ */
+export async function validateUseGroupCropsSubset(
+  useGroupId: string,
+  cropIds: string[]
+): Promise<{ isValid: boolean; error: string | null }> {
+  const supabase = await createClient();
+  
+  // Get formulation_id from use group
+  const { data: useGroup } = await supabase
+    .from("formulation_country_use_group")
+    .select("formulation_country_id")
+    .eq("formulation_country_use_group_id", useGroupId)
+    .single();
+
+  if (!useGroup) {
+    return { isValid: false, error: "Use group not found" };
+  }
+
+  const { data: fcData } = await supabase
+    .from("formulation_country")
+    .select("formulation_id")
+    .eq("formulation_country_id", useGroup.formulation_country_id)
+    .single();
+
+  if (!fcData) {
+    return { isValid: false, error: "Formulation country not found" };
+  }
+
+  // Get formulation crops
+  const { data: formulationCrops } = await supabase
+    .from("formulation_crops")
+    .select("crop_id")
+    .eq("formulation_id", fcData.formulation_id);
+
+  const formulationCropIds = new Set(formulationCrops?.map(fc => fc.crop_id) || []);
+
+  // Check if all cropIds are in formulation crops
+  const invalidCrops = cropIds.filter(cropId => !formulationCropIds.has(cropId));
+  
+  if (invalidCrops.length > 0) {
+    // Get crop names for error message
+    const { data: invalidCropData } = await supabase
+      .from("crops")
+      .select("crop_name")
+      .in("crop_id", invalidCrops);
+    
+    const invalidNames = invalidCropData?.map(c => c.crop_name).join(", ") || "unknown";
+    return {
+      isValid: false,
+      error: `The following crops are not in the formulation's crop list: ${invalidNames}`
+    };
+  }
+
+  return { isValid: true, error: null };
+}
+
+/**
+ * Validate that use group targets are subset of formulation targets
+ */
+export async function validateUseGroupTargetsSubset(
+  useGroupId: string,
+  targetIds: string[]
+): Promise<{ isValid: boolean; error: string | null }> {
+  const supabase = await createClient();
+  
+  // Get formulation_id from use group
+  const { data: useGroup } = await supabase
+    .from("formulation_country_use_group")
+    .select("formulation_country_id")
+    .eq("formulation_country_use_group_id", useGroupId)
+    .single();
+
+  if (!useGroup) {
+    return { isValid: false, error: "Use group not found" };
+  }
+
+  const { data: fcData } = await supabase
+    .from("formulation_country")
+    .select("formulation_id")
+    .eq("formulation_country_id", useGroup.formulation_country_id)
+    .single();
+
+  if (!fcData) {
+    return { isValid: false, error: "Formulation country not found" };
+  }
+
+  // Get formulation targets
+  const { data: formulationTargets } = await supabase
+    .from("formulation_targets")
+    .select("target_id")
+    .eq("formulation_id", fcData.formulation_id);
+
+  const formulationTargetIds = new Set(formulationTargets?.map(ft => ft.target_id) || []);
+
+  // Check if all targetIds are in formulation targets
+  const invalidTargets = targetIds.filter(targetId => !formulationTargetIds.has(targetId));
+  
+  if (invalidTargets.length > 0) {
+    // Get target names for error message
+    const { data: invalidTargetData } = await supabase
+      .from("targets")
+      .select("target_name")
+      .in("target_id", invalidTargets);
+    
+    const invalidNames = invalidTargetData?.map(t => t.target_name).join(", ") || "unknown";
+    return {
+      isValid: false,
+      error: `The following targets are not in the formulation's target list: ${invalidNames}`
+    };
+  }
+
+  return { isValid: true, error: null };
+}
+
+/**
+ * Check if a formulation crop is used in any child use group
+ */
+export async function checkFormulationCropInUse(
+  cropId: string,
+  formulationId: string
+): Promise<{ inUse: boolean; useGroups: string[] }> {
+  const supabase = await createClient();
+  
+  // Get all use groups for this formulation
+  // First get all formulation_country_ids for this formulation
+  const { data: fcRecords } = await supabase
+    .from("formulation_country")
+    .select("formulation_country_id")
+    .eq("formulation_id", formulationId);
+
+  if (!fcRecords || fcRecords.length === 0) {
+    return { inUse: false, useGroups: [] };
+  }
+
+  const fcIds = fcRecords.map(fc => fc.formulation_country_id);
+  const { data: useGroups } = await supabase
+    .from("formulation_country_use_group")
+    .select("formulation_country_use_group_id, use_group_variant")
+    .in("formulation_country_id", fcIds);
+
+  if (!useGroups || useGroups.length === 0) {
+    return { inUse: false, useGroups: [] };
+  }
+
+  const useGroupIds = useGroups.map(ug => ug.formulation_country_use_group_id);
+  
+  // Check if crop is used in any use group
+  const { data: usedInGroups } = await supabase
+    .from("formulation_country_use_group_crops")
+    .select("formulation_country_use_group_id")
+    .eq("crop_id", cropId)
+    .in("formulation_country_use_group_id", useGroupIds);
+
+  if (!usedInGroups || usedInGroups.length === 0) {
+    return { inUse: false, useGroups: [] };
+  }
+
+  const useGroupVariants = usedInGroups
+    .map(ugc => {
+      const ug = useGroups.find(u => u.formulation_country_use_group_id === ugc.formulation_country_use_group_id);
+      return ug?.use_group_variant || null;
+    })
+    .filter((v): v is string => v !== null);
+
+  return { inUse: true, useGroups: useGroupVariants };
+}
+
+/**
+ * Check if a formulation target is used in any child use group
+ */
+export async function checkFormulationTargetInUse(
+  targetId: string,
+  formulationId: string
+): Promise<{ inUse: boolean; useGroups: string[] }> {
+  const supabase = await createClient();
+  
+  // Get all use groups for this formulation
+  // First get all formulation_country_ids for this formulation
+  const { data: fcRecords } = await supabase
+    .from("formulation_country")
+    .select("formulation_country_id")
+    .eq("formulation_id", formulationId);
+
+  if (!fcRecords || fcRecords.length === 0) {
+    return { inUse: false, useGroups: [] };
+  }
+
+  const fcIds = fcRecords.map(fc => fc.formulation_country_id);
+  const { data: useGroups } = await supabase
+    .from("formulation_country_use_group")
+    .select("formulation_country_use_group_id, use_group_variant")
+    .in("formulation_country_id", fcIds);
+
+  if (!useGroups || useGroups.length === 0) {
+    return { inUse: false, useGroups: [] };
+  }
+
+  const useGroupIds = useGroups.map(ug => ug.formulation_country_use_group_id);
+  
+  // Check if target is used in any use group
+  const { data: usedInGroups } = await supabase
+    .from("formulation_country_use_group_targets")
+    .select("formulation_country_use_group_id")
+    .eq("target_id", targetId)
+    .in("formulation_country_use_group_id", useGroupIds);
+
+  if (!usedInGroups || usedInGroups.length === 0) {
+    return { inUse: false, useGroups: [] };
+  }
+
+  const useGroupVariants = usedInGroups
+    .map(ugt => {
+      const ug = useGroups.find(u => u.formulation_country_use_group_id === ugt.formulation_country_use_group_id);
+      return ug?.use_group_variant || null;
+    })
+    .filter((v): v is string => v !== null);
+
+  return { inUse: true, useGroups: useGroupVariants };
 }
 
 export async function getActivePortfolio() {

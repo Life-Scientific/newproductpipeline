@@ -19,8 +19,9 @@ export interface BusinessCaseYearData {
   business_case_id: string;
   business_case_group_id: string;
   year_offset: number;
-  fiscal_year: string | null; // Calculated from target_market_entry_fy + year_offset
+  fiscal_year: string | null; // Calculated from effective_start_fiscal_year + year_offset
   target_market_entry_fy: string | null; // Original target market entry from use group
+  effective_start_fiscal_year: string | null; // Effective start fiscal year at creation time (preserves context)
   volume: number | null;
   nsp: number | null;
   cogs_per_unit: number | null;
@@ -97,11 +98,12 @@ export function BusinessCaseEditModal({
     }
   }, [open, groupId, toast, onOpenChange]);
 
-  // Calculate fiscal year columns (10 years starting from target market entry)
-  const fiscalYearColumns = yearData.length > 0 && yearData[0].fiscal_year
+  // Calculate fiscal year columns using stored effective_start_fiscal_year
+  // This preserves the fiscal year context when data was created
+  const fiscalYearColumns = yearData.length > 0 && yearData[0].effective_start_fiscal_year
     ? (() => {
-        const firstYear = yearData[0].fiscal_year;
-        const match = firstYear?.match(/FY(\d{2})/);
+        const effectiveStartFiscalYear = yearData[0].effective_start_fiscal_year;
+        const match = effectiveStartFiscalYear?.match(/FY(\d{2})/);
         if (!match) return [];
         const startYear = parseInt(match[1], 10);
         return Array.from({ length: 10 }, (_, i) => ({
@@ -117,8 +119,10 @@ export function BusinessCaseEditModal({
   const formulationName = yearData[0]?.formulation_name || "";
   const countryName = yearData[0]?.country_name || "";
   const useGroupName = yearData[0]?.use_group_name || yearData[0]?.use_group_variant || "";
-  // Use target_market_entry_fy from use group (original), not calculated fiscal_year
+  // Use target_market_entry_fy from use group (original)
   const targetMarketEntry = yearData[0]?.target_market_entry_fy || "";
+  // Use effective_start_fiscal_year (preserves creation context)
+  const effectiveStartFiscalYear = yearData[0]?.effective_start_fiscal_year || "";
 
   // Handle cell value change
   const handleCellChange = (yearOffset: number, field: "volume" | "nsp", value: string) => {
@@ -230,6 +234,9 @@ export function BusinessCaseEditModal({
           <DialogTitle>Edit Business Case - {formulationName}</DialogTitle>
           <div className="text-sm text-muted-foreground">
             {countryName} | {useGroupName} | Target Market Entry: {targetMarketEntry}
+            {effectiveStartFiscalYear && effectiveStartFiscalYear !== targetMarketEntry && (
+              <> | Effective Start: {effectiveStartFiscalYear}</>
+            )}
           </div>
           {changedCells.size > 0 && (
             <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950 rounded text-sm text-blue-900 dark:text-blue-100">

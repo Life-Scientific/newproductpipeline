@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { createClient } from "@/lib/supabase/client";
@@ -28,6 +29,7 @@ import type { Database } from "@/lib/supabase/database.types";
 type FormulationCountryUseGroup = Database["public"]["Tables"]["formulation_country_use_group"]["Row"];
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 type Crop = Database["public"]["Tables"]["crops"]["Row"];
+type Target = Database["public"]["Tables"]["targets"]["Row"];
 type ReferenceProduct = Database["public"]["Tables"]["reference_products"]["Row"];
 
 interface FormulationCountryUseGroupFormProps {
@@ -58,9 +60,14 @@ export function FormulationCountryUseGroupForm({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [formulationCountries, setFormulationCountries] = useState<FormulationCountryDetail[]>([]);
-  const [crops, setCrops] = useState<Crop[]>([]);
+  const [formulationCrops, setFormulationCrops] = useState<Crop[]>([]);
+  const [formulationTargets, setFormulationTargets] = useState<Target[]>([]);
   const [referenceProducts, setReferenceProducts] = useState<ReferenceProduct[]>([]);
   const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
+  const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
+  const [cropsCritical, setCropsCritical] = useState<Record<string, boolean>>({});
+  const [targetsCritical, setTargetsCritical] = useState<Record<string, boolean>>({});
+  const [formulationId, setFormulationId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     formulation_country_id:
@@ -81,10 +88,13 @@ export function FormulationCountryUseGroupForm({
     if (open) {
       loadData();
       if (formulationCountryUseGroup) {
-        loadExistingCrops();
+        loadExistingCropsAndTargets();
+      } else if (formData.formulation_country_id) {
+        // When creating new use group, load formulation crops/targets and pre-select all as critical
+        loadFormulationCropsAndTargets(formData.formulation_country_id);
       }
     }
-  }, [open, formulationCountryUseGroup]);
+  }, [open, formulationCountryUseGroup, formData.formulation_country_id]);
 
   const loadData = async () => {
     const supabase = createClient();
@@ -96,14 +106,6 @@ export function FormulationCountryUseGroupForm({
       .order("display_name");
     if (fcData) setFormulationCountries(fcData as FormulationCountryDetail[]);
 
-    // Load crops
-    const { data: cropsData } = await supabase
-      .from("crops")
-      .select("*")
-      .eq("is_active", true)
-      .order("crop_name");
-    if (cropsData) setCrops(cropsData);
-
     // Load reference products
     const { data: refData } = await supabase
       .from("reference_products")
@@ -113,16 +115,150 @@ export function FormulationCountryUseGroupForm({
     if (refData) setReferenceProducts(refData);
   };
 
-  const loadExistingCrops = async () => {
+  const loadFormulationCropsAndTargets = async (formulationCountryId: string) => {
+    const supabase = createClient();
+
+    // Get formulation_id from formulation_country
+    const { data: fcData } = await supabase
+      .from("formulation_country")
+      .select("formulation_id")
+      .eq("formulation_country_id", formulationCountryId)
+      .single();
+
+    if (!fcData) return;
+
+    setFormulationId(fcData.formulation_id);
+
+    // Load formulation crops (normal use - global superset)
+    const { data: fcCrops } = await supabase
+      .from("formulation_crops")
+      .select("crop_id")
+      .eq("formulation_id", fcData.formulation_id);
+
+    if (fcCrops && fcCrops.length > 0) {
+      const cropIds = fcCrops.map(fc => fc.crop_id).filter(Boolean) as string[];
+      const { data: cropsData } = await supabase
+        .from("crops")
+        .select("*")
+        .in("crop_id", cropIds)
+        .eq("is_active", true)
+        .order("crop_name");
+      if (cropsData) {
+        setFormulationCrops(cropsData);
+        // Pre-select ALL formulation crops as CRITICAL when creating new use group
+        setSelectedCrops(cropIds);
+        const criticalMap: Record<string, boolean> = {};
+        cropIds.forEach(cropId => {
+          criticalMap[cropId] = true; // All critical by default
+        });
+        setCropsCritical(criticalMap);
+      }
+    }
+
+    // Load formulation targets (normal use - global superset)
+    const { data: ftTargets } = await supabase
+      .from("formulation_targets")
+      .select("target_id")
+      .eq("formulation_id", fcData.formulation_id);
+
+    if (ftTargets && ftTargets.length > 0) {
+      const targetIds = ftTargets.map(ft => ft.target_id).filter(Boolean) as string[];
+      const { data: targetsData } = await supabase
+        .from("targets")
+        .select("*")
+        .in("target_id", targetIds)
+        .eq("is_active", true)
+        .order("target_name");
+      if (targetsData) {
+        setFormulationTargets(targetsData);
+        // Pre-select ALL formulation targets as CRITICAL when creating new use group
+        setSelectedTargets(targetIds);
+        const criticalMap: Record<string, boolean> = {};
+        targetIds.forEach(targetId => {
+          criticalMap[targetId] = true; // All critical by default
+        });
+        setTargetsCritical(criticalMap);
+      }
+    }
+  };
+
+  const loadExistingCropsAndTargets = async () => {
     if (!formulationCountryUseGroup) return;
     const supabase = createClient();
 
-    const { data: cropsData } = await supabase
-      .from("formulation_country_use_group_crops")
+    // Get formulation_id
+    const { data: fcData } = await supabase
+      .from("formulation_country")
+      .select("formulation_id")
+      .eq("formulation_country_id", formulationCountryUseGroup.formulation_country_id)
+      .single();
+
+    if (!fcData) return;
+
+    setFormulationId(fcData.formulation_id);
+
+    // Load formulation crops (for reference)
+    const { data: fcCrops } = await supabase
+      .from("formulation_crops")
       .select("crop_id")
+      .eq("formulation_id", fcData.formulation_id);
+
+    if (fcCrops && fcCrops.length > 0) {
+      const cropIds = fcCrops.map(fc => fc.crop_id).filter(Boolean) as string[];
+      const { data: cropsData } = await supabase
+        .from("crops")
+        .select("*")
+        .in("crop_id", cropIds)
+        .eq("is_active", true)
+        .order("crop_name");
+      if (cropsData) setFormulationCrops(cropsData);
+    }
+
+    // Load formulation targets (for reference)
+    const { data: ftTargets } = await supabase
+      .from("formulation_targets")
+      .select("target_id")
+      .eq("formulation_id", fcData.formulation_id);
+
+    if (ftTargets && ftTargets.length > 0) {
+      const targetIds = ftTargets.map(ft => ft.target_id).filter(Boolean) as string[];
+      const { data: targetsData } = await supabase
+        .from("targets")
+        .select("*")
+        .in("target_id", targetIds)
+        .eq("is_active", true)
+        .order("target_name");
+      if (targetsData) setFormulationTargets(targetsData);
+    }
+
+    // Load existing use group crops with critical flags
+    const { data: useGroupCrops } = await supabase
+      .from("formulation_country_use_group_crops")
+      .select("crop_id, is_critical")
       .eq("formulation_country_use_group_id", formulationCountryUseGroup.formulation_country_use_group_id);
-    if (cropsData) {
-      setSelectedCrops(cropsData.map((c) => c.crop_id));
+    
+    if (useGroupCrops) {
+      setSelectedCrops(useGroupCrops.map(c => c.crop_id));
+      const criticalMap: Record<string, boolean> = {};
+      useGroupCrops.forEach(c => {
+        criticalMap[c.crop_id] = c.is_critical || false;
+      });
+      setCropsCritical(criticalMap);
+    }
+
+    // Load existing use group targets with critical flags
+    const { data: useGroupTargets } = await supabase
+      .from("formulation_country_use_group_targets")
+      .select("target_id, is_critical")
+      .eq("formulation_country_use_group_id", formulationCountryUseGroup.formulation_country_use_group_id);
+    
+    if (useGroupTargets) {
+      setSelectedTargets(useGroupTargets.map(t => t.target_id));
+      const criticalMap: Record<string, boolean> = {};
+      useGroupTargets.forEach(t => {
+        criticalMap[t.target_id] = t.is_critical || false;
+      });
+      setTargetsCritical(criticalMap);
     }
   };
 
@@ -138,6 +274,25 @@ export function FormulationCountryUseGroupForm({
       return;
     }
 
+    // Validate at least one crop AND one target
+    if (selectedCrops.length === 0) {
+      toast({
+        title: "Error",
+        description: "At least one crop must be selected",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedTargets.length === 0) {
+      toast({
+        title: "Error",
+        description: "At least one target must be selected",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const form = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
@@ -146,6 +301,9 @@ export function FormulationCountryUseGroupForm({
     });
 
     form.append("crops", JSON.stringify(selectedCrops));
+    form.append("targets", JSON.stringify(selectedTargets));
+    form.append("crops_critical", JSON.stringify(cropsCritical));
+    form.append("targets_critical", JSON.stringify(targetsCritical));
 
     startTransition(async () => {
       try {
@@ -192,10 +350,55 @@ export function FormulationCountryUseGroupForm({
     return dateStr.split("T")[0];
   };
 
-  const cropOptions: MultiSelectOption[] = crops.map((crop) => ({
+  // Handle formulation country change - load crops/targets
+  const handleFormulationCountryChange = (value: string) => {
+    setFormData({ ...formData, formulation_country_id: value });
+    if (!formulationCountryUseGroup) {
+      // Creating new use group - load and pre-select all crops/targets as critical
+      loadFormulationCropsAndTargets(value);
+    } else {
+      // Editing - just load for reference
+      loadFormulationCropsAndTargets(value);
+    }
+  };
+
+  // Crop options from formulation crops only
+  const cropOptions: MultiSelectOption[] = formulationCrops.map((crop) => ({
     value: crop.crop_id,
     label: crop.crop_name,
   }));
+
+  // Target options from formulation targets only
+  const targetOptions: MultiSelectOption[] = formulationTargets.map((target) => ({
+    value: target.target_id,
+    label: target.target_name,
+  }));
+
+  // Group crops by critical/non-critical, then alphabetize
+  const criticalCrops = selectedCrops
+    .filter(cropId => cropsCritical[cropId] === true)
+    .map(cropId => formulationCrops.find(c => c.crop_id === cropId))
+    .filter((c): c is Crop => c !== undefined)
+    .sort((a, b) => a.crop_name.localeCompare(b.crop_name));
+
+  const nonCriticalCrops = selectedCrops
+    .filter(cropId => cropsCritical[cropId] !== true)
+    .map(cropId => formulationCrops.find(c => c.crop_id === cropId))
+    .filter((c): c is Crop => c !== undefined)
+    .sort((a, b) => a.crop_name.localeCompare(b.crop_name));
+
+  // Group targets by critical/non-critical, then alphabetize
+  const criticalTargets = selectedTargets
+    .filter(targetId => targetsCritical[targetId] === true)
+    .map(targetId => formulationTargets.find(t => t.target_id === targetId))
+    .filter((t): t is Target => t !== undefined)
+    .sort((a, b) => a.target_name.localeCompare(b.target_name));
+
+  const nonCriticalTargets = selectedTargets
+    .filter(targetId => targetsCritical[targetId] !== true)
+    .map(targetId => formulationTargets.find(t => t.target_id === targetId))
+    .filter((t): t is Target => t !== undefined)
+    .sort((a, b) => a.target_name.localeCompare(b.target_name));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -218,9 +421,7 @@ export function FormulationCountryUseGroupForm({
               </Label>
               <Select
                 value={formData.formulation_country_id}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, formulation_country_id: value })
-                }
+                onValueChange={handleFormulationCountryChange}
                 required
                 disabled={!!formulationCountryUseGroup}
               >
@@ -385,14 +586,154 @@ export function FormulationCountryUseGroupForm({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Crops (Intended Use)</Label>
-            <MultiSelect
-              options={cropOptions}
-              selected={selectedCrops}
-              onChange={setSelectedCrops}
-              placeholder="Select crops for this use group..."
-            />
+          {/* Crops Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-semibold">
+                Crops (Intended Use) <span className="text-destructive">*</span>
+              </Label>
+              {formulationCrops.length > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  Select from {formulationCrops.length} formulation crop{formulationCrops.length !== 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+            {formulationCrops.length === 0 && formData.formulation_country_id && (
+              <p className="text-sm text-muted-foreground">
+                No crops defined for this formulation. Please add crops at the formulation level first.
+              </p>
+            )}
+            {formulationCrops.length > 0 && (
+              <>
+                <MultiSelect
+                  options={cropOptions}
+                  selected={selectedCrops}
+                  onChange={setSelectedCrops}
+                  placeholder="Select crops for this use group..."
+                />
+                {selectedCrops.length > 0 && (
+                  <div className="space-y-3 mt-4 p-4 border rounded-lg bg-muted/50">
+                    {/* Critical Crops */}
+                    {criticalCrops.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-green-700 dark:text-green-400">
+                          Critical Crops
+                        </Label>
+                        <div className="space-y-2 pl-4">
+                          {criticalCrops.map((crop) => (
+                            <div key={crop.crop_id} className="flex items-center gap-2">
+                              <Checkbox
+                                checked={cropsCritical[crop.crop_id] === true}
+                                onCheckedChange={(checked) =>
+                                  setCropsCritical({ ...cropsCritical, [crop.crop_id]: checked === true })
+                                }
+                              />
+                              <Label className="text-sm font-normal">{crop.crop_name}</Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {/* Non-Critical Crops */}
+                    {nonCriticalCrops.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-muted-foreground">
+                          Non-Critical Crops
+                        </Label>
+                        <div className="space-y-2 pl-4">
+                          {nonCriticalCrops.map((crop) => (
+                            <div key={crop.crop_id} className="flex items-center gap-2">
+                              <Checkbox
+                                checked={cropsCritical[crop.crop_id] === true}
+                                onCheckedChange={(checked) =>
+                                  setCropsCritical({ ...cropsCritical, [crop.crop_id]: checked === true })
+                                }
+                              />
+                              <Label className="text-sm font-normal">{crop.crop_name}</Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Targets Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-semibold">
+                Targets (Intended Use) <span className="text-destructive">*</span>
+              </Label>
+              {formulationTargets.length > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  Select from {formulationTargets.length} formulation target{formulationTargets.length !== 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+            {formulationTargets.length === 0 && formData.formulation_country_id && (
+              <p className="text-sm text-muted-foreground">
+                No targets defined for this formulation. Please add targets at the formulation level first.
+              </p>
+            )}
+            {formulationTargets.length > 0 && (
+              <>
+                <MultiSelect
+                  options={targetOptions}
+                  selected={selectedTargets}
+                  onChange={setSelectedTargets}
+                  placeholder="Select targets for this use group..."
+                />
+                {selectedTargets.length > 0 && (
+                  <div className="space-y-3 mt-4 p-4 border rounded-lg bg-muted/50">
+                    {/* Critical Targets */}
+                    {criticalTargets.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-green-700 dark:text-green-400">
+                          Critical Targets
+                        </Label>
+                        <div className="space-y-2 pl-4">
+                          {criticalTargets.map((target) => (
+                            <div key={target.target_id} className="flex items-center gap-2">
+                              <Checkbox
+                                checked={targetsCritical[target.target_id] === true}
+                                onCheckedChange={(checked) =>
+                                  setTargetsCritical({ ...targetsCritical, [target.target_id]: checked === true })
+                                }
+                              />
+                              <Label className="text-sm font-normal">{target.target_name}</Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {/* Non-Critical Targets */}
+                    {nonCriticalTargets.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-muted-foreground">
+                          Non-Critical Targets
+                        </Label>
+                        <div className="space-y-2 pl-4">
+                          {nonCriticalTargets.map((target) => (
+                            <div key={target.target_id} className="flex items-center gap-2">
+                              <Checkbox
+                                checked={targetsCritical[target.target_id] === true}
+                                onCheckedChange={(checked) =>
+                                  setTargetsCritical({ ...targetsCritical, [target.target_id]: checked === true })
+                                }
+                              />
+                              <Label className="text-sm font-normal">{target.target_name}</Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           <DialogFooter>
@@ -408,4 +749,3 @@ export function FormulationCountryUseGroupForm({
     </Dialog>
   );
 }
-

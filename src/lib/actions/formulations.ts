@@ -248,3 +248,191 @@ export async function deleteFormulation(formulationId: string) {
   return { success: true };
 }
 
+/**
+ * Add a crop to a formulation (normal use - global superset)
+ */
+export async function addFormulationCrop(
+  formulationId: string,
+  cropId: string,
+  notes?: string | null
+) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("formulation_crops")
+    .insert({
+      formulation_id: formulationId,
+      crop_id: cropId,
+      notes: notes || null,
+    });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(`/formulations/${formulationId}`);
+  revalidatePath("/formulations");
+  return { success: true };
+}
+
+/**
+ * Remove a crop from a formulation
+ * Validates that crop is not used in any child use group first
+ */
+export async function removeFormulationCrop(formulationId: string, cropId: string) {
+  const supabase = await createClient();
+
+  // Check if crop is used in any use group (database trigger will also enforce this)
+  // First get all formulation_country_ids for this formulation
+  const { data: fcRecords } = await supabase
+    .from("formulation_country")
+    .select("formulation_country_id")
+    .eq("formulation_id", formulationId);
+
+  if (!fcRecords || fcRecords.length === 0) {
+    // No formulation countries, safe to delete
+    const { error } = await supabase
+      .from("formulation_crops")
+      .delete()
+      .eq("formulation_id", formulationId)
+      .eq("crop_id", cropId);
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    revalidatePath(`/formulations/${formulationId}`);
+    revalidatePath("/formulations");
+    return { success: true };
+  }
+
+  const fcIds = fcRecords.map(fc => fc.formulation_country_id);
+  const { data: useGroups } = await supabase
+    .from("formulation_country_use_group")
+    .select("formulation_country_use_group_id")
+    .in("formulation_country_id", fcIds);
+
+  if (useGroups && useGroups.length > 0) {
+    const useGroupIds = useGroups.map(ug => ug.formulation_country_use_group_id);
+    const { data: usedInGroups } = await supabase
+      .from("formulation_country_use_group_crops")
+      .select("formulation_country_use_group_id")
+      .eq("crop_id", cropId)
+      .in("formulation_country_use_group_id", useGroupIds);
+
+    if (usedInGroups && usedInGroups.length > 0) {
+      return {
+        error: "Cannot remove crop because it is used in one or more use groups. Please remove it from all use groups first.",
+      };
+    }
+  }
+
+  const { error } = await supabase
+    .from("formulation_crops")
+    .delete()
+    .eq("formulation_id", formulationId)
+    .eq("crop_id", cropId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(`/formulations/${formulationId}`);
+  revalidatePath("/formulations");
+  return { success: true };
+}
+
+/**
+ * Add a target to a formulation (normal use - global superset)
+ */
+export async function addFormulationTarget(
+  formulationId: string,
+  targetId: string,
+  notes?: string | null
+) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("formulation_targets")
+    .insert({
+      formulation_id: formulationId,
+      target_id: targetId,
+      notes: notes || null,
+    });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(`/formulations/${formulationId}`);
+  revalidatePath("/formulations");
+  return { success: true };
+}
+
+/**
+ * Remove a target from a formulation
+ * Validates that target is not used in any child use group first
+ */
+export async function removeFormulationTarget(formulationId: string, targetId: string) {
+  const supabase = await createClient();
+
+  // Check if target is used in any use group (database trigger will also enforce this)
+  // First get all formulation_country_ids for this formulation
+  const { data: fcRecords } = await supabase
+    .from("formulation_country")
+    .select("formulation_country_id")
+    .eq("formulation_id", formulationId);
+
+  if (!fcRecords || fcRecords.length === 0) {
+    // No formulation countries, safe to delete
+    const { error } = await supabase
+      .from("formulation_targets")
+      .delete()
+      .eq("formulation_id", formulationId)
+      .eq("target_id", targetId);
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    revalidatePath(`/formulations/${formulationId}`);
+    revalidatePath("/formulations");
+    return { success: true };
+  }
+
+  const fcIds = fcRecords.map(fc => fc.formulation_country_id);
+  const { data: useGroups } = await supabase
+    .from("formulation_country_use_group")
+    .select("formulation_country_use_group_id")
+    .in("formulation_country_id", fcIds);
+
+  if (useGroups && useGroups.length > 0) {
+    const useGroupIds = useGroups.map(ug => ug.formulation_country_use_group_id);
+    const { data: usedInGroups } = await supabase
+      .from("formulation_country_use_group_targets")
+      .select("formulation_country_use_group_id")
+      .eq("target_id", targetId)
+      .in("formulation_country_use_group_id", useGroupIds);
+
+    if (usedInGroups && usedInGroups.length > 0) {
+      return {
+        error: "Cannot remove target because it is used in one or more use groups. Please remove it from all use groups first.",
+      };
+    }
+  }
+
+  const { error } = await supabase
+    .from("formulation_targets")
+    .delete()
+    .eq("formulation_id", formulationId)
+    .eq("target_id", targetId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(`/formulations/${formulationId}`);
+  revalidatePath("/formulations");
+  return { success: true };
+}
+

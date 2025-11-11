@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import { checkExistingBusinessCase, validateUseGroupTargetEntryConsistency } from "@/lib/db/queries";
+import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 
 export async function createBusinessCase(formData: FormData) {
   const supabase = await createClient();
@@ -251,11 +252,12 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     return { error: "Invalid target market entry format. Expected format: FY26" };
   }
   const targetYear = parseInt(targetYearMatch[1], 10);
-  const CURRENT_FISCAL_YEAR = 26; // FY26 - update this as time progresses
 
-  // Determine effective start fiscal year
+  // Determine effective start fiscal year at creation time
   // If target_market_entry is in the past, start from current fiscal year
+  // This preserves the fiscal year context when data was entered
   const effectiveStartYear = targetYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : targetYear;
+  const effectiveStartFiscalYear = `FY${String(effectiveStartYear).padStart(2, "0")}`;
 
   // Check if business case already exists for this combination
   // For now, check the first use group - in the future we might want to check all
@@ -295,13 +297,15 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
   }
 
   // Create 10 business case rows
-  // Note: fiscal_year is no longer stored - it's calculated from target_market_entry_fy + year_offset
+  // Set effective_start_fiscal_year to preserve fiscal year context at creation time
+  // This ensures data entered in FY26 always maps to FY26-FY35, even if viewed in FY27+
   const businessCaseInserts = yearData.map((year) => ({
     business_case_group_id: groupId,
     business_case_name: formData.get("business_case_name") as string | null,
     year_offset: year.year_offset,
     volume: year.volume,
     nsp: year.nsp,
+    effective_start_fiscal_year: effectiveStartFiscalYear, // Preserves creation context
     status: "active" as const,
     created_by: userName,
   }));

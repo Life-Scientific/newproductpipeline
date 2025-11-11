@@ -2,6 +2,10 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import {
+  validateUseGroupCropsSubset,
+  validateUseGroupTargetsSubset,
+} from "@/lib/db/queries";
 
 export async function createFormulationCountryUseGroup(formData: FormData) {
   const supabase = await createClient();
@@ -19,6 +23,9 @@ export async function createFormulationCountryUseGroup(formData: FormData) {
   const actualMarketEntryDate = formData.get("actual_market_entry_date") as string | null;
 
   const cropsJson = formData.get("crops") as string | null;
+  const targetsJson = formData.get("targets") as string | null;
+  const cropsCriticalJson = formData.get("crops_critical") as string | null; // Map of cropId -> is_critical
+  const targetsCriticalJson = formData.get("targets_critical") as string | null; // Map of targetId -> is_critical
 
   if (!formulationCountryId || !useGroupVariant) {
     return { error: "Formulation-country and use group variant are required" };
@@ -35,6 +42,68 @@ export async function createFormulationCountryUseGroup(formData: FormData) {
   if (existing) {
     return { error: "This use group variant already exists for this formulation-country" };
   }
+
+  // Get formulation_id for validation
+  const { data: fcData } = await supabase
+    .from("formulation_country")
+    .select("formulation_id")
+    .eq("formulation_country_id", formulationCountryId)
+    .single();
+
+  if (!fcData) {
+    return { error: "Formulation country not found" };
+  }
+
+  // Parse crops and targets
+  let cropIds: string[] = [];
+  let targetIds: string[] = [];
+  let cropsCriticalMap: Record<string, boolean> = {};
+  let targetsCriticalMap: Record<string, boolean> = {};
+
+  if (cropsJson) {
+    try {
+      cropIds = JSON.parse(cropsJson);
+    } catch (parseError) {
+      return { error: "Failed to parse crops" };
+    }
+  }
+
+  if (targetsJson) {
+    try {
+      targetIds = JSON.parse(targetsJson);
+    } catch (parseError) {
+      return { error: "Failed to parse targets" };
+    }
+  }
+
+  if (cropsCriticalJson) {
+    try {
+      cropsCriticalMap = JSON.parse(cropsCriticalJson);
+    } catch (parseError) {
+      return { error: "Failed to parse crops critical flags" };
+    }
+  }
+
+  if (targetsCriticalJson) {
+    try {
+      targetsCriticalMap = JSON.parse(targetsCriticalJson);
+    } catch (parseError) {
+      return { error: "Failed to parse targets critical flags" };
+    }
+  }
+
+  // Validate at least one crop AND one target
+  if (cropIds.length === 0) {
+    return { error: "At least one crop must be selected" };
+  }
+
+  if (targetIds.length === 0) {
+    return { error: "At least one target must be selected" };
+  }
+
+  // Validate crops/targets are subset of formulation crops/targets
+  // Note: We'll create the use group first, then validate
+  // Database triggers will also enforce this
 
   const { data, error } = await supabase
     .from("formulation_country_use_group")
@@ -58,19 +127,61 @@ export async function createFormulationCountryUseGroup(formData: FormData) {
     return { error: error.message };
   }
 
-  // Add crops (intended use)
-  if (cropsJson && data?.formulation_country_use_group_id) {
-    try {
-      const crops: string[] = JSON.parse(cropsJson);
-      if (crops.length > 0) {
-        const cropInserts = crops.map((cropId) => ({
-          formulation_country_use_group_id: data.formulation_country_use_group_id,
-          crop_id: cropId,
-        }));
-        await supabase.from("formulation_country_use_group_crops").insert(cropInserts);
-      }
-    } catch (parseError) {
-      console.error("Failed to parse crops:", parseError);
+  // Validate crops subset
+  const cropsValidation = await validateUseGroupCropsSubset(
+    data.formulation_country_use_group_id,
+    cropIds
+  );
+  if (!cropsValidation.isValid) {
+    // Rollback use group creation
+    await supabase
+      .from("formulation_country_use_group")
+      .delete()
+      .eq("formulation_country_use_group_id", data.formulation_country_use_group_id);
+    return { error: cropsValidation.error || "Invalid crops" };
+  }
+
+  // Validate targets subset
+  const targetsValidation = await validateUseGroupTargetsSubset(
+    data.formulation_country_use_group_id,
+    targetIds
+  );
+  if (!targetsValidation.isValid) {
+    // Rollback use group creation
+    await supabase
+      .from("formulation_country_use_group")
+      .delete()
+      .eq("formulation_country_use_group_id", data.formulation_country_use_group_id);
+    return { error: targetsValidation.error || "Invalid targets" };
+  }
+
+  // Add crops with critical flags
+  if (cropIds.length > 0) {
+    const cropInserts = cropIds.map((cropId) => ({
+      formulation_country_use_group_id: data.formulation_country_use_group_id,
+      crop_id: cropId,
+      is_critical: cropsCriticalMap[cropId] ?? true, // Default to critical if not specified
+    }));
+    const { error: cropsError } = await supabase
+      .from("formulation_country_use_group_crops")
+      .insert(cropInserts);
+    if (cropsError) {
+      return { error: `Failed to add crops: ${cropsError.message}` };
+    }
+  }
+
+  // Add targets with critical flags
+  if (targetIds.length > 0) {
+    const targetInserts = targetIds.map((targetId) => ({
+      formulation_country_use_group_id: data.formulation_country_use_group_id,
+      target_id: targetId,
+      is_critical: targetsCriticalMap[targetId] ?? true, // Default to critical if not specified
+    }));
+    const { error: targetsError } = await supabase
+      .from("formulation_country_use_group_targets")
+      .insert(targetInserts);
+    if (targetsError) {
+      return { error: `Failed to add targets: ${targetsError.message}` };
     }
   }
 
@@ -98,6 +209,9 @@ export async function updateFormulationCountryUseGroup(
   const actualMarketEntryDate = formData.get("actual_market_entry_date") as string | null;
 
   const cropsJson = formData.get("crops") as string | null;
+  const targetsJson = formData.get("targets") as string | null;
+  const cropsCriticalJson = formData.get("crops_critical") as string | null;
+  const targetsCriticalJson = formData.get("targets_critical") as string | null;
 
   const updateData: any = {
     updated_at: new Date().toISOString(),
@@ -131,22 +245,91 @@ export async function updateFormulationCountryUseGroup(
 
   // Update crops - delete all and reinsert
   if (cropsJson !== null) {
-    await supabase
-      .from("formulation_country_use_group_crops")
-      .delete()
-      .eq("formulation_country_use_group_id", formulationCountryUseGroupId);
-
     try {
-      const crops: string[] = JSON.parse(cropsJson);
-      if (crops.length > 0) {
-        const cropInserts = crops.map((cropId) => ({
+      const cropIds: string[] = JSON.parse(cropsJson);
+      const cropsCriticalMap: Record<string, boolean> = cropsCriticalJson
+        ? JSON.parse(cropsCriticalJson)
+        : {};
+
+      // Validate at least one crop
+      if (cropIds.length === 0) {
+        return { error: "At least one crop must be selected" };
+      }
+
+      // Validate crops subset
+      const cropsValidation = await validateUseGroupCropsSubset(
+        formulationCountryUseGroupId,
+        cropIds
+      );
+      if (!cropsValidation.isValid) {
+        return { error: cropsValidation.error || "Invalid crops" };
+      }
+
+      await supabase
+        .from("formulation_country_use_group_crops")
+        .delete()
+        .eq("formulation_country_use_group_id", formulationCountryUseGroupId);
+
+      if (cropIds.length > 0) {
+        const cropInserts = cropIds.map((cropId) => ({
           formulation_country_use_group_id: formulationCountryUseGroupId,
           crop_id: cropId,
+          is_critical: cropsCriticalMap[cropId] ?? false,
         }));
-        await supabase.from("formulation_country_use_group_crops").insert(cropInserts);
+        const { error: cropsError } = await supabase
+          .from("formulation_country_use_group_crops")
+          .insert(cropInserts);
+        if (cropsError) {
+          return { error: `Failed to update crops: ${cropsError.message}` };
+        }
       }
     } catch (parseError) {
-      console.error("Failed to parse crops:", parseError);
+      return { error: "Failed to parse crops data" };
+    }
+  }
+
+  // Update targets - delete all and reinsert
+  if (targetsJson !== null) {
+    try {
+      const targetIds: string[] = JSON.parse(targetsJson);
+      const targetsCriticalMap: Record<string, boolean> = targetsCriticalJson
+        ? JSON.parse(targetsCriticalJson)
+        : {};
+
+      // Validate at least one target
+      if (targetIds.length === 0) {
+        return { error: "At least one target must be selected" };
+      }
+
+      // Validate targets subset
+      const targetsValidation = await validateUseGroupTargetsSubset(
+        formulationCountryUseGroupId,
+        targetIds
+      );
+      if (!targetsValidation.isValid) {
+        return { error: targetsValidation.error || "Invalid targets" };
+      }
+
+      await supabase
+        .from("formulation_country_use_group_targets")
+        .delete()
+        .eq("formulation_country_use_group_id", formulationCountryUseGroupId);
+
+      if (targetIds.length > 0) {
+        const targetInserts = targetIds.map((targetId) => ({
+          formulation_country_use_group_id: formulationCountryUseGroupId,
+          target_id: targetId,
+          is_critical: targetsCriticalMap[targetId] ?? false,
+        }));
+        const { error: targetsError } = await supabase
+          .from("formulation_country_use_group_targets")
+          .insert(targetInserts);
+        if (targetsError) {
+          return { error: `Failed to update targets: ${targetsError.message}` };
+        }
+      }
+    } catch (parseError) {
+      return { error: "Failed to parse targets data" };
     }
   }
 
