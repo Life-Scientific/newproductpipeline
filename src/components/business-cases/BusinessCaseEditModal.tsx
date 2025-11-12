@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { updateBusinessCaseGroupAction, getBusinessCaseGroupAction } from "@/lib/actions/business-cases";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getCurrencySymbol } from "@/lib/utils/currency";
 
 export interface BusinessCaseYearData {
   business_case_id: string;
@@ -116,6 +117,7 @@ export function BusinessCaseEditModal({
   // Get UOM and currency from first year data
   const uom = yearData[0]?.uom || "L";
   const currency = yearData[0]?.currency_code || "USD";
+  const currencySymbol = getCurrencySymbol(currency);
   const formulationName = yearData[0]?.formulation_name || "";
   const countryName = yearData[0]?.country_name || "";
   const useGroupName = yearData[0]?.use_group_name || yearData[0]?.use_group_variant || "";
@@ -330,7 +332,7 @@ export function BusinessCaseEditModal({
                     <TableCell key={col.yearOffset} className="p-1">
                       <Input
                         type="text"
-                        value={metrics.revenue !== null ? `$${metrics.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
+                        value={metrics.revenue !== null ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
                         disabled
                         className="h-9 bg-muted cursor-not-allowed opacity-70"
                       />
@@ -349,7 +351,7 @@ export function BusinessCaseEditModal({
                     <TableCell key={col.yearOffset} className="p-1">
                       <Input
                         type="text"
-                        value={metrics.margin !== null ? `$${metrics.margin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
+                        value={metrics.margin !== null ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
                         disabled
                         className="h-9 bg-muted cursor-not-allowed opacity-70"
                       />

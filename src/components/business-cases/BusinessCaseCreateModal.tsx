@@ -30,6 +30,7 @@ import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-selec
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Formulation, Country } from "@/lib/supabase/database.types";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
+import { getCurrencySymbol } from "@/lib/utils/currency";
 
 interface BusinessCaseCreateModalProps {
   open: boolean;
@@ -372,6 +373,7 @@ export function BusinessCaseCreateModal({
   const selectedCountry = countries.find((c) => c.country_id === formData.country_id);
   const uom = selectedFormulation?.uom || "L";
   const currency = selectedCountry?.currency_code || "USD";
+  const currencySymbol = getCurrencySymbol(currency);
 
   // Calculate metrics helper function (similar to edit modal)
   const calculateMetrics = (yearOffset: number) => {
@@ -616,7 +618,7 @@ export function BusinessCaseCreateModal({
                         <TableCell key={col.yearOffset} className="p-1">
                           <Input
                             type="text"
-                            value={metrics.revenue > 0 ? `$${metrics.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
+                            value={metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
                             disabled
                             className="h-9 bg-muted cursor-not-allowed opacity-70"
                           />
@@ -634,7 +636,7 @@ export function BusinessCaseCreateModal({
                         <TableCell key={col.yearOffset} className="p-1">
                           <Input
                             type="text"
-                            value={metrics.margin > 0 ? `$${metrics.margin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
+                            value={metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
                             disabled
                             className="h-9 bg-muted cursor-not-allowed opacity-70"
                           />

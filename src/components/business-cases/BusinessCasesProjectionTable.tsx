@@ -7,6 +7,7 @@ import { Edit } from "lucide-react";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
 import { BusinessCaseEditModal } from "./BusinessCaseEditModal";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
+import { getCurrencySymbol } from "@/lib/utils/currency";
 
 interface BusinessCasesProjectionTableProps {
   businessCases: BusinessCaseGroupData[];
@@ -72,12 +73,13 @@ export function BusinessCasesProjectionTable({ businessCases }: BusinessCasesPro
   };
 
   // Helper function to format currency
-  const formatCurrency = (value: number | null | undefined): string => {
+  const formatCurrency = (value: number | null | undefined, currencyCode: string): string => {
     if (value === null || value === undefined) return "—";
+    const symbol = getCurrencySymbol(currencyCode);
     if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`;
+      return `${symbol}${(value / 1000000).toFixed(1)}M`;
     }
-    return `$${formatNumber(value, 0)}`;
+    return `${symbol}${formatNumber(value, 0)}`;
   };
 
   // Helper function to format percentage
@@ -132,28 +134,28 @@ export function BusinessCasesProjectionTable({ businessCases }: BusinessCasesPro
                   label: `NSP (${currency}/unit)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    return formatCurrency(bc.years_data[fyStr]?.nsp);
+                    return formatCurrency(bc.years_data[fyStr]?.nsp, currency);
                   },
                 },
                 {
                   label: `COGS (${currency}/unit)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    return formatCurrency(bc.years_data[fyStr]?.cogs_per_unit);
+                    return formatCurrency(bc.years_data[fyStr]?.cogs_per_unit, currency);
                   },
                 },
                 {
                   label: `Total Revenue (${currency})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    return formatCurrency(bc.years_data[fyStr]?.total_revenue);
+                    return formatCurrency(bc.years_data[fyStr]?.total_revenue, currency);
                   },
                 },
                 {
                   label: `Total Gross Margin (${currency})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    return formatCurrency(bc.years_data[fyStr]?.total_margin);
+                    return formatCurrency(bc.years_data[fyStr]?.total_margin, currency);
                   },
                 },
                 {
