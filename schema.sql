@@ -19,14 +19,15 @@ CREATE TABLE public.business_case (
   volume numeric,
   nsp numeric,
   cogs_per_unit numeric,
-  total_revenue numeric DEFAULT (volume * nsp),
-  total_cogs numeric DEFAULT (volume * cogs_per_unit),
-  total_margin numeric DEFAULT ((volume * nsp) - (volume * cogs_per_unit)),
-  margin_percent numeric DEFAULT 
-CASE
-    WHEN ((volume * nsp) > (0)::numeric) THEN ((((volume * nsp) - (volume * cogs_per_unit)) / (volume * nsp)) * (100)::numeric)
-    ELSE (0)::numeric
-END,
+  total_revenue numeric GENERATED ALWAYS AS (volume * nsp) STORED,
+  total_cogs numeric GENERATED ALWAYS AS (volume * cogs_per_unit) STORED,
+  total_margin numeric GENERATED ALWAYS AS ((volume * nsp) - (volume * cogs_per_unit)) STORED,
+  margin_percent numeric GENERATED ALWAYS AS (
+    CASE
+      WHEN ((volume * nsp) > (0)::numeric) THEN ((((volume * nsp) - (volume * cogs_per_unit)) / (volume * nsp)) * (100)::numeric)
+      ELSE (0)::numeric
+    END
+  ) STORED,
   fiscal_year character varying,
   scenario_id uuid,
   scenario_name character varying,
@@ -43,7 +44,11 @@ END,
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT business_case_pkey PRIMARY KEY (business_case_id),
   CONSTRAINT business_case_formulation_country_id_fkey FOREIGN KEY (formulation_country_id) REFERENCES public.formulation_country(formulation_country_id),
-  CONSTRAINT business_case_formulation_country_use_group_id_fkey FOREIGN KEY (formulation_country_use_group_id) REFERENCES public.formulation_country_use_group(formulation_country_use_group_id)
+  CONSTRAINT business_case_formulation_country_use_group_id_fkey FOREIGN KEY (formulation_country_use_group_id) REFERENCES public.formulation_country_use_group(formulation_country_use_group_id),
+  CONSTRAINT chk_business_case_link CHECK (
+    (formulation_country_id IS NOT NULL AND formulation_country_use_group_id IS NULL) OR
+    (formulation_country_id IS NULL AND formulation_country_use_group_id IS NOT NULL)
+  )
 );
 CREATE TABLE public.business_case_use_groups (
   business_case_id uuid NOT NULL,
@@ -236,9 +241,9 @@ CREATE TABLE public.formulations (
   variant_suffix character varying NOT NULL DEFAULT ''::character varying,
   formulation_code character varying DEFAULT (((base_code)::text || '-'::text) || (variant_suffix)::text) UNIQUE,
   active_signature text,
-  product_name character varying NOT NULL,
+  formulation_name character varying NOT NULL,
   short_name character varying,
-  product_category character varying NOT NULL CHECK (product_category::text = ANY (ARRAY['Herbicide'::character varying, 'Fungicide'::character varying, 'Insecticide'::character varying, 'Growth Regulator'::character varying, 'Adjuvant'::character varying, 'Seed Treatment'::character varying]::text[])),
+  formulation_category character varying NOT NULL CHECK (formulation_category::text = ANY (ARRAY['Herbicide'::character varying, 'Fungicide'::character varying, 'Insecticide'::character varying, 'Growth Regulator'::character varying, 'Adjuvant'::character varying, 'Seed Treatment'::character varying]::text[])),
   formulation_type character varying,
   uom character varying DEFAULT 'L'::character varying,
   status character varying NOT NULL DEFAULT 'Not Yet Considered'::character varying CHECK (status::text = ANY (ARRAY['Not Yet Considered'::character varying, 'Selected'::character varying, 'Monitoring'::character varying, 'Killed'::character varying]::text[])),
