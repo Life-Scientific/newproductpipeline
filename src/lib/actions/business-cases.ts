@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import { checkExistingBusinessCase, validateUseGroupTargetEntryConsistency } from "@/lib/db/queries";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
+import { lookupCOGSWithCarryForward } from "./cogs";
 
 export async function createBusinessCase(formData: FormData) {
   const supabase = await createClient();
@@ -275,8 +276,24 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
   // Generate a single UUID for the group
   const groupId = crypto.randomUUID();
 
+  // Get formulation_country_id from country_id
+  const { data: fcData } = await supabase
+    .from("formulation_country")
+    .select("formulation_country_id")
+    .eq("formulation_id", formulationId)
+    .eq("country_id", countryId)
+    .single();
+
+  const formulationCountryId = fcData?.formulation_country_id || null;
+
   // Extract year data (10 years: year_1_volume, year_1_nsp, year_2_volume, etc.)
-  const yearData: Array<{ year_offset: number; volume: number; nsp: number; fiscal_year: string }> = [];
+  const yearData: Array<{ 
+    year_offset: number; 
+    volume: number; 
+    nsp: number; 
+    fiscal_year: string;
+    cogs_per_unit: number | null;
+  }> = [];
   
   for (let yearOffset = 1; yearOffset <= 10; yearOffset++) {
     const volumeKey = `year_${yearOffset}_volume`;
@@ -289,10 +306,23 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
       return { error: `Year ${yearOffset}: Volume and NSP are required and must be greater than 0` };
     }
 
+    // Calculate fiscal year for this business case year
+    const fiscalYearNum = effectiveStartYear + (yearOffset - 1);
+    const fiscalYear = `FY${String(fiscalYearNum).padStart(2, "0")}`;
+
+    // Lookup COGS value with carry-forward logic
+    const cogsValue = await lookupCOGSWithCarryForward(
+      formulationId,
+      formulationCountryId,
+      fiscalYear
+    );
+
     yearData.push({
       year_offset: yearOffset,
       volume,
       nsp,
+      fiscal_year: fiscalYear,
+      cogs_per_unit: cogsValue,
     });
   }
 
@@ -305,6 +335,7 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     year_offset: year.year_offset,
     volume: year.volume,
     nsp: year.nsp,
+    cogs_per_unit: year.cogs_per_unit, // COGS value from lookup with carry-forward
     effective_start_fiscal_year: effectiveStartFiscalYear, // Preserves creation context
     status: "active" as const,
     created_by: userName,

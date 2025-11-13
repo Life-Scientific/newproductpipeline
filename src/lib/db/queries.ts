@@ -807,6 +807,7 @@ export async function getCOGSList() {
   const { data, error } = await supabase
     .from("vw_cogs")
     .select("*")
+    .eq("status", "active")
     .order("formulation_code", { ascending: true })
     .order("fiscal_year", { ascending: false });
 
@@ -1636,6 +1637,118 @@ export async function getPortfolioGaps() {
   }
 
   return data as PortfolioGaps[];
+}
+
+/**
+ * Get all 5 years of COGS data for a specific COGS group
+ */
+export async function getCOGSGroup(groupId: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("vw_cogs")
+    .select("*")
+    .eq("cogs_group_id", groupId)
+    .order("fiscal_year", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to fetch COGS group: ${error.message}`);
+  }
+
+  return data as COGS[];
+}
+
+/**
+ * Get COGS history (all versions) for a formulation + country
+ */
+export async function getFormulationCOGSHistory(
+  formulationId: string,
+  countryId: string | null
+) {
+  const supabase = await createClient();
+
+  const query = supabase
+    .from("vw_cogs")
+    .select("*")
+    .eq("formulation_id", formulationId)
+    .order("created_at", { ascending: false })
+    .order("fiscal_year", { ascending: true });
+
+  if (countryId) {
+    query.eq("formulation_country_id", countryId);
+  } else {
+    query.is("formulation_country_id", null);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(`Failed to fetch COGS history: ${error.message}`);
+  }
+
+  return data as COGS[];
+}
+
+/**
+ * Get all active business case groups for a formulation + country
+ * Used by cascade update logic
+ */
+export async function getBusinessCaseGroupsUsingFormulation(
+  formulationId: string,
+  countryId: string
+) {
+  const supabase = await createClient();
+
+  // Get formulation code first
+  const { data: formulation } = await supabase
+    .from("formulations")
+    .select("formulation_code")
+    .eq("formulation_id", formulationId)
+    .single();
+
+  if (!formulation) {
+    return [];
+  }
+
+  // Get country code
+  const { data: country } = await supabase
+    .from("countries")
+    .select("country_code")
+    .eq("country_id", countryId)
+    .single();
+
+  if (!country) {
+    return [];
+  }
+
+  // Get business cases for this formulation + country
+  const { data, error } = await supabase
+    .from("vw_business_case")
+    .select("business_case_group_id, formulation_id, country_id")
+    .eq("formulation_code", formulation.formulation_code)
+    .eq("country_code", country.country_code)
+    .eq("status", "active");
+
+  if (error) {
+    throw new Error(`Failed to fetch business case groups: ${error.message}`);
+  }
+
+  // Get unique group IDs
+  const uniqueGroups = new Map<string, { formulation_id: string; country_id: string }>();
+  data?.forEach((bc) => {
+    if (bc.business_case_group_id && bc.formulation_id && bc.country_id) {
+      uniqueGroups.set(bc.business_case_group_id, {
+        formulation_id: bc.formulation_id,
+        country_id: bc.country_id,
+      });
+    }
+  });
+
+  return Array.from(uniqueGroups.entries()).map(([groupId, ids]) => ({
+    business_case_group_id: groupId,
+    formulation_id: ids.formulation_id,
+    country_id: ids.country_id,
+  }));
 }
 
 
