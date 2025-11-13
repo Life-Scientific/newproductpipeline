@@ -85,8 +85,8 @@ CREATE TABLE public.eppo_family_members (
   member_eppo_code_id uuid NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT eppo_family_members_pkey PRIMARY KEY (
-    COALESCE(family_crop_id, '00000000-0000-0000-0000-000000000000'::uuid),
-    COALESCE(family_target_id, '00000000-0000-0000-0000-000000000000'::uuid),
+    family_crop_id,
+    family_target_id,
     member_eppo_code_id
   ),
   CONSTRAINT chk_family_scope CHECK (

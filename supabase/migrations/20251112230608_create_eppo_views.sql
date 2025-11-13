@@ -68,41 +68,64 @@ GROUP BY
   ec.category,
   t.created_at;
 
--- View: Formulation crops with family expansion
--- This view expands family crops to show all individual crops
-CREATE OR REPLACE VIEW public.vw_formulation_crops_expanded AS
-SELECT DISTINCT
-  fcc.formulation_country_id,
-  fcc.crop_id,
-  c.crop_name,
-  c.eppo_code as crop_eppo_code,
-  c.is_eppo_family,
-  -- If family, show individual member codes
-  COALESCE(efm.member_eppo_code_id, c.eppo_code_id) as effective_eppo_code_id,
-  COALESCE(ec_member.eppocode, c.eppo_code) as effective_eppo_code,
-  COALESCE(ec_member.preferred_name_en, c.crop_name) as effective_crop_name
-FROM public.formulation_country_crops fcc
-JOIN public.crops c ON fcc.crop_id = c.crop_id
-LEFT JOIN public.eppo_family_members efm ON c.crop_id = efm.family_crop_id
-LEFT JOIN public.eppo_codes ec_member ON efm.member_eppo_code_id = ec_member.eppo_code_id
-WHERE c.is_active = true;
+-- View: Formulation use group crops with family expansion
+-- This view expands family crops to show all individual crops at the use group level
+-- Note: Only creates if formulation_country_use_group_crops table exists
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables 
+    WHERE table_schema = 'public' 
+    AND table_name = 'formulation_country_use_group_crops'
+  ) THEN
+    EXECUTE '
+    CREATE OR REPLACE VIEW public.vw_formulation_crops_expanded AS
+    SELECT DISTINCT
+      fcg.formulation_country_use_group_id,
+      fcg.crop_id,
+      c.crop_name,
+      c.eppo_code as crop_eppo_code,
+      c.is_eppo_family,
+      -- If family, show individual member codes
+      COALESCE(efm.member_eppo_code_id, c.eppo_code_id) as effective_eppo_code_id,
+      COALESCE(ec_member.eppocode, c.eppo_code) as effective_eppo_code,
+      COALESCE(ec_member.preferred_name_en, c.crop_name) as effective_crop_name
+    FROM public.formulation_country_use_group_crops fcg
+    JOIN public.crops c ON fcg.crop_id = c.crop_id
+    LEFT JOIN public.eppo_family_members efm ON c.crop_id = efm.family_crop_id
+    LEFT JOIN public.eppo_codes ec_member ON efm.member_eppo_code_id = ec_member.eppo_code_id
+    WHERE c.is_active = true';
+  END IF;
+END $$;
 
--- View: Formulation targets with family expansion
-CREATE OR REPLACE VIEW public.vw_formulation_targets_expanded AS
-SELECT DISTINCT
-  fct.formulation_country_id,
-  fct.target_id,
-  t.target_name,
-  t.target_type,
-  t.eppo_code as target_eppo_code,
-  t.is_eppo_family,
-  -- If family, show individual member codes
-  COALESCE(efm.member_eppo_code_id, t.eppo_code_id) as effective_eppo_code_id,
-  COALESCE(ec_member.eppocode, t.eppo_code) as effective_eppo_code,
-  COALESCE(ec_member.preferred_name_en, t.target_name) as effective_target_name
-FROM public.formulation_country_targets fct
-JOIN public.targets t ON fct.target_id = t.target_id
-LEFT JOIN public.eppo_family_members efm ON t.target_id = efm.family_target_id
-LEFT JOIN public.eppo_codes ec_member ON efm.member_eppo_code_id = ec_member.eppo_code_id
-WHERE t.is_active = true;
+-- View: Formulation use group targets with family expansion
+-- This view expands family targets to show all individual targets at the use group level
+-- Note: Only creates if formulation_country_use_group_targets table exists
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables 
+    WHERE table_schema = 'public' 
+    AND table_name = 'formulation_country_use_group_targets'
+  ) THEN
+    EXECUTE '
+    CREATE OR REPLACE VIEW public.vw_formulation_targets_expanded AS
+    SELECT DISTINCT
+      fgt.formulation_country_use_group_id,
+      fgt.target_id,
+      t.target_name,
+      t.target_type,
+      t.eppo_code as target_eppo_code,
+      t.is_eppo_family,
+      -- If family, show individual member codes
+      COALESCE(efm.member_eppo_code_id, t.eppo_code_id) as effective_eppo_code_id,
+      COALESCE(ec_member.eppocode, t.eppo_code) as effective_eppo_code,
+      COALESCE(ec_member.preferred_name_en, t.target_name) as effective_target_name
+    FROM public.formulation_country_use_group_targets fgt
+    JOIN public.targets t ON fgt.target_id = t.target_id
+    LEFT JOIN public.eppo_family_members efm ON t.target_id = efm.family_target_id
+    LEFT JOIN public.eppo_codes ec_member ON efm.member_eppo_code_id = ec_member.eppo_code_id
+    WHERE t.is_active = true';
+  END IF;
+END $$;
 

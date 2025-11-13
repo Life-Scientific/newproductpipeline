@@ -56,35 +56,54 @@ async function importEPPOCodes() {
       
       console.log(`Found ${codes.length} EPPO codes to import`);
       
-      // Get preferred names (English)
+      // Get preferred names (English) - batch queries to avoid SQLite variable limit
       const codeIds = codes.map(c => c.codeid);
-      const placeholders = codeIds.map(() => '?').join(',');
+      const nameMap = new Map();
+      const nameBatchSize = 500; // SQLite limit is 999, using 500 to be safe
       
-      db.all(`
-        SELECT 
-          nameid,
-          codeid,
-          fullname,
-          codelang,
-          preferred
-        FROM t_names
-        WHERE codeid IN (${placeholders})
-          AND status = 'A'
-          AND preferred = 1
-          AND codelang = 'en'
-      `, codeIds, async (err, names) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        
-        // Create name map
-        const nameMap = new Map();
-        names.forEach(n => {
-          if (!nameMap.has(n.codeid) || n.preferred === 1) {
-            nameMap.set(n.codeid, n.fullname);
+      // Process names in batches using async IIFE
+      (async () => {
+        try {
+          for (let i = 0; i < codeIds.length; i += nameBatchSize) {
+            const batchIds = codeIds.slice(i, i + nameBatchSize);
+            const placeholders = batchIds.map(() => '?').join(',');
+            
+            await new Promise((resolve, reject) => {
+              db.all(`
+                SELECT 
+                  nameid,
+                  codeid,
+                  fullname,
+                  codelang,
+                  preferred
+                FROM t_names
+                WHERE codeid IN (${placeholders})
+                  AND status = 'A'
+                  AND preferred = 1
+                  AND codelang = 'en'
+              `, batchIds, (err, names) => {
+                if (err) {
+                  reject(err);
+                  return;
+                }
+                
+                // Add to name map
+                names.forEach(n => {
+                  if (!nameMap.has(n.codeid) || n.preferred === 1) {
+                    nameMap.set(n.codeid, n.fullname);
+                  }
+                });
+                
+                resolve();
+              });
+            });
+            
+            if ((i + nameBatchSize) % 10000 === 0 || i + nameBatchSize >= codeIds.length) {
+              console.log(`Loaded names for ${Math.min(i + nameBatchSize, codeIds.length)}/${codeIds.length} codes...`);
+            }
           }
-        });
+          
+          // Continue with import after all names are loaded
         
         // Import codes in batches
         const batchSize = 1000;
@@ -123,54 +142,96 @@ async function importEPPOCodes() {
         console.log(`Imported ${imported} EPPO codes`);
         
         // Step 2: Import hierarchy
-        db.all(`
-          SELECT 
-            l.idlink,
-            l.codeid as child_codeid,
-            l.codeid_parent as parent_codeid,
-            lt.linkdesc as link_type,
-            l.status
-          FROM t_links l
-          JOIN t_link_types lt ON l.idlinkcode = lt.idlinkcode
-          WHERE l.status = 'A'
-        `, [], async (err, links) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+        await new Promise((resolveHierarchy, rejectHierarchy) => {
+            db.all(`
+              SELECT 
+                l.idlink,
+                l.codeid as child_codeid,
+                l.codeid_parent as parent_codeid,
+                lt.linkdesc as link_type,
+                l.status
+              FROM t_links l
+              JOIN t_link_types lt ON l.idlinkcode = lt.idlinkcode
+              WHERE l.status = 'A'
+            `, [], async (err, links) => {
+              if (err) {
+                rejectHierarchy(err);
+                return;
+              }
+              
+              console.log(`Found ${links.length} hierarchy links to import`);
+              
+              // Get actual imported codeids from Supabase (paginate to get all)
+              const importedCodeIdSet = new Set();
+              let offset = 0;
+              const pageSize = 1000;
+              let hasMore = true;
+              
+              while (hasMore) {
+                const { data: importedCodes, error: fetchError } = await supabase
+                  .from('eppo_codes')
+                  .select('codeid')
+                  .range(offset, offset + pageSize - 1);
+                
+                if (fetchError) {
+                  console.error('Error fetching imported codes:', fetchError);
+                  rejectHierarchy(fetchError);
+                  return;
+                }
+                
+                if (!importedCodes || importedCodes.length === 0) {
+                  hasMore = false;
+                } else {
+                  importedCodes.forEach(c => importedCodeIdSet.add(c.codeid));
+                  offset += pageSize;
+                  hasMore = importedCodes.length === pageSize;
+                }
+              }
+              console.log(`Found ${importedCodeIdSet.size} codes in database`);
+              
+              // Filter to only include links where both parent and child exist in imported codes
+              const validLinks = links.filter(link => 
+                importedCodeIdSet.has(link.child_codeid) && importedCodeIdSet.has(link.parent_codeid)
+              );
+              
+              console.log(`Filtered to ${validLinks.length} valid hierarchy links (both parent and child exist in imported codes)`);
+              
+              // Import links in batches
+              const linkBatchSize = 1000;
+              let linksImported = 0;
+              
+              for (let i = 0; i < validLinks.length; i += linkBatchSize) {
+                const batch = validLinks.slice(i, i + linkBatchSize);
+                const hierarchies = batch.map(link => ({
+                  child_codeid: link.child_codeid,
+                  parent_codeid: link.parent_codeid,
+                  link_type: link.link_type,
+                  status: link.status
+                }));
+                
+                const { error } = await supabase
+                  .from('eppo_code_hierarchy')
+                  .upsert(hierarchies, { onConflict: 'child_codeid,parent_codeid,link_type' });
+                
+                if (error) {
+                  console.error(`Error importing hierarchy batch ${i / linkBatchSize + 1}:`, error);
+                } else {
+                  linksImported += hierarchies.length;
+                  console.log(`Imported ${linksImported}/${validLinks.length} hierarchy links...`);
+                }
+              }
+              
+              console.log(`Imported ${linksImported} hierarchy links`);
+              db.close();
+              resolveHierarchy();
+            });
+          });
           
-          console.log(`Found ${links.length} hierarchy links to import`);
-          
-          // Import links in batches
-          const linkBatchSize = 1000;
-          let linksImported = 0;
-          
-          for (let i = 0; i < links.length; i += linkBatchSize) {
-            const batch = links.slice(i, i + linkBatchSize);
-            const hierarchies = batch.map(link => ({
-              child_codeid: link.child_codeid,
-              parent_codeid: link.parent_codeid,
-              link_type: link.link_type,
-              status: link.status
-            }));
-            
-            const { error } = await supabase
-              .from('eppo_code_hierarchy')
-              .upsert(hierarchies, { onConflict: 'child_codeid,parent_codeid,link_type' });
-            
-            if (error) {
-              console.error(`Error importing hierarchy batch ${i / linkBatchSize + 1}:`, error);
-            } else {
-              linksImported += hierarchies.length;
-              console.log(`Imported ${linksImported}/${links.length} hierarchy links...`);
-            }
-          }
-          
-          console.log(`Imported ${linksImported} hierarchy links`);
-          db.close();
           resolve();
-        });
-      });
+        } catch (error) {
+          reject(error);
+        }
+      })();
     });
   });
 }
