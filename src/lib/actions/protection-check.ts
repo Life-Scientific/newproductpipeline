@@ -106,17 +106,19 @@ export async function checkLaunchEligibility(
       }
     }
 
-    // Check patent protections
+    // Check patent protections (ingredient-level: molecule, polymorph, intermediate, root_of_synthesis)
     const { data: patents } = await supabase
-      .from("patent_protections")
-      .select("expiry_date, patent_number, patent_type")
+      .from("patents")
+      .select("expiration_date, patent_number, patent_type, legal_status")
       .eq("ingredient_id", ingredientId)
-      .eq("country_id", countryId)
-      .gte("expiry_date", new Date().toISOString().split("T")[0]);
+      .in("patent_type", ["molecule", "polymorph", "intermediate", "root_of_synthesis"])
+      .in("legal_status", ["valid", "under_examination"])
+      .gte("expiration_date", new Date().toISOString().split("T")[0])
+      .or(`country_id.is.null,country_id.eq.${countryId}`); // EP patents (country_id NULL) apply to all EU countries
 
     if (patents && patents.length > 0) {
       for (const patent of patents) {
-        const expiryDate = new Date(patent.expiry_date);
+        const expiryDate = new Date(patent.expiration_date);
         if (!latestExpiryDate || expiryDate > latestExpiryDate) {
           latestExpiryDate = expiryDate;
         }
@@ -124,7 +126,7 @@ export async function checkLaunchEligibility(
           type: "active_patent",
           ingredientName,
           expiryDate,
-          description: `${ingredientName} patent (${patent.patent_type || "Unknown"}) expires ${expiryDate.toLocaleDateString()}`,
+          description: `${ingredientName} patent (${patent.patent_type || "Unknown"}) ${patent.patent_number || ""} expires ${expiryDate.toLocaleDateString()}`,
         });
       }
     }
@@ -162,24 +164,113 @@ export async function checkLaunchEligibility(
       }
     }
 
-    // Check formulation patents
+    // Check formulation-level patents (formulation and combination patents)
+    // Get combination patents that apply to this formulation's active ingredients
+    const ingredientIds = activeIngredients.map((fi) => fi.ingredient_id);
+
+    if (ingredientIds.length > 0) {
+
+      // Get combination patents that cover these ingredients
+      const { data: combinationPatents } = await supabase
+        .from("patent_combination_ingredients")
+        .select(`
+          patent_id,
+          patents!inner (
+            patent_id,
+            expiration_date,
+            patent_number,
+            patent_type,
+            legal_status,
+            country_id
+          )
+        `)
+        .in("ingredient_id", ingredientIds);
+
+      if (combinationPatents && combinationPatents.length > 0) {
+        // Group by patent_id and check if all required ingredients are covered
+        const patentGroups = new Map<string, Set<string>>();
+        for (const cp of combinationPatents) {
+          const patentId = cp.patent_id;
+          if (!patentGroups.has(patentId)) {
+            patentGroups.set(patentId, new Set());
+          }
+          patentGroups.get(patentId)!.add(cp.ingredient_id);
+        }
+
+        // Get full patent details for combination patents that cover all ingredients
+        const fullCombinationPatents = await Promise.all(
+          Array.from(patentGroups.keys()).map(async (patentId) => {
+            const { data: patent } = await supabase
+              .from("patents")
+              .select("*")
+              .eq("patent_id", patentId)
+              .eq("patent_type", "combination")
+              .in("legal_status", ["valid", "under_examination"])
+              .gte("expiration_date", new Date().toISOString().split("T")[0])
+              .single();
+
+            if (patent) {
+              // Check if this patent covers ALL ingredients in the formulation
+              const { data: requiredIngredients } = await supabase
+                .from("patent_combination_ingredients")
+                .select("ingredient_id")
+                .eq("patent_id", patentId);
+
+              if (requiredIngredients) {
+                const requiredIds = new Set(requiredIngredients.map((ri) => ri.ingredient_id));
+                const hasAllIngredients = ingredientIds.every((id) => requiredIds.has(id));
+                if (hasAllIngredients) {
+                  return patent;
+                }
+              }
+            }
+            return null;
+          })
+        );
+
+        for (const patent of fullCombinationPatents.filter((p) => p !== null)) {
+          if (!patent) continue;
+          const expiryDate = new Date(patent.expiration_date);
+          const appliesToCountry =
+            patent.country_id === null || patent.country_id === countryId;
+          if (appliesToCountry && (!latestExpiryDate || expiryDate > latestExpiryDate)) {
+            latestExpiryDate = expiryDate;
+          }
+          if (appliesToCountry) {
+            blockers.push({
+              type: "formulation_patent",
+              expiryDate,
+              description: `Combination patent ${patent.patent_number || ""} expires ${expiryDate.toLocaleDateString()}`,
+            });
+          }
+        }
+      }
+    }
+
+    // Check formulation patents (direct formulation-level patents)
     const { data: formPatents } = await supabase
-      .from("formulation_patents")
-      .select("expiry_date, patent_number, patent_type")
+      .from("patents")
+      .select("expiration_date, patent_number, patent_type, legal_status, country_id")
+      .eq("patent_type", "formulation")
+      .in("legal_status", ["valid", "under_examination"])
       .in("formulation_country_id", fcIds)
-      .gte("expiry_date", new Date().toISOString().split("T")[0]);
+      .gte("expiration_date", new Date().toISOString().split("T")[0]);
 
     if (formPatents && formPatents.length > 0) {
       for (const fp of formPatents) {
-        const expiryDate = new Date(fp.expiry_date);
-        if (!latestExpiryDate || expiryDate > latestExpiryDate) {
+        const expiryDate = new Date(fp.expiration_date);
+        const appliesToCountry =
+          fp.country_id === null || fp.country_id === countryId;
+        if (appliesToCountry && (!latestExpiryDate || expiryDate > latestExpiryDate)) {
           latestExpiryDate = expiryDate;
         }
-        blockers.push({
-          type: "formulation_patent",
-          expiryDate,
-          description: `Formulation patent (${fp.patent_type || "Unknown"}) expires ${expiryDate.toLocaleDateString()}`,
-        });
+        if (appliesToCountry) {
+          blockers.push({
+            type: "formulation_patent",
+            expiryDate,
+            description: `Formulation patent ${fp.patent_number || ""} expires ${expiryDate.toLocaleDateString()}`,
+          });
+        }
       }
     }
   }

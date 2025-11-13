@@ -10,7 +10,7 @@ type Ingredient = Database["public"]["Tables"]["ingredients"]["Row"];
 type COGS = Database["public"]["Views"]["vw_cogs"]["Row"];
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 type StatusHistory = Database["public"]["Tables"]["formulation_status_history"]["Row"];
-type ProtectionStatus = Database["public"]["Views"]["vw_protection_status"]["Row"];
+type ProtectionStatus = Database["public"]["Views"]["vw_patent_protection_status"]["Row"];
 type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
 type IngredientUsage = Database["public"]["Views"]["vw_ingredient_usage"]["Row"];
@@ -75,7 +75,7 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
     supabase.from("vw_formulation_country_use_group").select("formulation_code, use_group_name, use_group_variant, country_name, registration_status, reference_product_name"),
     supabase.from("vw_business_case").select("formulation_code, total_revenue, total_margin"),
     supabase.from("vw_cogs").select("formulation_code, cogs_value, fiscal_year"),
-    supabase.from("vw_protection_status").select("formulation_code, country_name, earliest_active_patent_expiry, earliest_active_data_protection_expiry"),
+    supabase.from("vw_patent_protection_status").select("formulation_code, country_name, earliest_ingredient_patent_expiry, earliest_combination_patent_expiry, earliest_formulation_patent_expiry, earliest_blocking_launch_date"),
   ]);
 
   const countriesData = countriesResult.data || [];
@@ -711,7 +711,7 @@ export async function getFormulationProtectionStatus(formulationId: string) {
   }
 
   const { data, error } = await supabase
-    .from("vw_protection_status")
+    .from("vw_patent_protection_status")
     .select("*")
     .eq("formulation_code", formulation.formulation_code);
 
@@ -725,7 +725,7 @@ export async function getFormulationProtectionStatus(formulationId: string) {
 export async function getAllProtectionStatus() {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("vw_protection_status")
+    .from("vw_patent_protection_status")
     .select("*");
 
   if (error) {

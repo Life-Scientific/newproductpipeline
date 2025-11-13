@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Database } from "@/lib/supabase/database.types";
 
-type ProtectionStatus = Database["public"]["Views"]["vw_protection_status"]["Row"];
+type ProtectionStatus = Database["public"]["Views"]["vw_patent_protection_status"]["Row"];
 type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 
 interface FormulationRegulatoryProps {
@@ -53,18 +53,33 @@ export function FormulationRegulatory({
                 <TableHeader>
                   <TableRow>
                     <TableHead>Country</TableHead>
-                    <TableHead>Formulation Patents</TableHead>
-                    <TableHead>Formulation Data Protections</TableHead>
                     <TableHead>Ingredient Patents</TableHead>
-                    <TableHead>Ingredient Data Protections</TableHead>
+                    <TableHead>Combination Patents</TableHead>
+                    <TableHead>Formulation Patents</TableHead>
+                    <TableHead>Use Patents</TableHead>
+                    <TableHead>Blocking Assessments</TableHead>
                     <TableHead>Earliest Patent Expiry</TableHead>
-                    <TableHead>Earliest Data Protection Expiry</TableHead>
+                    <TableHead>Earliest Blocking Launch Date</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {protectionStatus.map((ps) => (
                     <TableRow key={ps.formulation_country_id}>
                       <TableCell className="font-medium">{ps.country_name || "—"}</TableCell>
+                      <TableCell>
+                        {ps.ingredient_patents_count ? (
+                          <Badge variant="secondary">{ps.ingredient_patents_count}</Badge>
+                        ) : (
+                          "0"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {ps.combination_patents_count ? (
+                          <Badge variant="default">{ps.combination_patents_count}</Badge>
+                        ) : (
+                          "0"
+                        )}
+                      </TableCell>
                       <TableCell>
                         {ps.formulation_patents_count ? (
                           <Badge variant="default">{ps.formulation_patents_count}</Badge>
@@ -73,43 +88,36 @@ export function FormulationRegulatory({
                         )}
                       </TableCell>
                       <TableCell>
-                        {ps.formulation_data_protections_count ? (
-                          <Badge variant="default">{ps.formulation_data_protections_count}</Badge>
+                        {ps.use_patents_count ? (
+                          <Badge variant="outline">{ps.use_patents_count}</Badge>
                         ) : (
                           "0"
                         )}
                       </TableCell>
                       <TableCell>
-                        {ps.active_patents_count ? (
-                          <Badge variant="secondary">{ps.active_patents_count}</Badge>
-                        ) : (
-                          "0"
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {ps.active_data_protections_count ? (
-                          <Badge variant="secondary">{ps.active_data_protections_count}</Badge>
+                        {ps.blocking_assessments_count ? (
+                          <Badge variant="destructive">{ps.blocking_assessments_count}</Badge>
                         ) : (
                           "0"
                         )}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {ps.earliest_formulation_patent_expiry || ps.earliest_active_patent_expiry
+                        {ps.earliest_ingredient_patent_expiry ||
+                        ps.earliest_combination_patent_expiry ||
+                        ps.earliest_formulation_patent_expiry ||
+                        ps.earliest_use_patent_expiry
                           ? new Date(
-                              ps.earliest_formulation_patent_expiry ||
-                                ps.earliest_active_patent_expiry ||
+                              ps.earliest_ingredient_patent_expiry ||
+                                ps.earliest_combination_patent_expiry ||
+                                ps.earliest_formulation_patent_expiry ||
+                                ps.earliest_use_patent_expiry ||
                                 ""
                             ).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {ps.earliest_formulation_data_protection_expiry ||
-                        ps.earliest_active_data_protection_expiry
-                          ? new Date(
-                              ps.earliest_formulation_data_protection_expiry ||
-                                ps.earliest_active_data_protection_expiry ||
-                                ""
-                            ).toLocaleDateString()
+                        {ps.earliest_blocking_launch_date
+                          ? new Date(ps.earliest_blocking_launch_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                     </TableRow>
