@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -356,9 +357,11 @@ export function COGSEditModal({
           <DialogTitle>
             {isEditMode ? "Edit COGS" : "Create COGS"} - {formulationName || ""}
           </DialogTitle>
-          <div className="text-sm text-muted-foreground">
-            {countryName || "Global"} | Fiscal Years: {fiscalYearColumns[0]}-{fiscalYearColumns[4]} | Currency: EUR
-          </div>
+          <DialogDescription asChild>
+            <div className="text-sm text-muted-foreground">
+              {countryName || "Global"} | Fiscal Years: {fiscalYearColumns[0]}-{fiscalYearColumns[4]} | Currency: EUR
+            </div>
+          </DialogDescription>
           {changedCells.size > 0 && (
             <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950 rounded text-sm text-blue-900 dark:text-blue-100">
               ℹ️ {changedCells.size} cells changed from original values
