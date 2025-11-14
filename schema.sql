@@ -136,6 +136,9 @@ CREATE TABLE public.formulation_country (
   is_in_active_portfolio boolean DEFAULT false,
   has_approval boolean DEFAULT false,
   registration_pathway character varying CHECK (registration_pathway::text = ANY (ARRAY['Article 33 - New'::character varying, 'Article 34 - Me-too'::character varying, 'Other'::character varying, NULL::character varying]::text[])),
+  country_status character varying NOT NULL DEFAULT 'Not yet evaluated'::character varying CHECK (country_status::text = ANY (ARRAY['Not yet evaluated'::character varying, 'Not selected for entry'::character varying, 'Selected for entry'::character varying, 'On hold'::character varying, 'Withdrawn'::character varying]::text[])),
+  readiness character varying NOT NULL DEFAULT 'Nominated for Review'::character varying CHECK (readiness::text = ANY (ARRAY['Nominated for Review'::character varying, 'Under Preparation'::character varying, 'Ready for Review'::character varying, 'Completed Review'::character varying]::text[])),
+  readiness_notes text,
   CONSTRAINT formulation_country_pkey PRIMARY KEY (formulation_country_id),
   CONSTRAINT formulation_country_formulation_id_fkey FOREIGN KEY (formulation_id) REFERENCES public.formulations(formulation_id),
   CONSTRAINT formulation_country_country_id_fkey FOREIGN KEY (country_id) REFERENCES public.countries(country_id)
@@ -148,6 +151,30 @@ CREATE TABLE public.formulation_country_crops (
   CONSTRAINT formulation_country_crops_pkey PRIMARY KEY (formulation_country_id, crop_id),
   CONSTRAINT formulation_country_crops_formulation_country_id_fkey FOREIGN KEY (formulation_country_id) REFERENCES public.formulation_country(formulation_country_id),
   CONSTRAINT formulation_country_crops_crop_id_fkey FOREIGN KEY (crop_id) REFERENCES public.crops(crop_id)
+);
+CREATE TABLE public.formulation_country_status_history (
+  history_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  formulation_country_id uuid NOT NULL,
+  old_status character varying,
+  new_status character varying NOT NULL,
+  status_rationale text,
+  changed_by character varying,
+  changed_at timestamp with time zone DEFAULT now(),
+  change_type character varying CHECK (change_type::text = ANY (ARRAY['spontaneous'::character varying, 'periodic_review'::character varying, NULL::character varying]::text[])),
+  CONSTRAINT formulation_country_status_history_pkey PRIMARY KEY (history_id),
+  CONSTRAINT formulation_country_status_history_formulation_country_id_fkey FOREIGN KEY (formulation_country_id) REFERENCES public.formulation_country(formulation_country_id)
+);
+CREATE TABLE public.formulation_country_readiness_history (
+  history_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  formulation_country_id uuid NOT NULL,
+  old_readiness character varying,
+  new_readiness character varying NOT NULL,
+  readiness_notes text,
+  changed_by character varying,
+  changed_at timestamp with time zone DEFAULT now(),
+  change_type character varying CHECK (change_type::text = ANY (ARRAY['spontaneous'::character varying, 'periodic_review'::character varying, NULL::character varying]::text[])),
+  CONSTRAINT formulation_country_readiness_history_pkey PRIMARY KEY (history_id),
+  CONSTRAINT formulation_country_readiness_history_formulation_country_id_fkey FOREIGN KEY (formulation_country_id) REFERENCES public.formulation_country(formulation_country_id)
 );
 CREATE TABLE public.formulation_country_use_group (
   formulation_country_use_group_id uuid NOT NULL DEFAULT gen_random_uuid(),
