@@ -192,6 +192,7 @@ CREATE TABLE public.formulation_country_use_group (
   is_active boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  use_group_status character varying NOT NULL DEFAULT 'Active'::character varying CHECK (use_group_status::text = ANY (ARRAY['Active'::character varying, 'Inactive'::character varying]::text[])),
   CONSTRAINT formulation_country_use_group_pkey PRIMARY KEY (formulation_country_use_group_id),
   CONSTRAINT formulation_country_use_group_formulation_country_id_fkey FOREIGN KEY (formulation_country_id) REFERENCES public.formulation_country(formulation_country_id),
   CONSTRAINT formulation_country_use_group_reference_product_id_fkey FOREIGN KEY (reference_product_id) REFERENCES public.reference_products(reference_product_id)
@@ -203,6 +204,18 @@ CREATE TABLE public.formulation_country_use_group_crops (
   CONSTRAINT formulation_country_use_group_crops_pkey PRIMARY KEY (formulation_country_use_group_id, crop_id),
   CONSTRAINT formulation_country_use_group_crops_formulation_country_use_group_id_fkey FOREIGN KEY (formulation_country_use_group_id) REFERENCES public.formulation_country_use_group(formulation_country_use_group_id),
   CONSTRAINT formulation_country_use_group_crops_crop_id_fkey FOREIGN KEY (crop_id) REFERENCES public.crops(crop_id)
+);
+CREATE TABLE public.formulation_country_use_group_status_history (
+  history_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  formulation_country_use_group_id uuid NOT NULL,
+  old_status character varying,
+  new_status character varying NOT NULL,
+  status_rationale text,
+  changed_by character varying,
+  changed_at timestamp with time zone DEFAULT now(),
+  change_type character varying CHECK (change_type::text = ANY (ARRAY['spontaneous'::character varying, 'periodic_review'::character varying, NULL::character varying]::text[])),
+  CONSTRAINT formulation_country_use_group_status_history_pkey PRIMARY KEY (history_id),
+  CONSTRAINT formulation_country_use_group_status_history_fcug_id_fkey FOREIGN KEY (formulation_country_use_group_id) REFERENCES public.formulation_country_use_group(formulation_country_use_group_id)
 );
 CREATE TABLE public.formulation_country_targets (
   formulation_country_id uuid NOT NULL,
