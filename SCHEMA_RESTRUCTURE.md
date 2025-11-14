@@ -113,7 +113,18 @@ The following views were dropped during the migration as they referenced deleted
 - `vw_formulation_country_use_group`
 - `vw_use_group_details`
 
-**Action Required:** These views will need to be recreated with updated column references to reflect the new schema.
+**Status:** ✅ All views have been successfully recreated with updated column references (migration `20251114230002_recreate_views.sql`):
+- ✅ `vw_active_portfolio` - Recreated with updated column names and correct table structure
+- ✅ `vw_formulation_country_use_group` - Recreated with new status and date fields
+- ✅ `vw_use_group_details` - Recreated with updated structure
+- ✅ `vw_formulation_country_detail` - Recreated with new country status/readiness fields
+- ✅ `vw_portfolio_by_country` - Recreated with formulation_status and country status fields
+- ✅ `vw_registration_pipeline` - Recreated with new date field names
+
+**Important Note:** The views now use the correct table structure:
+- Crops/targets at formulation level: `formulation_crops` and `formulation_targets`
+- Crops/targets at use group level: `formulation_country_use_group_crops` and `formulation_country_use_group_targets`
+- The old `formulation_country_crops` and `formulation_country_targets` tables no longer exist (crops/targets now inherit from formulation and are specified per use group)
 
 ---
 
