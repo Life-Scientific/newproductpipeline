@@ -232,8 +232,21 @@ CREATE TABLE public.formulation_status_history (
   status_rationale text,
   changed_by character varying,
   changed_at timestamp with time zone DEFAULT now(),
+  change_type character varying CHECK (change_type::text = ANY (ARRAY['spontaneous'::character varying, 'periodic_review'::character varying, NULL::character varying]::text[])),
   CONSTRAINT formulation_status_history_pkey PRIMARY KEY (history_id),
   CONSTRAINT formulation_status_history_formulation_id_fkey FOREIGN KEY (formulation_id) REFERENCES public.formulations(formulation_id)
+);
+CREATE TABLE public.formulation_readiness_history (
+  history_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  formulation_id uuid NOT NULL,
+  old_readiness character varying,
+  new_readiness character varying NOT NULL,
+  readiness_notes text,
+  changed_by character varying,
+  changed_at timestamp with time zone DEFAULT now(),
+  change_type character varying CHECK (change_type::text = ANY (ARRAY['spontaneous'::character varying, 'periodic_review'::character varying, NULL::character varying]::text[])),
+  CONSTRAINT formulation_readiness_history_pkey PRIMARY KEY (history_id),
+  CONSTRAINT formulation_readiness_history_formulation_id_fkey FOREIGN KEY (formulation_id) REFERENCES public.formulations(formulation_id)
 );
 CREATE TABLE public.formulations (
   formulation_id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -246,8 +259,10 @@ CREATE TABLE public.formulations (
   formulation_category character varying NOT NULL CHECK (formulation_category::text = ANY (ARRAY['Herbicide'::character varying, 'Fungicide'::character varying, 'Insecticide'::character varying, 'Growth Regulator'::character varying, 'Adjuvant'::character varying, 'Seed Treatment'::character varying]::text[])),
   formulation_type character varying,
   uom character varying DEFAULT 'L'::character varying,
-  status character varying NOT NULL DEFAULT 'Not Yet Considered'::character varying CHECK (status::text = ANY (ARRAY['Not Yet Considered'::character varying, 'Selected'::character varying, 'Monitoring'::character varying, 'Killed'::character varying]::text[])),
+  formulation_status character varying NOT NULL DEFAULT 'Not Yet Evaluated'::character varying CHECK (formulation_status::text = ANY (ARRAY['Not Yet Evaluated'::character varying, 'Selected'::character varying, 'Being Monitored'::character varying, 'Killed'::character varying]::text[])),
   status_rationale text,
+  readiness character varying NOT NULL DEFAULT 'Nominated for Review'::character varying CHECK (readiness::text = ANY (ARRAY['Nominated for Review'::character varying, 'Under Preparation'::character varying, 'Ready for Review'::character varying, 'Completed Review'::character varying]::text[])),
+  readiness_notes text,
   is_active boolean DEFAULT true,
   created_by character varying,
   created_at timestamp with time zone DEFAULT now(),
