@@ -25,7 +25,7 @@ export function FormulationRegulatory({
       <Card>
         <CardHeader>
           <CardTitle>Regulatory Information</CardTitle>
-          <CardDescription>Patents, data protections, and registration timeline</CardDescription>
+          <CardDescription>Patents and registration timeline</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">No regulatory data found.</p>
