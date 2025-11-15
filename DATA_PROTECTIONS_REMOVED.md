@@ -1,9 +1,12 @@
-# Data Protections System - REMOVED ✅
+# Data Protections & Launch Eligibility System - REMOVED ✅
 
-## Decision: Data Protections Removed from Application
+## Decision: Removed Unused Protection Systems
 
 **Date**: November 16, 2025  
-**Reason**: The data protections system was not correctly implemented and created technical debt. Removed for simplification.
+**Reason**: 
+- Data protections system was not correctly implemented and created technical debt
+- Launch eligibility system was unused (0 patents in database) and logic may change in future
+- Removed for simplification and to avoid maintaining dead code
 
 ---
 
