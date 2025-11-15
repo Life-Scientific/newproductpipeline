@@ -2,10 +2,6 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import {
-  validateUseGroupCropsSubset,
-  validateUseGroupTargetsSubset,
-} from "@/lib/db/queries";
 
 export async function createFormulationCountryUseGroup(formData: FormData) {
   const supabase = await createClient();
@@ -22,10 +18,10 @@ export async function createFormulationCountryUseGroup(formData: FormData) {
   const actualApprovalDate = formData.get("actual_approval_date") as string | null;
   const actualMarketEntryDate = formData.get("actual_market_entry_date") as string | null;
 
-  const cropsJson = formData.get("crops") as string | null;
-  const targetsJson = formData.get("targets") as string | null;
-  const cropsCriticalJson = formData.get("crops_critical") as string | null; // Map of cropId -> is_critical
-  const targetsCriticalJson = formData.get("targets_critical") as string | null; // Map of targetId -> is_critical
+  const eppoCropIdsJson = formData.get("eppo_crop_ids") as string | null;
+  const eppoTargetIdsJson = formData.get("eppo_target_ids") as string | null;
+  const eppoCropsCriticalJson = formData.get("eppo_crops_critical") as string | null; // Map of eppoCodeId -> is_critical
+  const eppoTargetsCriticalJson = formData.get("eppo_targets_critical") as string | null; // Map of eppoCodeId -> is_critical
 
   if (!formulationCountryId || !useGroupVariant) {
     return { error: "Formulation-country and use group variant are required" };
@@ -54,50 +50,50 @@ export async function createFormulationCountryUseGroup(formData: FormData) {
     return { error: "Formulation country not found" };
   }
 
-  // Parse crops and targets
-  let cropIds: string[] = [];
-  let targetIds: string[] = [];
-  let cropsCriticalMap: Record<string, boolean> = {};
-  let targetsCriticalMap: Record<string, boolean> = {};
+  // Parse EPPO crops and targets
+  let eppoCropIds: string[] = [];
+  let eppoTargetIds: string[] = [];
+  let eppoCropsCriticalMap: Record<string, boolean> = {};
+  let eppoTargetsCriticalMap: Record<string, boolean> = {};
 
-  if (cropsJson) {
+  if (eppoCropIdsJson) {
     try {
-      cropIds = JSON.parse(cropsJson);
+      eppoCropIds = JSON.parse(eppoCropIdsJson);
     } catch (parseError) {
-      return { error: "Failed to parse crops" };
+      return { error: "Failed to parse EPPO crops" };
     }
   }
 
-  if (targetsJson) {
+  if (eppoTargetIdsJson) {
     try {
-      targetIds = JSON.parse(targetsJson);
+      eppoTargetIds = JSON.parse(eppoTargetIdsJson);
     } catch (parseError) {
-      return { error: "Failed to parse targets" };
+      return { error: "Failed to parse EPPO targets" };
     }
   }
 
-  if (cropsCriticalJson) {
+  if (eppoCropsCriticalJson) {
     try {
-      cropsCriticalMap = JSON.parse(cropsCriticalJson);
+      eppoCropsCriticalMap = JSON.parse(eppoCropsCriticalJson);
     } catch (parseError) {
-      return { error: "Failed to parse crops critical flags" };
+      return { error: "Failed to parse EPPO crops critical flags" };
     }
   }
 
-  if (targetsCriticalJson) {
+  if (eppoTargetsCriticalJson) {
     try {
-      targetsCriticalMap = JSON.parse(targetsCriticalJson);
+      eppoTargetsCriticalMap = JSON.parse(eppoTargetsCriticalJson);
     } catch (parseError) {
-      return { error: "Failed to parse targets critical flags" };
+      return { error: "Failed to parse EPPO targets critical flags" };
     }
   }
 
   // Validate at least one crop AND one target
-  if (cropIds.length === 0) {
+  if (eppoCropIds.length === 0) {
     return { error: "At least one crop must be selected" };
   }
 
-  if (targetIds.length === 0) {
+  if (eppoTargetIds.length === 0) {
     return { error: "At least one target must be selected" };
   }
 
@@ -127,61 +123,43 @@ export async function createFormulationCountryUseGroup(formData: FormData) {
     return { error: error.message };
   }
 
-  // Validate crops subset
-  const cropsValidation = await validateUseGroupCropsSubset(
-    data.formulation_country_use_group_id,
-    cropIds
-  );
-  if (!cropsValidation.isValid) {
-    // Rollback use group creation
-    await supabase
-      .from("formulation_country_use_group")
-      .delete()
-      .eq("formulation_country_use_group_id", data.formulation_country_use_group_id);
-    return { error: cropsValidation.error || "Invalid crops" };
-  }
-
-  // Validate targets subset
-  const targetsValidation = await validateUseGroupTargetsSubset(
-    data.formulation_country_use_group_id,
-    targetIds
-  );
-  if (!targetsValidation.isValid) {
-    // Rollback use group creation
-    await supabase
-      .from("formulation_country_use_group")
-      .delete()
-      .eq("formulation_country_use_group_id", data.formulation_country_use_group_id);
-    return { error: targetsValidation.error || "Invalid targets" };
-  }
-
-  // Add crops with critical flags
-  if (cropIds.length > 0) {
-    const cropInserts = cropIds.map((cropId) => ({
+  // Add EPPO crops with critical flags
+  if (eppoCropIds.length > 0) {
+    const eppoCropInserts = eppoCropIds.map((eppoCodeId) => ({
       formulation_country_use_group_id: data.formulation_country_use_group_id,
-      crop_id: cropId,
-      is_critical: cropsCriticalMap[cropId] ?? true, // Default to critical if not specified
+      eppo_code_id: eppoCodeId,
+      is_critical: eppoCropsCriticalMap[eppoCodeId] ?? true, // Default to critical if not specified
     }));
     const { error: cropsError } = await supabase
-      .from("formulation_country_use_group_crops")
-      .insert(cropInserts);
+      .from("formulation_country_use_group_eppo_crops")
+      .insert(eppoCropInserts);
     if (cropsError) {
-      return { error: `Failed to add crops: ${cropsError.message}` };
+      // Rollback use group creation
+      await supabase
+        .from("formulation_country_use_group")
+        .delete()
+        .eq("formulation_country_use_group_id", data.formulation_country_use_group_id);
+      return { error: `Failed to add EPPO crops: ${cropsError.message}` };
     }
   }
 
-  // Add targets with critical flags
-  if (targetIds.length > 0) {
-    const targetInserts = targetIds.map((targetId) => ({
+  // Add EPPO targets with critical flags
+  if (eppoTargetIds.length > 0) {
+    const eppoTargetInserts = eppoTargetIds.map((eppoCodeId) => ({
       formulation_country_use_group_id: data.formulation_country_use_group_id,
-      target_id: targetId,
-      is_critical: targetsCriticalMap[targetId] ?? true, // Default to critical if not specified
+      eppo_code_id: eppoCodeId,
+      is_critical: eppoTargetsCriticalMap[eppoCodeId] ?? true, // Default to critical if not specified
     }));
     const { error: targetsError } = await supabase
-      .from("formulation_country_use_group_targets")
-      .insert(targetInserts);
+      .from("formulation_country_use_group_eppo_targets")
+      .insert(eppoTargetInserts);
     if (targetsError) {
-      return { error: `Failed to add targets: ${targetsError.message}` };
+      // Rollback use group creation and crops
+      await supabase
+        .from("formulation_country_use_group")
+        .delete()
+        .eq("formulation_country_use_group_id", data.formulation_country_use_group_id);
+      return { error: `Failed to add EPPO targets: ${targetsError.message}` };
     }
   }
 
@@ -208,10 +186,10 @@ export async function updateFormulationCountryUseGroup(
   const actualApprovalDate = formData.get("actual_approval_date") as string | null;
   const actualMarketEntryDate = formData.get("actual_market_entry_date") as string | null;
 
-  const cropsJson = formData.get("crops") as string | null;
-  const targetsJson = formData.get("targets") as string | null;
-  const cropsCriticalJson = formData.get("crops_critical") as string | null;
-  const targetsCriticalJson = formData.get("targets_critical") as string | null;
+  const eppoCropIdsJson = formData.get("eppo_crop_ids") as string | null;
+  const eppoTargetIdsJson = formData.get("eppo_target_ids") as string | null;
+  const eppoCropsCriticalJson = formData.get("eppo_crops_critical") as string | null;
+  const eppoTargetsCriticalJson = formData.get("eppo_targets_critical") as string | null;
 
   const updateData: any = {
     updated_at: new Date().toISOString(),
@@ -243,93 +221,75 @@ export async function updateFormulationCountryUseGroup(
     return { error: error.message };
   }
 
-  // Update crops - delete all and reinsert
-  if (cropsJson !== null) {
+  // Update EPPO crops - delete all and reinsert
+  if (eppoCropIdsJson !== null) {
     try {
-      const cropIds: string[] = JSON.parse(cropsJson);
-      const cropsCriticalMap: Record<string, boolean> = cropsCriticalJson
-        ? JSON.parse(cropsCriticalJson)
+      const eppoCropIds: string[] = JSON.parse(eppoCropIdsJson);
+      const eppoCropsCriticalMap: Record<string, boolean> = eppoCropsCriticalJson
+        ? JSON.parse(eppoCropsCriticalJson)
         : {};
 
       // Validate at least one crop
-      if (cropIds.length === 0) {
+      if (eppoCropIds.length === 0) {
         return { error: "At least one crop must be selected" };
       }
 
-      // Validate crops subset
-      const cropsValidation = await validateUseGroupCropsSubset(
-        formulationCountryUseGroupId,
-        cropIds
-      );
-      if (!cropsValidation.isValid) {
-        return { error: cropsValidation.error || "Invalid crops" };
-      }
-
       await supabase
-        .from("formulation_country_use_group_crops")
+        .from("formulation_country_use_group_eppo_crops")
         .delete()
         .eq("formulation_country_use_group_id", formulationCountryUseGroupId);
 
-      if (cropIds.length > 0) {
-        const cropInserts = cropIds.map((cropId) => ({
+      if (eppoCropIds.length > 0) {
+        const eppoCropInserts = eppoCropIds.map((eppoCodeId) => ({
           formulation_country_use_group_id: formulationCountryUseGroupId,
-          crop_id: cropId,
-          is_critical: cropsCriticalMap[cropId] ?? false,
+          eppo_code_id: eppoCodeId,
+          is_critical: eppoCropsCriticalMap[eppoCodeId] ?? false,
         }));
         const { error: cropsError } = await supabase
-          .from("formulation_country_use_group_crops")
-          .insert(cropInserts);
+          .from("formulation_country_use_group_eppo_crops")
+          .insert(eppoCropInserts);
         if (cropsError) {
-          return { error: `Failed to update crops: ${cropsError.message}` };
+          return { error: `Failed to update EPPO crops: ${cropsError.message}` };
         }
       }
     } catch (parseError) {
-      return { error: "Failed to parse crops data" };
+      return { error: "Failed to parse EPPO crops data" };
     }
   }
 
-  // Update targets - delete all and reinsert
-  if (targetsJson !== null) {
+  // Update EPPO targets - delete all and reinsert
+  if (eppoTargetIdsJson !== null) {
     try {
-      const targetIds: string[] = JSON.parse(targetsJson);
-      const targetsCriticalMap: Record<string, boolean> = targetsCriticalJson
-        ? JSON.parse(targetsCriticalJson)
+      const eppoTargetIds: string[] = JSON.parse(eppoTargetIdsJson);
+      const eppoTargetsCriticalMap: Record<string, boolean> = eppoTargetsCriticalJson
+        ? JSON.parse(eppoTargetsCriticalJson)
         : {};
 
       // Validate at least one target
-      if (targetIds.length === 0) {
+      if (eppoTargetIds.length === 0) {
         return { error: "At least one target must be selected" };
       }
 
-      // Validate targets subset
-      const targetsValidation = await validateUseGroupTargetsSubset(
-        formulationCountryUseGroupId,
-        targetIds
-      );
-      if (!targetsValidation.isValid) {
-        return { error: targetsValidation.error || "Invalid targets" };
-      }
-
       await supabase
-        .from("formulation_country_use_group_targets")
+        .from("formulation_country_use_group_eppo_targets")
         .delete()
         .eq("formulation_country_use_group_id", formulationCountryUseGroupId);
 
-      if (targetIds.length > 0) {
-        const targetInserts = targetIds.map((targetId) => ({
+      if (eppoTargetIds.length > 0) {
+        const eppoTargetInserts = eppoTargetIds.map((eppoCodeId) => ({
           formulation_country_use_group_id: formulationCountryUseGroupId,
-          target_id: targetId,
-          is_critical: targetsCriticalMap[targetId] ?? false,
+          eppo_code_id: eppoCodeId,
+          is_critical: eppoTargetsCriticalMap[eppoCodeId] ?? false,
         }));
         const { error: targetsError } = await supabase
-          .from("formulation_country_use_group_targets")
-          .insert(targetInserts);
+          .from("formulation_country_use_group_eppo_targets")
+          .insert(eppoTargetInserts);
         if (targetsError) {
-          return { error: `Failed to update targets: ${targetsError.message}` };
+          return { error: `Failed to update EPPO targets: ${targetsError.message}` };
         }
       }
     } catch (parseError) {
-      return { error: "Failed to parse targets data" };
+      return { error: "Failed to parse EPPO targets data" };
     }
   }
 

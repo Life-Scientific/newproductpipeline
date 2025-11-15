@@ -28,8 +28,7 @@ import type { Database } from "@/lib/supabase/database.types";
 
 type FormulationCountryUseGroup = Database["public"]["Tables"]["formulation_country_use_group"]["Row"];
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
-type Crop = Database["public"]["Tables"]["crops"]["Row"];
-type Target = Database["public"]["Tables"]["targets"]["Row"];
+type EPPOCode = Database["public"]["Tables"]["eppo_codes"]["Row"];
 type ReferenceProduct = Database["public"]["Tables"]["reference_products"]["Row"];
 
 interface FormulationCountryUseGroupFormProps {
@@ -60,13 +59,13 @@ export function FormulationCountryUseGroupForm({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [formulationCountries, setFormulationCountries] = useState<FormulationCountryDetail[]>([]);
-  const [formulationCrops, setFormulationCrops] = useState<Crop[]>([]);
-  const [formulationTargets, setFormulationTargets] = useState<Target[]>([]);
+  const [formulationEppoCrops, setFormulationEppoCrops] = useState<EPPOCode[]>([]);
+  const [formulationEppoTargets, setFormulationEppoTargets] = useState<EPPOCode[]>([]);
   const [referenceProducts, setReferenceProducts] = useState<ReferenceProduct[]>([]);
-  const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
-  const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
-  const [cropsCritical, setCropsCritical] = useState<Record<string, boolean>>({});
-  const [targetsCritical, setTargetsCritical] = useState<Record<string, boolean>>({});
+  const [selectedEppoCropIds, setSelectedEppoCropIds] = useState<string[]>([]);
+  const [selectedEppoTargetIds, setSelectedEppoTargetIds] = useState<string[]>([]);
+  const [eppoCropsCritical, setEppoCropsCritical] = useState<Record<string, boolean>>({});
+  const [eppoTargetsCritical, setEppoTargetsCritical] = useState<Record<string, boolean>>({});
   const [formulationId, setFormulationId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -129,55 +128,51 @@ export function FormulationCountryUseGroupForm({
 
     setFormulationId(fcData.formulation_id);
 
-    // Load formulation crops (normal use - global superset)
-    const { data: fcCrops } = await supabase
-      .from("formulation_crops")
-      .select("crop_id")
-      .eq("formulation_id", fcData.formulation_id);
-
-    if (fcCrops && fcCrops.length > 0) {
-      const cropIds = fcCrops.map(fc => fc.crop_id).filter(Boolean) as string[];
-      const { data: cropsData } = await supabase
-        .from("crops")
+    // Load formulation EPPO crops using server action
+    const { getFormulationCrops } = await import("@/lib/actions/eppo-codes");
+    const cropsResult = await getFormulationCrops(fcData.formulation_id);
+    
+    if (cropsResult.data) {
+      // Get full EPPO code details
+      const cropEppoIds = cropsResult.data.map((c: any) => c.eppo_code_id);
+      const { data: eppoCodesData } = await supabase
+        .from("eppo_codes")
         .select("*")
-        .in("crop_id", cropIds)
-        .eq("is_active", true)
-        .order("crop_name");
-      if (cropsData) {
-        setFormulationCrops(cropsData);
+        .in("eppo_code_id", cropEppoIds);
+      
+      if (eppoCodesData) {
+        setFormulationEppoCrops(eppoCodesData);
         // Pre-select ALL formulation crops as CRITICAL when creating new use group
-        setSelectedCrops(cropIds);
+        setSelectedEppoCropIds(cropEppoIds);
         const criticalMap: Record<string, boolean> = {};
-        cropIds.forEach(cropId => {
-          criticalMap[cropId] = true; // All critical by default
+        cropEppoIds.forEach((eppoCodeId: string) => {
+          criticalMap[eppoCodeId] = true; // All critical by default
         });
-        setCropsCritical(criticalMap);
+        setEppoCropsCritical(criticalMap);
       }
     }
 
-    // Load formulation targets (normal use - global superset)
-    const { data: ftTargets } = await supabase
-      .from("formulation_targets")
-      .select("target_id")
-      .eq("formulation_id", fcData.formulation_id);
-
-    if (ftTargets && ftTargets.length > 0) {
-      const targetIds = ftTargets.map(ft => ft.target_id).filter(Boolean) as string[];
-      const { data: targetsData } = await supabase
-        .from("targets")
+    // Load formulation EPPO targets using server action
+    const { getFormulationTargets } = await import("@/lib/actions/eppo-codes");
+    const targetsResult = await getFormulationTargets(fcData.formulation_id);
+    
+    if (targetsResult.data) {
+      // Get full EPPO code details
+      const targetEppoIds = targetsResult.data.map((t: any) => t.eppo_code_id);
+      const { data: eppoCodesData } = await supabase
+        .from("eppo_codes")
         .select("*")
-        .in("target_id", targetIds)
-        .eq("is_active", true)
-        .order("target_name");
-      if (targetsData) {
-        setFormulationTargets(targetsData);
+        .in("eppo_code_id", targetEppoIds);
+      
+      if (eppoCodesData) {
+        setFormulationEppoTargets(eppoCodesData);
         // Pre-select ALL formulation targets as CRITICAL when creating new use group
-        setSelectedTargets(targetIds);
+        setSelectedEppoTargetIds(targetEppoIds);
         const criticalMap: Record<string, boolean> = {};
-        targetIds.forEach(targetId => {
-          criticalMap[targetId] = true; // All critical by default
+        targetEppoIds.forEach((eppoCodeId: string) => {
+          criticalMap[eppoCodeId] = true; // All critical by default
         });
-        setTargetsCritical(criticalMap);
+        setEppoTargetsCritical(criticalMap);
       }
     }
   };
@@ -197,68 +192,60 @@ export function FormulationCountryUseGroupForm({
 
     setFormulationId(fcData.formulation_id);
 
-    // Load formulation crops (for reference)
-    const { data: fcCrops } = await supabase
-      .from("formulation_crops")
-      .select("crop_id")
-      .eq("formulation_id", fcData.formulation_id);
-
-    if (fcCrops && fcCrops.length > 0) {
-      const cropIds = fcCrops.map(fc => fc.crop_id).filter(Boolean) as string[];
-      const { data: cropsData } = await supabase
-        .from("crops")
+    // Load formulation EPPO crops (for reference - all available options)
+    const { getFormulationCrops } = await import("@/lib/actions/eppo-codes");
+    const cropsResult = await getFormulationCrops(fcData.formulation_id);
+    
+    if (cropsResult.data) {
+      const cropEppoIds = cropsResult.data.map((c: any) => c.eppo_code_id);
+      const { data: eppoCodesData } = await supabase
+        .from("eppo_codes")
         .select("*")
-        .in("crop_id", cropIds)
-        .eq("is_active", true)
-        .order("crop_name");
-      if (cropsData) setFormulationCrops(cropsData);
+        .in("eppo_code_id", cropEppoIds);
+      if (eppoCodesData) setFormulationEppoCrops(eppoCodesData);
     }
 
-    // Load formulation targets (for reference)
-    const { data: ftTargets } = await supabase
-      .from("formulation_targets")
-      .select("target_id")
-      .eq("formulation_id", fcData.formulation_id);
-
-    if (ftTargets && ftTargets.length > 0) {
-      const targetIds = ftTargets.map(ft => ft.target_id).filter(Boolean) as string[];
-      const { data: targetsData } = await supabase
-        .from("targets")
+    // Load formulation EPPO targets (for reference - all available options)
+    const { getFormulationTargets } = await import("@/lib/actions/eppo-codes");
+    const targetsResult = await getFormulationTargets(fcData.formulation_id);
+    
+    if (targetsResult.data) {
+      const targetEppoIds = targetsResult.data.map((t: any) => t.eppo_code_id);
+      const { data: eppoCodesData } = await supabase
+        .from("eppo_codes")
         .select("*")
-        .in("target_id", targetIds)
-        .eq("is_active", true)
-        .order("target_name");
-      if (targetsData) setFormulationTargets(targetsData);
+        .in("eppo_code_id", targetEppoIds);
+      if (eppoCodesData) setFormulationEppoTargets(eppoCodesData);
     }
 
-    // Load existing use group crops with critical flags
+    // Load existing use group EPPO crops with critical flags
     const { data: useGroupCrops } = await supabase
-      .from("formulation_country_use_group_crops")
-      .select("crop_id, is_critical")
+      .from("formulation_country_use_group_eppo_crops")
+      .select("eppo_code_id, is_critical")
       .eq("formulation_country_use_group_id", formulationCountryUseGroup.formulation_country_use_group_id);
     
     if (useGroupCrops) {
-      setSelectedCrops(useGroupCrops.map(c => c.crop_id));
+      setSelectedEppoCropIds(useGroupCrops.map(c => c.eppo_code_id));
       const criticalMap: Record<string, boolean> = {};
       useGroupCrops.forEach(c => {
-        criticalMap[c.crop_id] = c.is_critical || false;
+        criticalMap[c.eppo_code_id] = c.is_critical || false;
       });
-      setCropsCritical(criticalMap);
+      setEppoCropsCritical(criticalMap);
     }
 
-    // Load existing use group targets with critical flags
+    // Load existing use group EPPO targets with critical flags
     const { data: useGroupTargets } = await supabase
-      .from("formulation_country_use_group_targets")
-      .select("target_id, is_critical")
+      .from("formulation_country_use_group_eppo_targets")
+      .select("eppo_code_id, is_critical")
       .eq("formulation_country_use_group_id", formulationCountryUseGroup.formulation_country_use_group_id);
     
     if (useGroupTargets) {
-      setSelectedTargets(useGroupTargets.map(t => t.target_id));
+      setSelectedEppoTargetIds(useGroupTargets.map(t => t.eppo_code_id));
       const criticalMap: Record<string, boolean> = {};
       useGroupTargets.forEach(t => {
-        criticalMap[t.target_id] = t.is_critical || false;
+        criticalMap[t.eppo_code_id] = t.is_critical || false;
       });
-      setTargetsCritical(criticalMap);
+      setEppoTargetsCritical(criticalMap);
     }
   };
 
@@ -274,8 +261,8 @@ export function FormulationCountryUseGroupForm({
       return;
     }
 
-    // Validate at least one crop AND one target
-    if (selectedCrops.length === 0) {
+    // Validate at least one EPPO crop AND one EPPO target
+    if (selectedEppoCropIds.length === 0) {
       toast({
         title: "Error",
         description: "At least one crop must be selected",
@@ -284,7 +271,7 @@ export function FormulationCountryUseGroupForm({
       return;
     }
 
-    if (selectedTargets.length === 0) {
+    if (selectedEppoTargetIds.length === 0) {
       toast({
         title: "Error",
         description: "At least one target must be selected",
@@ -300,10 +287,10 @@ export function FormulationCountryUseGroupForm({
       }
     });
 
-    form.append("crops", JSON.stringify(selectedCrops));
-    form.append("targets", JSON.stringify(selectedTargets));
-    form.append("crops_critical", JSON.stringify(cropsCritical));
-    form.append("targets_critical", JSON.stringify(targetsCritical));
+    form.append("eppo_crop_ids", JSON.stringify(selectedEppoCropIds));
+    form.append("eppo_target_ids", JSON.stringify(selectedEppoTargetIds));
+    form.append("eppo_crops_critical", JSON.stringify(eppoCropsCritical));
+    form.append("eppo_targets_critical", JSON.stringify(eppoTargetsCritical));
 
     startTransition(async () => {
       try {
@@ -362,43 +349,43 @@ export function FormulationCountryUseGroupForm({
     }
   };
 
-  // Crop options from formulation crops only
-  const cropOptions: MultiSelectOption[] = formulationCrops.map((crop) => ({
-    value: crop.crop_id,
-    label: crop.crop_name,
+  // EPPO Crop options from formulation EPPO crops only
+  const eppoCropOptions: MultiSelectOption[] = formulationEppoCrops.map((eppoCode) => ({
+    value: eppoCode.eppo_code_id,
+    label: eppoCode.display_name || eppoCode.latin_name || eppoCode.eppo_code,
   }));
 
-  // Target options from formulation targets only
-  const targetOptions: MultiSelectOption[] = formulationTargets.map((target) => ({
-    value: target.target_id,
-    label: target.target_name,
+  // EPPO Target options from formulation EPPO targets only
+  const eppoTargetOptions: MultiSelectOption[] = formulationEppoTargets.map((eppoCode) => ({
+    value: eppoCode.eppo_code_id,
+    label: eppoCode.display_name || eppoCode.latin_name || eppoCode.eppo_code,
   }));
 
-  // Group crops by critical/non-critical, then alphabetize
-  const criticalCrops = selectedCrops
-    .filter(cropId => cropsCritical[cropId] === true)
-    .map(cropId => formulationCrops.find(c => c.crop_id === cropId))
-    .filter((c): c is Crop => c !== undefined)
-    .sort((a, b) => a.crop_name.localeCompare(b.crop_name));
+  // Group EPPO crops by critical/non-critical, then alphabetize
+  const criticalEppoCrops = selectedEppoCropIds
+    .filter(eppoCodeId => eppoCropsCritical[eppoCodeId] === true)
+    .map(eppoCodeId => formulationEppoCrops.find(c => c.eppo_code_id === eppoCodeId))
+    .filter((c): c is EPPOCode => c !== undefined)
+    .sort((a, b) => (a.display_name || a.latin_name || '').localeCompare(b.display_name || b.latin_name || ''));
 
-  const nonCriticalCrops = selectedCrops
-    .filter(cropId => cropsCritical[cropId] !== true)
-    .map(cropId => formulationCrops.find(c => c.crop_id === cropId))
-    .filter((c): c is Crop => c !== undefined)
-    .sort((a, b) => a.crop_name.localeCompare(b.crop_name));
+  const nonCriticalEppoCrops = selectedEppoCropIds
+    .filter(eppoCodeId => eppoCropsCritical[eppoCodeId] !== true)
+    .map(eppoCodeId => formulationEppoCrops.find(c => c.eppo_code_id === eppoCodeId))
+    .filter((c): c is EPPOCode => c !== undefined)
+    .sort((a, b) => (a.display_name || a.latin_name || '').localeCompare(b.display_name || b.latin_name || ''));
 
-  // Group targets by critical/non-critical, then alphabetize
-  const criticalTargets = selectedTargets
-    .filter(targetId => targetsCritical[targetId] === true)
-    .map(targetId => formulationTargets.find(t => t.target_id === targetId))
-    .filter((t): t is Target => t !== undefined)
-    .sort((a, b) => a.target_name.localeCompare(b.target_name));
+  // Group EPPO targets by critical/non-critical, then alphabetize
+  const criticalEppoTargets = selectedEppoTargetIds
+    .filter(eppoCodeId => eppoTargetsCritical[eppoCodeId] === true)
+    .map(eppoCodeId => formulationEppoTargets.find(t => t.eppo_code_id === eppoCodeId))
+    .filter((t): t is EPPOCode => t !== undefined)
+    .sort((a, b) => (a.display_name || a.latin_name || '').localeCompare(b.display_name || b.latin_name || ''));
 
-  const nonCriticalTargets = selectedTargets
-    .filter(targetId => targetsCritical[targetId] !== true)
-    .map(targetId => formulationTargets.find(t => t.target_id === targetId))
-    .filter((t): t is Target => t !== undefined)
-    .sort((a, b) => a.target_name.localeCompare(b.target_name));
+  const nonCriticalEppoTargets = selectedEppoTargetIds
+    .filter(eppoCodeId => eppoTargetsCritical[eppoCodeId] !== true)
+    .map(eppoCodeId => formulationEppoTargets.find(t => t.eppo_code_id === eppoCodeId))
+    .filter((t): t is EPPOCode => t !== undefined)
+    .sort((a, b) => (a.display_name || a.latin_name || '').localeCompare(b.display_name || b.latin_name || ''));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -586,70 +573,74 @@ export function FormulationCountryUseGroupForm({
             </div>
           </div>
 
-          {/* Crops Section */}
+          {/* EPPO Crops Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-base font-semibold">
                 Crops (Intended Use) <span className="text-destructive">*</span>
               </Label>
-              {formulationCrops.length > 0 && (
+              {formulationEppoCrops.length > 0 && (
                 <span className="text-sm text-muted-foreground">
-                  Select from {formulationCrops.length} formulation crop{formulationCrops.length !== 1 ? "s" : ""}
+                  Select from {formulationEppoCrops.length} formulation crop{formulationEppoCrops.length !== 1 ? "s" : ""}
                 </span>
               )}
             </div>
-            {formulationCrops.length === 0 && formData.formulation_country_id && (
+            {formulationEppoCrops.length === 0 && formData.formulation_country_id && (
               <p className="text-sm text-muted-foreground">
                 No crops defined for this formulation. Please add crops at the formulation level first.
               </p>
             )}
-            {formulationCrops.length > 0 && (
+            {formulationEppoCrops.length > 0 && (
               <>
                 <MultiSelect
-                  options={cropOptions}
-                  selected={selectedCrops}
-                  onChange={setSelectedCrops}
+                  options={eppoCropOptions}
+                  selected={selectedEppoCropIds}
+                  onChange={setSelectedEppoCropIds}
                   placeholder="Select crops for this use group..."
                 />
-                {selectedCrops.length > 0 && (
+                {selectedEppoCropIds.length > 0 && (
                   <div className="space-y-3 mt-4 p-4 border rounded-lg bg-muted/50">
-                    {/* Critical Crops */}
-                    {criticalCrops.length > 0 && (
+                    {/* Critical EPPO Crops */}
+                    {criticalEppoCrops.length > 0 && (
                       <div className="space-y-2">
                         <Label className="text-sm font-medium text-green-700 dark:text-green-400">
                           Critical Crops
                         </Label>
                         <div className="space-y-2 pl-4">
-                          {criticalCrops.map((crop) => (
-                            <div key={crop.crop_id} className="flex items-center gap-2">
+                          {criticalEppoCrops.map((eppoCode) => (
+                            <div key={eppoCode.eppo_code_id} className="flex items-center gap-2">
                               <Checkbox
-                                checked={cropsCritical[crop.crop_id] === true}
+                                checked={eppoCropsCritical[eppoCode.eppo_code_id] === true}
                                 onCheckedChange={(checked) =>
-                                  setCropsCritical({ ...cropsCritical, [crop.crop_id]: checked === true })
+                                  setEppoCropsCritical({ ...eppoCropsCritical, [eppoCode.eppo_code_id]: checked === true })
                                 }
                               />
-                              <Label className="text-sm font-normal">{crop.crop_name}</Label>
+                              <Label className="text-sm font-normal">
+                                {eppoCode.display_name || eppoCode.latin_name || eppoCode.eppo_code}
+                              </Label>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
-                    {/* Non-Critical Crops */}
-                    {nonCriticalCrops.length > 0 && (
+                    {/* Non-Critical EPPO Crops */}
+                    {nonCriticalEppoCrops.length > 0 && (
                       <div className="space-y-2">
                         <Label className="text-sm font-medium text-muted-foreground">
                           Non-Critical Crops
                         </Label>
                         <div className="space-y-2 pl-4">
-                          {nonCriticalCrops.map((crop) => (
-                            <div key={crop.crop_id} className="flex items-center gap-2">
+                          {nonCriticalEppoCrops.map((eppoCode) => (
+                            <div key={eppoCode.eppo_code_id} className="flex items-center gap-2">
                               <Checkbox
-                                checked={cropsCritical[crop.crop_id] === true}
+                                checked={eppoCropsCritical[eppoCode.eppo_code_id] === true}
                                 onCheckedChange={(checked) =>
-                                  setCropsCritical({ ...cropsCritical, [crop.crop_id]: checked === true })
+                                  setEppoCropsCritical({ ...eppoCropsCritical, [eppoCode.eppo_code_id]: checked === true })
                                 }
                               />
-                              <Label className="text-sm font-normal">{crop.crop_name}</Label>
+                              <Label className="text-sm font-normal">
+                                {eppoCode.display_name || eppoCode.latin_name || eppoCode.eppo_code}
+                              </Label>
                             </div>
                           ))}
                         </div>
@@ -661,70 +652,74 @@ export function FormulationCountryUseGroupForm({
             )}
           </div>
 
-          {/* Targets Section */}
+          {/* EPPO Targets Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-base font-semibold">
                 Targets (Intended Use) <span className="text-destructive">*</span>
               </Label>
-              {formulationTargets.length > 0 && (
+              {formulationEppoTargets.length > 0 && (
                 <span className="text-sm text-muted-foreground">
-                  Select from {formulationTargets.length} formulation target{formulationTargets.length !== 1 ? "s" : ""}
+                  Select from {formulationEppoTargets.length} formulation target{formulationEppoTargets.length !== 1 ? "s" : ""}
                 </span>
               )}
             </div>
-            {formulationTargets.length === 0 && formData.formulation_country_id && (
+            {formulationEppoTargets.length === 0 && formData.formulation_country_id && (
               <p className="text-sm text-muted-foreground">
                 No targets defined for this formulation. Please add targets at the formulation level first.
               </p>
             )}
-            {formulationTargets.length > 0 && (
+            {formulationEppoTargets.length > 0 && (
               <>
                 <MultiSelect
-                  options={targetOptions}
-                  selected={selectedTargets}
-                  onChange={setSelectedTargets}
+                  options={eppoTargetOptions}
+                  selected={selectedEppoTargetIds}
+                  onChange={setSelectedEppoTargetIds}
                   placeholder="Select targets for this use group..."
                 />
-                {selectedTargets.length > 0 && (
+                {selectedEppoTargetIds.length > 0 && (
                   <div className="space-y-3 mt-4 p-4 border rounded-lg bg-muted/50">
-                    {/* Critical Targets */}
-                    {criticalTargets.length > 0 && (
+                    {/* Critical EPPO Targets */}
+                    {criticalEppoTargets.length > 0 && (
                       <div className="space-y-2">
                         <Label className="text-sm font-medium text-green-700 dark:text-green-400">
                           Critical Targets
                         </Label>
                         <div className="space-y-2 pl-4">
-                          {criticalTargets.map((target) => (
-                            <div key={target.target_id} className="flex items-center gap-2">
+                          {criticalEppoTargets.map((eppoCode) => (
+                            <div key={eppoCode.eppo_code_id} className="flex items-center gap-2">
                               <Checkbox
-                                checked={targetsCritical[target.target_id] === true}
+                                checked={eppoTargetsCritical[eppoCode.eppo_code_id] === true}
                                 onCheckedChange={(checked) =>
-                                  setTargetsCritical({ ...targetsCritical, [target.target_id]: checked === true })
+                                  setEppoTargetsCritical({ ...eppoTargetsCritical, [eppoCode.eppo_code_id]: checked === true })
                                 }
                               />
-                              <Label className="text-sm font-normal">{target.target_name}</Label>
+                              <Label className="text-sm font-normal">
+                                {eppoCode.display_name || eppoCode.latin_name || eppoCode.eppo_code}
+                              </Label>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
-                    {/* Non-Critical Targets */}
-                    {nonCriticalTargets.length > 0 && (
+                    {/* Non-Critical EPPO Targets */}
+                    {nonCriticalEppoTargets.length > 0 && (
                       <div className="space-y-2">
                         <Label className="text-sm font-medium text-muted-foreground">
                           Non-Critical Targets
                         </Label>
                         <div className="space-y-2 pl-4">
-                          {nonCriticalTargets.map((target) => (
-                            <div key={target.target_id} className="flex items-center gap-2">
+                          {nonCriticalEppoTargets.map((eppoCode) => (
+                            <div key={eppoCode.eppo_code_id} className="flex items-center gap-2">
                               <Checkbox
-                                checked={targetsCritical[target.target_id] === true}
+                                checked={eppoTargetsCritical[eppoCode.eppo_code_id] === true}
                                 onCheckedChange={(checked) =>
-                                  setTargetsCritical({ ...targetsCritical, [target.target_id]: checked === true })
+                                  setEppoTargetsCritical({ ...eppoTargetsCritical, [eppoCode.eppo_code_id]: checked === true })
                                 }
                               />
-                              <Label className="text-sm font-normal">{target.target_name}</Label>
+                              <Label className="text-sm font-normal">
+                                {eppoCode.display_name || eppoCode.latin_name || eppoCode.eppo_code}
+                              </Label>
                             </div>
                           ))}
                         </div>

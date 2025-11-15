@@ -1223,9 +1223,11 @@ export async function getFormulationCountryById(formulationCountryId: string) {
 }
 
 /**
+ * @deprecated Use getFormulationCrops from eppo-codes actions instead
  * Get crops for a formulation (normal use - global superset)
+ * This function uses legacy crops table - will be removed after EPPO migration
  */
-export async function getFormulationCrops(formulationId: string) {
+export async function getFormulationCropsLegacy(formulationId: string) {
   const supabase = await createClient();
   
   const { data, error } = await supabase
@@ -1254,9 +1256,11 @@ export async function getFormulationCrops(formulationId: string) {
 }
 
 /**
- * Get targets for a formulation (normal use - global superset)
+ * @deprecated Use getFormulationTargets from eppo-codes actions instead
+ * Get targets for a formulation (normal use - global superset)  
+ * This function uses legacy targets table - will be removed after EPPO migration
  */
-export async function getFormulationTargets(formulationId: string) {
+export async function getFormulationTargetsLegacy(formulationId: string) {
   const supabase = await createClient();
   
   const { data, error } = await supabase
@@ -1390,9 +1394,11 @@ export async function getUseGroupTargets(useGroupId: string) {
 }
 
 /**
+ * @deprecated Needs rewrite for EPPO codes system
  * Validate that use group crops are subset of formulation crops
+ * This function uses legacy crops table - will be removed after EPPO migration
  */
-export async function validateUseGroupCropsSubset(
+export async function validateUseGroupCropsSubsetLegacy(
   useGroupId: string,
   cropIds: string[]
 ): Promise<{ isValid: boolean; error: string | null }> {
@@ -1448,9 +1454,11 @@ export async function validateUseGroupCropsSubset(
 }
 
 /**
+ * @deprecated Needs rewrite for EPPO codes system
  * Validate that use group targets are subset of formulation targets
+ * This function uses legacy targets table - will be removed after EPPO migration
  */
-export async function validateUseGroupTargetsSubset(
+export async function validateUseGroupTargetsSubsetLegacy(
   useGroupId: string,
   targetIds: string[]
 ): Promise<{ isValid: boolean; error: string | null }> {

@@ -23,8 +23,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { IngredientSelector, type IngredientInput } from "./IngredientSelector";
-import { CropSelector, type CropInput } from "./CropSelector";
-import { TargetSelector, type TargetInput } from "./TargetSelector";
+import { EPPOCropSelector } from "./EPPOCropSelector";
+import { EPPOTargetSelector } from "./EPPOTargetSelector";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -60,8 +60,6 @@ export function FormulationForm({
   const [isPending, startTransition] = useTransition();
   const [ingredients, setIngredients] = useState<IngredientInput[]>([]);
   const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([]);
-  const [selectedCrops, setSelectedCrops] = useState<CropInput[]>([]);
-  const [selectedTargets, setSelectedTargets] = useState<TargetInput[]>([]);
   const [formData, setFormData] = useState({
     formulation_name: "", // Will be calculated
     formulation_category: formulation?.formulation_category || "",
@@ -91,9 +89,8 @@ export function FormulationForm({
         status: formulation.status || "Not Yet Considered",
         status_rationale: formulation.status_rationale || "",
       });
-      // Load existing ingredients, crops, and targets when editing
+      // Load existing ingredients when editing
       loadExistingIngredients();
-      loadExistingCropsAndTargets();
     } else if (open && !formulation) {
       // Reset form data and ingredients when creating new
       setFormData({
@@ -106,8 +103,6 @@ export function FormulationForm({
         status_rationale: "",
       });
       setIngredients([]);
-      setSelectedCrops([]);
-      setSelectedTargets([]);
     }
   }, [open, formulation]);
 
@@ -162,46 +157,6 @@ export function FormulationForm({
     }
   };
 
-  const loadExistingCropsAndTargets = async () => {
-    if (!formulation) return;
-    try {
-      const supabase = createClient();
-      
-      // Load existing crops
-      const { data: existingCrops, error: cropsError } = await supabase
-        .from("formulation_crops")
-        .select("crop_id, notes")
-        .eq("formulation_id", formulation.formulation_id);
-
-      if (cropsError) {
-        console.error("Failed to load crops:", cropsError);
-      } else {
-        const cropInputs: CropInput[] = (existingCrops || []).map((fc) => ({
-          crop_id: fc.crop_id,
-          notes: fc.notes || "",
-        }));
-        setSelectedCrops(cropInputs);
-      }
-
-      // Load existing targets
-      const { data: existingTargets, error: targetsError } = await supabase
-        .from("formulation_targets")
-        .select("target_id, notes")
-        .eq("formulation_id", formulation.formulation_id);
-
-      if (targetsError) {
-        console.error("Failed to load targets:", targetsError);
-      } else {
-        const targetInputs: TargetInput[] = (existingTargets || []).map((ft) => ({
-          target_id: ft.target_id,
-          notes: ft.notes || "",
-        }));
-        setSelectedTargets(targetInputs);
-      }
-    } catch (error) {
-      console.error("Failed to load crops/targets:", error);
-    }
-  };
 
   // Helper function to get ingredient type
   const getIngredientType = (ingredientId: string): string => {
@@ -264,10 +219,6 @@ export function FormulationForm({
     (ing) => getIngredientType(ing.ingredient_id) === "Active"
   );
 
-  // Validation checks
-  const hasCrops = selectedCrops.length > 0;
-  const hasTargets = selectedTargets.length > 0;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -291,25 +242,7 @@ export function FormulationForm({
       return;
     }
 
-    // Validate: Require at least one crop
-    if (!hasCrops) {
-      toast({
-        title: "Validation Error",
-        description: "At least one crop is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate: Require at least one target
-    if (!hasTargets) {
-      toast({
-        title: "Validation Error",
-        description: "At least one target is required",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Note: EPPO crop/target validation happens on the server side via EPPO selector components
 
     // Calculate final formulation name
     const calculatedName = calculateFormulationName();
@@ -327,9 +260,7 @@ export function FormulationForm({
     // Add ingredients data
     form.append("ingredients", JSON.stringify(ingredients));
     
-    // Add crops and targets data
-    form.append("crops", JSON.stringify(selectedCrops));
-    form.append("targets", JSON.stringify(selectedTargets));
+    // Note: Crops and targets are managed directly by EPPO selectors via server actions
 
     startTransition(async () => {
       try {
@@ -533,34 +464,36 @@ export function FormulationForm({
             </div>
           </div>
 
-          {/* Section 3: Crops & Targets */}
-          <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
-            <h3 className="text-sm font-semibold text-foreground">Crops & Targets</h3>
-            
-            {/* Crops Section */}
-            <div>
-              <CropSelector crops={selectedCrops} onChange={setSelectedCrops} />
-              {!hasCrops && (
-                <div className="mt-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    ⚠️ At least one crop is required.
-                  </p>
-                </div>
-              )}
-            </div>
+          {/* Section 3: Crops & Targets (EPPO System) */}
+          {formulation && (
+            <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
+              <h3 className="text-sm font-semibold text-foreground">Crops & Targets</h3>
+              
+              {/* EPPO Crops Section */}
+              <div>
+                <EPPOCropSelector 
+                  formulationId={formulation.formulation_id}
+                  onUpdate={() => router.refresh()}
+                />
+              </div>
 
-            {/* Targets Section */}
-            <div>
-              <TargetSelector targets={selectedTargets} onChange={setSelectedTargets} />
-              {!hasTargets && (
-                <div className="mt-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    ⚠️ At least one target is required.
-                  </p>
-                </div>
-              )}
+              {/* EPPO Targets Section */}
+              <div>
+                <EPPOTargetSelector 
+                  formulationId={formulation.formulation_id}
+                  onUpdate={() => router.refresh()}
+                />
+              </div>
             </div>
-          </div>
+          )}
+          
+          {!formulation && (
+            <div className="border rounded-lg p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <strong>Note:</strong> Save the formulation first, then add crops and targets on the edit screen.
+              </p>
+            </div>
+          )}
 
           {/* Formulation Code Display */}
           <div>
@@ -590,7 +523,7 @@ export function FormulationForm({
             </Button>
             <Button 
               type="submit" 
-              disabled={isPending || !hasActiveIngredients || !formData.formulation_type || !formData.formulation_category || !formData.uom || !hasCrops || !hasTargets} 
+              disabled={isPending || !hasActiveIngredients || !formData.formulation_type || !formData.formulation_category || !formData.uom} 
               size="lg" 
               className="h-12 px-6"
             >

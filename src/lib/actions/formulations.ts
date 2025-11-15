@@ -263,7 +263,7 @@ export async function updateFormulation(formulationId: string, formData: FormDat
   // Get current status to track changes
   const { data: current } = await supabase
     .from("formulations")
-    .select("status")
+    .select("formulation_status")
     .eq("formulation_id", formulationId)
     .single();
 
@@ -278,8 +278,8 @@ export async function updateFormulation(formulationId: string, formData: FormDat
   };
 
   // Only update status if it changed
-  if (current?.status !== status) {
-    updateData.status = status;
+  if (current?.formulation_status !== status) {
+    updateData.formulation_status = status;
     // The trigger should log this, but we ensure changed_by is set
     // Note: The trigger should handle logging, but we'll ensure status_rationale is available
   }
