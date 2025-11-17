@@ -10,11 +10,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FormulationCountryForm } from "./FormulationCountryForm";
-import { FormulationCountryLabelForm } from "./FormulationCountryLabelForm";
+import { FormulationCountryUseGroupForm } from "./FormulationCountryUseGroupForm";
 
 export function RegistrationFormButton() {
   const [formulationCountryOpen, setFormulationCountryOpen] = useState(false);
-  const [formulationCountryLabelOpen, setFormulationCountryLabelOpen] = useState(false);
+  const [formulationCountryUseGroupOpen, setFormulationCountryUseGroupOpen] = useState(false);
 
   return (
     <>
@@ -29,15 +29,15 @@ export function RegistrationFormButton() {
           <DropdownMenuItem onClick={() => setFormulationCountryOpen(true)}>
             Add Formulation to Country
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setFormulationCountryLabelOpen(true)}>
-            Add Label Registration
+          <DropdownMenuItem onClick={() => setFormulationCountryUseGroupOpen(true)}>
+            Add Use Group Registration
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <FormulationCountryForm open={formulationCountryOpen} onOpenChange={setFormulationCountryOpen} />
-      <FormulationCountryLabelForm
-        open={formulationCountryLabelOpen}
-        onOpenChange={setFormulationCountryLabelOpen}
+      <FormulationCountryUseGroupForm
+        open={formulationCountryUseGroupOpen}
+        onOpenChange={setFormulationCountryUseGroupOpen}
       />
     </>
   );

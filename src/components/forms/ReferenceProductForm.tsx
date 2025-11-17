@@ -25,6 +25,8 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/database.types";
+import { EPPOCropSelector } from "./EPPOCropSelector";
+import { EPPOTargetSelector } from "./EPPOTargetSelector";
 
 type ReferenceProduct = Database["public"]["Tables"]["reference_products"]["Row"];
 type Supplier = Database["public"]["Tables"]["suppliers"]["Row"];
@@ -223,6 +225,40 @@ export function ReferenceProductForm({
               rows={3}
             />
           </div>
+
+          {/* EPPO Crops & Targets Section */}
+          {referenceProduct && (
+            <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
+              <h3 className="text-sm font-semibold text-foreground">Crops & Targets</h3>
+              <p className="text-xs text-muted-foreground">
+                Define which crops and targets this reference product can be used for.
+              </p>
+              
+              {/* EPPO Crops Section */}
+              <div>
+                <EPPOCropSelector 
+                  formulationId={referenceProduct.reference_product_id}
+                  onUpdate={() => router.refresh()}
+                />
+              </div>
+
+              {/* EPPO Targets Section */}
+              <div>
+                <EPPOTargetSelector 
+                  formulationId={referenceProduct.reference_product_id}
+                  onUpdate={() => router.refresh()}
+                />
+              </div>
+            </div>
+          )}
+          
+          {!referenceProduct && (
+            <div className="border rounded-lg p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <strong>Note:</strong> Save the reference product first, then add crops and targets on the edit screen.
+              </p>
+            </div>
+          )}
 
           <div className="flex items-center space-x-2">
             <Switch

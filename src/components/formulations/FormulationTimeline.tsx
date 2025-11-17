@@ -22,7 +22,7 @@ interface FiscalYearData {
   cogs: number;
   yearOffset: number;
   countries: Set<string>;
-  labels: Set<string>;
+  useGroups: Set<string>;
   businessCaseCount: number;
 }
 
@@ -81,7 +81,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
         cogs: 0,
         yearOffset: yearOffset,
         countries: new Set(),
-        labels: new Set(),
+        useGroups: new Set(),
         businessCaseCount: 0,
       });
     }
@@ -93,12 +93,12 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
     fyData.cogs += cogs;
     fyData.businessCaseCount += 1;
 
-    // Track countries and labels
+    // Track countries and use groups
     if (bc.country_name) {
       fyData.countries.add(bc.country_name);
     }
-    if (bc.label_name) {
-      fyData.labels.add(bc.label_name);
+    if (bc.use_group_name) {
+      fyData.useGroups.add(bc.use_group_name);
     }
 
     // Track NSP for weighted average calculation
@@ -331,10 +331,10 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">Labels</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">Use Groups</TableCell>
                     {timelineData.map((data) => (
-                      <TableCell key={`labels-${data.fiscalYear}`} className="text-center text-sm text-muted-foreground">
-                        {data.labels.size}
+                      <TableCell key={`use-groups-${data.fiscalYear}`} className="text-center text-sm text-muted-foreground">
+                        {data.useGroups.size}
                       </TableCell>
                     ))}
                     <TableCell className="text-center text-sm text-muted-foreground bg-muted">—</TableCell>
@@ -356,7 +356,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
               {timelineData.some((d) => d.businessCaseCount > 1) && (
                 <p>
                   Multiple business cases may exist per fiscal year (e.g., different countries or
-                  labels).
+                  use groups).
                 </p>
               )}
             </div>

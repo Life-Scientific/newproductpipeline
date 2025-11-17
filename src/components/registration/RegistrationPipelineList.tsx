@@ -78,8 +78,8 @@ const columns: ColumnDef<RegistrationPipeline>[] = [
     },
   },
   {
-    accessorKey: "label_count",
-    header: "Labels",
+    accessorKey: "use_group_count",
+    header: "Use Groups",
   },
   {
     accessorKey: "earliest_submission_date",

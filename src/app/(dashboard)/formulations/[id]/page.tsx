@@ -6,10 +6,8 @@ import {
   getFormulationBusinessCases,
   getFormulationStatusHistory,
   getFormulationProtectionStatus,
-  getFormulationLabels,
+  getFormulationUseGroups,
 } from "@/lib/db/queries";
-import { getFormulationLaunchEligibility } from "@/lib/actions/protection-check";
-import { ProtectionDashboard } from "@/components/formulations/ProtectionDashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -52,9 +50,8 @@ export default async function FormulationDetailPage({
     businessCases,
     statusHistory,
     protectionStatus,
-    labels,
+    useGroups,
     businessCasesForTree,
-    launchEligibility,
   ] = await Promise.all([
     getFormulationById(id),
     getFormulationCountryDetails(id),
@@ -63,9 +60,8 @@ export default async function FormulationDetailPage({
     getFormulationBusinessCases(id),
     getFormulationStatusHistory(id),
     getFormulationProtectionStatus(id),
-    getFormulationLabels(id),
+    getFormulationUseGroups(id),
     getFormulationBusinessCasesForTree(id),
-    getFormulationLaunchEligibility(id).catch(() => []), // Gracefully handle errors
   ]);
 
   if (!formulation) {
@@ -126,13 +122,13 @@ export default async function FormulationDetailPage({
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                Labels
+                Use Groups
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              <div className="text-2xl font-bold">{labels.length}</div>
+              <div className="text-2xl font-bold">{useGroups.length}</div>
               <p className="text-xs text-muted-foreground">
-                {labels.filter(l => l.registration_status === "Approved").length} approved
+                {useGroups.filter(l => l.registration_status === "Approved").length} approved
               </p>
             </CardContent>
           </Card>
@@ -294,7 +290,7 @@ export default async function FormulationDetailPage({
                             </Badge>
                           )}
                           <Badge variant="secondary" className="text-xs">
-                            {labels.filter(l => l.formulation_country_id === detail.formulation_country_id).length} labels
+                            {useGroups.filter(ug => ug.formulation_country_id === detail.formulation_country_id).length} use groups
                           </Badge>
                         </div>
                       </div>
@@ -304,15 +300,10 @@ export default async function FormulationDetailPage({
               </Card>
             )}
 
-            {/* Launch Eligibility Dashboard */}
-            {countryDetails.length > 0 && (
-              <ProtectionDashboard eligibilityResults={launchEligibility} />
-            )}
-
-            {/* Regulatory - Labels & Protection */}
+            {/* Regulatory - Use Groups & Protection */}
             <FormulationRegulatory
               protectionStatus={protectionStatus}
-              labels={labels}
+              useGroups={useGroups}
             />
           </TabsContent>
 
@@ -323,7 +314,7 @@ export default async function FormulationDetailPage({
               formulationCode={formulation.formulation_code || ""}
               formulationName={formulation.product_name || ""}
               countries={countryDetails}
-              labels={labels}
+              useGroups={useGroups}
               businessCases={businessCasesForTree}
             />
           </TabsContent>

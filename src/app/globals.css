@@ -125,3 +125,22 @@
 .grid[style*="gap"] {
   gap: var(--grid-gap, 24px) !important;
 }
+
+/* Business Case Table Styles */
+@layer components {
+  .editable-field {
+    @apply bg-background border border-input;
+  }
+
+  .cell-modified {
+    @apply bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700;
+  }
+
+  .non-editable-field {
+    @apply bg-muted cursor-not-allowed opacity-70;
+  }
+
+  .pre-entry-cell {
+    @apply bg-muted/50 text-muted-foreground;
+  }
+}

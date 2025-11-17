@@ -11,11 +11,6 @@ interface FormulationBusinessCasesProps {
   businessCases: BusinessCase[];
 }
 
-const confidenceColors: Record<string, string> = {
-  High: "default",
-  Medium: "secondary",
-  Low: "outline",
-};
 
 export function FormulationBusinessCases({ businessCases }: FormulationBusinessCasesProps) {
   if (businessCases.length === 0) {
@@ -42,9 +37,9 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
+              <TableHead>Formulation</TableHead>
               <TableHead>Country</TableHead>
-              <TableHead>Label</TableHead>
+              <TableHead>Use Group</TableHead>
               <TableHead>Year Offset</TableHead>
               <TableHead>Fiscal Year</TableHead>
               <TableHead>Volume</TableHead>
@@ -53,8 +48,6 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
               <TableHead>Revenue</TableHead>
               <TableHead>Margin</TableHead>
               <TableHead>Margin %</TableHead>
-              <TableHead>Confidence</TableHead>
-              <TableHead>Scenario</TableHead>
               <TableHead>Last Updated</TableHead>
             </TableRow>
           </TableHeader>
@@ -74,18 +67,11 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
               return (
                 <TableRow key={bc.business_case_id}>
                   <TableCell className="font-medium">
-                    {bc.display_name || bc.business_case_name || "—"}
+                    {bc.formulation_name || "—"}
                   </TableCell>
                   <TableCell>{bc.country_name || "—"}</TableCell>
                   <TableCell>
-                    {bc.label_name ? (
-                      <div>
-                        <div>{bc.label_name}</div>
-                        <div className="text-xs text-muted-foreground">Variant: {bc.label_variant}</div>
-                      </div>
-                    ) : (
-                      "—"
-                    )}
+                    {bc.use_group_name || "—"}
                   </TableCell>
                   <TableCell>{bc.year_offset || "—"}</TableCell>
                   <TableCell>{bc.fiscal_year || "—"}</TableCell>
@@ -133,20 +119,6 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                       ? `${bc.margin_percent.toFixed(1)}%`
                       : "—"}
                   </TableCell>
-                  <TableCell>
-                    {bc.confidence_level ? (
-                      <Badge
-                        variant={(confidenceColors[bc.confidence_level] as any) || "outline"}
-                      >
-                        {bc.confidence_level}
-                      </Badge>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {bc.scenario_name || "—"}
-                  </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {mostRecentUpdate ? (
                       <div>
@@ -170,7 +142,7 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
               .filter((bc) => bc.assumptions)
               .map((bc) => (
                 <div key={bc.business_case_id} className="text-sm text-muted-foreground">
-                  <strong>{bc.display_name || bc.business_case_name}:</strong> {bc.assumptions}
+                  <strong>{bc.formulation_name || bc.business_case_name}:</strong> {bc.assumptions}
                 </div>
               ))}
           </div>

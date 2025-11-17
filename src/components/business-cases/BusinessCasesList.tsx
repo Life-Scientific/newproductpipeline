@@ -104,7 +104,7 @@ function BusinessCaseActionsCell({ businessCase }: { businessCase: EnrichedBusin
         onConfirm={handleDelete}
         title="Delete Business Case"
         description="Are you sure you want to delete this business case?"
-        itemName={businessCase.display_name || undefined}
+        itemName={businessCase.formulation_name || businessCase.business_case_name || undefined}
       />
     </>
   );
@@ -112,54 +112,24 @@ function BusinessCaseActionsCell({ businessCase }: { businessCase: EnrichedBusin
 
 const columns: ColumnDef<EnrichedBusinessCase>[] = [
   {
-    accessorKey: "display_name",
-    header: "Business Case",
-    cell: ({ row }) => {
-      const name = row.getValue("display_name") as string;
-      const businessCaseId = row.original.business_case_id;
-      if (!businessCaseId) return <span>{name || "—"}</span>;
-      return (
-        <Link
-          href={`/business-cases/${businessCaseId}`}
-          className="font-medium text-primary hover:underline"
-        >
-          {name || "—"}
-        </Link>
-      );
-    },
-  },
-  {
-    accessorKey: "formulation_code",
-    header: "Formulation Code",
-    cell: ({ row }) => {
-      const code = row.getValue("formulation_code") as string | null;
-      const formulationId = row.original.formulation_id;
-      if (!code || !formulationId) return "—";
-      return (
-        <Link
-          href={`/formulations/${formulationId}`}
-          className="font-medium text-primary hover:underline"
-        >
-          {code}
-        </Link>
-      );
-    },
-  },
-  {
     accessorKey: "formulation_name",
     header: "Formulation",
     cell: ({ row }) => {
       const name = row.getValue("formulation_name") as string | null;
+      const businessCaseId = row.original.business_case_id;
       const formulationId = row.original.formulation_id;
-      if (!name || !formulationId) return "—";
-      return (
-        <Link
-          href={`/formulations/${formulationId}`}
-          className="text-primary hover:underline"
-        >
-          {name}
-        </Link>
-      );
+      if (!name) return "—";
+      if (businessCaseId && formulationId) {
+        return (
+          <Link
+            href={`/business-cases/${businessCaseId}`}
+            className="font-medium text-primary hover:underline"
+          >
+            {name}
+          </Link>
+        );
+      }
+      return <span>{name}</span>;
     },
   },
   {
@@ -183,16 +153,8 @@ const columns: ColumnDef<EnrichedBusinessCase>[] = [
     },
   },
   {
-    accessorKey: "label_name",
-    header: "Label",
-  },
-  {
-    accessorKey: "label_variant",
-    header: "Variant",
-  },
-  {
-    accessorKey: "business_case_type",
-    header: "Type",
+    accessorKey: "use_group_name",
+    header: "Use Group",
   },
   {
     accessorKey: "year_offset",
@@ -259,26 +221,6 @@ const columns: ColumnDef<EnrichedBusinessCase>[] = [
     header: "Fiscal Year",
   },
   {
-    accessorKey: "scenario_name",
-    header: "Scenario",
-  },
-  {
-    accessorKey: "confidence_level",
-    header: "Confidence",
-    cell: ({ row }) => {
-      const level = row.getValue("confidence_level") as string | null;
-      if (!level) return "—";
-      const colors: Record<string, string> = {
-        High: "default",
-        Medium: "secondary",
-        Low: "outline",
-      };
-      return (
-        <Badge variant={colors[level] as any || "outline"}>{level}</Badge>
-      );
-    },
-  },
-  {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => <BusinessCaseActionsCell businessCase={row.original} />,
@@ -294,7 +236,7 @@ export function BusinessCasesList({ businessCases }: BusinessCasesListProps) {
     <EnhancedDataTable
       columns={columns}
       data={businessCases}
-      searchKey="display_name"
+      searchKey="formulation_name"
       searchPlaceholder="Search business cases..."
       pageSize={25}
       showPageSizeSelector={true}

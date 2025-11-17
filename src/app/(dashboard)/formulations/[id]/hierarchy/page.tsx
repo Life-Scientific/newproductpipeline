@@ -1,4 +1,4 @@
-import { getFormulationById, getFormulationCountryDetails, getFormulationLabels, getFormulationBusinessCasesForTree } from "@/lib/db/queries";
+import { getFormulationById, getFormulationCountryDetails, getFormulationUseGroups, getFormulationBusinessCasesForTree } from "@/lib/db/queries";
 import { notFound } from "next/navigation";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { FormulationTreeView } from "@/components/navigation/FormulationTreeView";
@@ -13,10 +13,10 @@ export default async function FormulationHierarchyPage({
 }: FormulationHierarchyPageProps) {
   const { id } = await params;
   
-  const [formulation, countryDetails, labels, businessCases] = await Promise.all([
+  const [formulation, countryDetails, useGroups, businessCases] = await Promise.all([
     getFormulationById(id),
     getFormulationCountryDetails(id),
-    getFormulationLabels(id),
+    getFormulationUseGroups(id),
     getFormulationBusinessCasesForTree(id),
   ]);
 
@@ -41,7 +41,7 @@ export default async function FormulationHierarchyPage({
         <div className="space-y-2">
           <h1 className="text-2xl sm:text-3xl font-bold">Formulation Tree</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Navigate through formulation → country → label → business case hierarchy
+            Navigate through formulation → country → use group → business case hierarchy
           </p>
         </div>
 
@@ -50,7 +50,7 @@ export default async function FormulationHierarchyPage({
                   formulationCode={formulation.formulation_code || ""}
                   formulationName={formulation.product_name || ""}
                   countries={countryDetails}
-                  labels={labels}
+                  useGroups={useGroups}
                   businessCases={businessCases}
                 />
       </AnimatedPage>

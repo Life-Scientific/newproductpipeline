@@ -38,6 +38,8 @@ export interface IngredientInput {
 interface IngredientSelectorProps {
   ingredients: IngredientInput[];
   onChange: (ingredients: IngredientInput[]) => void;
+  availableIngredients?: Ingredient[];
+  onAvailableIngredientsChange?: (ingredients: Ingredient[]) => void;
 }
 
 const INGREDIENT_ROLES = [
@@ -51,8 +53,13 @@ const INGREDIENT_ROLES = [
 
 const QUANTITY_UNITS = ["g/L", "kg/L", "mL/L", "%", "g/kg", "kg/kg"];
 
-export function IngredientSelector({ ingredients, onChange }: IngredientSelectorProps) {
-  const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([]);
+export function IngredientSelector({ 
+  ingredients, 
+  onChange, 
+  availableIngredients: propAvailableIngredients,
+  onAvailableIngredientsChange 
+}: IngredientSelectorProps) {
+  const [internalAvailableIngredients, setInternalAvailableIngredients] = useState<Ingredient[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [newIngredient, setNewIngredient] = useState<IngredientInput>({
@@ -63,9 +70,15 @@ export function IngredientSelector({ ingredients, onChange }: IngredientSelector
     notes: "",
   });
 
+  // Use prop if provided, otherwise use internal state
+  const availableIngredients = propAvailableIngredients || internalAvailableIngredients;
+  const setAvailableIngredients = onAvailableIngredientsChange || setInternalAvailableIngredients;
+
   useEffect(() => {
-    loadIngredients();
-  }, []);
+    if (!propAvailableIngredients) {
+      loadIngredients();
+    }
+  }, [propAvailableIngredients]);
 
   const loadIngredients = async () => {
     const supabase = createClient();
@@ -84,17 +97,35 @@ export function IngredientSelector({ ingredients, onChange }: IngredientSelector
     ing.ingredient_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddIngredient = () => {
-    if (!newIngredient.ingredient_id || !newIngredient.quantity || !newIngredient.quantity_unit) {
+  const handleAddIngredient = (e?: React.MouseEvent) => {
+    // Prevent form submission if button is inside a form
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    // Ensure ingredient_role has a default value if not set
+    const ingredientToAdd = {
+      ...newIngredient,
+      ingredient_role: newIngredient.ingredient_role || "Active",
+    };
+
+    if (!ingredientToAdd.ingredient_id || !ingredientToAdd.quantity || !ingredientToAdd.quantity_unit || !ingredientToAdd.ingredient_role) {
+      console.log("Validation failed:", {
+        ingredient_id: ingredientToAdd.ingredient_id,
+        quantity: ingredientToAdd.quantity,
+        quantity_unit: ingredientToAdd.quantity_unit,
+        ingredient_role: ingredientToAdd.ingredient_role,
+      });
       return;
     }
 
     // Check if ingredient already added
-    if (ingredients.some((ing) => ing.ingredient_id === newIngredient.ingredient_id)) {
+    if (ingredients.some((ing) => ing.ingredient_id === ingredientToAdd.ingredient_id)) {
       return;
     }
 
-    onChange([...ingredients, { ...newIngredient }]);
+    onChange([...ingredients, ingredientToAdd]);
     setNewIngredient({
       ingredient_id: "",
       quantity: "",
@@ -221,15 +252,18 @@ export function IngredientSelector({ ingredients, onChange }: IngredientSelector
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ingredient_role">Role</Label>
+              <Label htmlFor="ingredient_role">
+                Role <span className="text-destructive">*</span>
+              </Label>
               <Select
                 value={newIngredient.ingredient_role}
                 onValueChange={(value) =>
                   setNewIngredient({ ...newIngredient, ingredient_role: value })
                 }
+                required
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
                   {INGREDIENT_ROLES.map((role) => (
@@ -256,9 +290,18 @@ export function IngredientSelector({ ingredients, onChange }: IngredientSelector
             <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
               Cancel
             </Button>
-            <Button type="button" onClick={handleAddIngredient}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Add button clicked", newIngredient);
+                handleAddIngredient(e);
+              }}
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 bg-primary text-primary-foreground shadow hover:bg-primary/90"
+            >
               Add
-            </Button>
+            </button>
           </div>
         </div>
       )}

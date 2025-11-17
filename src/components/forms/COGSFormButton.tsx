@@ -1,12 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { COGSForm } from "./COGSForm";
+import { COGSCreateModal } from "@/components/cogs/COGSCreateModal";
 
-export function COGSFormButton() {
+interface COGSFormButtonProps {
+  defaultFormulationId?: string;
+}
+
+export function COGSFormButton({ defaultFormulationId }: COGSFormButtonProps = {}) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <>
@@ -14,7 +20,12 @@ export function COGSFormButton() {
         <Plus className="mr-2 h-5 w-5" />
         New COGS Entry
       </Button>
-      <COGSForm open={open} onOpenChange={setOpen} />
+      <COGSCreateModal
+        open={open}
+        onOpenChange={setOpen}
+        defaultFormulationId={defaultFormulationId}
+        onSuccess={() => router.refresh()}
+      />
     </>
   );
 }

@@ -86,9 +86,7 @@ export function PortfolioPrioritization({
     const expiries = formProtection
       .flatMap((ps: any) => [
         ps.earliest_active_patent_expiry,
-        ps.earliest_active_data_protection_expiry,
         ps.earliest_formulation_patent_expiry,
-        ps.earliest_formulation_data_protection_expiry,
       ])
       .filter((exp: any) => exp)
       .map((exp: string) => new Date(exp))

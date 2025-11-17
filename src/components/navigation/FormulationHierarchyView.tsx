@@ -10,14 +10,14 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import type { Database } from "@/lib/supabase/database.types";
 
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
-type FormulationCountryLabel = Database["public"]["Views"]["vw_formulation_country_label"]["Row"];
+type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 
 interface FormulationHierarchyViewProps {
   formulationId: string;
   formulationCode: string;
   formulationName: string;
   countries: FormulationCountryDetail[];
-  labels: FormulationCountryLabel[];
+  useGroups: FormulationCountryUseGroup[];
 }
 
 export function FormulationHierarchyView({
@@ -25,7 +25,7 @@ export function FormulationHierarchyView({
   formulationCode,
   formulationName,
   countries,
-  labels,
+  useGroups,
 }: FormulationHierarchyViewProps) {
   const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
 
@@ -39,15 +39,15 @@ export function FormulationHierarchyView({
     setExpandedCountries(newExpanded);
   };
 
-  // Group labels by country
-  const labelsByCountry = labels.reduce((acc, label) => {
-    const countryId = label.formulation_country_id || "unknown";
+  // Group use groups by country
+  const useGroupsByCountry = useGroups.reduce((acc, useGroup) => {
+    const countryId = useGroup.formulation_country_id || "unknown";
     if (!acc[countryId]) {
       acc[countryId] = [];
     }
-    acc[countryId].push(label);
+    acc[countryId].push(useGroup);
     return acc;
-  }, {} as Record<string, FormulationCountryLabel[]>);
+  }, {} as Record<string, FormulationCountryUseGroup[]>);
 
   return (
     <Card>
@@ -71,7 +71,7 @@ export function FormulationHierarchyView({
           <div className="ml-6 space-y-1">
             {countries.map((country) => {
               const countryId = country.formulation_country_id || "";
-              const countryLabels = labelsByCountry[countryId] || [];
+              const countryUseGroups = useGroupsByCountry[countryId] || [];
               const isExpanded = expandedCountries.has(countryId);
 
               return (
@@ -98,36 +98,36 @@ export function FormulationHierarchyView({
                             {country.registration_status}
                           </Badge>
                         )}
-                        {countryLabels.length > 0 && (
+                        {countryUseGroups.length > 0 && (
                           <Badge variant="secondary" className="ml-auto">
-                            {countryLabels.length} label{countryLabels.length !== 1 ? "s" : ""}
+                            {countryUseGroups.length} use group{countryUseGroups.length !== 1 ? "s" : ""}
                           </Badge>
                         )}
                       </Button>
                     </CollapsibleTrigger>
 
-                    {/* Labels Level */}
-                    {countryLabels.length > 0 && (
+                    {/* Use Groups Level */}
+                    {countryUseGroups.length > 0 && (
                       <CollapsibleContent>
                         <div className="ml-8 space-y-1">
-                          {countryLabels.map((label) => (
+                          {countryUseGroups.map((useGroup) => (
                             <Link
-                              key={label.formulation_country_label_id}
-                              href={`/formulations/${formulationId}?country=${countryId}&label=${label.formulation_country_label_id}`}
+                              key={useGroup.formulation_country_use_group_id}
+                              href={`/formulations/${formulationId}?country=${countryId}&use-group=${useGroup.formulation_country_use_group_id}`}
                               className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors"
                             >
                               <FileText className="h-3 w-3 text-muted-foreground" />
                               <span className="text-sm">
-                                {label.label_name || `Label ${label.label_variant}`}
+                                {useGroup.use_group_name || `Use Group ${useGroup.use_group_variant}`}
                               </span>
-                              {label.label_variant && (
+                              {useGroup.use_group_variant && (
                                 <Badge variant="outline" className="text-xs">
-                                  {label.label_variant}
+                                  {useGroup.use_group_variant}
                                 </Badge>
                               )}
-                              {label.registration_status && (
+                              {useGroup.registration_status && (
                                 <Badge variant="secondary" className="text-xs ml-auto">
-                                  {label.registration_status}
+                                  {useGroup.registration_status}
                                 </Badge>
                               )}
                             </Link>

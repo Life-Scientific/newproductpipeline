@@ -6,26 +6,26 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Database } from "@/lib/supabase/database.types";
 
-type ProtectionStatus = Database["public"]["Views"]["vw_protection_status"]["Row"];
-type FormulationCountryLabel = Database["public"]["Views"]["vw_formulation_country_label"]["Row"];
+type ProtectionStatus = Database["public"]["Views"]["vw_patent_protection_status"]["Row"];
+type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 
 interface FormulationRegulatoryProps {
   protectionStatus: ProtectionStatus[];
-  labels: FormulationCountryLabel[];
+  useGroups: FormulationCountryUseGroup[];
 }
 
 export function FormulationRegulatory({
   protectionStatus,
-  labels,
+  useGroups,
 }: FormulationRegulatoryProps) {
-  const hasData = protectionStatus.length > 0 || labels.length > 0;
+  const hasData = protectionStatus.length > 0 || useGroups.length > 0;
 
   if (!hasData) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Regulatory Information</CardTitle>
-          <CardDescription>Patents, data protections, and registration timeline</CardDescription>
+          <CardDescription>Patents and registration timeline</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">No regulatory data found.</p>
@@ -44,7 +44,7 @@ export function FormulationRegulatory({
         <Tabs defaultValue="protections" className="space-y-4">
           <TabsList>
             <TabsTrigger value="protections">Protections</TabsTrigger>
-            <TabsTrigger value="labels">Labels & Timeline</TabsTrigger>
+            <TabsTrigger value="use-groups">Use Groups & Timeline</TabsTrigger>
           </TabsList>
 
           <TabsContent value="protections" className="space-y-4">
@@ -53,18 +53,33 @@ export function FormulationRegulatory({
                 <TableHeader>
                   <TableRow>
                     <TableHead>Country</TableHead>
-                    <TableHead>Formulation Patents</TableHead>
-                    <TableHead>Formulation Data Protections</TableHead>
                     <TableHead>Ingredient Patents</TableHead>
-                    <TableHead>Ingredient Data Protections</TableHead>
+                    <TableHead>Combination Patents</TableHead>
+                    <TableHead>Formulation Patents</TableHead>
+                    <TableHead>Use Patents</TableHead>
+                    <TableHead>Blocking Assessments</TableHead>
                     <TableHead>Earliest Patent Expiry</TableHead>
-                    <TableHead>Earliest Data Protection Expiry</TableHead>
+                    <TableHead>Earliest Blocking Launch Date</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {protectionStatus.map((ps) => (
                     <TableRow key={ps.formulation_country_id}>
                       <TableCell className="font-medium">{ps.country_name || "—"}</TableCell>
+                      <TableCell>
+                        {ps.ingredient_patents_count ? (
+                          <Badge variant="secondary">{ps.ingredient_patents_count}</Badge>
+                        ) : (
+                          "0"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {ps.combination_patents_count ? (
+                          <Badge variant="default">{ps.combination_patents_count}</Badge>
+                        ) : (
+                          "0"
+                        )}
+                      </TableCell>
                       <TableCell>
                         {ps.formulation_patents_count ? (
                           <Badge variant="default">{ps.formulation_patents_count}</Badge>
@@ -73,43 +88,36 @@ export function FormulationRegulatory({
                         )}
                       </TableCell>
                       <TableCell>
-                        {ps.formulation_data_protections_count ? (
-                          <Badge variant="default">{ps.formulation_data_protections_count}</Badge>
+                        {ps.use_patents_count ? (
+                          <Badge variant="outline">{ps.use_patents_count}</Badge>
                         ) : (
                           "0"
                         )}
                       </TableCell>
                       <TableCell>
-                        {ps.active_patents_count ? (
-                          <Badge variant="secondary">{ps.active_patents_count}</Badge>
-                        ) : (
-                          "0"
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {ps.active_data_protections_count ? (
-                          <Badge variant="secondary">{ps.active_data_protections_count}</Badge>
+                        {ps.blocking_assessments_count ? (
+                          <Badge variant="destructive">{ps.blocking_assessments_count}</Badge>
                         ) : (
                           "0"
                         )}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {ps.earliest_formulation_patent_expiry || ps.earliest_active_patent_expiry
+                        {ps.earliest_ingredient_patent_expiry ||
+                        ps.earliest_combination_patent_expiry ||
+                        ps.earliest_formulation_patent_expiry ||
+                        ps.earliest_use_patent_expiry
                           ? new Date(
-                              ps.earliest_formulation_patent_expiry ||
-                                ps.earliest_active_patent_expiry ||
+                              ps.earliest_ingredient_patent_expiry ||
+                                ps.earliest_combination_patent_expiry ||
+                                ps.earliest_formulation_patent_expiry ||
+                                ps.earliest_use_patent_expiry ||
                                 ""
                             ).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {ps.earliest_formulation_data_protection_expiry ||
-                        ps.earliest_active_data_protection_expiry
-                          ? new Date(
-                              ps.earliest_formulation_data_protection_expiry ||
-                                ps.earliest_active_data_protection_expiry ||
-                                ""
-                            ).toLocaleDateString()
+                        {ps.earliest_blocking_launch_date
+                          ? new Date(ps.earliest_blocking_launch_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                     </TableRow>
@@ -121,13 +129,13 @@ export function FormulationRegulatory({
             )}
           </TabsContent>
 
-          <TabsContent value="labels" className="space-y-4">
-            {labels.length > 0 ? (
+          <TabsContent value="use-groups" className="space-y-4">
+            {useGroups.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Country</TableHead>
-                    <TableHead>Label Name</TableHead>
+                    <TableHead>Use Group Name</TableHead>
                     <TableHead>Variant</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Earliest Submission</TableHead>
@@ -140,59 +148,59 @@ export function FormulationRegulatory({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {labels.map((label) => (
-                    <TableRow key={label.formulation_country_label_id}>
-                      <TableCell className="font-medium">{label.country_name || "—"}</TableCell>
-                      <TableCell>{label.label_name || "—"}</TableCell>
+                  {useGroups.map((useGroup) => (
+                    <TableRow key={useGroup.formulation_country_use_group_id}>
+                      <TableCell className="font-medium">{useGroup.country_name || "—"}</TableCell>
+                      <TableCell>{useGroup.use_group_name || "—"}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{label.label_variant || "—"}</Badge>
+                        <Badge variant="outline">{useGroup.use_group_variant || "—"}</Badge>
                       </TableCell>
                       <TableCell>
-                        {label.registration_status ? (
-                          <Badge variant="secondary">{label.registration_status}</Badge>
+                        {useGroup.registration_status ? (
+                          <Badge variant="secondary">{useGroup.registration_status}</Badge>
                         ) : (
                           "—"
                         )}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {label.earliest_submission_date
-                          ? new Date(label.earliest_submission_date).toLocaleDateString()
+                        {useGroup.earliest_submission_date
+                          ? new Date(useGroup.earliest_submission_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {label.earliest_approval_date
-                          ? new Date(label.earliest_approval_date).toLocaleDateString()
+                        {useGroup.earliest_approval_date
+                          ? new Date(useGroup.earliest_approval_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {label.earliest_market_entry_date
-                          ? new Date(label.earliest_market_entry_date).toLocaleDateString()
+                        {useGroup.earliest_market_entry_date
+                          ? new Date(useGroup.earliest_market_entry_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {label.actual_submission_date
-                          ? new Date(label.actual_submission_date).toLocaleDateString()
+                        {useGroup.actual_submission_date
+                          ? new Date(useGroup.actual_submission_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {label.actual_approval_date
-                          ? new Date(label.actual_approval_date).toLocaleDateString()
+                        {useGroup.actual_approval_date
+                          ? new Date(useGroup.actual_approval_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {label.actual_market_entry_date
-                          ? new Date(label.actual_market_entry_date).toLocaleDateString()
+                        {useGroup.actual_market_entry_date
+                          ? new Date(useGroup.actual_market_entry_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {label.reference_product_name || "—"}
+                        {useGroup.reference_product_name || "—"}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             ) : (
-              <p className="text-sm text-muted-foreground">No label data found.</p>
+              <p className="text-sm text-muted-foreground">No use group data found.</p>
             )}
           </TabsContent>
         </Tabs>

@@ -17,6 +17,8 @@ import {
   User,
   LogOut,
   ChevronUp,
+  Globe,
+  GitBranch,
 } from "lucide-react";
 import {
   Sidebar,
@@ -43,21 +45,50 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 
-const coreMenuItems = [
+// Overview
+const overviewMenuItems = [
   {
-    title: "Dashboard",
+    title: "Financial Dashboard",
     url: "/",
     icon: LayoutDashboard,
   },
+  {
+    title: "Pipeline Tracker",
+    url: "/pipeline-tracker",
+    icon: GitBranch,
+  },
+];
+
+// Core Views
+const coreViewsMenuItems = [
   {
     title: "Formulations",
     url: "/formulations",
     icon: FlaskConical,
   },
   {
+    title: "Countries",
+    url: "/countries",
+    icon: Globe,
+  },
+  {
+    title: "Use Groups",
+    url: "/use-groups",
+    icon: FileText,
+  },
+];
+
+// Detailed Financials
+const financialsMenuItems = [
+  {
     title: "Business Cases",
     url: "/business-cases",
     icon: TrendingUp,
+  },
+  {
+    title: "COGS",
+    url: "/cogs",
+    icon: DollarSign,
   },
 ];
 
@@ -66,11 +97,6 @@ const regulatoryMenuItems = [
     title: "Registration Pipeline",
     url: "/registration",
     icon: FileCheck,
-  },
-  {
-    title: "Labels",
-    url: "/labels",
-    icon: FileText,
   },
 ];
 
@@ -88,16 +114,11 @@ const analysisMenuItems = [
 ];
 
 const referenceMenuItems = [
-  {
-    title: "COGS",
-    url: "/cogs",
-    icon: DollarSign,
-  },
-  {
-    title: "Ingredients",
-    url: "/ingredients",
-    icon: Beaker,
-  },
+  // {
+  //   title: "Ingredients",
+  //   url: "/ingredients",
+  //   icon: Beaker,
+  // },
   {
     title: "Reference Data",
     url: "/reference",
@@ -147,14 +168,66 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent className="gap-2">
-        {/* Core Navigation */}
+        {/* Overview */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
-            Core
+            Overview
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {coreMenuItems.map((item) => (
+              {overviewMenuItems.map((item) => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={item.title}
+                    size="default"
+                  >
+                    <Link href={item.url}>
+                      <item.icon className="size-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Core Views */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
+            Core Views
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {coreViewsMenuItems.map((item) => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={item.title}
+                    size="default"
+                  >
+                    <Link href={item.url}>
+                      <item.icon className="size-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Detailed Financials */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
+            Detailed Financials
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {financialsMenuItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     asChild
@@ -174,7 +247,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Regulatory */}
-        <SidebarGroup>
+        {/* <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
             Regulatory
           </SidebarGroupLabel>
@@ -197,7 +270,7 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
-        </SidebarGroup>
+        </SidebarGroup> */}
 
         {/* Analysis */}
         <SidebarGroup>
@@ -225,10 +298,10 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Reference Data */}
+        {/* References */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
-            Reference
+            References
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

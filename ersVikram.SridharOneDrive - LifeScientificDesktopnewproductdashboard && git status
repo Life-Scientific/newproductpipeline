@@ -1,0 +1,20 @@
+[33m966cbaf[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mvikram[m[33m)[m Refresh the entire Pant ecosystem after talking to Omkar.
+[33mcc9831e[m Updated currencies in biz case table to reflect each country.
+[33m3434f95[m This eliminates all delete options from the UI and only allows edits, specifically the formulation level.
+[33m5b2d8cc[m Reordered the formulation modal to make the name autocalculated. Had crops and targets as required selections when upon formulation creation, both UI and server-side.
+[33me229554[m Changed the modal and order of form/country and drop downs in biz case.
+[33maa1392d[m Created effective fiscal year within business case to handle edge cases as FY changes. Updated props and targets tables to count at the formulation level and also at the use group level, differentiating between critical and total uses. Also, added some validation to ensure consistency across both of them.
+[33m4fe20ee[m Some significant edits across the board mainly aimed at business cases: how they're organized, how they're viewed, and where the structure of target_market_entry year sits.
+[33mda0de97[m Further simplifications to business case table.
+[33m4754607[m Further simplifications to the business case table.
+[33mbe59f3f[m Updated the TypeScript types to reflect the business case junction table change.
+[33mf09eb39[m Simplifies the business case relationship to usegroups. Has all relationships go through the junction table rather than use for formulation_country or formulation_country_use_group.
+[33m87f7e35[m Copied data from LS main production database to Vikram branch so that I can pressure test the different views and data that exist.
+[33me44c12c[m Updates types script types from the branch database removes duplicates based on the original nomenclature of labels vs use group.
+[33m91aed39[m Includes the updated TypeScript types from the unfortunate, a less main production migration as well as the full migration applied to the Vikram branch only.
+[33m76b72ca[m This is to relabel the Formulation Country label table into use groups instead. So now it will be called Formulation Country use group.
+[33m5111105[m Remove regulatory for right now as a section, and grouped labels into the core section. Only commented out regulatory so we can bring it back when it makes sense, but right now, it's a little bit more confusing than beneficial.
+[33m003fbf0[m[33m ([m[1;31mupstream/vikram[m[33m, [m[1;31mupstream/master[m[33m, [m[1;31mupstream/HEAD[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m Refactor FormulationsExcelView component to ensure handleCellChange is only called when formulation_id is present. Update state management for edited data to use a consistent variable for formulation_id, improving code clarity and maintainability. Adjust status badge logic to handle string conversion for better compatibility.
+[33m49919a2[m Refactor dashboard layout by removing the header component and enhancing the sidebar for better navigation. Update analytics page to include new protection status and portfolio prioritization components, improving data handling and error management. Enhance business case components with enriched data types for better integration and display.
+[33m00052df[m Enhance formulation detail and business case components by adding launch eligibility dashboard, improving error handling for duplicate formulations, and displaying last updated information for business cases. Update formulation actions to include user tracking and ensure immediate code assignment for new formulations.
+[33m0da4ae8[m Add business case detail page with comprehensive metrics and financial breakdown; enhance formulations page with nested data and improve Excel view for better insights.

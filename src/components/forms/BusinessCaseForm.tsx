@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -26,126 +25,210 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Info } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/database.types";
+import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 
 type BusinessCase = Database["public"]["Tables"]["business_case"]["Row"];
-type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
-type FormulationCountryLabel = Database["public"]["Views"]["vw_formulation_country_label"]["Row"];
+type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type Country = Database["public"]["Tables"]["countries"]["Row"];
+type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 
 interface BusinessCaseFormProps {
   businessCase?: BusinessCase | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
-  defaultFormulationCountryId?: string;
-  defaultFormulationCountryLabelId?: string;
+  defaultFormulationId?: string;
+  defaultCountryId?: string;
 }
-
-const BUSINESS_CASE_TYPES = [
-  "Single Label",
-  "All Labels (Formulation-Country)",
-  "Multiple Labels",
-  "Product Portfolio",
-];
-
-const CONFIDENCE_LEVELS = ["Low", "Medium", "High"];
 
 export function BusinessCaseForm({
   businessCase,
   open,
   onOpenChange,
   onSuccess,
-  defaultFormulationCountryId,
-  defaultFormulationCountryLabelId,
+  defaultFormulationId,
+  defaultCountryId,
 }: BusinessCaseFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [formulationCountryOptions, setFormulationCountryOptions] = useState<
-    FormulationCountryDetail[]
-  >([]);
-  const [formulationCountryLabelOptions, setFormulationCountryLabelOptions] = useState<
-    FormulationCountryLabel[]
-  >([]);
-  const [linkType, setLinkType] = useState<"country" | "label">(
-    businessCase?.formulation_country_id ? "country" : "label"
-  );
-  const [helperFormulationCountryId, setHelperFormulationCountryId] = useState<string>("");
+  const [formulations, setFormulations] = useState<Formulation[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [useGroupOptions, setUseGroupOptions] = useState<FormulationCountryUseGroup[]>([]);
+  const [selectedUseGroupIds, setSelectedUseGroupIds] = useState<string[]>([]);
+  
   const [formData, setFormData] = useState({
-    formulation_country_id: businessCase?.formulation_country_id || defaultFormulationCountryId || "",
-    formulation_country_label_id:
-      businessCase?.formulation_country_label_id || defaultFormulationCountryLabelId || "",
+    formulation_id: "",
+    country_id: "",
     business_case_name: businessCase?.business_case_name || "",
-    business_case_type: businessCase?.business_case_type || "Single Label",
     year_offset: businessCase?.year_offset?.toString() || "1",
     volume: businessCase?.volume?.toString() || "",
     nsp: businessCase?.nsp?.toString() || "",
     cogs_per_unit: businessCase?.cogs_per_unit?.toString() || "",
     fiscal_year: businessCase?.fiscal_year || "",
-    scenario_name: businessCase?.scenario_name || "",
     assumptions: businessCase?.assumptions || "",
-    confidence_level: businessCase?.confidence_level || "",
   });
 
+  // Load existing business case data when editing
+  useEffect(() => {
+    if (open && businessCase) {
+      loadExistingBusinessCaseData();
+    } else if (open) {
+      // Set defaults for new business case
+      if (defaultFormulationId) {
+        setFormData((prev) => ({ ...prev, formulation_id: defaultFormulationId }));
+      }
+      if (defaultCountryId) {
+        setFormData((prev) => ({ ...prev, country_id: defaultCountryId }));
+      }
+    }
+  }, [open, businessCase]);
+
+  // Load formulations and countries when dialog opens
   useEffect(() => {
     if (open) {
-      loadFormulationCountries();
-      if (formData.formulation_country_id) {
-        loadFormulationCountryLabels(formData.formulation_country_id);
-      }
+      loadFormulations();
+      loadCountries();
     }
   }, [open]);
 
+  // Load use groups when both formulation and country are selected
   useEffect(() => {
-    if (formData.formulation_country_id) {
-      loadFormulationCountryLabels(formData.formulation_country_id);
+    if (formData.formulation_id && formData.country_id) {
+      loadUseGroups(formData.formulation_id, formData.country_id);
     } else {
-      setFormulationCountryLabelOptions([]);
+      setUseGroupOptions([]);
+      setSelectedUseGroupIds([]);
     }
-  }, [formData.formulation_country_id]);
+  }, [formData.formulation_id, formData.country_id]);
 
-  const loadFormulationCountries = async () => {
+  const loadExistingBusinessCaseData = async () => {
+    if (!businessCase) return;
+    
     const supabase = createClient();
-    const { data } = await supabase
-      .from("vw_formulation_country_detail")
-      .select("formulation_country_id, display_name, formulation_code, country_name")
-      .order("display_name");
-    if (data) setFormulationCountryOptions(data as FormulationCountryDetail[]);
+    
+    // Get use groups for this business case from junction table
+    const { data: junctionData } = await supabase
+      .from("business_case_use_groups")
+      .select(`
+        formulation_country_use_group_id,
+        formulation_country_use_group!inner(
+          formulation_country_id,
+          use_group_variant,
+          formulation_country!inner(
+            formulation_id,
+            country_id
+          )
+        )
+      `)
+      .eq("business_case_id", businessCase.business_case_id);
+
+    if (junctionData && junctionData.length > 0) {
+      // Get first use group to determine formulation and country
+      const firstUseGroup = junctionData[0].formulation_country_use_group as any;
+      const fc = firstUseGroup?.formulation_country;
+      
+      if (fc) {
+        setFormData((prev) => ({
+          ...prev,
+          formulation_id: fc.formulation_id || "",
+          country_id: fc.country_id || "",
+        }));
+        
+        // Set selected use group variants
+        const variants = junctionData
+          .map((j) => (j.formulation_country_use_group as any)?.use_group_variant)
+          .filter((v): v is string => Boolean(v));
+        setSelectedUseGroupIds(variants);
+      }
+    }
   };
 
-  const loadFormulationCountryLabels = async (formulationCountryId: string) => {
+  const loadFormulations = async () => {
     const supabase = createClient();
     const { data } = await supabase
-      .from("vw_formulation_country_label")
-      .select("formulation_country_label_id, display_name, label_variant, label_name")
-      .eq("formulation_country_id", formulationCountryId)
-      .order("label_variant");
-    if (data) setFormulationCountryLabelOptions(data as FormulationCountryLabel[]);
+      .from("vw_formulations_with_ingredients")
+      .select("formulation_id, formulation_code, product_name")
+      .order("formulation_code");
+    if (data) setFormulations(data as Formulation[]);
+  };
+
+  const loadCountries = async () => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("countries")
+      .select("*")
+      .eq("is_active", true)
+      .order("country_name");
+    if (data) setCountries(data);
+  };
+
+  const loadUseGroups = async (formulationId: string, countryId: string) => {
+    const supabase = createClient();
+    
+    // First, find the formulation_country_id
+    const { data: fcData } = await supabase
+      .from("formulation_country")
+      .select("formulation_country_id")
+      .eq("formulation_id", formulationId)
+      .eq("country_id", countryId)
+      .single();
+
+    if (!fcData) {
+      setUseGroupOptions([]);
+      return;
+    }
+
+    // Then load use groups for that formulation_country
+    const { data } = await supabase
+      .from("vw_formulation_country_use_group")
+      .select("formulation_country_use_group_id, use_group_variant, use_group_name, display_name")
+      .eq("formulation_country_id", fcData.formulation_country_id)
+      .order("use_group_variant");
+    
+    if (data) {
+      setUseGroupOptions(data as FormulationCountryUseGroup[]);
+      // If editing and we haven't set selected use groups yet, don't auto-select
+      if (!businessCase || selectedUseGroupIds.length > 0) {
+        // Keep existing selection
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Ensure only one link type is set
-    const submitData = { ...formData };
-    if (linkType === "label") {
-      submitData.formulation_country_id = "";
-    } else {
-      submitData.formulation_country_label_id = "";
-    }
-
-    if (!submitData.formulation_country_id && !submitData.formulation_country_label_id) {
+    if (!formData.formulation_id || !formData.country_id) {
       toast({
         title: "Error",
-        description: "Must link to either formulation-country or label",
+        description: "Formulation and country are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedUseGroupIds || selectedUseGroupIds.length === 0) {
+      toast({
+        title: "Error",
+        description: "At least one use group must be selected",
         variant: "destructive",
       });
       return;
     }
 
     const form = new FormData();
-    Object.entries(submitData).forEach(([key, value]) => {
-      if (value) form.append(key, value.toString());
+    form.append("formulation_id", formData.formulation_id);
+    form.append("country_id", formData.country_id);
+    selectedUseGroupIds.forEach((id) => {
+      form.append("use_group_ids", id);
     });
+    form.append("business_case_name", formData.business_case_name);
+    form.append("year_offset", formData.year_offset);
+    if (formData.volume) form.append("volume", formData.volume);
+    if (formData.nsp) form.append("nsp", formData.nsp);
+    if (formData.cogs_per_unit) form.append("cogs_per_unit", formData.cogs_per_unit);
+    if (formData.fiscal_year) form.append("fiscal_year", formData.fiscal_year);
+    if (formData.assumptions) form.append("assumptions", formData.assumptions);
 
     startTransition(async () => {
       try {
@@ -182,158 +265,89 @@ export function BusinessCaseForm({
     });
   };
 
+  const useGroupMultiSelectOptions: MultiSelectOption[] = useGroupOptions.map((ug) => ({
+    value: ug.use_group_variant || "",
+    label: ug.display_name || `${ug.use_group_variant} - ${ug.use_group_name}`,
+  }));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {businessCase ? "Edit Business Case" : "Create Business Case"}
+            Create/Update Business Case
           </DialogTitle>
-          <DialogDescription>
-            {businessCase
-              ? "Update business case details"
-              : "Create a new financial projection"}
-          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4 border-b pb-4">
-            <Label className="text-base font-semibold">Link to Product</Label>
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="link_country"
-                    name="link_type"
-                    checked={linkType === "country"}
-                    onChange={() => {
-                      setLinkType("country");
-                      setHelperFormulationCountryId("");
-                      setFormData({
-                        ...formData,
-                        formulation_country_label_id: "",
-                      });
-                    }}
-                  />
-                  <Label htmlFor="link_country">Formulation-Country</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="link_label"
-                    name="link_type"
-                    checked={linkType === "label"}
-                    onChange={() => {
-                      setLinkType("label");
-                      setHelperFormulationCountryId("");
-                      setFormData({
-                        ...formData,
-                        formulation_country_id: "",
-                        formulation_country_label_id: "",
-                      });
-                    }}
-                  />
-                  <Label htmlFor="link_label">Label</Label>
-                </div>
+            <Label className="text-base font-semibold">Product Selection</Label>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="formulation_id">
+                  Formulation <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={formData.formulation_id}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, formulation_id: value, country_id: "" })
+                  }
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select formulation" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {formulations.map((f) => (
+                      <SelectItem key={f.formulation_id} value={f.formulation_id}>
+                        {f.formulation_code || f.product_name || f.formulation_id}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              {linkType === "country" ? (
-                <div className="space-y-2">
-                  <Label htmlFor="formulation_country_id">
-                    Formulation-Country <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={formData.formulation_country_id}
-                    onValueChange={(value) =>
-                      setFormData({
-                        ...formData,
-                        formulation_country_id: value,
-                        formulation_country_label_id: "",
-                      })
-                    }
-                    required={linkType === "country"}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select formulation-country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {formulationCountryOptions
-                        .filter((fc) => fc.formulation_country_id)
-                        .map((fc) => (
-                          <SelectItem key={fc.formulation_country_id!} value={fc.formulation_country_id!}>
-                            {fc.display_name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="formulation_country_id_for_label">
-                      Formulation-Country (to select label) <span className="text-destructive">*</span>
-                    </Label>
-                    <Select
-                      value={helperFormulationCountryId || formData.formulation_country_id}
-                      onValueChange={(value) => {
-                        setHelperFormulationCountryId(value);
-                        setFormData({
-                          ...formData,
-                          formulation_country_label_id: "",
-                        });
-                        loadFormulationCountryLabels(value);
-                      }}
-                      required={linkType === "label"}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select formulation-country first" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {formulationCountryOptions
-                          .filter((fc) => fc.formulation_country_id)
-                          .map((fc) => (
-                            <SelectItem key={fc.formulation_country_id!} value={fc.formulation_country_id!}>
-                              {fc.display_name}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {(helperFormulationCountryId || formData.formulation_country_id) && (
-                    <div className="space-y-2">
-                      <Label htmlFor="formulation_country_label_id">
-                        Label <span className="text-destructive">*</span>
-                      </Label>
-                      <Select
-                        value={formData.formulation_country_label_id}
-                        onValueChange={(value) =>
-                          setFormData({
-                            ...formData,
-                            formulation_country_label_id: value,
-                          })
-                        }
-                        required={linkType === "label"}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select label" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {formulationCountryLabelOptions
-                            .filter((label) => label.formulation_country_label_id)
-                            .map((label) => (
-                              <SelectItem
-                                key={label.formulation_country_label_id!}
-                                value={label.formulation_country_label_id!}
-                              >
-                                {label.display_name}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="country_id">
+                  Country <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={formData.country_id}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, country_id: value })
+                  }
+                  required
+                  disabled={!formData.formulation_id}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countries.map((c) => (
+                      <SelectItem key={c.country_id} value={c.country_id}>
+                        {c.country_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="use_groups">
+                  Use Groups <span className="text-destructive">*</span>
+                </Label>
+                <MultiSelect
+                  options={useGroupMultiSelectOptions}
+                  selected={selectedUseGroupIds}
+                  onChange={setSelectedUseGroupIds}
+                  placeholder={
+                    !formData.formulation_id || !formData.country_id
+                      ? "Select formulation and country first"
+                      : "Select use groups..."
+                  }
+                  emptyText="No use groups found for this formulation-country combination"
+                  disabled={!formData.formulation_id || !formData.country_id}
+                />
+              </div>
             </div>
           </div>
 
@@ -348,29 +362,6 @@ export function BusinessCaseForm({
                 }
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="business_case_type">Business Case Type</Label>
-              <Select
-                value={formData.business_case_type}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, business_case_type: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {BUSINESS_CASE_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="year_offset">
                 Year Offset <span className="text-destructive">*</span>
@@ -387,29 +378,30 @@ export function BusinessCaseForm({
                 required
               />
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="fiscal_year">Fiscal Year</Label>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Auto-calculated from target market entry FY + year offset, but can be overridden</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              <Input
-                id="fiscal_year"
-                value={formData.fiscal_year}
-                onChange={(e) =>
-                  setFormData({ ...formData, fiscal_year: e.target.value })
-                }
-                placeholder="FY2025"
-              />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="fiscal_year">Fiscal Year</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Auto-calculated from target market entry FY + year offset, but can be overridden</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
+            <Input
+              id="fiscal_year"
+              value={formData.fiscal_year}
+              onChange={(e) =>
+                setFormData({ ...formData, fiscal_year: e.target.value })
+              }
+              placeholder="FY2025"
+            />
           </div>
 
           <div className="grid grid-cols-3 gap-4">
@@ -459,40 +451,6 @@ export function BusinessCaseForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="scenario_name">Scenario Name</Label>
-              <Input
-                id="scenario_name"
-                value={formData.scenario_name}
-                onChange={(e) =>
-                  setFormData({ ...formData, scenario_name: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confidence_level">Confidence Level</Label>
-              <Select
-                value={formData.confidence_level || "__none__"}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, confidence_level: value === "__none__" ? "" : value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select confidence" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">None</SelectItem>
-                  {CONFIDENCE_LEVELS.map((level) => (
-                    <SelectItem key={level} value={level}>
-                      {level}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="assumptions">Assumptions</Label>
             <Textarea
@@ -516,4 +474,3 @@ export function BusinessCaseForm({
     </Dialog>
   );
 }
-
