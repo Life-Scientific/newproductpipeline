@@ -19,7 +19,7 @@
 
 -- Step 1: Clear all existing ingredient-related data
 -- We need to delete dependent records first due to foreign key constraints
--- Based on actual Supabase database schema (from database.types.ts)
+-- Based on actual remote schema (verified 2025-11-17)
 
 -- Delete formulation ingredients (links between formulations and ingredients)
 DELETE FROM public.formulation_ingredients;
@@ -27,10 +27,10 @@ DELETE FROM public.formulation_ingredients;
 -- Delete ingredient supplier relationships
 DELETE FROM public.ingredient_suppliers;
 
--- Delete patent ingredient protections
+-- Delete patent ingredient protections (new patent system)
 DELETE FROM public.patent_ingredient_protections;
 
--- Delete patent combination ingredients
+-- Delete patent combination ingredients (new patent system)
 DELETE FROM public.patent_combination_ingredients;
 
 -- Finally, delete all ingredients
