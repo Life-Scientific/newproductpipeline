@@ -14,7 +14,7 @@ console.log('IMPORT EPPO DATA TO SUPABASE');
 console.log('==========================================\n');
 
 // Load Supabase config
-const supabaseUrl = process.env.SUPABASE_URL || 'https://ls-main-vikram-branch.supabase.co';
+const supabaseUrl = process.env.SUPABASE_URL || 'https://phizaaaxgbvgcaojiyow.supabase.co';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseKey) {

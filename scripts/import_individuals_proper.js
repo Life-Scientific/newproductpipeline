@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = 'https://ls-main-vikram-branch.supabase.co';
+const supabaseUrl = process.env.SUPABASE_URL || 'https://phizaaaxgbvgcaojiyow.supabase.co';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseServiceKey) {

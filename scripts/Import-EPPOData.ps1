@@ -4,7 +4,7 @@ param(
     [string]$ServiceRoleKey
 )
 
-$supabaseUrl = "https://ls-main-vikram-branch.supabase.co"
+$supabaseUrl = "https://phizaaaxgbvgcaojiyow.supabase.co"
 $headers = @{
     "apikey" = $ServiceRoleKey
     "Authorization" = "Bearer $ServiceRoleKey"
