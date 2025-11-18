@@ -39,3 +39,35 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# temporary backup and migration files
+.temp_backup/
+*.backup
+*.sql.bak
+*.log
+*.csv
+vikram_functions.sql
+supabase/migrations/*restore*.sql
+
+# migration documentation (temporary)
+CLONE_VIKRAM_TO_MAIN.md
+EXPORT_DATA_SIMPLE.md
+VIKRAM_TO_PRODUCTION_GUIDE.md
+
+# migration scripts (temporary)
+scripts/1_backup_*.sh
+scripts/1_backup_*.js
+scripts/2_restore_*.sh
+scripts/apply_migrations_*.js
+scripts/clone_*.sh
+scripts/clone_*.js
+scripts/combine_*.sh
+scripts/copy_*.sh
+scripts/create_complete_*.js
+scripts/execute_chunks_*.js
+scripts/export_*.sh
+scripts/export_*.js
+scripts/export_*.md
+scripts/format_*.js
+scripts/restore_*.js
+scripts/supabase_backup_*.sh
