@@ -71,11 +71,11 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
 
   // Get all related data in parallel
   const [countriesResult, useGroupsResult, businessCasesResult, cogsResult, protectionResult] = await Promise.all([
-    supabase.from("vw_formulation_country_detail").select("formulation_code, country_name, registration_status, emd, target_market_entry_fy, normal_crop_usage, targets_treated"),
-    supabase.from("vw_formulation_country_use_group").select("formulation_code, use_group_name, use_group_variant, country_name, registration_status, reference_product_name"),
+    supabase.from("vw_formulation_country_detail").select("formulation_code, country_name, earliest_market_entry_date, target_market_entry_fy, normal_crop_usage, targets_treated"),
+    supabase.from("vw_formulation_country_use_group").select("formulation_code, use_group_name, use_group_variant, country_name, reference_product_name"),
     supabase.from("vw_business_case").select("formulation_code, total_revenue, total_margin"),
     supabase.from("vw_cogs").select("formulation_code, cogs_value, fiscal_year"),
-    supabase.from("vw_patent_protection_status").select("formulation_code, country_name, earliest_ingredient_patent_expiry, earliest_combination_patent_expiry, earliest_formulation_patent_expiry, earliest_blocking_launch_date"),
+    supabase.from("vw_patent_protection_status").select("formulation_code, country_name, earliest_ingredient_patent_expiry, earliest_combination_patent_expiry, earliest_formulation_patent_expiry"),
   ]);
 
   const countriesData = countriesResult.data || [];
@@ -121,8 +121,8 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
     agg.countries.add(item.country_name);
     agg.countriesList.push({
       name: item.country_name,
-      status: item.registration_status || "",
-      emd: item.emd,
+      status: "", // registration_status was removed from schema
+      emd: item.earliest_market_entry_date,
       tme: item.target_market_entry_fy,
     });
     // Extract crops and targets from comma-separated strings
@@ -165,7 +165,7 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       name: item.use_group_name || item.use_group_variant || "",
       variant: item.use_group_variant || "",
       country: item.country_name || "",
-      status: item.registration_status || "",
+      status: "", // registration_status was removed from schema
       ref: item.reference_product_name,
     });
   });
@@ -238,9 +238,13 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       });
     }
     const agg = aggregated.get(item.formulation_code)!;
+    // Use earliest_ingredient_patent_expiry as the primary patent expiry (fallback to combination/formulation)
+    const patentExpiry = item.earliest_ingredient_patent_expiry || 
+                         item.earliest_combination_patent_expiry || 
+                         item.earliest_formulation_patent_expiry;
     agg.protection.push({
       country: item.country_name || "",
-      patent: item.earliest_active_patent_expiry,
+      patent: patentExpiry,
       data: null, // Data protections removed from schema
     });
   });
@@ -456,30 +460,47 @@ async function enrichBusinessCases(
     }));
   }
 
-  // Fetch formulation_id and country_id through junction table
-  // We need to join through business_case_use_groups -> formulation_country_use_group -> formulation_country
-  // Since Supabase doesn't support deep nested selects easily, we'll do it in steps
+  // Fetch formulation_id and country_id through multiple paths:
+  // 1. Direct: business_case.formulation_country_id -> formulation_country
+  // 2. Via use groups: business_case_use_groups -> formulation_country_use_group -> formulation_country
   
-  // First, get the formulation_country_use_group_ids for these business cases
+  // First, get direct formulation_country_ids from business cases
+  const directFormulationCountryIds = [
+    ...new Set(
+      businessCases
+        .map((bc) => bc.formulation_country_id)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+
+  // Get formulation_id and country_id for direct links
+  const { data: directCountryData } = await supabase
+    .from("formulation_country")
+    .select("formulation_country_id, formulation_id, country_id")
+    .in("formulation_country_id", directFormulationCountryIds);
+
+  // Create maps for direct links
+  const directFormulationCountryToFormulationId = new Map<string, string>();
+  const directFormulationCountryToCountryId = new Map<string, string>();
+  directCountryData?.forEach((fc) => {
+    if (fc.formulation_country_id) {
+      directFormulationCountryToFormulationId.set(fc.formulation_country_id, fc.formulation_id);
+      directFormulationCountryToCountryId.set(fc.formulation_country_id, fc.country_id);
+    }
+  });
+
+  // Now handle business cases linked via use groups
   const { data: junctionData } = await supabase
     .from("business_case_use_groups")
     .select("business_case_id, formulation_country_use_group_id")
     .in("business_case_id", businessCaseIds);
 
-  if (!junctionData || junctionData.length === 0) {
-    return businessCases.map((bc) => ({
-      ...bc,
-      formulation_id: null,
-      country_id: null,
-    }));
-  }
-
   // Get unique formulation_country_use_group_ids
   const useGroupIds = [
     ...new Set(
       junctionData
-        .map((j) => j.formulation_country_use_group_id)
-        .filter((id): id is string => Boolean(id))
+        ?.map((j) => j.formulation_country_use_group_id)
+        .filter((id): id is string => Boolean(id)) || []
     ),
   ];
 
@@ -489,8 +510,8 @@ async function enrichBusinessCases(
     .select("formulation_country_use_group_id, formulation_country_id")
     .in("formulation_country_use_group_id", useGroupIds);
 
-  // Get unique formulation_country_ids
-  const formulationCountryIds = [
+  // Get unique formulation_country_ids from use groups
+  const useGroupFormulationCountryIds = [
     ...new Set(
       useGroupData
         ?.map((ug) => ug.formulation_country_id)
@@ -498,11 +519,23 @@ async function enrichBusinessCases(
     ),
   ];
 
-  // Get formulation_id and country_id from formulation_country
-  const { data: countryData } = await supabase
-    .from("formulation_country")
-    .select("formulation_country_id, formulation_id, country_id")
-    .in("formulation_country_id", formulationCountryIds);
+  // Get formulation_id and country_id for use group links (excluding ones we already have)
+  const useGroupCountryIdsToFetch = useGroupFormulationCountryIds.filter(
+    (id) => !directFormulationCountryIds.includes(id)
+  );
+
+  const { data: useGroupCountryData } = useGroupCountryIdsToFetch.length > 0
+    ? await supabase
+        .from("formulation_country")
+        .select("formulation_country_id, formulation_id, country_id")
+        .in("formulation_country_id", useGroupCountryIdsToFetch)
+    : { data: null };
+
+  // Merge country data
+  const allCountryData = [
+    ...(directCountryData || []),
+    ...(useGroupCountryData || []),
+  ];
 
   // Create maps for lookup
   const useGroupToFormulationCountry = new Map<string, string>();
@@ -514,23 +547,42 @@ async function enrichBusinessCases(
 
   const formulationCountryToFormulationId = new Map<string, string>();
   const formulationCountryToCountryId = new Map<string, string>();
-  countryData?.forEach((fc) => {
+  allCountryData.forEach((fc) => {
     if (fc.formulation_country_id) {
       formulationCountryToFormulationId.set(fc.formulation_country_id, fc.formulation_id);
       formulationCountryToCountryId.set(fc.formulation_country_id, fc.country_id);
     }
   });
 
-  // Create maps for business cases (use first match for each business case)
+  // Create maps for business cases
   const businessCaseToFormulationId = new Map<string, string>();
   const businessCaseToCountryId = new Map<string, string>();
   
-  junctionData.forEach((j) => {
+  // First, handle direct links
+  businessCases.forEach((bc) => {
+    if (bc.business_case_id && bc.formulation_country_id) {
+      if (!businessCaseToFormulationId.has(bc.business_case_id)) {
+        businessCaseToFormulationId.set(
+          bc.business_case_id,
+          directFormulationCountryToFormulationId.get(bc.formulation_country_id) || ""
+        );
+        businessCaseToCountryId.set(
+          bc.business_case_id,
+          directFormulationCountryToCountryId.get(bc.formulation_country_id) || ""
+        );
+      }
+    }
+  });
+  
+  // Then, handle use group links (only if not already set)
+  junctionData?.forEach((j) => {
     if (j.business_case_id && j.formulation_country_use_group_id) {
-      const fcId = useGroupToFormulationCountry.get(j.formulation_country_use_group_id);
-      if (fcId && !businessCaseToFormulationId.has(j.business_case_id)) {
-        businessCaseToFormulationId.set(j.business_case_id, formulationCountryToFormulationId.get(fcId) || "");
-        businessCaseToCountryId.set(j.business_case_id, formulationCountryToCountryId.get(fcId) || "");
+      if (!businessCaseToFormulationId.has(j.business_case_id)) {
+        const fcId = useGroupToFormulationCountry.get(j.formulation_country_use_group_id);
+        if (fcId) {
+          businessCaseToFormulationId.set(j.business_case_id, formulationCountryToFormulationId.get(fcId) || "");
+          businessCaseToCountryId.set(j.business_case_id, formulationCountryToCountryId.get(fcId) || "");
+        }
       }
     }
   });
@@ -552,12 +604,43 @@ export async function getBusinessCases() {
     .order("year_offset", { ascending: true });
 
   if (error) {
+    console.error('getBusinessCases error:', error);
     throw new Error(`Failed to fetch business cases: ${error.message}`);
+  }
+
+  // Debug logging
+  if (process.env.NODE_ENV === 'development') {
+    console.log('getBusinessCases raw data:', {
+      count: data?.length || 0,
+      sample: data?.[0] ? {
+        business_case_id: data[0].business_case_id,
+        fiscal_year: data[0].fiscal_year,
+        total_revenue: data[0].total_revenue,
+        formulation_country_id: data[0].formulation_country_id,
+        formulation_country_use_group_id: data[0].formulation_country_use_group_id,
+      } : null,
+    });
   }
 
   // Deduplicate before enrichment
   const deduplicated = deduplicateBusinessCases(data || []);
-  return enrichBusinessCases(deduplicated);
+  const enriched = await enrichBusinessCases(deduplicated);
+  
+  // Debug enriched data
+  if (process.env.NODE_ENV === 'development') {
+    console.log('getBusinessCases enriched:', {
+      count: enriched.length,
+      withCountryId: enriched.filter(bc => (bc as any).country_id).length,
+      sample: enriched[0] ? {
+        business_case_id: enriched[0].business_case_id,
+        fiscal_year: enriched[0].fiscal_year,
+        country_id: (enriched[0] as any).country_id,
+        total_revenue: enriched[0].total_revenue,
+      } : null,
+    });
+  }
+  
+  return enriched;
 }
 
 export async function getBusinessCaseById(businessCaseId: string) {
