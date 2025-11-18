@@ -23,7 +23,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Database } from "@/lib/supabase/database.types";
 import { EPPOCropSelector } from "./EPPOCropSelector";
 import { EPPOTargetSelector } from "./EPPOTargetSelector";
@@ -46,6 +46,7 @@ export function ReferenceProductForm({
 }: ReferenceProductFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [formData, setFormData] = useState({
@@ -66,7 +67,6 @@ export function ReferenceProductForm({
   }, [open]);
 
   const loadSuppliers = async () => {
-    const supabase = createClient();
     const { data } = await supabase
       .from("suppliers")
       .select("*")

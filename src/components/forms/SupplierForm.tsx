@@ -13,18 +13,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Database } from "@/lib/supabase/database.types";
+import { CountrySelector } from "./CountrySelector";
 
 type Supplier = Database["public"]["Tables"]["suppliers"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
@@ -39,8 +33,9 @@ interface SupplierFormProps {
 export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: SupplierFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
-  const [countries, setCountries] = useState<Country[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [formData, setFormData] = useState({
     supplier_name: supplier?.supplier_name || "",
     supplier_code: supplier?.supplier_code || "",
@@ -50,19 +45,20 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
   });
 
   useEffect(() => {
-    if (open) {
-      loadCountries();
+    if (open && supplier?.country_id) {
+      // Load selected country for display
+      loadSelectedCountry();
     }
-  }, [open]);
+  }, [open, supplier]);
 
-  const loadCountries = async () => {
-    const supabase = createClient();
+  const loadSelectedCountry = async () => {
+    if (!supplier?.country_id) return;
     const { data } = await supabase
       .from("countries")
       .select("*")
-      .eq("is_active", true)
-      .order("country_name");
-    if (data) setCountries(data);
+      .eq("country_id", supplier.country_id)
+      .single();
+    if (data) setSelectedCountry(data);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -149,22 +145,12 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
 
           <div className="space-y-2">
             <Label htmlFor="country_id">Country</Label>
-            <Select
-              value={formData.country_id || "__none__"}
-              onValueChange={(value) => setFormData({ ...formData, country_id: value === "__none__" ? "" : value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select country" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">None</SelectItem>
-                {countries.map((c) => (
-                  <SelectItem key={c.country_id} value={c.country_id}>
-                    {c.country_name} ({c.country_code})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <CountrySelector
+              value={formData.country_id || ""}
+              onValueChange={(value) => setFormData({ ...formData, country_id: value || "" })}
+              placeholder="Search countries..."
+              selectedCountry={selectedCountry}
+            />
           </div>
 
           <div className="space-y-2">

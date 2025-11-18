@@ -10,7 +10,7 @@ import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import { BusinessCaseForm } from "@/components/forms/BusinessCaseForm";
 import { DeleteConfirmDialog } from "@/components/forms/DeleteConfirmDialog";
 import { useToast } from "@/components/ui/use-toast";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Database } from "@/lib/supabase/database.types";
 import type { EnrichedBusinessCase } from "@/lib/db/queries";
 import { Pencil, Trash2 } from "lucide-react";
@@ -23,11 +23,11 @@ function BusinessCaseActionsCell({ businessCase }: { businessCase: EnrichedBusin
   const [businessCaseData, setBusinessCaseData] = useState<BusinessCaseTable | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
 
   const handleEdit = async () => {
     if (!businessCase.business_case_id) return;
-    const supabase = createClient();
     const { data } = await supabase
       .from("business_case")
       .select("*")

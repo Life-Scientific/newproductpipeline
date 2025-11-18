@@ -36,9 +36,9 @@ const sidebarVariants = cva(
   {
     variants: {
       variant: {
-        sidebar: "h-svh w-[12rem] bg-sidebar border-r border-sidebar-border",
+        sidebar: "h-screen w-[12rem] bg-sidebar border-r border-sidebar-border sticky top-0 self-start",
         floating:
-          "h-svh w-[12rem] bg-sidebar border-r border-sidebar-border",
+          "h-screen w-[12rem] bg-sidebar border-r border-sidebar-border sticky top-0 self-start",
         inset: "h-full w-[12rem] bg-sidebar",
       },
     },
@@ -268,7 +268,7 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-1 overflow-auto group-data-[collapsible=icon]/sidebar-wrapper:overflow-hidden",
+        "flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overflow-x-hidden group-data-[collapsible=icon]/sidebar-wrapper:overflow-hidden",
         className
       )}
       {...props}

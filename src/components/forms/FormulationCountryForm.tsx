@@ -23,15 +23,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Database } from "@/lib/supabase/database.types";
+import { FormulationSelector } from "./FormulationSelector";
+import { CountrySelector } from "./CountrySelector";
 
 type FormulationCountry = Database["public"]["Tables"]["formulation_country"]["Row"];
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
-type Crop = Database["public"]["Tables"]["crops"]["Row"];
-type Target = Database["public"]["Tables"]["targets"]["Row"];
 
 interface FormulationCountryFormProps {
   formulationCountry?: FormulationCountry | null;
@@ -51,7 +50,6 @@ const REGISTRATION_STATUSES = [
   "Rejected",
   "Withdrawn",
 ];
-const EFFICACY_LEVELS = ["Excellent", "Good", "Moderate", "Fair"];
 
 export function FormulationCountryForm({
   formulationCountry,
@@ -63,14 +61,10 @@ export function FormulationCountryForm({
 }: FormulationCountryFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
-  const [formulations, setFormulations] = useState<Formulation[]>([]);
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [crops, setCrops] = useState<Crop[]>([]);
-  const [targets, setTargets] = useState<Target[]>([]);
-  const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
-  const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
-  const [targetEfficacy, setTargetEfficacy] = useState<Record<string, string>>({});
+  const [selectedFormulation, setSelectedFormulation] = useState<Formulation | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
 
   const [formData, setFormData] = useState({
     formulation_id: formulationCountry?.formulation_id || defaultFormulationId || "",
@@ -87,75 +81,31 @@ export function FormulationCountryForm({
   });
 
   useEffect(() => {
-    if (open) {
-      loadData();
-      if (formulationCountry) {
-        loadExistingRelations();
-      }
+    if (open && formulationCountry) {
+      // Load selected formulation and country for display
+      loadSelectedItems();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, formulationCountry]);
 
-  const loadData = async () => {
-    const supabase = createClient();
+  const loadSelectedItems = async () => {
+    if (!formulationCountry) return;
 
-    // Load formulations
-    const { data: formulationsData } = await supabase
+    // Load selected formulation
+    const { data: formulationData } = await supabase
       .from("vw_formulations_with_ingredients")
-      .select("formulation_id, formulation_code, product_name")
-      .order("formulation_code");
-    if (formulationsData) setFormulations(formulationsData as Formulation[]);
+      .select("formulation_id, formulation_code, product_name, formulation_name")
+      .eq("formulation_id", formulationCountry.formulation_id)
+      .single();
+    if (formulationData) setSelectedFormulation(formulationData as Formulation);
 
-    // Load countries
-    const { data: countriesData } = await supabase
+    // Load selected country
+    const { data: countryData } = await supabase
       .from("countries")
       .select("*")
-      .eq("is_active", true)
-      .order("country_name");
-    if (countriesData) setCountries(countriesData);
-
-    // Load crops
-    const { data: cropsData } = await supabase
-      .from("crops")
-      .select("*")
-      .eq("is_active", true)
-      .order("crop_name");
-    if (cropsData) setCrops(cropsData);
-
-    // Load targets
-    const { data: targetsData } = await supabase
-      .from("targets")
-      .select("*")
-      .eq("is_active", true)
-      .order("target_name");
-    if (targetsData) setTargets(targetsData);
-  };
-
-  const loadExistingRelations = async () => {
-    if (!formulationCountry) return;
-    const supabase = createClient();
-
-    // Load crops
-    const { data: cropsData } = await supabase
-      .from("formulation_country_crops")
-      .select("crop_id")
-      .eq("formulation_country_id", formulationCountry.formulation_country_id);
-    if (cropsData) {
-      setSelectedCrops(cropsData.map((c) => c.crop_id));
-    }
-
-    // Load targets
-    const { data: targetsData } = await supabase
-      .from("formulation_country_targets")
-      .select("target_id, efficacy_level")
-      .eq("formulation_country_id", formulationCountry.formulation_country_id);
-    if (targetsData) {
-      setSelectedTargets(targetsData.map((t) => t.target_id));
-      const efficacyMap: Record<string, string> = {};
-      targetsData.forEach((t) => {
-        if (t.efficacy_level) efficacyMap[t.target_id] = t.efficacy_level;
-      });
-      setTargetEfficacy(efficacyMap);
-    }
+      .eq("country_id", formulationCountry.country_id)
+      .single();
+    if (countryData) setSelectedCountry(countryData);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,15 +127,8 @@ export function FormulationCountryForm({
       }
     });
 
-    // Add crops and targets as JSON
-    const cropsData = selectedCrops.map((cropId) => ({ crop_id: cropId }));
-    form.append("crops", JSON.stringify(cropsData));
-
-    const targetsData = selectedTargets.map((targetId) => ({
-      target_id: targetId,
-      efficacy_level: targetEfficacy[targetId] || null,
-    }));
-    form.append("targets", JSON.stringify(targetsData));
+    // Note: Crops and targets are now managed at formulation level via EPPO codes,
+    // not at formulation_country level
 
     startTransition(async () => {
       try {
@@ -224,16 +167,6 @@ export function FormulationCountryForm({
     });
   };
 
-  const cropOptions: MultiSelectOption[] = crops.map((crop) => ({
-    value: crop.crop_id,
-    label: crop.crop_name,
-  }));
-
-  const targetOptions: MultiSelectOption[] = targets.map((target) => ({
-    value: target.target_id,
-    label: `${target.target_name} (${target.target_type})`,
-  }));
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -253,47 +186,27 @@ export function FormulationCountryForm({
               <Label htmlFor="formulation_id">
                 Formulation <span className="text-destructive">*</span>
               </Label>
-              <Select
+              <FormulationSelector
                 value={formData.formulation_id}
                 onValueChange={(value) => setFormData({ ...formData, formulation_id: value })}
-                required
+                placeholder="Search formulations..."
                 disabled={!!formulationCountry}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select formulation" />
-                </SelectTrigger>
-                    <SelectContent>
-                      {formulations
-                        .filter((f) => f.formulation_id)
-                        .map((f) => (
-                          <SelectItem key={f.formulation_id!} value={f.formulation_id!}>
-                            {f.formulation_code} - {f.product_name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-              </Select>
+                required
+                selectedFormulation={selectedFormulation}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="country_id">
                 Country <span className="text-destructive">*</span>
               </Label>
-              <Select
+              <CountrySelector
                 value={formData.country_id}
                 onValueChange={(value) => setFormData({ ...formData, country_id: value })}
-                required
+                placeholder="Search countries..."
                 disabled={!!formulationCountry}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {countries.map((c) => (
-                    <SelectItem key={c.country_id} value={c.country_id}>
-                      {c.country_name} ({c.country_code})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                required
+                selectedCountry={selectedCountry}
+              />
             </div>
           </div>
 
@@ -413,56 +326,6 @@ export function FormulationCountryForm({
               />
               <Label htmlFor="has_approval">Has Approval</Label>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Crops (Normal Use)</Label>
-            <MultiSelect
-              options={cropOptions}
-              selected={selectedCrops}
-              onChange={setSelectedCrops}
-              placeholder="Select crops..."
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Targets</Label>
-            <MultiSelect
-              options={targetOptions}
-              selected={selectedTargets}
-              onChange={setSelectedTargets}
-              placeholder="Select targets..."
-            />
-            {selectedTargets.length > 0 && (
-              <div className="mt-2 space-y-2">
-                {selectedTargets.map((targetId) => {
-                  const target = targets.find((t) => t.target_id === targetId);
-                  return (
-                    <div key={targetId} className="flex items-center gap-2">
-                      <Label className="text-sm w-32">{target?.target_name}:</Label>
-                      <Select
-                        value={targetEfficacy[targetId] || "__none__"}
-                        onValueChange={(value) =>
-                          setTargetEfficacy({ ...targetEfficacy, [targetId]: value === "__none__" ? "" : value })
-                        }
-                      >
-                        <SelectTrigger className="w-40">
-                          <SelectValue placeholder="Efficacy" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          {EFFICACY_LEVELS.map((level) => (
-                            <SelectItem key={level} value={level}>
-                              {level}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
           <DialogFooter>

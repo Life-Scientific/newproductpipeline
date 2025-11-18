@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { getFormulationsAction, getCountriesAction } from "@/lib/actions/business-cases";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Formulation, Country } from "@/lib/supabase/database.types";
 
 interface BusinessCaseFiltersProps {
@@ -25,6 +25,7 @@ interface BusinessCaseFiltersProps {
 }
 
 export function BusinessCaseFilters({ onFilterChange }: BusinessCaseFiltersProps) {
+  const supabase = useSupabase();
   const [formulations, setFormulations] = useState<Formulation[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [useGroupOptions, setUseGroupOptions] = useState<MultiSelectOption[]>([]);
@@ -57,8 +58,6 @@ export function BusinessCaseFilters({ onFilterChange }: BusinessCaseFiltersProps
       return;
     }
 
-    const supabase = createClient();
-    
     // Build query to get formulation_country_ids that match selected countries and formulations
     let query = supabase
       .from("formulation_country")
@@ -119,7 +118,8 @@ export function BusinessCaseFilters({ onFilterChange }: BusinessCaseFiltersProps
         console.error("Failed to load use groups:", error);
         setUseGroupOptions([]);
       });
-  }, [filters.formulationIds, filters.countryIds]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.formulationIds, filters.countryIds]); // supabase is stable singleton
 
   const handleFilterChange = (key: keyof typeof filters, value: string[]) => {
     const newFilters = { ...filters, [key]: value };

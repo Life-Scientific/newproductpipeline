@@ -2,6 +2,7 @@ import {
   getFormulations,
   getBusinessCases,
   getActivePortfolio,
+  getExchangeRates,
 } from "@/lib/db/queries";
 import { FormulationsList } from "@/components/formulations/FormulationsList";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -10,6 +11,7 @@ import { MetricCard } from "@/components/layout/MetricCard";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { TimelineCard } from "@/components/relationships/TimelineCard";
 import { BusinessCaseListItem } from "@/components/business-cases/BusinessCaseListItem";
+import { TenYearProjectionChart } from "@/components/charts/TenYearProjectionChart";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import Link from "next/link";
@@ -17,11 +19,33 @@ import Link from "next/link";
 type StatusHistory = Database["public"]["Tables"]["formulation_status_history"]["Row"];
 
 export default async function Home() {
-  const [formulations, businessCases, activePortfolio] = await Promise.all([
+  const [formulations, businessCases, activePortfolio, allExchangeRates] = await Promise.all([
     getFormulations(),
     getBusinessCases(),
     getActivePortfolio(),
+    getExchangeRates(),
   ]);
+
+  // Create exchange rate map: country_id -> exchange_rate_to_eur
+  // Get the latest rate for each country
+  const exchangeRateMap = new Map<string, number>();
+  const countryToLatestRate = new Map<string, { rate: number; date: string }>();
+  
+  allExchangeRates.forEach((er: any) => {
+    if (er.country_id && er.exchange_rate_to_eur && er.is_active) {
+      const existing = countryToLatestRate.get(er.country_id);
+      if (!existing || er.effective_date > existing.date) {
+        countryToLatestRate.set(er.country_id, {
+          rate: er.exchange_rate_to_eur,
+          date: er.effective_date,
+        });
+      }
+    }
+  });
+  
+  countryToLatestRate.forEach((value, countryId) => {
+    exchangeRateMap.set(countryId, value.rate);
+  });
 
   const totalFormulations = formulations.length;
   const activeFormulations = formulations.filter((f) => f.status === "Selected").length;
@@ -86,6 +110,14 @@ export default async function Home() {
       description="LS Portfolio overview"
       variant="multi"
     >
+      {/* 10-Year Projection Chart */}
+      <TenYearProjectionChart 
+        businessCases={businessCases} 
+        formulations={formulations}
+        exchangeRates={exchangeRateMap}
+      />
+
+      {/* Key Metrics */}
       <CardGrid columns={{ mobile: 1, tablet: 2, desktop: 4 }} gap="md">
         <MetricCard
           title="Total Formulations"

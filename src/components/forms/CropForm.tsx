@@ -1,3 +1,8 @@
+/**
+ * @deprecated This component uses the legacy crops table.
+ * EPPO codes are imported from external sources and should not be manually created.
+ * This component is kept for backward compatibility but should not be used in new code.
+ */
 "use client";
 
 import { useState, useTransition } from "react";

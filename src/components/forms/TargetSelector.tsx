@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Plus } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Database } from "@/lib/supabase/database.types";
 import {
   Table,
@@ -38,6 +38,7 @@ interface TargetSelectorProps {
 }
 
 export function TargetSelector({ targets, onChange }: TargetSelectorProps) {
+  const supabase = useSupabase();
   const [availableTargets, setAvailableTargets] = useState<Target[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -51,7 +52,6 @@ export function TargetSelector({ targets, onChange }: TargetSelectorProps) {
   }, []);
 
   const loadTargets = async () => {
-    const supabase = createClient();
     const { data } = await supabase
       .from("targets")
       .select("*")

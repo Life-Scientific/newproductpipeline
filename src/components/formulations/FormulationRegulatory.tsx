@@ -38,7 +38,7 @@ export function FormulationRegulatory({
     <Card>
       <CardHeader>
         <CardTitle>Regulatory Information</CardTitle>
-        <CardDescription>Patents, data protections, and registration timeline</CardDescription>
+        <CardDescription>Patents and registration timeline</CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="protections" className="space-y-4">

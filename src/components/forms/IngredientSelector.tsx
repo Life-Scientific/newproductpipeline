@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Plus } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Database } from "@/lib/supabase/database.types";
 import {
   Table,
@@ -24,6 +24,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { FuzzySearchSelect } from "./FuzzySearchSelect";
+import { searchIngredients } from "@/lib/actions/search";
 
 type Ingredient = Database["public"]["Tables"]["ingredients"]["Row"];
 
@@ -59,8 +61,8 @@ export function IngredientSelector({
   availableIngredients: propAvailableIngredients,
   onAvailableIngredientsChange 
 }: IngredientSelectorProps) {
+  const supabase = useSupabase();
   const [internalAvailableIngredients, setInternalAvailableIngredients] = useState<Ingredient[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [newIngredient, setNewIngredient] = useState<IngredientInput>({
     ingredient_id: "",
@@ -69,6 +71,7 @@ export function IngredientSelector({
     ingredient_role: "Active",
     notes: "",
   });
+  const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
 
   // Use prop if provided, otherwise use internal state
   const availableIngredients = propAvailableIngredients || internalAvailableIngredients;
@@ -81,7 +84,6 @@ export function IngredientSelector({
   }, [propAvailableIngredients]);
 
   const loadIngredients = async () => {
-    const supabase = createClient();
     const { data } = await supabase
       .from("ingredients")
       .select("*")
@@ -93,9 +95,24 @@ export function IngredientSelector({
     }
   };
 
-  const filteredIngredients = availableIngredients.filter((ing) =>
-    ing.ingredient_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Load selected ingredient data when ingredient_id changes
+  useEffect(() => {
+    if (newIngredient.ingredient_id) {
+      // First try to find in available ingredients
+      const ingredient = availableIngredients.find(
+        (ing) => ing.ingredient_id === newIngredient.ingredient_id
+      );
+      if (ingredient) {
+        setSelectedIngredient(ingredient);
+      } else {
+        // If not found, fetch it using search (this will be cached by FuzzySearchSelect)
+        // We'll let FuzzySearchSelect handle the loading via selectedItem prop
+        setSelectedIngredient(null);
+      }
+    } else {
+      setSelectedIngredient(null);
+    }
+  }, [newIngredient.ingredient_id, availableIngredients]);
 
   const handleAddIngredient = (e?: React.MouseEvent) => {
     // Prevent form submission if button is inside a form
@@ -133,8 +150,8 @@ export function IngredientSelector({
       ingredient_role: "Active",
       notes: "",
     });
+    setSelectedIngredient(null);
     setShowAddForm(false);
-    setSearchTerm("");
   };
 
   const handleRemoveIngredient = (index: number) => {
@@ -181,38 +198,30 @@ export function IngredientSelector({
 
       {showAddForm && (
         <div className="border rounded-lg p-4 space-y-4 bg-muted/50">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="ingredient_search">Search Ingredient</Label>
-              <Input
-                id="ingredient_search"
-                placeholder="Type to search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ingredient_select">
-                Ingredient <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={newIngredient.ingredient_id}
-                onValueChange={(value) =>
-                  setNewIngredient({ ...newIngredient, ingredient_id: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select ingredient" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredIngredients.map((ing) => (
-                    <SelectItem key={ing.ingredient_id} value={ing.ingredient_id}>
-                      {ing.ingredient_name} ({ing.ingredient_type})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="ingredient_select">
+              Ingredient <span className="text-destructive">*</span>
+            </Label>
+            <FuzzySearchSelect
+              value={newIngredient.ingredient_id}
+              onValueChange={(value) =>
+                setNewIngredient({ ...newIngredient, ingredient_id: value })
+              }
+              searchFunction={(search) => searchIngredients({ search, limit: 100 })}
+              getOptionValue={(item) => item.ingredient_id}
+              getOptionLabel={(item) => item.ingredient_name || ""}
+              getOptionSubtitle={(item) => {
+                const parts: string[] = [];
+                if (item.ingredient_type) parts.push(item.ingredient_type);
+                if (item.cas_number) parts.push(`CAS: ${item.cas_number}`);
+                return parts.length > 0 ? parts.join(" • ") : undefined;
+              }}
+              placeholder="Search ingredients..."
+              searchPlaceholder="Type ingredient name or CAS number..."
+              emptyText="No ingredients found. Try a different search term."
+              selectedItem={selectedIngredient}
+              preloadAll={false}
+            />
           </div>
 
           <div className="grid grid-cols-3 gap-4">

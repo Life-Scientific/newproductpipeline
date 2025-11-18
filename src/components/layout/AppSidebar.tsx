@@ -43,7 +43,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 
 // Overview
 const overviewMenuItems = [
@@ -129,13 +129,25 @@ const referenceMenuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useSupabase();
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    // Get initial user state
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
     });
+
+    // Listen for auth state changes instead of polling
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [supabase]);
 
   const handleSignOut = async () => {

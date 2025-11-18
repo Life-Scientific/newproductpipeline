@@ -72,3 +72,28 @@ scripts/export_*.md
 scripts/format_*.js
 scripts/restore_*.js
 scripts/supabase_backup_*.sh
+
+# temporary import/export scripts
+scripts/*.py
+scripts/*.ps1
+scripts/import_*.sql
+scripts/import_*.js
+scripts/batch_*.js
+scripts/*_import*.js
+scripts/enrich_*.js
+scripts/generate_*.js
+scripts/complete_*.js
+scripts/continue_*.js
+scripts/*_individuals*.js
+scripts/mcp_*.sql
+scripts/enriched_*.json
+
+# temporary batch directories
+pest_sql_batches/
+*_batches/
+
+# temporary plan files
+*.plan.md
+*_SUMMARY.md
+*_COMPLETE.md
+*_MANAGEMENT.md

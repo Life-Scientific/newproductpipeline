@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import { checkExistingCOGSGroupAction } from "@/lib/actions/cogs";
 import { COGSEditModal } from "./COGSEditModal";
 import type { Database } from "@/lib/supabase/database.types";
@@ -41,6 +41,7 @@ export function COGSCreateModal({
   defaultFormulationId,
 }: COGSCreateModalProps) {
   const { toast } = useToast();
+  const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
   const [formulations, setFormulations] = useState<Formulation[]>([]);
   const [formulationCountries, setFormulationCountries] = useState<FormulationCountry[]>([]);
@@ -52,7 +53,6 @@ export function COGSCreateModal({
   // Load formulations on mount
   useEffect(() => {
     if (open) {
-      const supabase = createClient();
       supabase
         .from("vw_formulations_with_ingredients")
         .select("formulation_id, formulation_code, product_name")
@@ -74,7 +74,6 @@ export function COGSCreateModal({
   }, [selectedFormulationId]);
 
   const loadFormulationCountries = async (formulationId: string) => {
-    const supabase = createClient();
     const { data: formulation } = await supabase
       .from("formulations")
       .select("formulation_code")

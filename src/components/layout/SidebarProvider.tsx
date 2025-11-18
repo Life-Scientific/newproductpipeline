@@ -15,4 +15,3 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     </UISidebarProvider>
   );
 }
-

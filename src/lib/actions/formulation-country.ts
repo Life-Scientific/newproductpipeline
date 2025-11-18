@@ -18,9 +18,8 @@ export async function createFormulationCountry(formData: FormData) {
   const isInActivePortfolio = formData.get("is_in_active_portfolio") === "true";
   const hasApproval = formData.get("has_approval") === "true";
 
-  // Crops and targets are JSON arrays
-  const cropsJson = formData.get("crops") as string | null;
-  const targetsJson = formData.get("targets") as string | null;
+  // Note: Crops and targets are now managed at formulation level via EPPO codes,
+  // not at formulation_country level
 
   if (!formulationId || !countryId) {
     return { error: "Formulation and country are required" };
@@ -60,41 +59,8 @@ export async function createFormulationCountry(formData: FormData) {
     return { error: error.message };
   }
 
-  // Add crops
-  if (cropsJson && data?.formulation_country_id) {
-    try {
-      const crops: Array<{ crop_id: string; notes?: string }> = JSON.parse(cropsJson);
-      if (crops.length > 0) {
-        const cropInserts = crops.map((crop) => ({
-          formulation_country_id: data.formulation_country_id,
-          crop_id: crop.crop_id,
-          notes: crop.notes || null,
-        }));
-        await supabase.from("formulation_country_crops").insert(cropInserts);
-      }
-    } catch (parseError) {
-      console.error("Failed to parse crops:", parseError);
-    }
-  }
-
-  // Add targets
-  if (targetsJson && data?.formulation_country_id) {
-    try {
-      const targets: Array<{ target_id: string; efficacy_level?: string; notes?: string }> =
-        JSON.parse(targetsJson);
-      if (targets.length > 0) {
-        const targetInserts = targets.map((target) => ({
-          formulation_country_id: data.formulation_country_id,
-          target_id: target.target_id,
-          efficacy_level: target.efficacy_level || null,
-          notes: target.notes || null,
-        }));
-        await supabase.from("formulation_country_targets").insert(targetInserts);
-      }
-    } catch (parseError) {
-      console.error("Failed to parse targets:", parseError);
-    }
-  }
+  // Note: Crops and targets are managed at formulation level via EPPO codes,
+  // not at formulation_country level
 
   revalidatePath("/registration");
   revalidatePath("/formulations");
@@ -117,8 +83,8 @@ export async function updateFormulationCountry(
   const isInActivePortfolio = formData.get("is_in_active_portfolio") === "true";
   const hasApproval = formData.get("has_approval") === "true";
 
-  const cropsJson = formData.get("crops") as string | null;
-  const targetsJson = formData.get("targets") as string | null;
+  // Note: Crops and targets are managed at formulation level via EPPO codes,
+  // not at formulation_country level
 
   const { data, error } = await supabase
     .from("formulation_country")
@@ -142,51 +108,8 @@ export async function updateFormulationCountry(
     return { error: error.message };
   }
 
-  // Update crops - delete all and reinsert
-  if (cropsJson) {
-    await supabase
-      .from("formulation_country_crops")
-      .delete()
-      .eq("formulation_country_id", formulationCountryId);
-
-    try {
-      const crops: Array<{ crop_id: string; notes?: string }> = JSON.parse(cropsJson);
-      if (crops.length > 0) {
-        const cropInserts = crops.map((crop) => ({
-          formulation_country_id: formulationCountryId,
-          crop_id: crop.crop_id,
-          notes: crop.notes || null,
-        }));
-        await supabase.from("formulation_country_crops").insert(cropInserts);
-      }
-    } catch (parseError) {
-      console.error("Failed to parse crops:", parseError);
-    }
-  }
-
-  // Update targets - delete all and reinsert
-  if (targetsJson) {
-    await supabase
-      .from("formulation_country_targets")
-      .delete()
-      .eq("formulation_country_id", formulationCountryId);
-
-    try {
-      const targets: Array<{ target_id: string; efficacy_level?: string; notes?: string }> =
-        JSON.parse(targetsJson);
-      if (targets.length > 0) {
-        const targetInserts = targets.map((target) => ({
-          formulation_country_id: formulationCountryId,
-          target_id: target.target_id,
-          efficacy_level: target.efficacy_level || null,
-          notes: target.notes || null,
-        }));
-        await supabase.from("formulation_country_targets").insert(targetInserts);
-      }
-    } catch (parseError) {
-      console.error("Failed to parse targets:", parseError);
-    }
-  }
+  // Note: Crops and targets are managed at formulation level via EPPO codes,
+  // not at formulation_country level
 
   revalidatePath("/registration");
   revalidatePath("/formulations");

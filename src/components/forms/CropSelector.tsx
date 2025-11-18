@@ -1,3 +1,8 @@
+/**
+ * @deprecated This component uses the legacy crops table.
+ * Use EPPOCropSelector instead, which uses the EPPO codes system.
+ * This component is kept for backward compatibility but should not be used in new code.
+ */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -13,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Plus } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Database } from "@/lib/supabase/database.types";
 import {
   Table,
@@ -38,6 +43,7 @@ interface CropSelectorProps {
 }
 
 export function CropSelector({ crops, onChange }: CropSelectorProps) {
+  const supabase = useSupabase();
   const [availableCrops, setAvailableCrops] = useState<Crop[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -51,7 +57,6 @@ export function CropSelector({ crops, onChange }: CropSelectorProps) {
   }, []);
 
   const loadCrops = async () => {
-    const supabase = createClient();
     const { data } = await supabase
       .from("crops")
       .select("*")

@@ -32,25 +32,27 @@ export async function GET(
       throw error;
     }
 
-    // Fetch crops for each use group
+    // Fetch crops for each use group using EPPO codes
     if (useGroups && useGroups.length > 0) {
       const useGroupIds = useGroups.map((ug: any) => ug.formulation_country_use_group_id);
       const { data: useGroupCrops } = await supabase
-        .from("formulation_country_use_group_crops")
+        .from("formulation_country_use_group_eppo_crops")
         .select(`
           formulation_country_use_group_id,
-          crops (
-            crop_id,
-            crop_name
+          eppo_codes (
+            eppo_code_id,
+            display_name,
+            eppo_code
           )
         `)
-        .in("formulation_country_use_group_id", useGroupIds);
+        .in("formulation_country_use_group_id", useGroupIds)
+        .eq("is_excluded", false);
 
       // Attach crops to use groups
       const cropsByUseGroup = new Map<string, string[]>();
       useGroupCrops?.forEach((ugc: any) => {
         const useGroupId = ugc.formulation_country_use_group_id;
-        const cropName = ugc.crops?.crop_name;
+        const cropName = ugc.eppo_codes?.display_name;
         if (cropName) {
           if (!cropsByUseGroup.has(useGroupId)) {
             cropsByUseGroup.set(useGroupId, []);

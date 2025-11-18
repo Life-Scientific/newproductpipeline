@@ -1,3 +1,8 @@
+/**
+ * @deprecated This component uses the legacy crops table.
+ * Use EPPOCodesTable instead, which displays EPPO codes (crops, insects, diseases, weeds).
+ * This component is kept for backward compatibility but should not be used in new code.
+ */
 "use client";
 
 import { type ColumnDef } from "@tanstack/react-table";

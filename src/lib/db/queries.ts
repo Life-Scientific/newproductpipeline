@@ -241,7 +241,7 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
     agg.protection.push({
       country: item.country_name || "",
       patent: item.earliest_active_patent_expiry,
-      data: item.earliest_active_data_protection_expiry,
+      data: null, // Data protections removed from schema
     });
   });
 
@@ -594,6 +594,53 @@ export async function getCountries() {
   }
 
   return data as Country[];
+}
+
+export async function getExchangeRates() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("exchange_rates")
+    .select(
+      `
+      *,
+      countries (
+        country_name,
+        currency_code
+      )
+    `
+    )
+    .order("effective_date", { ascending: false })
+    .order("country_id", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to fetch exchange rates: ${error.message}`);
+  }
+
+  return data || [];
+}
+
+export async function getLatestExchangeRate(
+  countryId: string,
+  date: Date = new Date()
+): Promise<number | null> {
+  const supabase = await createClient();
+  const dateStr = date.toISOString().split("T")[0];
+
+  const { data, error } = await supabase
+    .from("exchange_rates")
+    .select("exchange_rate_to_eur")
+    .eq("country_id", countryId)
+    .lte("effective_date", dateStr)
+    .eq("is_active", true)
+    .order("effective_date", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data.exchange_rate_to_eur;
 }
 
 export async function getFormulationIngredients(formulationId: string) {
@@ -1318,15 +1365,26 @@ export async function getUseGroupById(useGroupId: string) {
 }
 
 /**
- * Get crops for a use group with critical flags
+ * Get crops for a use group with critical flags (using EPPO codes)
  */
 export async function getUseGroupCrops(useGroupId: string) {
   const supabase = await createClient();
   
   const { data, error } = await supabase
-    .from("formulation_country_use_group_crops")
-    .select("crop_id, is_critical")
-    .eq("formulation_country_use_group_id", useGroupId);
+    .from("formulation_country_use_group_eppo_crops")
+    .select(`
+      eppo_code_id,
+      is_critical,
+      eppo_codes (
+        eppo_code_id,
+        eppo_code,
+        display_name,
+        classification,
+        eppo_type
+      )
+    `)
+    .eq("formulation_country_use_group_id", useGroupId)
+    .eq("is_excluded", false);
 
   if (error) {
     throw new Error(`Failed to fetch use group crops: ${error.message}`);
@@ -1336,35 +1394,38 @@ export async function getUseGroupCrops(useGroupId: string) {
     return [];
   }
 
-  // Get crop details
-  const cropIds = data.map(ugc => ugc.crop_id).filter(Boolean) as string[];
-  const { data: crops } = await supabase
-    .from("crops")
-    .select("*")
-    .in("crop_id", cropIds)
-    .eq("is_active", true)
-    .order("crop_name");
-
-  // Merge with is_critical flag
-  return (crops || []).map(crop => {
-    const useGroupCrop = data.find(ugc => ugc.crop_id === crop.crop_id);
-    return {
-      ...crop,
-      is_critical: useGroupCrop?.is_critical || false,
-    };
-  });
+  // Map EPPO codes with is_critical flag
+  return data.map((ugc: any) => ({
+    eppo_code_id: ugc.eppo_code_id,
+    eppo_code: ugc.eppo_codes?.eppo_code,
+    display_name: ugc.eppo_codes?.display_name,
+    classification: ugc.eppo_codes?.classification,
+    eppo_type: ugc.eppo_codes?.eppo_type,
+    is_critical: ugc.is_critical || false,
+  }));
 }
 
 /**
- * Get targets for a use group with critical flags
+ * Get targets for a use group with critical flags (using EPPO codes)
  */
 export async function getUseGroupTargets(useGroupId: string) {
   const supabase = await createClient();
   
   const { data, error } = await supabase
-    .from("formulation_country_use_group_targets")
-    .select("target_id, is_critical")
-    .eq("formulation_country_use_group_id", useGroupId);
+    .from("formulation_country_use_group_eppo_targets")
+    .select(`
+      eppo_code_id,
+      is_critical,
+      eppo_codes (
+        eppo_code_id,
+        eppo_code,
+        display_name,
+        classification,
+        eppo_type
+      )
+    `)
+    .eq("formulation_country_use_group_id", useGroupId)
+    .eq("is_excluded", false);
 
   if (error) {
     throw new Error(`Failed to fetch use group targets: ${error.message}`);
@@ -1374,23 +1435,15 @@ export async function getUseGroupTargets(useGroupId: string) {
     return [];
   }
 
-  // Get target details
-  const targetIds = data.map(ugt => ugt.target_id).filter(Boolean) as string[];
-  const { data: targets } = await supabase
-    .from("targets")
-    .select("*")
-    .in("target_id", targetIds)
-    .eq("is_active", true)
-    .order("target_name");
-
-  // Merge with is_critical flag
-  return (targets || []).map(target => {
-    const useGroupTarget = data.find(ugt => ugt.target_id === target.target_id);
-    return {
-      ...target,
-      is_critical: useGroupTarget?.is_critical || false,
-    };
-  });
+  // Map EPPO codes with is_critical flag
+  return data.map((ugt: any) => ({
+    eppo_code_id: ugt.eppo_code_id,
+    eppo_code: ugt.eppo_codes?.eppo_code,
+    display_name: ugt.eppo_codes?.display_name,
+    classification: ugt.eppo_codes?.classification,
+    eppo_type: ugt.eppo_codes?.eppo_type,
+    is_critical: ugt.is_critical || false,
+  }));
 }
 
 /**
@@ -1545,11 +1598,11 @@ export async function checkFormulationCropInUse(
 
   const useGroupIds = useGroups.map(ug => ug.formulation_country_use_group_id);
   
-  // Check if crop is used in any use group
+  // Check if crop is used in any use group (using EPPO codes)
   const { data: usedInGroups } = await supabase
-    .from("formulation_country_use_group_crops")
+    .from("formulation_country_use_group_eppo_crops")
     .select("formulation_country_use_group_id")
-    .eq("crop_id", cropId)
+    .eq("eppo_code_id", cropId)
     .in("formulation_country_use_group_id", useGroupIds);
 
   if (!usedInGroups || usedInGroups.length === 0) {
@@ -1598,11 +1651,11 @@ export async function checkFormulationTargetInUse(
 
   const useGroupIds = useGroups.map(ug => ug.formulation_country_use_group_id);
   
-  // Check if target is used in any use group
+  // Check if target is used in any use group (using EPPO codes)
   const { data: usedInGroups } = await supabase
-    .from("formulation_country_use_group_targets")
+    .from("formulation_country_use_group_eppo_targets")
     .select("formulation_country_use_group_id")
-    .eq("target_id", targetId)
+    .eq("eppo_code_id", targetId)
     .in("formulation_country_use_group_id", useGroupIds);
 
   if (!usedInGroups || usedInGroups.length === 0) {

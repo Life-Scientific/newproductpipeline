@@ -25,7 +25,7 @@ import {
   getFormulationsAction,
   getCountriesAction,
 } from "@/lib/actions/business-cases";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Formulation, Country } from "@/lib/supabase/database.types";
@@ -44,6 +44,7 @@ export function BusinessCaseCreateModal({
   onSuccess,
 }: BusinessCaseCreateModalProps) {
   const { toast } = useToast();
+  const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<"select" | "data">("select");
   const [formulations, setFormulations] = useState<Formulation[]>([]);
@@ -103,8 +104,6 @@ export function BusinessCaseCreateModal({
   // Filter formulations by selected country
   useEffect(() => {
     if (formData.country_id) {
-      const supabase = createClient();
-      
       // Get formulation_ids for this country
       supabase
         .from("formulation_country")
@@ -138,8 +137,6 @@ export function BusinessCaseCreateModal({
   // Load use groups when formulation and country are selected
   useEffect(() => {
     if (formData.formulation_id && formData.country_id) {
-      const supabase = createClient();
-      
       // Find formulation_country_id
       supabase
         .from("formulation_country")
@@ -189,8 +186,6 @@ export function BusinessCaseCreateModal({
       return;
     }
 
-    const supabase = createClient();
-    
     // Fetch target_market_entry_fy for all selected use groups
     supabase
       .from("formulation_country_use_group")

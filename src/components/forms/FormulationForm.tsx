@@ -25,7 +25,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { IngredientSelector, type IngredientInput } from "./IngredientSelector";
 import { EPPOCropSelector } from "./EPPOCropSelector";
 import { EPPOTargetSelector } from "./EPPOTargetSelector";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Database } from "@/lib/supabase/database.types";
 
 type Formulation = Database["public"]["Tables"]["formulations"]["Row"];
@@ -57,6 +57,7 @@ export function FormulationForm({
 }: FormulationFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
   const [ingredients, setIngredients] = useState<IngredientInput[]>([]);
   const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([]);
@@ -108,7 +109,6 @@ export function FormulationForm({
 
   const loadAvailableIngredients = async () => {
     try {
-      const supabase = createClient();
       const { data } = await supabase
         .from("ingredients")
         .select("*")
@@ -126,7 +126,6 @@ export function FormulationForm({
   const loadExistingIngredients = async () => {
     if (!formulation) return;
     try {
-      const supabase = createClient();
       const { data: existingIngredients, error } = await supabase
         .from("formulation_ingredients")
         .select(`

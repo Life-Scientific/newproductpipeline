@@ -13,17 +13,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Database } from "@/lib/supabase/database.types";
+import { FormulationSelector } from "./FormulationSelector";
+import { FormulationCountrySelector } from "./FormulationCountrySelector";
 
 type COGS = Database["public"]["Tables"]["cogs"]["Row"];
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
@@ -48,9 +43,10 @@ export function COGSForm({
 }: COGSFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
-  const [formulations, setFormulations] = useState<Formulation[]>([]);
-  const [formulationCountries, setFormulationCountries] = useState<FormulationCountry[]>([]);
+  const [selectedFormulation, setSelectedFormulation] = useState<Formulation | null>(null);
+  const [selectedFormulationCountry, setSelectedFormulationCountry] = useState<FormulationCountry | null>(null);
   const [formData, setFormData] = useState({
     formulation_id: cogs?.formulation_id || defaultFormulationId || "",
     formulation_country_id: cogs?.formulation_country_id || defaultFormulationCountryId || "",
@@ -64,51 +60,64 @@ export function COGSForm({
   });
 
   useEffect(() => {
-    if (open) {
-      // Load formulations
-      const supabase = createClient();
-      supabase
-        .from("vw_formulations_with_ingredients")
-        .select("formulation_id, formulation_code, product_name")
-        .order("formulation_code")
-        .then(({ data }) => {
-          if (data) setFormulations(data as Formulation[]);
-        });
-
-      // Load formulation countries if formulation is selected
-      if (formData.formulation_id) {
-        loadFormulationCountries(formData.formulation_id);
+    if (open && cogs) {
+      // Load selected formulation and country for display
+      if (cogs.formulation_id) {
+        supabase
+          .from("vw_formulations_with_ingredients")
+          .select("formulation_id, formulation_code, product_name")
+          .eq("formulation_id", cogs.formulation_id)
+          .single()
+          .then(({ data }) => {
+            if (data) setSelectedFormulation(data as Formulation);
+          });
+      }
+      if (cogs.formulation_country_id) {
+        supabase
+          .from("vw_formulation_country_detail")
+          .select("formulation_country_id, display_name, formulation_code, country_name")
+          .eq("formulation_country_id", cogs.formulation_country_id)
+          .single()
+          .then(({ data }) => {
+            if (data) setSelectedFormulationCountry(data as FormulationCountry);
+          });
       }
     }
-  }, [open]);
+  }, [open, cogs, supabase]);
 
   useEffect(() => {
     if (formData.formulation_id) {
-      loadFormulationCountries(formData.formulation_id);
+      // Load selected formulation for display
+      supabase
+        .from("vw_formulations_with_ingredients")
+        .select("formulation_id, formulation_code, product_name")
+        .eq("formulation_id", formData.formulation_id)
+        .single()
+        .then(({ data }) => {
+          if (data) setSelectedFormulation(data as Formulation);
+        });
     } else {
-      setFormulationCountries([]);
+      setSelectedFormulation(null);
       setFormData((prev) => ({ ...prev, formulation_country_id: "" }));
+      setSelectedFormulationCountry(null);
     }
-  }, [formData.formulation_id]);
+  }, [formData.formulation_id, supabase]);
 
-  const loadFormulationCountries = async (formulationId: string) => {
-    const supabase = createClient();
-    const { data: formulation } = await supabase
-      .from("formulations")
-      .select("formulation_code")
-      .eq("formulation_id", formulationId)
-      .single();
-
-    if (formulation?.formulation_code) {
-      const { data } = await supabase
+  useEffect(() => {
+    if (formData.formulation_country_id) {
+      // Load selected formulation country for display
+      supabase
         .from("vw_formulation_country_detail")
-        .select("formulation_country_id, display_name, country_name")
-        .eq("formulation_code", formulation.formulation_code)
-        .order("country_name");
-
-      if (data) setFormulationCountries(data as FormulationCountry[]);
+        .select("formulation_country_id, display_name, formulation_code, country_name")
+        .eq("formulation_country_id", formData.formulation_country_id)
+        .single()
+        .then(({ data }) => {
+          if (data) setSelectedFormulationCountry(data as FormulationCountry);
+        });
+    } else {
+      setSelectedFormulationCountry(null);
     }
-  };
+  }, [formData.formulation_country_id, supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,51 +184,43 @@ export function COGSForm({
               <Label htmlFor="formulation_id">
                 Formulation <span className="text-destructive">*</span>
               </Label>
-              <Select
+              <FormulationSelector
                 value={formData.formulation_id}
                 onValueChange={(value) =>
                   setFormData({ ...formData, formulation_id: value, formulation_country_id: "" })
                 }
-                required
+                placeholder="Search formulations..."
                 disabled={!!cogs}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select formulation" />
-                </SelectTrigger>
-                <SelectContent>
-                  {formulations
-                    .filter((f) => f.formulation_id)
-                    .map((f) => (
-                      <SelectItem key={f.formulation_id!} value={f.formulation_id!}>
-                        {f.formulation_code} - {f.product_name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+                required
+                selectedFormulation={selectedFormulation || undefined}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="formulation_country_id">Country (Optional)</Label>
-              <Select
-                value={formData.formulation_country_id || "__none__"}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, formulation_country_id: value === "__none__" ? "" : value })
-                }
-                disabled={!formData.formulation_id}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Global (no country)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Global (no country)</SelectItem>
-                  {formulationCountries
-                    .filter((fc) => fc.formulation_country_id)
-                    .map((fc) => (
-                      <SelectItem key={fc.formulation_country_id!} value={fc.formulation_country_id!}>
-                        {fc.country_name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <FormulationCountrySelector
+                    value={formData.formulation_country_id || ""}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, formulation_country_id: value })
+                    }
+                    placeholder="Search countries (optional)..."
+                    disabled={!formData.formulation_id}
+                    formulationId={formData.formulation_id || undefined}
+                    selectedFormulationCountry={selectedFormulationCountry || undefined}
+                  />
+                </div>
+                {formData.formulation_country_id && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData({ ...formData, formulation_country_id: "" })}
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Leave empty for global COGS, or select a country for country-specific COGS
               </p>

@@ -128,103 +128,8 @@ export async function createFormulation(formData: FormData) {
     }
   }
 
-  // Handle crops - REQUIRED
-  const cropsJson = formData.get("crops") as string | null;
-  if (!cropsJson) {
-    await supabase
-      .from("formulations")
-      .delete()
-      .eq("formulation_id", data.formulation_id);
-    return { error: "At least one crop is required" };
-  }
-
-  try {
-    const crops: Array<{ crop_id: string; notes?: string }> = JSON.parse(cropsJson);
-    
-    // Validate: Require at least one crop
-    if (crops.length === 0) {
-      await supabase
-        .from("formulations")
-        .delete()
-        .eq("formulation_id", data.formulation_id);
-      return { error: "At least one crop is required" };
-    }
-
-    // Add crops
-    const cropInserts = crops.map((crop) => ({
-      formulation_id: data.formulation_id,
-      crop_id: crop.crop_id,
-      notes: crop.notes || null,
-    }));
-
-    const { error: cropsError } = await supabase
-      .from("formulation_crops")
-      .insert(cropInserts);
-
-    if (cropsError) {
-      await supabase
-        .from("formulations")
-        .delete()
-        .eq("formulation_id", data.formulation_id);
-      return { error: `Failed to add crops: ${cropsError.message}` };
-    }
-  } catch (parseError) {
-    console.error("Failed to parse crops:", parseError);
-    await supabase
-      .from("formulations")
-      .delete()
-      .eq("formulation_id", data.formulation_id);
-    return { error: "Failed to parse crops data" };
-  }
-
-  // Handle targets - REQUIRED
-  const targetsJson = formData.get("targets") as string | null;
-  if (!targetsJson) {
-    await supabase
-      .from("formulations")
-      .delete()
-      .eq("formulation_id", data.formulation_id);
-    return { error: "At least one target is required" };
-  }
-
-  try {
-    const targets: Array<{ target_id: string; notes?: string }> = JSON.parse(targetsJson);
-    
-    // Validate: Require at least one target
-    if (targets.length === 0) {
-      await supabase
-        .from("formulations")
-        .delete()
-        .eq("formulation_id", data.formulation_id);
-      return { error: "At least one target is required" };
-    }
-
-    // Add targets
-    const targetInserts = targets.map((target) => ({
-      formulation_id: data.formulation_id,
-      target_id: target.target_id,
-      notes: target.notes || null,
-    }));
-
-    const { error: targetsError } = await supabase
-      .from("formulation_targets")
-      .insert(targetInserts);
-
-    if (targetsError) {
-      await supabase
-        .from("formulations")
-        .delete()
-        .eq("formulation_id", data.formulation_id);
-      return { error: `Failed to add targets: ${targetsError.message}` };
-    }
-  } catch (parseError) {
-    console.error("Failed to parse targets:", parseError);
-    await supabase
-      .from("formulations")
-      .delete()
-      .eq("formulation_id", data.formulation_id);
-    return { error: "Failed to parse targets data" };
-  }
+  // Note: Crops and targets are now managed separately via EPPO selectors
+  // They are not required during formulation creation
 
   // Refresh formulation data to get assigned code
   const { data: updatedFormulation } = await supabase
@@ -340,89 +245,8 @@ export async function updateFormulation(formulationId: string, formData: FormDat
     }
   }
 
-  // Handle crops - REQUIRED
-  const cropsJson = formData.get("crops") as string | null;
-  if (!cropsJson) {
-    return { error: "At least one crop is required" };
-  }
-
-  try {
-    const crops: Array<{ crop_id: string; notes?: string }> = JSON.parse(cropsJson);
-    
-    // Validate: Require at least one crop
-    if (crops.length === 0) {
-      return { error: "At least one crop is required" };
-    }
-
-    // Delete existing crops and insert new ones
-    const { error: deleteCropsError } = await supabase
-      .from("formulation_crops")
-      .delete()
-      .eq("formulation_id", formulationId);
-
-    if (deleteCropsError) {
-      return { error: `Failed to update crops: ${deleteCropsError.message}` };
-    }
-
-    const cropInserts = crops.map((crop) => ({
-      formulation_id: formulationId,
-      crop_id: crop.crop_id,
-      notes: crop.notes || null,
-    }));
-
-    const { error: cropsError } = await supabase
-      .from("formulation_crops")
-      .insert(cropInserts);
-
-    if (cropsError) {
-      return { error: `Failed to add crops: ${cropsError.message}` };
-    }
-  } catch (parseError) {
-    console.error("Failed to parse crops:", parseError);
-    return { error: "Failed to parse crops data" };
-  }
-
-  // Handle targets - REQUIRED
-  const targetsJson = formData.get("targets") as string | null;
-  if (!targetsJson) {
-    return { error: "At least one target is required" };
-  }
-
-  try {
-    const targets: Array<{ target_id: string; notes?: string }> = JSON.parse(targetsJson);
-    
-    // Validate: Require at least one target
-    if (targets.length === 0) {
-      return { error: "At least one target is required" };
-    }
-
-    // Delete existing targets and insert new ones
-    const { error: deleteTargetsError } = await supabase
-      .from("formulation_targets")
-      .delete()
-      .eq("formulation_id", formulationId);
-
-    if (deleteTargetsError) {
-      return { error: `Failed to update targets: ${deleteTargetsError.message}` };
-    }
-
-    const targetInserts = targets.map((target) => ({
-      formulation_id: formulationId,
-      target_id: target.target_id,
-      notes: target.notes || null,
-    }));
-
-    const { error: targetsError } = await supabase
-      .from("formulation_targets")
-      .insert(targetInserts);
-
-    if (targetsError) {
-      return { error: `Failed to add targets: ${targetsError.message}` };
-    }
-  } catch (parseError) {
-    console.error("Failed to parse targets:", parseError);
-    return { error: "Failed to parse targets data" };
-  }
+  // Note: Crops and targets are now managed separately via EPPO selectors
+  // They are not updated through this function
 
   // Refresh formulation data to get assigned code
   const { data: updatedFormulation } = await supabase
@@ -471,19 +295,21 @@ export async function deleteFormulation(formulationId: string) {
 
 /**
  * Add a crop to a formulation (normal use - global superset)
+ * Note: cropId parameter is now an EPPO code ID
+ * @deprecated Use addFormulationCrop from eppo-codes.ts instead
  */
 export async function addFormulationCrop(
   formulationId: string,
-  cropId: string,
+  cropId: string, // Now expects eppo_code_id
   notes?: string | null
 ) {
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("formulation_crops")
+    .from("formulation_eppo_crops")
     .insert({
       formulation_id: formulationId,
-      crop_id: cropId,
+      eppo_code_id: cropId,
       notes: notes || null,
     });
 
@@ -513,10 +339,10 @@ export async function removeFormulationCrop(formulationId: string, cropId: strin
   if (!fcRecords || fcRecords.length === 0) {
     // No formulation countries, safe to delete
     const { error } = await supabase
-      .from("formulation_crops")
+      .from("formulation_eppo_crops")
       .delete()
       .eq("formulation_id", formulationId)
-      .eq("crop_id", cropId);
+      .eq("eppo_code_id", cropId);
 
     if (error) {
       return { error: error.message };
@@ -536,9 +362,9 @@ export async function removeFormulationCrop(formulationId: string, cropId: strin
   if (useGroups && useGroups.length > 0) {
     const useGroupIds = useGroups.map(ug => ug.formulation_country_use_group_id);
     const { data: usedInGroups } = await supabase
-      .from("formulation_country_use_group_crops")
+      .from("formulation_country_use_group_eppo_crops")
       .select("formulation_country_use_group_id")
-      .eq("crop_id", cropId)
+      .eq("eppo_code_id", cropId)
       .in("formulation_country_use_group_id", useGroupIds);
 
     if (usedInGroups && usedInGroups.length > 0) {
@@ -549,10 +375,10 @@ export async function removeFormulationCrop(formulationId: string, cropId: strin
   }
 
   const { error } = await supabase
-    .from("formulation_crops")
+    .from("formulation_eppo_crops")
     .delete()
     .eq("formulation_id", formulationId)
-    .eq("crop_id", cropId);
+    .eq("eppo_code_id", cropId);
 
   if (error) {
     return { error: error.message };
@@ -565,19 +391,21 @@ export async function removeFormulationCrop(formulationId: string, cropId: strin
 
 /**
  * Add a target to a formulation (normal use - global superset)
+ * Note: targetId parameter is now an EPPO code ID
+ * @deprecated Use addFormulationTarget from eppo-codes.ts instead
  */
 export async function addFormulationTarget(
   formulationId: string,
-  targetId: string,
+  targetId: string, // Now expects eppo_code_id
   notes?: string | null
 ) {
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("formulation_targets")
+    .from("formulation_eppo_targets")
     .insert({
       formulation_id: formulationId,
-      target_id: targetId,
+      eppo_code_id: targetId,
       notes: notes || null,
     });
 
@@ -607,10 +435,10 @@ export async function removeFormulationTarget(formulationId: string, targetId: s
   if (!fcRecords || fcRecords.length === 0) {
     // No formulation countries, safe to delete
     const { error } = await supabase
-      .from("formulation_targets")
+      .from("formulation_eppo_targets")
       .delete()
       .eq("formulation_id", formulationId)
-      .eq("target_id", targetId);
+      .eq("eppo_code_id", targetId);
 
     if (error) {
       return { error: error.message };
@@ -630,9 +458,9 @@ export async function removeFormulationTarget(formulationId: string, targetId: s
   if (useGroups && useGroups.length > 0) {
     const useGroupIds = useGroups.map(ug => ug.formulation_country_use_group_id);
     const { data: usedInGroups } = await supabase
-      .from("formulation_country_use_group_targets")
+      .from("formulation_country_use_group_eppo_targets")
       .select("formulation_country_use_group_id")
-      .eq("target_id", targetId)
+      .eq("eppo_code_id", targetId)
       .in("formulation_country_use_group_id", useGroupIds);
 
     if (usedInGroups && usedInGroups.length > 0) {
@@ -643,10 +471,10 @@ export async function removeFormulationTarget(formulationId: string, targetId: s
   }
 
   const { error } = await supabase
-    .from("formulation_targets")
+    .from("formulation_eppo_targets")
     .delete()
     .eq("formulation_id", formulationId)
-    .eq("target_id", targetId);
+    .eq("eppo_code_id", targetId);
 
   if (error) {
     return { error: error.message };

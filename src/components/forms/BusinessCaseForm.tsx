@@ -12,20 +12,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Database } from "@/lib/supabase/database.types";
-import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
+import { FormulationSelector } from "./FormulationSelector";
+import { CountrySelector } from "./CountrySelector";
+import { UseGroupMultiSelect } from "./UseGroupMultiSelect";
 
 type BusinessCase = Database["public"]["Tables"]["business_case"]["Row"];
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
@@ -51,10 +46,11 @@ export function BusinessCaseForm({
 }: BusinessCaseFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
-  const [formulations, setFormulations] = useState<Formulation[]>([]);
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [useGroupOptions, setUseGroupOptions] = useState<FormulationCountryUseGroup[]>([]);
+  const [selectedFormulation, setSelectedFormulation] = useState<Formulation | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [selectedUseGroups, setSelectedUseGroups] = useState<FormulationCountryUseGroup[]>([]);
   const [selectedUseGroupIds, setSelectedUseGroupIds] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
@@ -84,28 +80,65 @@ export function BusinessCaseForm({
     }
   }, [open, businessCase]);
 
-  // Load formulations and countries when dialog opens
+  // Load selected items for display when editing
   useEffect(() => {
-    if (open) {
-      loadFormulations();
-      loadCountries();
+    if (open && businessCase) {
+      loadExistingBusinessCaseData();
+    } else if (open) {
+      // Set defaults for new business case
+      if (defaultFormulationId) {
+        setFormData((prev) => ({ ...prev, formulation_id: defaultFormulationId }));
+      }
+      if (defaultCountryId) {
+        setFormData((prev) => ({ ...prev, country_id: defaultCountryId }));
+      }
     }
-  }, [open]);
+  }, [open, businessCase, defaultFormulationId, defaultCountryId]);
+
+  // Load selected formulation and country for display
+  useEffect(() => {
+    if (formData.formulation_id) {
+      supabase
+        .from("vw_formulations_with_ingredients")
+        .select("formulation_id, formulation_code, product_name")
+        .eq("formulation_id", formData.formulation_id)
+        .single()
+        .then(({ data }) => {
+          if (data) setSelectedFormulation(data as Formulation);
+        });
+    } else {
+      setSelectedFormulation(null);
+    }
+  }, [formData.formulation_id, supabase]);
+
+  useEffect(() => {
+    if (formData.country_id) {
+      supabase
+        .from("countries")
+        .select("*")
+        .eq("country_id", formData.country_id)
+        .single()
+        .then(({ data }) => {
+          if (data) setSelectedCountry(data);
+        });
+    } else {
+      setSelectedCountry(null);
+    }
+  }, [formData.country_id, supabase]);
 
   // Load use groups when both formulation and country are selected
   useEffect(() => {
     if (formData.formulation_id && formData.country_id) {
       loadUseGroups(formData.formulation_id, formData.country_id);
     } else {
-      setUseGroupOptions([]);
+      setSelectedUseGroups([]);
       setSelectedUseGroupIds([]);
     }
-  }, [formData.formulation_id, formData.country_id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.formulation_id, formData.country_id]); // loadUseGroups is stable function using supabase
 
   const loadExistingBusinessCaseData = async () => {
     if (!businessCase) return;
-    
-    const supabase = createClient();
     
     // Get use groups for this business case from junction table
     const { data: junctionData } = await supabase
@@ -115,6 +148,10 @@ export function BusinessCaseForm({
         formulation_country_use_group!inner(
           formulation_country_id,
           use_group_variant,
+          use_group_name,
+          display_name,
+          formulation_code,
+          country_name,
           formulation_country!inner(
             formulation_id,
             country_id
@@ -135,37 +172,22 @@ export function BusinessCaseForm({
           country_id: fc.country_id || "",
         }));
         
-        // Set selected use group variants
-        const variants = junctionData
-          .map((j) => (j.formulation_country_use_group as any)?.use_group_variant)
-          .filter((v): v is string => Boolean(v));
-        setSelectedUseGroupIds(variants);
+        // Set selected use group IDs (using formulation_country_use_group_id)
+        const useGroupIds = junctionData
+          .map((j) => (j.formulation_country_use_group as any)?.formulation_country_use_group_id)
+          .filter((id): id is string => Boolean(id));
+        setSelectedUseGroupIds(useGroupIds);
+        
+        // Set selected use groups for display
+        const useGroups = junctionData
+          .map((j) => j.formulation_country_use_group as any)
+          .filter((ug): ug is FormulationCountryUseGroup => Boolean(ug));
+        setSelectedUseGroups(useGroups);
       }
     }
   };
 
-  const loadFormulations = async () => {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("vw_formulations_with_ingredients")
-      .select("formulation_id, formulation_code, product_name")
-      .order("formulation_code");
-    if (data) setFormulations(data as Formulation[]);
-  };
-
-  const loadCountries = async () => {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("countries")
-      .select("*")
-      .eq("is_active", true)
-      .order("country_name");
-    if (data) setCountries(data);
-  };
-
   const loadUseGroups = async (formulationId: string, countryId: string) => {
-    const supabase = createClient();
-    
     // First, find the formulation_country_id
     const { data: fcData } = await supabase
       .from("formulation_country")
@@ -175,22 +197,24 @@ export function BusinessCaseForm({
       .single();
 
     if (!fcData) {
-      setUseGroupOptions([]);
+      setSelectedUseGroups([]);
       return;
     }
 
-    // Then load use groups for that formulation_country
+    // Load use groups for that formulation_country
     const { data } = await supabase
       .from("vw_formulation_country_use_group")
-      .select("formulation_country_use_group_id, use_group_variant, use_group_name, display_name")
+      .select("formulation_country_use_group_id, use_group_variant, use_group_name, display_name, formulation_code, country_name")
       .eq("formulation_country_id", fcData.formulation_country_id)
       .order("use_group_variant");
     
     if (data) {
-      setUseGroupOptions(data as FormulationCountryUseGroup[]);
-      // If editing and we haven't set selected use groups yet, don't auto-select
-      if (!businessCase || selectedUseGroupIds.length > 0) {
-        // Keep existing selection
+      const useGroups = data as FormulationCountryUseGroup[];
+      setSelectedUseGroups(useGroups);
+      
+      // If editing and we have selected IDs, match them to the loaded use groups
+      if (businessCase && selectedUseGroupIds.length > 0) {
+        // Keep existing selection - IDs should match
       }
     }
   };
@@ -265,11 +289,6 @@ export function BusinessCaseForm({
     });
   };
 
-  const useGroupMultiSelectOptions: MultiSelectOption[] = useGroupOptions.map((ug) => ({
-    value: ug.use_group_variant || "",
-    label: ug.display_name || `${ug.use_group_variant} - ${ug.use_group_name}`,
-  }));
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -286,66 +305,49 @@ export function BusinessCaseForm({
                 <Label htmlFor="formulation_id">
                   Formulation <span className="text-destructive">*</span>
                 </Label>
-                <Select
+                <FormulationSelector
                   value={formData.formulation_id}
                   onValueChange={(value) =>
                     setFormData({ ...formData, formulation_id: value, country_id: "" })
                   }
+                  placeholder="Search formulations..."
                   required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select formulation" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {formulations.map((f) => (
-                      <SelectItem key={f.formulation_id} value={f.formulation_id}>
-                        {f.formulation_code || f.product_name || f.formulation_id}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  selectedFormulation={selectedFormulation || undefined}
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="country_id">
                   Country <span className="text-destructive">*</span>
                 </Label>
-                <Select
+                <CountrySelector
                   value={formData.country_id}
                   onValueChange={(value) =>
                     setFormData({ ...formData, country_id: value })
                   }
+                  placeholder="Search countries..."
                   required
                   disabled={!formData.formulation_id}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {countries.map((c) => (
-                      <SelectItem key={c.country_id} value={c.country_id}>
-                        {c.country_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  selectedCountry={selectedCountry || undefined}
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="use_groups">
                   Use Groups <span className="text-destructive">*</span>
                 </Label>
-                <MultiSelect
-                  options={useGroupMultiSelectOptions}
+                <UseGroupMultiSelect
                   selected={selectedUseGroupIds}
                   onChange={setSelectedUseGroupIds}
                   placeholder={
                     !formData.formulation_id || !formData.country_id
                       ? "Select formulation and country first"
-                      : "Select use groups..."
+                      : "Search and select use groups..."
                   }
-                  emptyText="No use groups found for this formulation-country combination"
                   disabled={!formData.formulation_id || !formData.country_id}
+                  formulationId={formData.formulation_id || undefined}
+                  countryId={formData.country_id || undefined}
+                  selectedUseGroups={selectedUseGroups}
                 />
               </div>
             </div>

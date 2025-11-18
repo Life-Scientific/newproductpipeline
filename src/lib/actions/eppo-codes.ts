@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 
 export async function searchEPPOCodes(params: {
   search?: string;
-  classification?: "crop" | "insect" | "disease" | "weed";
+  classification?: "crop" | "insect" | "disease" | "weed" | ("crop" | "insect" | "disease" | "weed")[];
   eppoType?: "individual_crop" | "crop_group" | "individual_target" | "target_group";
   isParent?: boolean;
   limit?: number;
@@ -21,14 +21,28 @@ export async function searchEPPOCodes(params: {
     .select("*")
     .eq("is_active", true);
   
-  if (params.search) {
+  if (params.search && params.search.trim().length > 0) {
+    const searchTerm = params.search.trim();
+    // Improved fuzzy search: search across multiple fields with better matching
+    // This searches display_name, latin_name, eppo_code, and common language names
+    const searchPattern = `%${searchTerm}%`;
     query = query.or(
-      `display_name.ilike.%${params.search}%,eppo_code.ilike.%${params.search}%,latin_name.ilike.%${params.search}%`
+      `display_name.ilike.${searchPattern},` +
+      `latin_name.ilike.${searchPattern},` +
+      `eppo_code.ilike.${searchPattern},` +
+      `english_name.ilike.${searchPattern},` +
+      `german_name.ilike.${searchPattern},` +
+      `french_name.ilike.${searchPattern},` +
+      `spanish_name.ilike.${searchPattern}`
     );
   }
   
   if (params.classification) {
-    query = query.eq("classification", params.classification);
+    if (Array.isArray(params.classification)) {
+      query = query.in("classification", params.classification);
+    } else {
+      query = query.eq("classification", params.classification);
+    }
   }
   
   if (params.eppoType) {
@@ -39,16 +53,49 @@ export async function searchEPPOCodes(params: {
     query = query.eq("is_parent", params.isParent);
   }
   
+  // Order by relevance: exact matches first, then display_name
   query = query.order("display_name", { ascending: true });
   
   if (params.limit) {
     query = query.limit(params.limit);
+  } else {
+    // Default limit for performance
+    query = query.limit(100);
   }
   
   const { data, error } = await query;
   
   if (error) {
     return { error: error.message };
+  }
+  
+  // Sort results by relevance (exact matches first, then partial matches)
+  if (params.search && data) {
+    const searchLower = params.search.toLowerCase();
+    data.sort((a, b) => {
+      const aDisplay = (a.display_name || "").toLowerCase();
+      const bDisplay = (b.display_name || "").toLowerCase();
+      const aCode = (a.eppo_code || "").toLowerCase();
+      const bCode = (b.eppo_code || "").toLowerCase();
+      
+      // Exact match in display name
+      const aExactDisplay = aDisplay === searchLower ? 1 : 0;
+      const bExactDisplay = bDisplay === searchLower ? 1 : 0;
+      if (aExactDisplay !== bExactDisplay) return bExactDisplay - aExactDisplay;
+      
+      // Starts with search term
+      const aStarts = aDisplay.startsWith(searchLower) ? 1 : 0;
+      const bStarts = bDisplay.startsWith(searchLower) ? 1 : 0;
+      if (aStarts !== bStarts) return bStarts - aStarts;
+      
+      // Exact match in code
+      const aExactCode = aCode === searchLower ? 1 : 0;
+      const bExactCode = bCode === searchLower ? 1 : 0;
+      if (aExactCode !== bExactCode) return bExactCode - aExactCode;
+      
+      // Alphabetical fallback
+      return aDisplay.localeCompare(bDisplay);
+    });
   }
   
   return { data, success: true };

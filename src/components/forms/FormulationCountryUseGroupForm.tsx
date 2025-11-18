@@ -23,7 +23,9 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
-import { createClient } from "@/lib/supabase/client";
+import { EPPOCodeMultiSelect } from "./EPPOCodeMultiSelect";
+import { FormulationCountrySelector } from "./FormulationCountrySelector";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Database } from "@/lib/supabase/database.types";
 
 type FormulationCountryUseGroup = Database["public"]["Tables"]["formulation_country_use_group"]["Row"];
@@ -57,8 +59,9 @@ export function FormulationCountryUseGroupForm({
 }: FormulationCountryUseGroupFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
-  const [formulationCountries, setFormulationCountries] = useState<FormulationCountryDetail[]>([]);
+  const [selectedFormulationCountry, setSelectedFormulationCountry] = useState<FormulationCountryDetail | null>(null);
   const [formulationEppoCrops, setFormulationEppoCrops] = useState<EPPOCode[]>([]);
   const [formulationEppoTargets, setFormulationEppoTargets] = useState<EPPOCode[]>([]);
   const [referenceProducts, setReferenceProducts] = useState<ReferenceProduct[]>([]);
@@ -96,15 +99,6 @@ export function FormulationCountryUseGroupForm({
   }, [open, formulationCountryUseGroup, formData.formulation_country_id]);
 
   const loadData = async () => {
-    const supabase = createClient();
-
-    // Load formulation countries
-    const { data: fcData } = await supabase
-      .from("vw_formulation_country_detail")
-      .select("formulation_country_id, display_name, formulation_code, country_name")
-      .order("display_name");
-    if (fcData) setFormulationCountries(fcData as FormulationCountryDetail[]);
-
     // Load reference products
     const { data: refData } = await supabase
       .from("reference_products")
@@ -112,11 +106,19 @@ export function FormulationCountryUseGroupForm({
       .eq("is_active", true)
       .order("product_name");
     if (refData) setReferenceProducts(refData);
+
+    // Load selected formulation country if editing
+    if (formulationCountryUseGroup?.formulation_country_id) {
+      const { data: fcData } = await supabase
+        .from("vw_formulation_country_detail")
+        .select("formulation_country_id, display_name, formulation_code, country_name")
+        .eq("formulation_country_id", formulationCountryUseGroup.formulation_country_id)
+        .single();
+      if (fcData) setSelectedFormulationCountry(fcData as FormulationCountryDetail);
+    }
   };
 
   const loadFormulationCropsAndTargets = async (formulationCountryId: string) => {
-    const supabase = createClient();
-
     // Get formulation_id from formulation_country
     const { data: fcData } = await supabase
       .from("formulation_country")
@@ -179,8 +181,6 @@ export function FormulationCountryUseGroupForm({
 
   const loadExistingCropsAndTargets = async () => {
     if (!formulationCountryUseGroup) return;
-    const supabase = createClient();
-
     // Get formulation_id
     const { data: fcData } = await supabase
       .from("formulation_country")
@@ -406,25 +406,14 @@ export function FormulationCountryUseGroupForm({
               <Label htmlFor="formulation_country_id">
                 Formulation-Country <span className="text-destructive">*</span>
               </Label>
-              <Select
+              <FormulationCountrySelector
                 value={formData.formulation_country_id}
                 onValueChange={handleFormulationCountryChange}
-                required
+                placeholder="Search formulation-country combinations..."
                 disabled={!!formulationCountryUseGroup}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select formulation-country" />
-                </SelectTrigger>
-                <SelectContent>
-                    {formulationCountries
-                      .filter((fc) => fc.formulation_country_id)
-                      .map((fc) => (
-                        <SelectItem key={fc.formulation_country_id!} value={fc.formulation_country_id!}>
-                          {fc.display_name}
-                        </SelectItem>
-                      ))}
-                </SelectContent>
-              </Select>
+                required
+                selectedFormulationCountry={selectedFormulationCountry}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="use_group_variant">
@@ -592,11 +581,14 @@ export function FormulationCountryUseGroupForm({
             )}
             {formulationEppoCrops.length > 0 && (
               <>
-                <MultiSelect
-                  options={eppoCropOptions}
+                <EPPOCodeMultiSelect
                   selected={selectedEppoCropIds}
                   onChange={setSelectedEppoCropIds}
-                  placeholder="Select crops for this use group..."
+                  classification="crop"
+                  placeholder="Search and select crops for this use group..."
+                  searchPlaceholder="Type crop name, EPPO code, or latin name..."
+                  allowedEppoCodeIds={formulationEppoCrops.map((c) => c.eppo_code_id)}
+                  showCode={true}
                 />
                 {selectedEppoCropIds.length > 0 && (
                   <div className="space-y-3 mt-4 p-4 border rounded-lg bg-muted/50">
@@ -671,11 +663,14 @@ export function FormulationCountryUseGroupForm({
             )}
             {formulationEppoTargets.length > 0 && (
               <>
-                <MultiSelect
-                  options={eppoTargetOptions}
+                <EPPOCodeMultiSelect
                   selected={selectedEppoTargetIds}
                   onChange={setSelectedEppoTargetIds}
-                  placeholder="Select targets for this use group..."
+                  classification={["insect", "disease", "weed"]}
+                  placeholder="Search and select targets for this use group..."
+                  searchPlaceholder="Type target name, EPPO code, or latin name..."
+                  allowedEppoCodeIds={formulationEppoTargets.map((t) => t.eppo_code_id)}
+                  showCode={true}
                 />
                 {selectedEppoTargetIds.length > 0 && (
                   <div className="space-y-3 mt-4 p-4 border rounded-lg bg-muted/50">
