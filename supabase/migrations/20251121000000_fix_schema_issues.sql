@@ -52,7 +52,9 @@ GROUP BY fc.formulation_country_id, f.formulation_code, f.formulation_name, f.fo
 -- STEP 2: Fix vw_formulation_country_use_group - Use EPPO codes
 -- ============================================================================
 
-CREATE OR REPLACE VIEW public.vw_formulation_country_use_group AS
+DROP VIEW IF EXISTS public.vw_formulation_country_use_group CASCADE;
+
+CREATE VIEW public.vw_formulation_country_use_group AS
 SELECT 
     fcl.formulation_country_use_group_id,
     fcl.formulation_country_id,
@@ -90,7 +92,9 @@ LEFT JOIN reference_products rp ON fcl.reference_product_id = rp.reference_produ
 -- STEP 3: Fix vw_use_group_details - Use EPPO codes
 -- ============================================================================
 
-CREATE OR REPLACE VIEW public.vw_use_group_details AS
+DROP VIEW IF EXISTS public.vw_use_group_details CASCADE;
+
+CREATE VIEW public.vw_use_group_details AS
 SELECT 
     fcl.formulation_country_use_group_id,
     f.formulation_code,
@@ -120,7 +124,9 @@ LEFT JOIN reference_products rp ON fcl.reference_product_id = rp.reference_produ
 -- STEP 4: Fix vw_formulation_country_detail - Use EPPO codes + Add missing columns
 -- ============================================================================
 
-CREATE OR REPLACE VIEW public.vw_formulation_country_detail AS
+DROP VIEW IF EXISTS public.vw_formulation_country_detail CASCADE;
+
+CREATE VIEW public.vw_formulation_country_detail AS
 SELECT 
     fc.formulation_country_id,
     f.formulation_code,
@@ -189,14 +195,16 @@ GROUP BY fc.formulation_country_id, f.formulation_id, f.formulation_code, f.form
 -- STEP 5: Fix vw_business_case - Add missing columns
 -- ============================================================================
 
-CREATE OR REPLACE VIEW public.vw_business_case AS
+DROP VIEW IF EXISTS public.vw_business_case CASCADE;
+
+CREATE VIEW public.vw_business_case AS
 SELECT 
     bc.business_case_id,
     bc.business_case_group_id,
-    bc.formulation_country_id,
-    bc.formulation_country_use_group_id,
+    -- Get formulation_country_id and formulation_country_use_group_id through junction table
+    fcug.formulation_country_id,
+    bcug.formulation_country_use_group_id,
     bc.business_case_name,
-    bc.business_case_type,
     bc.year_offset,
     bc.volume,
     bc.nsp,
@@ -205,13 +213,9 @@ SELECT
     bc.total_cogs,
     bc.total_margin,
     bc.margin_percent,
-    bc.fiscal_year,
     bc.status,
     bc.effective_start_fiscal_year,
-    bc.scenario_id,
-    bc.scenario_name,
     bc.assumptions,
-    bc.confidence_level,
     bc.volume_last_updated_at,
     bc.volume_last_updated_by,
     bc.nsp_last_updated_at,
@@ -221,21 +225,28 @@ SELECT
     bc.created_by,
     bc.created_at,
     bc.updated_at,
+    -- Calculate fiscal_year from effective_start_fiscal_year + year_offset
+    CASE 
+        WHEN bc.effective_start_fiscal_year IS NOT NULL AND bc.year_offset IS NOT NULL THEN
+            'FY' || LPAD((CAST(SUBSTRING(bc.effective_start_fiscal_year, 3) AS INTEGER) + bc.year_offset - 1)::TEXT, 2, '0')
+        ELSE NULL
+    END AS fiscal_year,
     -- Get formulation_id and country_id through formulation_country
-    COALESCE(fc.formulation_id, fc2.formulation_id) AS formulation_id,
-    COALESCE(fc.country_id, fc2.country_id) AS country_id,
+    fc.formulation_id,
+    fc.country_id,
     f.formulation_code,
     f.formulation_name,
+    f.uom,
     c.country_name,
     c.country_code,
-    fcl.use_group_variant,
-    fcl.use_group_name,
-    fcl.target_market_entry_fy,
+    fcug.use_group_variant,
+    fcug.use_group_name,
+    fcug.target_market_entry_fy,
     concat(f.formulation_code, ' - ', c.country_name, ' - ', bc.business_case_name) AS display_name
 FROM business_case bc
-LEFT JOIN formulation_country fc ON bc.formulation_country_id = fc.formulation_country_id
-LEFT JOIN formulation_country_use_group fcl ON bc.formulation_country_use_group_id = fcl.formulation_country_use_group_id
-LEFT JOIN formulation_country fc2 ON fcl.formulation_country_id = fc2.formulation_country_id
-LEFT JOIN formulations f ON COALESCE(fc.formulation_id, fc2.formulation_id) = f.formulation_id
-LEFT JOIN countries c ON COALESCE(fc.country_id, fc2.country_id) = c.country_id;
+LEFT JOIN business_case_use_groups bcug ON bc.business_case_id = bcug.business_case_id
+LEFT JOIN formulation_country_use_group fcug ON bcug.formulation_country_use_group_id = fcug.formulation_country_use_group_id
+LEFT JOIN formulation_country fc ON fcug.formulation_country_id = fc.formulation_country_id
+LEFT JOIN formulations f ON fc.formulation_id = f.formulation_id
+LEFT JOIN countries c ON fc.country_id = c.country_id;
 
