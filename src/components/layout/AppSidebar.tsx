@@ -2,24 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
-  LayoutDashboard,
-  FlaskConical,
-  TrendingUp,
-  FileCheck,
-  Database,
-  BarChart3,
-  DollarSign,
-  Beaker,
-  FileText,
-  GitCompare,
   User,
   LogOut,
   ChevronUp,
-  Globe,
-  GitBranch,
+  Settings,
 } from "lucide-react";
+import * as Icons from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -44,92 +34,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSupabase } from "@/hooks/use-supabase";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
-// Overview
-const overviewMenuItems = [
-  {
-    title: "Financial Dashboard",
-    url: "/",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Pipeline Tracker",
-    url: "/pipeline-tracker",
-    icon: GitBranch,
-  },
-];
-
-// Core Views
-const coreViewsMenuItems = [
-  {
-    title: "Formulations",
-    url: "/formulations",
-    icon: FlaskConical,
-  },
-  {
-    title: "Countries",
-    url: "/countries",
-    icon: Globe,
-  },
-  {
-    title: "Use Groups",
-    url: "/use-groups",
-    icon: FileText,
-  },
-];
-
-// Detailed Financials
-const financialsMenuItems = [
-  {
-    title: "Business Cases",
-    url: "/business-cases",
-    icon: TrendingUp,
-  },
-  {
-    title: "COGS",
-    url: "/cogs",
-    icon: DollarSign,
-  },
-];
-
-const regulatoryMenuItems = [
-  {
-    title: "Registration Pipeline",
-    url: "/registration",
-    icon: FileCheck,
-  },
-];
-
-const analysisMenuItems = [
-  {
-    title: "Analytics",
-    url: "/analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "Compare",
-    url: "/formulations/compare",
-    icon: GitCompare,
-  },
-];
-
-const referenceMenuItems = [
-  // {
-  //   title: "Ingredients",
-  //   url: "/ingredients",
-  //   icon: Beaker,
-  // },
-  {
-    title: "Reference Data",
-    url: "/reference",
-    icon: Database,
-  },
-];
+// Helper function to get icon component from string name
+function getIconComponent(iconName: string | null) {
+  if (!iconName) return Icons.LayoutDashboard;
+  const IconComponent = (Icons as Record<string, React.ComponentType<any>>)[iconName];
+  return IconComponent || Icons.LayoutDashboard;
+}
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = useSupabase();
+  const { workspaceWithMenu, isLoading: workspaceLoading } = useWorkspace();
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -163,178 +82,73 @@ export function AppSidebar() {
     return pathname?.startsWith(url);
   };
 
+  // Group menu items by group_name
+  const menuGroups = useMemo(() => {
+    if (!workspaceWithMenu?.menu_items) return [];
+    
+    const groups = new Map<string, typeof workspaceWithMenu.menu_items>();
+    
+    workspaceWithMenu.menu_items.forEach((item) => {
+      const group = item.group_name;
+      if (!groups.has(group)) {
+        groups.set(group, []);
+      }
+      groups.get(group)!.push(item);
+    });
+    
+    // Sort items within each group by display_order
+    groups.forEach((items) => {
+      items.sort((a, b) => a.display_order - b.display_order);
+    });
+    
+    return Array.from(groups.entries()).map(([groupName, items]) => ({
+      groupName,
+      items,
+    }));
+  }, [workspaceWithMenu]);
+
   return (
     <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 px-2 py-3">
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
-            LS
-          </div>
-          <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">Portfolio Manager</span>
-            <span className="truncate text-xs text-sidebar-foreground/70">
-              Life Scientific
-            </span>
-          </div>
+          <WorkspaceSwitcher />
           <SidebarTrigger className="ml-auto" />
         </div>
       </SidebarHeader>
       <SidebarContent className="gap-2">
-        {/* Overview */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
-            Overview
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {overviewMenuItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                    size="default"
-                  >
-                    <Link href={item.url}>
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Core Views */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
-            Core Views
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {coreViewsMenuItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                    size="default"
-                  >
-                    <Link href={item.url}>
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Detailed Financials */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
-            Detailed Financials
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {financialsMenuItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                    size="default"
-                  >
-                    <Link href={item.url}>
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Regulatory */}
-        {/* <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
-            Regulatory
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {regulatoryMenuItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                    size="default"
-                  >
-                    <Link href={item.url}>
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup> */}
-
-        {/* Analysis */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
-            Analysis
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {analysisMenuItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                    size="default"
-                  >
-                    <Link href={item.url}>
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* References */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
-            References
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {referenceMenuItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                    size="default"
-                  >
-                    <Link href={item.url}>
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {workspaceLoading ? (
+          <div className="p-4 text-sm text-muted-foreground">Loading menu...</div>
+        ) : (
+          menuGroups.map((group) => (
+            <SidebarGroup key={group.groupName}>
+              <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70">
+                {group.groupName}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {group.items.map((item) => {
+                    const IconComponent = getIconComponent(item.icon);
+                    return (
+                      <SidebarMenuItem key={item.menu_item_id}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive(item.url)}
+                          tooltip={item.title}
+                          size="default"
+                        >
+                          <Link href={item.url}>
+                            <IconComponent className="size-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))
+        )}
       </SidebarContent>
       <SidebarFooter className="border-t p-2">
         {user ? (
@@ -368,6 +182,13 @@ export function AppSidebar() {
                   </p>
                 </div>
               </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/settings" className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />

@@ -172,18 +172,21 @@ function FilterMultiSelectClient({ label, options, selected, onSelectionChange }
               {filteredOptions.map((option) => {
                 const isSelected = selected.includes(option);
                 return (
-                  <button
+                  <label
                     key={option}
-                    type="button"
                     onClick={() => handleToggle(option)}
                     className={cn(
-                      "w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors text-left",
+                      "w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors cursor-pointer",
                       isSelected && "bg-accent/50"
                     )}
                   >
-                    <Checkbox checked={isSelected} onCheckedChange={() => handleToggle(option)} />
+                    <Checkbox 
+                      checked={isSelected} 
+                      onCheckedChange={() => handleToggle(option)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
                     <span className="flex-1 truncate">{option}</span>
-                  </button>
+                  </label>
                 );
               })}
             </div>
@@ -295,6 +298,21 @@ export function TenYearProjectionChart({
       });
     }
 
+    // Debug: Log chart generation info
+    if (process.env.NODE_ENV === 'development') {
+      console.log('TenYearProjectionChart Debug:', {
+        currentFiscalYear: CURRENT_FISCAL_YEAR,
+        generatedYears: years.map(y => y.fiscalYear),
+        businessCasesCount: filteredBusinessCases.length,
+        businessCasesWithFiscalYear: filteredBusinessCases.filter(bc => bc.fiscal_year).length,
+        sampleFiscalYears: filteredBusinessCases.slice(0, 5).map(bc => ({
+          fiscal_year: bc.fiscal_year,
+          total_revenue: bc.total_revenue,
+          country_id: bc.country_id,
+        })),
+      });
+    }
+
     // Aggregate filtered business cases by fiscal year
     filteredBusinessCases.forEach((bc) => {
       const fy = bc.fiscal_year || "";
@@ -309,9 +327,16 @@ export function TenYearProjectionChart({
         years[yearIndex].count += 1;
 
         // Convert to EUR if exchange rate available
-        if (bc.country_id) {
-          const rate = exchangeRates.get(bc.country_id);
-          if (rate) {
+        // Note: country_id might not be in the view, try to get it from country_name lookup
+        let countryId = bc.country_id;
+        if (!countryId && bc.country_name) {
+          // Try to find country_id from exchange rates map (if we stored it by name)
+          // For now, we'll use the exchange rate lookup by country_id from the enriched data
+        }
+        
+        if (countryId) {
+          const rate = exchangeRates.get(countryId);
+          if (rate && rate > 0) {
             years[yearIndex].revenueEUR += localRevenue / rate;
             years[yearIndex].marginEUR += localMargin / rate;
           } else {
@@ -324,6 +349,9 @@ export function TenYearProjectionChart({
           years[yearIndex].revenueEUR += localRevenue;
           years[yearIndex].marginEUR += localMargin;
         }
+      } else if (process.env.NODE_ENV === 'development') {
+        // Debug: log unmatched fiscal years
+        console.log('Unmatched fiscal year:', fy, 'from business case:', bc.business_case_id);
       }
     });
 
@@ -627,18 +655,22 @@ export function TenYearProjectionChart({
               className="w-full h-full relative z-10"
             >
               {chartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minHeight={400}>
                   {chartType === "line" ? (
                     <AreaChart
                       data={chartData}
-                onClick={(data: any) => {
-                  if (data?.activePayload?.[0]?.payload?.fiscalYear) {
-                    handleDrillDown(data.activePayload[0].payload.fiscalYear);
-                  }
-                }}
-                style={{ cursor: "pointer" }}
-                margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
-              >
+                      onClick={(data: any) => {
+                        if (data?.activePayload?.[0]?.payload?.fiscalYear) {
+                          handleDrillDown(data.activePayload[0].payload.fiscalYear);
+                        }
+                      }}
+                      style={{ cursor: "pointer" }}
+                      margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
+                      isAnimationActive={true}
+                      animationBegin={0}
+                      animationDuration={2000}
+                      animationEasing="ease-out"
+                    >
                 <defs>
                   {/* Revenue gradient using theme color */}
                   <linearGradient id={`colorRevenue-${chartId}`} x1="0" y1="0" x2="0" y2="1">
@@ -686,11 +718,49 @@ export function TenYearProjectionChart({
                     borderRadius: "8px",
                     padding: "12px 16px",
                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+                    opacity: 1,
                   }}
-                  formatter={(value: number) => [`€${value.toFixed(2)}M`, ""]}
-                  labelFormatter={(label) => (
-                    <span className="font-semibold text-sm">{label}</span>
-                  )}
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      // Filter out duplicate entries by dataKey
+                      // Recharts includes both the main Area and the dot-only Area in payload
+                      const seen = new Set<string>();
+                      const visibleEntries = payload.filter((entry: any) => {
+                        const key = entry.dataKey;
+                        // Skip duplicates and entries without proper names
+                        if (seen.has(key) || !entry.name) {
+                          return false;
+                        }
+                        // Only include entries with the expected names
+                        if (entry.name !== 'Revenue (EUR)' && entry.name !== 'Margin (EUR)') {
+                          return false;
+                        }
+                        seen.add(key);
+                        return true;
+                      });
+                      
+                      return (
+                        <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
+                          <p className="font-semibold text-sm mb-2">{label}</p>
+                          {visibleEntries.map((entry: any, index: number) => {
+                            const color = entry.color || (entry.dataKey === 'revenueEUR' ? revenueColor : marginColor);
+                            const name = entry.name;
+                            return (
+                              <div key={index} className="flex items-center gap-2 text-sm">
+                                <div 
+                                  className="w-3 h-3 rounded-full" 
+                                  style={{ backgroundColor: color }}
+                                />
+                                <span className="text-muted-foreground">{name}:</span>
+                                <span className="font-medium">€{Number(entry.value).toFixed(2)}M</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
                   cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "5 5", opacity: 0.3 }}
                 />
                 <Legend 
@@ -707,8 +777,26 @@ export function TenYearProjectionChart({
                   strokeWidth={2.5}
                   fill={`url(#colorRevenue-${chartId})`}
                   name="Revenue (EUR)"
-                  dot={{ r: 3, fill: revenueColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                  dot={false}
                   activeDot={{ r: 5, fill: revenueColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                  isAnimationActive={true}
+                  animationBegin={0}
+                  animationDuration={2000}
+                  animationEasing="ease-out"
+                />
+                {/* Revenue dots - appear after line animation and remain visible */}
+                <Area
+                  type="monotone"
+                  dataKey="revenueEUR"
+                  stroke="none"
+                  fill="none"
+                  dot={{ r: 3, fill: revenueColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                  activeDot={false}
+                  hide={true}
+                  isAnimationActive={true}
+                  animationBegin={2000}
+                  animationDuration={400}
+                  animationEasing="ease-out"
                 />
                 {/* Margin Area with gradient fill and line (EUR) */}
                 <Area
@@ -718,8 +806,26 @@ export function TenYearProjectionChart({
                   strokeWidth={2.5}
                   fill={`url(#colorMargin-${chartId})`}
                   name="Margin (EUR)"
-                  dot={{ r: 3, fill: marginColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                  dot={false}
                   activeDot={{ r: 5, fill: marginColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                  isAnimationActive={true}
+                  animationBegin={200}
+                  animationDuration={2000}
+                  animationEasing="ease-out"
+                />
+                {/* Margin dots - appear after line animation and remain visible */}
+                <Area
+                  type="monotone"
+                  dataKey="marginEUR"
+                  stroke="none"
+                  fill="none"
+                  dot={{ r: 3, fill: marginColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                  activeDot={false}
+                  hide={true}
+                  isAnimationActive={true}
+                  animationBegin={2200}
+                  animationDuration={400}
+                  animationEasing="ease-out"
                 />
               </AreaChart>
             ) : (
@@ -732,6 +838,10 @@ export function TenYearProjectionChart({
                 }}
                 style={{ cursor: "pointer" }}
                 margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
+                isAnimationActive={true}
+                animationBegin={0}
+                animationDuration={2000}
+                animationEasing="ease-out"
               >
                 <CartesianGrid 
                   strokeDasharray="3 3" 
@@ -768,11 +878,48 @@ export function TenYearProjectionChart({
                     borderRadius: "8px",
                     padding: "12px 16px",
                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+                    opacity: 1,
                   }}
-                  formatter={(value: number) => [`€${value.toFixed(2)}M`, ""]}
-                  labelFormatter={(label) => (
-                    <span className="font-semibold text-sm">{label}</span>
-                  )}
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      // Filter out duplicate entries by dataKey
+                      const seen = new Set<string>();
+                      const visibleEntries = payload.filter((entry: any) => {
+                        const key = entry.dataKey;
+                        // Skip duplicates and entries without proper names
+                        if (seen.has(key) || !entry.name) {
+                          return false;
+                        }
+                        // Only include entries with the expected names
+                        if (entry.name !== 'Revenue (EUR)' && entry.name !== 'Margin (EUR)') {
+                          return false;
+                        }
+                        seen.add(key);
+                        return true;
+                      });
+                      
+                      return (
+                        <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
+                          <p className="font-semibold text-sm mb-2">{label}</p>
+                          {visibleEntries.map((entry: any, index: number) => {
+                            const color = entry.color || (entry.dataKey === 'revenueEUR' ? revenueColor : marginColor);
+                            const name = entry.name;
+                            return (
+                              <div key={index} className="flex items-center gap-2 text-sm">
+                                <div 
+                                  className="w-3 h-3 rounded-full" 
+                                  style={{ backgroundColor: color }}
+                                />
+                                <span className="text-muted-foreground">{name}:</span>
+                                <span className="font-medium">€{Number(entry.value).toFixed(2)}M</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
                   cursor={{ fill: "hsl(var(--muted))", opacity: 0.1 }}
                 />
                 <Legend 
@@ -785,12 +932,20 @@ export function TenYearProjectionChart({
                   fill={revenueColor} 
                   name="Revenue (EUR)" 
                   radius={[6, 6, 0, 0]}
+                  isAnimationActive={true}
+                  animationBegin={0}
+                  animationDuration={2000}
+                  animationEasing="ease-out"
                 />
                 <Bar 
                   dataKey="marginEUR" 
                   fill={marginColor} 
                   name="Margin (EUR)" 
                   radius={[6, 6, 0, 0]}
+                  isAnimationActive={true}
+                  animationBegin={200}
+                  animationDuration={2000}
+                  animationEasing="ease-out"
                 />
                     </BarChart>
                   )}

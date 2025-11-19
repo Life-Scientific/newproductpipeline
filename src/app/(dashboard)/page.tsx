@@ -19,12 +19,40 @@ import Link from "next/link";
 type StatusHistory = Database["public"]["Tables"]["formulation_status_history"]["Row"];
 
 export default async function Home() {
-  const [formulations, businessCases, activePortfolio, allExchangeRates] = await Promise.all([
-    getFormulations(),
-    getBusinessCases(),
-    getActivePortfolio(),
-    getExchangeRates(),
-  ]);
+  let formulations, businessCases, activePortfolio, allExchangeRates;
+  
+  try {
+    [formulations, businessCases, activePortfolio, allExchangeRates] = await Promise.all([
+      getFormulations(),
+      getBusinessCases(),
+      getActivePortfolio(),
+      getExchangeRates(),
+    ]);
+    
+    // Debug logging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Dashboard Data Load:', {
+        formulationsCount: formulations?.length || 0,
+        businessCasesCount: businessCases?.length || 0,
+        activePortfolioCount: activePortfolio?.length || 0,
+        exchangeRatesCount: allExchangeRates?.length || 0,
+        sampleBusinessCase: businessCases?.[0] ? {
+          id: businessCases[0].business_case_id,
+          fiscal_year: businessCases[0].fiscal_year,
+          total_revenue: businessCases[0].total_revenue,
+          total_margin: businessCases[0].total_margin,
+          country_id: (businessCases[0] as any).country_id,
+        } : null,
+      });
+    }
+  } catch (error) {
+    console.error('Dashboard data fetch error:', error);
+    // Set defaults on error
+    formulations = [];
+    businessCases = [];
+    activePortfolio = [];
+    allExchangeRates = [];
+  }
 
   // Create exchange rate map: country_id -> exchange_rate_to_eur
   // Get the latest rate for each country
@@ -73,6 +101,17 @@ export default async function Home() {
     businessCases.length > 0
       ? businessCases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) / businessCases.length
       : 0;
+
+  // Debug: Log business cases data
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Dashboard Debug:', {
+      totalBusinessCases,
+      businessCasesWithFiscalYear: businessCases.filter(bc => bc.fiscal_year).length,
+      sampleFiscalYears: businessCases.slice(0, 5).map(bc => bc.fiscal_year),
+      totalRevenue,
+      exchangeRatesCount: exchangeRateMap.size,
+    });
+  }
 
   // Get unique countries from business cases
   const uniqueCountries = new Set(

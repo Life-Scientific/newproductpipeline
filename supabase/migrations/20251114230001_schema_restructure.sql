@@ -14,6 +14,9 @@ DROP VIEW IF EXISTS public.vw_portfolio_by_country CASCADE;
 DROP VIEW IF EXISTS public.vw_registration_pipeline CASCADE;
 DROP VIEW IF EXISTS public.vw_formulation_country_use_group CASCADE;
 DROP VIEW IF EXISTS public.vw_use_group_details CASCADE;
+DROP VIEW IF EXISTS public.vw_crop_target_matrix CASCADE;
+DROP VIEW IF EXISTS public.vw_portfolio_gaps CASCADE;
+DROP VIEW IF EXISTS public.vw_target_coverage CASCADE;
 
 -- ============================================================================
 -- STEP 2: Drop triggers that reference columns we're about to change

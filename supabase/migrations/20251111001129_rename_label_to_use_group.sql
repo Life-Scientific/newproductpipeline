@@ -13,58 +13,117 @@ ALTER TABLE public.business_case
 DROP CONSTRAINT IF EXISTS business_case_formulation_country_label_id_fkey;
 
 -- Drop foreign key from business_case_labels to formulation_country_label
-ALTER TABLE public.business_case_labels
-DROP CONSTRAINT IF EXISTS business_case_labels_formulation_country_label_id_fkey;
+-- Only if the table exists
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'business_case_labels') THEN
+        ALTER TABLE public.business_case_labels
+        DROP CONSTRAINT IF EXISTS business_case_labels_formulation_country_label_id_fkey;
+    END IF;
+END $$;
 
--- Drop foreign key from formulation_country_label_crops to formulation_country_label
-ALTER TABLE public.formulation_country_label_crops
-DROP CONSTRAINT IF EXISTS formulation_country_label_cro_formulation_country_label_id_fkey;
+-- Drop foreign key from formulation_country_label_crops to formulation_country_label (only if table exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'formulation_country_label_crops') THEN
+        ALTER TABLE public.formulation_country_label_crops
+        DROP CONSTRAINT IF EXISTS formulation_country_label_cro_formulation_country_label_id_fkey;
+    END IF;
+END $$;
 
 -- ============================================================================
 -- STEP 2: Rename tables
 -- ============================================================================
 
--- Rename main label table
-ALTER TABLE public.formulation_country_label
-RENAME TO formulation_country_use_group;
+-- Rename main label table (only if it exists and hasn't been renamed yet)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'formulation_country_label') THEN
+        ALTER TABLE public.formulation_country_label
+        RENAME TO formulation_country_use_group;
+    END IF;
+END $$;
 
--- Rename junction table for label crops
-ALTER TABLE public.formulation_country_label_crops
-RENAME TO formulation_country_use_group_crops;
+-- Rename junction table for label crops (only if it exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'formulation_country_label_crops') THEN
+        ALTER TABLE public.formulation_country_label_crops
+        RENAME TO formulation_country_use_group_crops;
+    END IF;
+END $$;
 
--- Rename junction table for business case labels
-ALTER TABLE public.business_case_labels
-RENAME TO business_case_use_groups;
+-- Rename junction table for business case labels (only if it exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'business_case_labels') THEN
+        ALTER TABLE public.business_case_labels
+        RENAME TO business_case_use_groups;
+    END IF;
+END $$;
 
 -- ============================================================================
 -- STEP 3: Rename columns in renamed tables
 -- ============================================================================
 
--- Rename columns in formulation_country_use_group
-ALTER TABLE public.formulation_country_use_group
-RENAME COLUMN formulation_country_label_id TO formulation_country_use_group_id;
+-- Rename columns in formulation_country_use_group (only if columns exist with old names)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'formulation_country_use_group') THEN
+        -- Check and rename formulation_country_label_id if it exists
+        IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'formulation_country_use_group' AND column_name = 'formulation_country_label_id') THEN
+            ALTER TABLE public.formulation_country_use_group
+            RENAME COLUMN formulation_country_label_id TO formulation_country_use_group_id;
+        END IF;
+        
+        -- Check and rename label_variant if it exists
+        IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'formulation_country_use_group' AND column_name = 'label_variant') THEN
+            ALTER TABLE public.formulation_country_use_group
+            RENAME COLUMN label_variant TO use_group_variant;
+        END IF;
+        
+        -- Check and rename label_name if it exists
+        IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'formulation_country_use_group' AND column_name = 'label_name') THEN
+            ALTER TABLE public.formulation_country_use_group
+            RENAME COLUMN label_name TO use_group_name;
+        END IF;
+    END IF;
+END $$;
 
-ALTER TABLE public.formulation_country_use_group
-RENAME COLUMN label_variant TO use_group_variant;
+-- Rename column in formulation_country_use_group_crops (only if table and column exist)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'formulation_country_use_group_crops') THEN
+        IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'formulation_country_use_group_crops' AND column_name = 'formulation_country_label_id') THEN
+            ALTER TABLE public.formulation_country_use_group_crops
+            RENAME COLUMN formulation_country_label_id TO formulation_country_use_group_id;
+        END IF;
+    END IF;
+END $$;
 
-ALTER TABLE public.formulation_country_use_group
-RENAME COLUMN label_name TO use_group_name;
-
--- Rename column in formulation_country_use_group_crops
-ALTER TABLE public.formulation_country_use_group_crops
-RENAME COLUMN formulation_country_label_id TO formulation_country_use_group_id;
-
--- Rename column in business_case_use_groups
-ALTER TABLE public.business_case_use_groups
-RENAME COLUMN formulation_country_label_id TO formulation_country_use_group_id;
+-- Rename column in business_case_use_groups (only if table and column exist)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'business_case_use_groups') THEN
+        IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'business_case_use_groups' AND column_name = 'formulation_country_label_id') THEN
+            ALTER TABLE public.business_case_use_groups
+            RENAME COLUMN formulation_country_label_id TO formulation_country_use_group_id;
+        END IF;
+    END IF;
+END $$;
 
 -- ============================================================================
 -- STEP 4: Rename columns in other tables that reference labels
 -- ============================================================================
 
--- Rename column in business_case table
-ALTER TABLE public.business_case
-RENAME COLUMN formulation_country_label_id TO formulation_country_use_group_id;
+-- Rename column in business_case table (only if column exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'business_case' AND column_name = 'formulation_country_label_id') THEN
+        ALTER TABLE public.business_case
+        RENAME COLUMN formulation_country_label_id TO formulation_country_use_group_id;
+    END IF;
+END $$;
 
 -- ============================================================================
 -- STEP 5: Update CHECK constraints
@@ -93,65 +152,107 @@ ALTER COLUMN business_case_type SET DEFAULT 'Single Use Group'::character varyin
 -- STEP 6: Recreate foreign key constraints with new names
 -- ============================================================================
 
--- Recreate foreign key from business_case to formulation_country_use_group
-ALTER TABLE public.business_case
-ADD CONSTRAINT business_case_formulation_country_use_group_id_fkey
-FOREIGN KEY (formulation_country_use_group_id)
-REFERENCES public.formulation_country_use_group(formulation_country_use_group_id);
+-- Recreate foreign key from business_case to formulation_country_use_group (only if it doesn't exist)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_constraint WHERE conname = 'business_case_formulation_country_use_group_id_fkey' AND conrelid = 'public.business_case'::regclass) THEN
+        ALTER TABLE public.business_case
+        ADD CONSTRAINT business_case_formulation_country_use_group_id_fkey
+        FOREIGN KEY (formulation_country_use_group_id)
+        REFERENCES public.formulation_country_use_group(formulation_country_use_group_id);
+    END IF;
+END $$;
 
--- Recreate foreign key from business_case_use_groups to business_case
-ALTER TABLE public.business_case_use_groups
-ADD CONSTRAINT business_case_use_groups_business_case_id_fkey
-FOREIGN KEY (business_case_id)
-REFERENCES public.business_case(business_case_id);
+-- Recreate foreign key from business_case_use_groups to business_case (only if table exists and constraints don't exist)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'business_case_use_groups') THEN
+        IF NOT EXISTS (SELECT FROM pg_constraint WHERE conname = 'business_case_use_groups_business_case_id_fkey' AND conrelid = 'public.business_case_use_groups'::regclass) THEN
+            ALTER TABLE public.business_case_use_groups
+            ADD CONSTRAINT business_case_use_groups_business_case_id_fkey
+            FOREIGN KEY (business_case_id)
+            REFERENCES public.business_case(business_case_id);
+        END IF;
+        
+        IF NOT EXISTS (SELECT FROM pg_constraint WHERE conname = 'business_case_use_groups_formulation_country_use_group_id_fkey' AND conrelid = 'public.business_case_use_groups'::regclass) THEN
+            ALTER TABLE public.business_case_use_groups
+            ADD CONSTRAINT business_case_use_groups_formulation_country_use_group_id_fkey
+            FOREIGN KEY (formulation_country_use_group_id)
+            REFERENCES public.formulation_country_use_group(formulation_country_use_group_id);
+        END IF;
+    END IF;
+END $$;
 
--- Recreate foreign key from business_case_use_groups to formulation_country_use_group
-ALTER TABLE public.business_case_use_groups
-ADD CONSTRAINT business_case_use_groups_formulation_country_use_group_id_fkey
-FOREIGN KEY (formulation_country_use_group_id)
-REFERENCES public.formulation_country_use_group(formulation_country_use_group_id);
-
--- Recreate foreign key from formulation_country_use_group_crops to formulation_country_use_group
-ALTER TABLE public.formulation_country_use_group_crops
-ADD CONSTRAINT formulation_country_use_group_crops_formulation_country_use_group_id_fkey
-FOREIGN KEY (formulation_country_use_group_id)
-REFERENCES public.formulation_country_use_group(formulation_country_use_group_id);
-
--- Recreate foreign key from formulation_country_use_group_crops to crops
-ALTER TABLE public.formulation_country_use_group_crops
-ADD CONSTRAINT formulation_country_use_group_crops_crop_id_fkey
-FOREIGN KEY (crop_id)
-REFERENCES public.crops(crop_id);
+-- Recreate foreign key from formulation_country_use_group_crops to formulation_country_use_group (only if table exists and constraints don't exist)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'formulation_country_use_group_crops') THEN
+        IF NOT EXISTS (SELECT FROM pg_constraint WHERE conname = 'formulation_country_use_group_crops_formulation_country_use_group_id_fkey' AND conrelid = 'public.formulation_country_use_group_crops'::regclass) THEN
+            ALTER TABLE public.formulation_country_use_group_crops
+            ADD CONSTRAINT formulation_country_use_group_crops_formulation_country_use_group_id_fkey
+            FOREIGN KEY (formulation_country_use_group_id)
+            REFERENCES public.formulation_country_use_group(formulation_country_use_group_id);
+        END IF;
+        
+        IF NOT EXISTS (SELECT FROM pg_constraint WHERE conname = 'formulation_country_use_group_crops_crop_id_fkey' AND conrelid = 'public.formulation_country_use_group_crops'::regclass) THEN
+            ALTER TABLE public.formulation_country_use_group_crops
+            ADD CONSTRAINT formulation_country_use_group_crops_crop_id_fkey
+            FOREIGN KEY (crop_id)
+            REFERENCES public.crops(crop_id);
+        END IF;
+    END IF;
+END $$;
 
 -- ============================================================================
 -- STEP 7: Rename primary key constraints
 -- ============================================================================
 
--- Rename primary key constraint for formulation_country_use_group
-ALTER TABLE public.formulation_country_use_group
-RENAME CONSTRAINT formulation_country_label_pkey TO formulation_country_use_group_pkey;
+-- Rename primary key constraint for formulation_country_use_group (only if constraint exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_constraint WHERE conname = 'formulation_country_label_pkey' AND conrelid = 'public.formulation_country_use_group'::regclass) THEN
+        ALTER TABLE public.formulation_country_use_group
+        RENAME CONSTRAINT formulation_country_label_pkey TO formulation_country_use_group_pkey;
+    END IF;
+END $$;
 
--- Rename primary key constraint for formulation_country_use_group_crops
-ALTER TABLE public.formulation_country_use_group_crops
-RENAME CONSTRAINT formulation_country_label_crops_pkey TO formulation_country_use_group_crops_pkey;
+-- Rename primary key constraint for formulation_country_use_group_crops (only if constraint exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_constraint WHERE conname = 'formulation_country_label_crops_pkey' AND conrelid = 'public.formulation_country_use_group_crops'::regclass) THEN
+        ALTER TABLE public.formulation_country_use_group_crops
+        RENAME CONSTRAINT formulation_country_label_crops_pkey TO formulation_country_use_group_crops_pkey;
+    END IF;
+END $$;
 
--- Rename primary key constraint for business_case_use_groups
-ALTER TABLE public.business_case_use_groups
-RENAME CONSTRAINT business_case_labels_pkey TO business_case_use_groups_pkey;
+-- Rename primary key constraint for business_case_use_groups (only if constraint exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_constraint WHERE conname = 'business_case_labels_pkey' AND conrelid = 'public.business_case_use_groups'::regclass) THEN
+        ALTER TABLE public.business_case_use_groups
+        RENAME CONSTRAINT business_case_labels_pkey TO business_case_use_groups_pkey;
+    END IF;
+END $$;
 
 -- ============================================================================
 -- STEP 8: Rename foreign key constraints in formulation_country_use_group
 -- ============================================================================
 
--- Rename foreign key to formulation_country
-ALTER TABLE public.formulation_country_use_group
-RENAME CONSTRAINT formulation_country_label_formulation_country_id_fkey 
-TO formulation_country_use_group_formulation_country_id_fkey;
-
--- Rename foreign key to reference_products
-ALTER TABLE public.formulation_country_use_group
-RENAME CONSTRAINT formulation_country_label_reference_product_id_fkey 
-TO formulation_country_use_group_reference_product_id_fkey;
+-- Rename foreign key to formulation_country (only if constraint exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_constraint WHERE conname = 'formulation_country_label_formulation_country_id_fkey' AND conrelid = 'public.formulation_country_use_group'::regclass) THEN
+        ALTER TABLE public.formulation_country_use_group
+        RENAME CONSTRAINT formulation_country_label_formulation_country_id_fkey 
+        TO formulation_country_use_group_formulation_country_id_fkey;
+    END IF;
+    
+    IF EXISTS (SELECT FROM pg_constraint WHERE conname = 'formulation_country_label_reference_product_id_fkey' AND conrelid = 'public.formulation_country_use_group'::regclass) THEN
+        ALTER TABLE public.formulation_country_use_group
+        RENAME CONSTRAINT formulation_country_label_reference_product_id_fkey 
+        TO formulation_country_use_group_reference_product_id_fkey;
+    END IF;
+END $$;
 
 -- ============================================================================
 -- STEP 9: Update unique constraints
@@ -180,8 +281,11 @@ END $$;
 -- ============================================================================
 
 -- Drop existing label views (CASCADE to handle dependencies)
+-- Drop both old and new view names in case either exists
 DROP VIEW IF EXISTS public.vw_formulation_country_label CASCADE;
+DROP VIEW IF EXISTS public.vw_formulation_country_use_group CASCADE;
 DROP VIEW IF EXISTS public.vw_label_details CASCADE;
+DROP VIEW IF EXISTS public.vw_use_group_details CASCADE;
 DROP VIEW IF EXISTS public.vw_active_portfolio CASCADE;
 DROP VIEW IF EXISTS public.vw_business_case CASCADE;
 DROP VIEW IF EXISTS public.vw_business_case_detail CASCADE;
@@ -191,7 +295,7 @@ DROP VIEW IF EXISTS public.vw_portfolio_by_country CASCADE;
 DROP VIEW IF EXISTS public.vw_registration_pipeline CASCADE;
 
 -- Recreate vw_formulation_country_use_group (renamed from vw_formulation_country_label)
-CREATE VIEW public.vw_formulation_country_use_group AS
+CREATE OR REPLACE VIEW public.vw_formulation_country_use_group AS
 SELECT 
     fcl.formulation_country_use_group_id,
     fcl.formulation_country_id,
@@ -230,7 +334,7 @@ GROUP BY fcl.formulation_country_use_group_id, fcl.formulation_country_id, fcl.u
          c.country_code, rp.product_name, rp.manufacturer;
 
 -- Recreate vw_use_group_details (renamed from vw_label_details)
-CREATE VIEW public.vw_use_group_details AS
+CREATE OR REPLACE VIEW public.vw_use_group_details AS
 SELECT 
     fcl.formulation_country_use_group_id,
     f.formulation_code,
@@ -261,7 +365,7 @@ GROUP BY fcl.formulation_country_use_group_id, f.formulation_code, f.formulation
          fcl.actual_submission_date, fcl.actual_approval_date, fcl.actual_market_entry_date, fcl.registration_status;
 
 -- Recreate vw_active_portfolio with updated references
-CREATE VIEW public.vw_active_portfolio AS
+CREATE OR REPLACE VIEW public.vw_active_portfolio AS
 SELECT 
     fc.formulation_country_id,
     f.formulation_code,
@@ -292,7 +396,7 @@ GROUP BY fc.formulation_country_id, f.formulation_code, f.formulation_name, f.fo
          c.country_name, c.country_code, fc.registration_pathway, fc.target_market_entry_fy, fc.updated_at;
 
 -- Recreate vw_business_case with updated references
-CREATE VIEW public.vw_business_case AS
+CREATE OR REPLACE VIEW public.vw_business_case AS
 SELECT 
     bc.business_case_id,
     bc.formulation_country_id,
@@ -335,7 +439,7 @@ LEFT JOIN countries c ON fc.country_id = c.country_id
 LEFT JOIN formulation_country_use_group fcl ON bc.formulation_country_use_group_id = fcl.formulation_country_use_group_id;
 
 -- Recreate vw_business_case_detail with updated references
-CREATE VIEW public.vw_business_case_detail AS
+CREATE OR REPLACE VIEW public.vw_business_case_detail AS
 SELECT 
     bc.business_case_id,
     bc.formulation_country_id,
@@ -377,7 +481,7 @@ JOIN formulations f ON COALESCE(fc.formulation_id, fc2.formulation_id) = f.formu
 JOIN countries c ON COALESCE(fc.country_id, fc2.country_id) = c.country_id;
 
 -- Recreate vw_formulation_country_detail with updated references
-CREATE VIEW public.vw_formulation_country_detail AS
+CREATE OR REPLACE VIEW public.vw_formulation_country_detail AS
 SELECT 
     fc.formulation_country_id,
     f.formulation_code,
@@ -429,7 +533,7 @@ GROUP BY fc.formulation_country_id, f.formulation_code, f.formulation_name, f.fo
          fc.emd, rp.product_name, rp.manufacturer, fc.created_at, fc.updated_at;
 
 -- Recreate vw_normal_vs_intended_use with updated references
-CREATE VIEW public.vw_normal_vs_intended_use AS
+CREATE OR REPLACE VIEW public.vw_normal_vs_intended_use AS
 SELECT 
     fc.formulation_country_id,
     f.formulation_code,
@@ -459,7 +563,7 @@ GROUP BY fc.formulation_country_id, f.formulation_code, f.formulation_name, c.co
          fcl.use_group_variant, fcl.use_group_name;
 
 -- Recreate vw_portfolio_by_country with updated references
-CREATE VIEW public.vw_portfolio_by_country AS
+CREATE OR REPLACE VIEW public.vw_portfolio_by_country AS
 SELECT 
     c.country_name,
     c.currency_code,
@@ -500,7 +604,7 @@ GROUP BY c.country_name, c.currency_code, f.formulation_code, f.formulation_name
          fc.is_novel, fc.registration_pathway, fc.is_in_active_portfolio, fc.has_approval;
 
 -- Recreate vw_registration_pipeline with updated references
-CREATE VIEW public.vw_registration_pipeline AS
+CREATE OR REPLACE VIEW public.vw_registration_pipeline AS
 SELECT 
     fc.formulation_country_id,
     f.formulation_code,

@@ -33,10 +33,10 @@ SELECT
 FROM formulation_country fc
 JOIN formulations f ON fc.formulation_id = f.formulation_id
 JOIN countries c ON fc.country_id = c.country_id
-LEFT JOIN formulation_crops fcr ON f.formulation_id = fcr.formulation_id
-LEFT JOIN crops cr ON fcr.crop_id = cr.crop_id
-LEFT JOIN formulation_targets ft ON f.formulation_id = ft.formulation_id
-LEFT JOIN targets t ON ft.target_id = t.target_id
+LEFT JOIN formulation_country_crops fcc ON fc.formulation_country_id = fcc.formulation_country_id
+LEFT JOIN crops cr ON fcc.crop_id = cr.crop_id
+LEFT JOIN formulation_country_targets fct ON fc.formulation_country_id = fct.formulation_country_id
+LEFT JOIN targets t ON fct.target_id = t.target_id
 LEFT JOIN formulation_country_use_group fcl ON (fc.formulation_country_id = fcl.formulation_country_id AND fcl.is_active = true)
 WHERE fc.country_status = 'Selected for entry' AND fc.is_active = true
 GROUP BY fc.formulation_country_id, f.formulation_code, f.formulation_name, f.formulation_category, 
@@ -143,10 +143,10 @@ SELECT
 FROM formulation_country fc
 JOIN formulations f ON fc.formulation_id = f.formulation_id
 JOIN countries c ON fc.country_id = c.country_id
-LEFT JOIN formulation_crops fcr ON f.formulation_id = fcr.formulation_id
-LEFT JOIN crops cr ON fcr.crop_id = cr.crop_id
-LEFT JOIN formulation_targets ft ON f.formulation_id = ft.formulation_id
-LEFT JOIN targets t ON ft.target_id = t.target_id
+LEFT JOIN formulation_country_crops fcc ON fc.formulation_country_id = fcc.formulation_country_id
+LEFT JOIN crops cr ON fcc.crop_id = cr.crop_id
+LEFT JOIN formulation_country_targets fct ON fc.formulation_country_id = fct.formulation_country_id
+LEFT JOIN targets t ON fct.target_id = t.target_id
 LEFT JOIN formulation_ingredients fi ON f.formulation_id = fi.formulation_id
 LEFT JOIN ingredients i ON fi.ingredient_id = i.ingredient_id
 WHERE fc.is_active = true
@@ -222,3 +222,47 @@ WHERE fc.is_active = true
 GROUP BY fc.formulation_country_id, f.formulation_code, f.formulation_name, f.formulation_category,
          c.country_name, fc.likely_registration_pathway, fc.country_status, fc.country_readiness,
          fc.is_novel, fc.earliest_market_entry_date, fc.created_at, fc.updated_at;
+
+-- View: vw_business_case
+-- Recreate to ensure it's up to date after schema changes
+CREATE OR REPLACE VIEW public.vw_business_case AS
+SELECT 
+    bc.business_case_id,
+    bc.formulation_country_id,
+    bc.formulation_country_use_group_id,
+    bc.business_case_name,
+    bc.business_case_type,
+    bc.year_offset,
+    bc.volume,
+    bc.nsp,
+    bc.cogs_per_unit,
+    bc.total_revenue,
+    bc.total_cogs,
+    bc.total_margin,
+    bc.margin_percent,
+    bc.fiscal_year,
+    bc.scenario_id,
+    bc.scenario_name,
+    bc.assumptions,
+    bc.confidence_level,
+    bc.volume_last_updated_at,
+    bc.volume_last_updated_by,
+    bc.nsp_last_updated_at,
+    bc.nsp_last_updated_by,
+    bc.cogs_last_updated_at,
+    bc.cogs_last_updated_by,
+    bc.created_by,
+    bc.created_at,
+    bc.updated_at,
+    f.formulation_code,
+    f.formulation_name,
+    c.country_name,
+    c.country_code,
+    fcl.use_group_variant,
+    fcl.use_group_name,
+    concat(f.formulation_code, ' - ', c.country_name, ' - ', bc.business_case_name) AS display_name
+FROM business_case bc
+LEFT JOIN formulation_country fc ON bc.formulation_country_id = fc.formulation_country_id
+LEFT JOIN formulations f ON fc.formulation_id = f.formulation_id
+LEFT JOIN countries c ON fc.country_id = c.country_id
+LEFT JOIN formulation_country_use_group fcl ON bc.formulation_country_use_group_id = fcl.formulation_country_use_group_id;

@@ -7,6 +7,14 @@
 -- ============================================================================
 
 -- ============================================================================
+-- STEP 0: Add missing column to formulation_country_use_group
+-- ============================================================================
+
+-- Add target_market_entry_fy column if it doesn't exist
+ALTER TABLE public.formulation_country_use_group
+ADD COLUMN IF NOT EXISTS target_market_entry_fy character varying;
+
+-- ============================================================================
 -- STEP 1: Fix vw_active_portfolio - Use EPPO codes
 -- ============================================================================
 
