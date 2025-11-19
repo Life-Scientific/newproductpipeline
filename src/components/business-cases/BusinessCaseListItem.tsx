@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, ExternalLink } from "lucide-react";
 import type { EnrichedBusinessCase } from "@/lib/db/queries";
+import { cn } from "@/lib/utils";
+import { getStatusVariant } from "@/lib/design-system";
 
 interface BusinessCaseListItemProps {
   businessCase: EnrichedBusinessCase;
@@ -23,6 +25,14 @@ export function BusinessCaseListItem({ businessCase }: BusinessCaseListItemProps
     e.stopPropagation();
     e.preventDefault();
     router.push(href);
+  };
+
+  const getMarginColorClass = (margin: number | null | undefined) => {
+    if (margin === null || margin === undefined) return "text-muted-foreground";
+    if (margin >= 40) return "text-success";
+    if (margin >= 20) return "text-info";
+    if (margin >= 0) return "text-warning";
+    return "text-destructive";
   };
 
   return (
@@ -101,7 +111,7 @@ export function BusinessCaseListItem({ businessCase }: BusinessCaseListItemProps
               ? (businessCase.total_revenue / 1000).toFixed(0) + "K"
               : "—"}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className={cn("text-xs font-medium", getMarginColorClass(businessCase.margin_percent))}>
             {businessCase.margin_percent !== null &&
             businessCase.margin_percent !== undefined
               ? `${businessCase.margin_percent.toFixed(1)}% margin`
@@ -140,4 +150,3 @@ export function BusinessCaseListItem({ businessCase }: BusinessCaseListItemProps
     </div>
   );
 }
-

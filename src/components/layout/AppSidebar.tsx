@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import {
   User,
   LogOut,
   ChevronUp,
   Settings,
+  Sparkles,
 } from "lucide-react";
-import * as Icons from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -36,20 +36,17 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSupabase } from "@/hooks/use-supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
-
-// Helper function to get icon component from string name
-function getIconComponent(iconName: string | null) {
-  if (!iconName) return Icons.LayoutDashboard;
-  const IconComponent = (Icons as Record<string, React.ComponentType<any>>)[iconName];
-  return IconComponent || Icons.LayoutDashboard;
-}
+import { getGroupedMenuItems } from "@/lib/config/menu";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = useSupabase();
-  const { workspaceWithMenu, isLoading: workspaceLoading } = useWorkspace();
+  const { currentWorkspace, workspaceWithMenu, isLoading: workspaceLoading } = useWorkspace();
   const [user, setUser] = useState<any>(null);
+  const [clickCount, setClickCount] = useState(0);
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Get initial user state
@@ -82,39 +79,95 @@ export function AppSidebar() {
     return pathname?.startsWith(url);
   };
 
-  // Group menu items by group_name
-  const menuGroups = useMemo(() => {
-    if (!workspaceWithMenu?.menu_items) return [];
+  const handleAvatarClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent dropdown from opening
     
-    const groups = new Map<string, typeof workspaceWithMenu.menu_items>();
-    
-    workspaceWithMenu.menu_items.forEach((item) => {
-      const group = item.group_name;
-      if (!groups.has(group)) {
-        groups.set(group, []);
+    setClickCount((prev) => {
+      const newCount = prev + 1;
+      
+      // Reset timeout on each click
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
       }
-      groups.get(group)!.push(item);
+      
+      // If 5 clicks, trigger easter egg
+      if (newCount >= 5) {
+        setShowEasterEgg(true);
+        setTimeout(() => setShowEasterEgg(false), 3000);
+        return 0;
+      }
+      
+      // Reset count after 2 seconds of inactivity
+      clickTimeoutRef.current = setTimeout(() => {
+        setClickCount(0);
+      }, 2000);
+      
+      return newCount;
     });
+  };
+
+  const handleAvatarMouseDown = (e: React.MouseEvent) => {
+    // Only prevent if we're tracking clicks (not on first click)
+    if (clickCount > 0) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Get menu items from config based on workspace
+  const menuGroups = useMemo(() => {
+    if (!currentWorkspace) return [];
     
-    // Sort items within each group by display_order
-    groups.forEach((items) => {
-      items.sort((a, b) => a.display_order - b.display_order);
-    });
+    const grouped = getGroupedMenuItems(currentWorkspace.slug);
     
-    return Array.from(groups.entries()).map(([groupName, items]) => ({
+    return Array.from(grouped.entries()).map(([groupName, items]) => ({
       groupName,
-      items,
+      items: items.map(item => ({
+        ...item,
+        menu_item_id: item.path, // Use path as ID for compatibility
+        url: item.path,
+        group_name: item.group,
+        display_order: item.order,
+        is_active: true,
+      })),
     }));
-  }, [workspaceWithMenu]);
+  }, [currentWorkspace]);
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className="border-b">
-        <div className="flex items-center gap-2 px-2 py-3">
-          <WorkspaceSwitcher />
-          <SidebarTrigger className="ml-auto" />
+    <>
+      {showEasterEgg && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-sm animate-in fade-in-0">
+          <div className="text-center space-y-4 animate-in zoom-in-95 duration-300">
+            <div className="flex justify-center">
+              <Sparkles className="h-16 w-16 text-primary animate-pulse" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                🎉 You found it! 🎉
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Great job exploring the interface!
+              </p>
+            </div>
+          </div>
         </div>
-      </SidebarHeader>
+      )}
+      <Sidebar collapsible="icon" className="border-r">
+        <SidebarHeader className="border-b">
+          <div className="flex items-center gap-2 px-2 py-3">
+            <WorkspaceSwitcher />
+            <SidebarTrigger className="ml-auto" />
+          </div>
+        </SidebarHeader>
       <SidebarContent className="gap-2">
         {workspaceLoading ? (
           <div className="p-4 text-sm text-muted-foreground">Loading menu...</div>
@@ -127,7 +180,8 @@ export function AppSidebar() {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {group.items.map((item) => {
-                    const IconComponent = getIconComponent(item.icon);
+                    // Icon is already a component from the config
+                    const IconComponent = item.icon;
                     return (
                       <SidebarMenuItem key={item.menu_item_id}>
                         <SidebarMenuButton
@@ -158,8 +212,13 @@ export function AppSidebar() {
                 variant="ghost"
                 className="w-full justify-start gap-2 h-auto p-2.5 hover:bg-sidebar-accent"
               >
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                <Avatar 
+                  className="h-8 w-8 shrink-0 cursor-pointer transition-transform hover:scale-110 active:scale-95 relative z-10"
+                  onMouseDown={handleAvatarMouseDown}
+                  onClick={handleAvatarClick}
+                  title="Click me 5 times!"
+                >
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold pointer-events-none">
                     {user.email?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
                   </AvatarFallback>
                 </Avatar>
@@ -207,6 +266,7 @@ export function AppSidebar() {
         )}
       </SidebarFooter>
     </Sidebar>
+    </>
   );
 }
 

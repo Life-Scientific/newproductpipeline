@@ -10,6 +10,7 @@ import { RevenueChart } from "@/components/charts/RevenueChart";
 import { StatusPieChart } from "@/components/charts/StatusPieChart";
 import { MarginTrendChart } from "@/components/charts/MarginTrendChart";
 import { CountryCoverageChart } from "@/components/charts/CountryCoverageChart";
+import { MarginWaterfallChart } from "@/components/analytics/MarginWaterfallChart";
 import { BusinessCaseFormButton } from "@/components/forms/BusinessCaseFormButton";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
@@ -79,6 +80,16 @@ export default async function AnalyticsPage() {
 
       <Section>
         <RevenueProjections businessCases={revenueProjections} />
+      </Section>
+
+      <Section>
+        <ContentCard
+          title="Margin Analysis"
+          description="Revenue flow to net margin"
+          variant="chart"
+        >
+          <MarginWaterfallChart businessCases={businessCases} />
+        </ContentCard>
       </Section>
 
       <Section>

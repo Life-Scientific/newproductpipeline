@@ -66,21 +66,34 @@ export function RevenueChart({ businessCases, onDrillDown }: RevenueChartProps) 
       <CardContent className="p-4 sm:p-6">
         <ResponsiveContainer width="100%" height={300} className="min-h-[300px]">
           <BarChart data={chartData} onClick={handleClick} style={{ cursor: "pointer" }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="fiscalYear" />
-            <YAxis label={{ value: "Amount (M$)", angle: -90, position: "insideLeft" }} />
-            <Tooltip
-              formatter={(value: number) => `$${value.toFixed(2)}M`}
-              labelFormatter={(label) => `Fiscal Year: ${label}`}
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+            <XAxis 
+              dataKey="fiscalYear" 
+              tick={{ fill: 'var(--color-muted-foreground)' }}
+              axisLine={{ stroke: 'var(--color-border)' }}
             />
-            <Legend />
-            <Bar dataKey="revenue" fill="#8884d8" name="Revenue" />
-            <Bar dataKey="margin" fill="#82ca9d" name="Margin" />
-            <Bar dataKey="cogs" fill="#ffc658" name="COGS" />
+            <YAxis 
+              label={{ value: "Amount (M$)", angle: -90, position: "insideLeft", fill: 'var(--color-muted-foreground)' }} 
+              tick={{ fill: 'var(--color-muted-foreground)' }}
+              axisLine={{ stroke: 'var(--color-border)' }}
+            />
+            <Tooltip
+              formatter={(value: number) => [`$${value.toFixed(2)}M`, ""]}
+              labelFormatter={(label) => `Fiscal Year: ${label}`}
+              contentStyle={{ 
+                backgroundColor: 'var(--color-popover)', 
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-popover-foreground)'
+              }}
+              itemStyle={{ color: 'var(--color-foreground)' }}
+            />
+            <Legend wrapperStyle={{ paddingTop: '20px' }} />
+            <Bar dataKey="revenue" fill="var(--color-chart-1)" name="Revenue" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="margin" fill="var(--color-chart-2)" name="Margin" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="cogs" fill="var(--color-chart-3)" name="COGS" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   );
 }
-

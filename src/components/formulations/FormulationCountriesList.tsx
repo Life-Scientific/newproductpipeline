@@ -5,23 +5,9 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import type { Database } from "@/lib/supabase/database.types";
+import { getStatusVariant } from "@/lib/design-system";
 
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
-
-const countryStatusColors: Record<string, string> = {
-  "Not yet evaluated": "secondary",
-  "Not selected for entry": "outline",
-  "Selected for entry": "default",
-  "On hold": "destructive",
-  "Withdrawn": "destructive",
-};
-
-const readinessColors: Record<string, string> = {
-  "Nominated for Review": "secondary",
-  "Under Preparation": "outline",
-  "Ready for Review": "default",
-  "Completed Review": "default",
-};
 
 interface FormulationCountriesListProps {
   countries: FormulationCountryDetail[];
@@ -76,7 +62,7 @@ export function FormulationCountriesList({ countries }: FormulationCountriesList
         const status = row.getValue("country_status") as string | null;
         if (!status) return <span className="text-sm text-muted-foreground">—</span>;
         return (
-          <Badge variant={countryStatusColors[status] as any || "secondary"}>
+          <Badge variant={getStatusVariant(status, 'country')}>
             {status}
           </Badge>
         );
@@ -89,7 +75,7 @@ export function FormulationCountriesList({ countries }: FormulationCountriesList
         const readiness = row.getValue("readiness") as string | null;
         if (!readiness) return <span className="text-sm text-muted-foreground">—</span>;
         return (
-          <Badge variant={readinessColors[readiness] as any || "secondary"}>
+          <Badge variant={getStatusVariant(readiness, 'country')}>
             {readiness}
           </Badge>
         );
@@ -139,4 +125,3 @@ export function FormulationCountriesList({ countries }: FormulationCountriesList
     />
   );
 }
-

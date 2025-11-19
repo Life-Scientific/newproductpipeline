@@ -37,21 +37,23 @@ export function ExchangeRateForm({
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  
+  // Initialize state with default values to avoid null issues
   const [formData, setFormData] = useState({
-    country_id: exchangeRate?.country_id || "",
-    currency_code: exchangeRate?.currency_code || "",
-    exchange_rate_to_eur: exchangeRate?.exchange_rate_to_eur?.toString() || "",
-    effective_date: exchangeRate?.effective_date
-      ? new Date(exchangeRate.effective_date).toISOString().split("T")[0]
-      : new Date().toISOString().split("T")[0],
-    is_active: exchangeRate?.is_active ?? true,
-    notes: exchangeRate?.notes || "",
+    country_id: "",
+    currency_code: "",
+    exchange_rate_to_eur: "",
+    effective_date: new Date().toISOString().split("T")[0],
+    is_active: true,
+    notes: "",
   });
-  const [selectedCountryId, setSelectedCountryId] = useState<string>(
-    exchangeRate?.country_id || ""
-  );
+  
+  const [selectedCountryId, setSelectedCountryId] = useState<string>("");
 
+  // Reset or populate form when modal opens or exchange rate changes
   useEffect(() => {
+    if (!open) return;
+
     if (exchangeRate) {
       setFormData({
         country_id: exchangeRate.country_id,
@@ -65,6 +67,7 @@ export function ExchangeRateForm({
       });
       setSelectedCountryId(exchangeRate.country_id);
     } else {
+      // Reset to defaults for new entry
       setFormData({
         country_id: "",
         currency_code: "",
@@ -75,7 +78,7 @@ export function ExchangeRateForm({
       });
       setSelectedCountryId("");
     }
-  }, [exchangeRate, open]);
+  }, [exchangeRate?.exchange_rate_id, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,7 +168,7 @@ export function ExchangeRateForm({
           <DialogDescription>
             {exchangeRate
               ? "Update exchange rate details"
-              : "Add a new exchange rate. Rate is multiplier to convert from local currency to EUR (e.g., 1.10 means 1 EUR = 1.10 USD)"}
+              : "Add a new exchange rate. Rate is multiplier to convert from local currency to EUR."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -267,4 +270,3 @@ export function ExchangeRateForm({
     </Dialog>
   );
 }
-

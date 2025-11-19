@@ -12,12 +12,22 @@ interface StatusPieChartProps {
   onDrillDown?: (status: string) => void;
 }
 
-const COLORS = {
-  "Not Yet Considered": "#94a3b8",
-  Selected: "#10b981",
-  Monitoring: "#f59e0b",
-  Killed: "#ef4444",
+// Use CSS variables for theme-aware colors
+const STATUS_COLORS: Record<string, string> = {
+  "Not Yet Considered": "var(--color-muted)",
+  "Selected": "var(--color-success)",
+  "Monitoring": "var(--color-info)", // or warning depending on preference
+  "Killed": "var(--color-destructive)",
 };
+
+// Fallback colors from the theme chart palette
+const CHART_COLORS = [
+  "var(--color-chart-1)",
+  "var(--color-chart-2)",
+  "var(--color-chart-3)",
+  "var(--color-chart-4)",
+  "var(--color-chart-5)",
+];
 
 export function StatusPieChart({ formulations, onDrillDown }: StatusPieChartProps) {
   const router = useRouter();
@@ -58,24 +68,28 @@ export function StatusPieChart({ formulations, onDrillDown }: StatusPieChartProp
               labelLine={false}
               label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
               outerRadius={80}
-              fill="#8884d8"
+              fill="var(--color-chart-1)"
               dataKey="value"
               onClick={handleClick}
               style={{ cursor: "pointer" }}
             >
-              {chartData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[entry.name as keyof typeof COLORS] || "#8884d8"}
-                />
-              ))}
+              {chartData.map((entry, index) => {
+                const color = STATUS_COLORS[entry.name] || CHART_COLORS[index % CHART_COLORS.length];
+                return <Cell key={`cell-${index}`} fill={color} stroke="var(--color-background)" strokeWidth={2} />;
+              })}
             </Pie>
-            <Tooltip />
-            <Legend />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'var(--color-popover)', 
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-popover-foreground)'
+              }}
+              itemStyle={{ color: 'var(--color-foreground)' }}
+            />
+            <Legend wrapperStyle={{ paddingTop: '20px' }} />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   );
 }
-

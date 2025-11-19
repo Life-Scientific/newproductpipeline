@@ -12,7 +12,7 @@ export default async function RegistrationPipelinePage() {
   const { data: pipeline, error } = await supabase
     .from("vw_registration_pipeline")
     .select("*", { count: "exact" })
-    .order("earliest_submission_date", { ascending: false })
+    .order("earliest_planned_submission_date", { ascending: false })
     .limit(10000); // Fetch up to 10k rows
 
   if (error) {

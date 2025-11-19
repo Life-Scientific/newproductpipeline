@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import type { Database } from "@/lib/supabase/database.types";
+import { getStatusVariant } from "@/lib/design-system";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
@@ -21,33 +22,6 @@ interface PipelineTrackerTreeViewProps {
   useGroups: FormulationCountryUseGroup[];
   businessCases: BusinessCase[];
 }
-
-const formulationStatusColors: Record<string, string> = {
-  "Not Yet Evaluated": "secondary",
-  "Selected": "default",
-  "Being Monitored": "outline",
-  "Killed": "destructive",
-};
-
-const countryStatusColors: Record<string, string> = {
-  "Not yet evaluated": "secondary",
-  "Not selected for entry": "outline",
-  "Selected for entry": "default",
-  "On hold": "destructive",
-  "Withdrawn": "destructive",
-};
-
-const readinessColors: Record<string, string> = {
-  "Nominated for Review": "secondary",
-  "Under Preparation": "outline",
-  "Ready for Review": "default",
-  "Completed Review": "default",
-};
-
-const useGroupStatusColors: Record<string, string> = {
-  "Active": "default",
-  "Inactive": "outline",
-};
 
 export function PipelineTrackerTreeView({
   formulations,
@@ -250,12 +224,12 @@ export function PipelineTrackerTreeView({
                             )}
                             <div className="ml-auto flex items-center gap-2 flex-shrink-0">
                               {formulation.formulation_status && (
-                                <Badge variant={formulationStatusColors[formulation.formulation_status] as any || "secondary"} className="text-xs">
+                                <Badge variant={getStatusVariant(formulation.formulation_status, 'formulation')} className="text-xs">
                                   {formulation.formulation_status}
                                 </Badge>
                               )}
                               {formulation.readiness && (
-                                <Badge variant={readinessColors[formulation.readiness] as any || "secondary"} className="text-xs">
+                                <Badge variant={getStatusVariant(formulation.readiness, 'country')} className="text-xs">
                                   {formulation.readiness}
                                 </Badge>
                               )}
@@ -310,12 +284,12 @@ export function PipelineTrackerTreeView({
                                           <span className="font-medium truncate">{country.country_name}</span>
                                           <div className="ml-auto flex items-center gap-1 flex-shrink-0">
                                             {country.country_status && (
-                                              <Badge variant={countryStatusColors[country.country_status] as any || "secondary"} className="text-xs">
+                                              <Badge variant={getStatusVariant(country.country_status, 'country')} className="text-xs">
                                                 {country.country_status}
                                               </Badge>
                                             )}
                                             {country.readiness && (
-                                              <Badge variant={readinessColors[country.readiness] as any || "secondary"} className="text-xs">
+                                              <Badge variant={getStatusVariant(country.readiness, 'country')} className="text-xs">
                                                 {country.readiness}
                                               </Badge>
                                             )}
@@ -372,7 +346,7 @@ export function PipelineTrackerTreeView({
                                                         </span>
                                                         <div className="ml-auto flex items-center gap-1 flex-shrink-0">
                                                           {useGroup.use_group_status && (
-                                                            <Badge variant={useGroupStatusColors[useGroup.use_group_status] as any || "secondary"} className="text-xs">
+                                                            <Badge variant={useGroup.use_group_status === "Active" ? "success" : "outline"} className="text-xs">
                                                               {useGroup.use_group_status}
                                                             </Badge>
                                                           )}
@@ -436,4 +410,3 @@ export function PipelineTrackerTreeView({
     </div>
   );
 }
-

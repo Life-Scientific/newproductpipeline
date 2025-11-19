@@ -4,6 +4,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import type { Database } from "@/lib/supabase/database.types";
+import { getStatusVariant } from "@/lib/design-system";
 
 type RegistrationPipeline = Database["public"]["Views"]["vw_registration_pipeline"]["Row"];
 
@@ -47,15 +48,8 @@ const columns: ColumnDef<RegistrationPipeline>[] = [
     cell: ({ row }) => {
       const status = row.getValue("registration_status") as string | null;
       if (!status) return "—";
-      const statusColors: Record<string, string> = {
-        Approved: "default",
-        Submitted: "outline",
-        "In Progress": "secondary",
-        Rejected: "destructive",
-        Withdrawn: "outline",
-      };
       return (
-        <Badge variant={statusColors[status] as any || "outline"}>
+        <Badge variant={getStatusVariant(status, 'registration')}>
           {status}
         </Badge>
       );
@@ -66,7 +60,11 @@ const columns: ColumnDef<RegistrationPipeline>[] = [
     header: "Active Portfolio",
     cell: ({ row }) => {
       const active = row.getValue("is_in_active_portfolio") as boolean | null;
-      return active ? "Yes" : "No";
+      return active ? (
+        <Badge variant="success" className="rounded-full px-2">Yes</Badge>
+      ) : (
+        <span className="text-muted-foreground text-sm">No</span>
+      );
     },
   },
   {
@@ -74,7 +72,11 @@ const columns: ColumnDef<RegistrationPipeline>[] = [
     header: "Has Approval",
     cell: ({ row }) => {
       const approved = row.getValue("has_approval") as boolean | null;
-      return approved ? "Yes" : "No";
+      return approved ? (
+        <Badge variant="success" className="rounded-full px-2">Yes</Badge>
+      ) : (
+        <span className="text-muted-foreground text-sm">No</span>
+      );
     },
   },
   {
@@ -127,4 +129,3 @@ export function RegistrationPipelineList({
     />
   );
 }
-

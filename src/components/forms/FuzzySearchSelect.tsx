@@ -184,7 +184,7 @@ export function FuzzySearchSelect({
       : searchResults;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} modal={true}>
       <div className={cn("relative w-full", className)}>
         <PopoverAnchor asChild>
           <div
@@ -309,6 +309,3 @@ export function FuzzySearchSelect({
     </Popover>
   );
 }
-
-
-
