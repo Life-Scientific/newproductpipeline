@@ -8,18 +8,17 @@ export async function createFormulationCountry(formData: FormData) {
 
   const formulationId = formData.get("formulation_id") as string;
   const countryId = formData.get("country_id") as string;
-  const registrationPathway = formData.get("registration_pathway") as string | null;
-  const registrationStatus = formData.get("registration_status") as string | null;
-  const targetMarketEntryFy = formData.get("target_market_entry_fy") as string | null;
-  const emd = formData.get("emd") as string | null;
-  const keyedinProjectIds = formData.get("keyedin_project_ids") as string | null;
+  
+  // Fields matching schema
+  const likelyRegistrationPathway = formData.get("likely_registration_pathway") as string | null;
+  const countryStatus = formData.get("country_status") as string | null;
+  const countryReadiness = formData.get("country_readiness") as string | null;
+  const countryReadinessNotes = formData.get("country_readiness_notes") as string | null;
+  const earliestMarketEntryDate = formData.get("earliest_market_entry_date") as string | null;
+  
   const isNovel = formData.get("is_novel") === "true";
   const isEuApprovedFormulation = formData.get("is_eu_approved_formulation") === "true";
-  const isInActivePortfolio = formData.get("is_in_active_portfolio") === "true";
-  const hasApproval = formData.get("has_approval") === "true";
-
-  // Note: Crops and targets are now managed at formulation level via EPPO codes,
-  // not at formulation_country level
+  const isActive = formData.get("is_active") !== "false"; // Default true
 
   if (!formulationId || !countryId) {
     return { error: "Formulation and country are required" };
@@ -42,15 +41,14 @@ export async function createFormulationCountry(formData: FormData) {
     .insert({
       formulation_id: formulationId,
       country_id: countryId,
-      registration_pathway: registrationPathway,
-      registration_status: registrationStatus,
-      target_market_entry_fy: targetMarketEntryFy,
-      emd: emd || null,
-      keyedin_project_ids: keyedinProjectIds,
+      likely_registration_pathway: likelyRegistrationPathway,
+      country_status: countryStatus || "Not yet evaluated",
+      country_readiness: countryReadiness || "Nominated for Review",
+      country_readiness_notes: countryReadinessNotes,
+      earliest_market_entry_date: earliestMarketEntryDate || null,
       is_novel: isNovel,
       is_eu_approved_formulation: isEuApprovedFormulation,
-      is_in_active_portfolio: isInActivePortfolio,
-      has_approval: hasApproval,
+      is_active: isActive,
     })
     .select()
     .single();
@@ -59,11 +57,9 @@ export async function createFormulationCountry(formData: FormData) {
     return { error: error.message };
   }
 
-  // Note: Crops and targets are managed at formulation level via EPPO codes,
-  // not at formulation_country level
-
   revalidatePath("/registration");
   revalidatePath("/formulations");
+  revalidatePath("/countries");
   return { data, success: true };
 }
 
@@ -73,33 +69,35 @@ export async function updateFormulationCountry(
 ) {
   const supabase = await createClient();
 
-  const registrationPathway = formData.get("registration_pathway") as string | null;
-  const registrationStatus = formData.get("registration_status") as string | null;
-  const targetMarketEntryFy = formData.get("target_market_entry_fy") as string | null;
-  const emd = formData.get("emd") as string | null;
-  const keyedinProjectIds = formData.get("keyedin_project_ids") as string | null;
+  const likelyRegistrationPathway = formData.get("likely_registration_pathway") as string | null;
+  const countryStatus = formData.get("country_status") as string | null;
+  const countryReadiness = formData.get("country_readiness") as string | null;
+  const countryReadinessNotes = formData.get("country_readiness_notes") as string | null;
+  const earliestMarketEntryDate = formData.get("earliest_market_entry_date") as string | null;
+  
   const isNovel = formData.get("is_novel") === "true";
   const isEuApprovedFormulation = formData.get("is_eu_approved_formulation") === "true";
-  const isInActivePortfolio = formData.get("is_in_active_portfolio") === "true";
-  const hasApproval = formData.get("has_approval") === "true";
+  const isActive = formData.get("is_active") === "true";
 
-  // Note: Crops and targets are managed at formulation level via EPPO codes,
-  // not at formulation_country level
+  const updateData: any = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (likelyRegistrationPathway !== null) updateData.likely_registration_pathway = likelyRegistrationPathway;
+  if (countryStatus !== null) updateData.country_status = countryStatus;
+  if (countryReadiness !== null) updateData.country_readiness = countryReadiness;
+  if (countryReadinessNotes !== null) updateData.country_readiness_notes = countryReadinessNotes;
+  if (earliestMarketEntryDate !== null) updateData.earliest_market_entry_date = earliestMarketEntryDate || null;
+  
+  // Booleans - update if present in form data (checked usually sends 'true', unchecked might send 'false' or nothing if not handled)
+  // Assuming the caller handles boolean logic correctly
+  if (formData.has("is_novel")) updateData.is_novel = isNovel;
+  if (formData.has("is_eu_approved_formulation")) updateData.is_eu_approved_formulation = isEuApprovedFormulation;
+  if (formData.has("is_active")) updateData.is_active = isActive;
 
   const { data, error } = await supabase
     .from("formulation_country")
-    .update({
-      registration_pathway: registrationPathway,
-      registration_status: registrationStatus,
-      target_market_entry_fy: targetMarketEntryFy,
-      emd: emd || null,
-      keyedin_project_ids: keyedinProjectIds,
-      is_novel: isNovel,
-      is_eu_approved_formulation: isEuApprovedFormulation,
-      is_in_active_portfolio: isInActivePortfolio,
-      has_approval: hasApproval,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq("formulation_country_id", formulationCountryId)
     .select()
     .single();
@@ -108,11 +106,9 @@ export async function updateFormulationCountry(
     return { error: error.message };
   }
 
-  // Note: Crops and targets are managed at formulation level via EPPO codes,
-  // not at formulation_country level
-
   revalidatePath("/registration");
   revalidatePath("/formulations");
+  revalidatePath("/countries");
   return { data, success: true };
 }
 
@@ -130,6 +126,6 @@ export async function deleteFormulationCountry(formulationCountryId: string) {
 
   revalidatePath("/registration");
   revalidatePath("/formulations");
+  revalidatePath("/countries");
   return { success: true };
 }
-

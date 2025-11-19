@@ -6,7 +6,7 @@ import { BusinessCasesProjectionTable } from "@/components/business-cases/Busine
 import { BusinessCaseFilters } from "@/components/business-cases/BusinessCaseFilters";
 import { BusinessCaseCreateModal } from "@/components/business-cases/BusinessCaseCreateModal";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, GitBranch } from "lucide-react";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
 
 interface BusinessCasesPageClientProps {
@@ -44,8 +44,12 @@ export function BusinessCasesPageClient({ initialBusinessCases }: BusinessCasesP
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Business Cases</CardTitle>
-              <CardDescription>
+              <CardDescription className="flex items-center gap-2">
                 View and manage financial projections
+                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100">
+                  <GitBranch className="h-3 w-3" />
+                  Git-style field tracking
+                </span>
               </CardDescription>
             </div>
             <Button onClick={() => setCreateModalOpen(true)} size="lg" className="h-12 px-6">

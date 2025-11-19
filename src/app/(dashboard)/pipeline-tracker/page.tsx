@@ -1,6 +1,6 @@
 import { getPipelineTrackerData } from "@/lib/db/queries";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
-import { PipelineTrackerTreeView } from "@/components/navigation/PipelineTrackerTreeView";
+import { PipelineTrackerDashboard } from "@/components/dashboard/PipelineTrackerDashboard";
 
 export default async function PipelineTrackerPage() {
   const { formulations, countries, useGroups, businessCases } = await getPipelineTrackerData();
@@ -12,12 +12,12 @@ export default async function PipelineTrackerPage() {
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold">Pipeline Tracker</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Track portfolio state management across all formulations, countries, and use groups
+              Scalable view of your entire portfolio with sortable, filterable metrics
             </p>
           </div>
         </div>
 
-        <PipelineTrackerTreeView
+        <PipelineTrackerDashboard
           formulations={formulations}
           countries={countries}
           useGroups={useGroups}

@@ -10,13 +10,13 @@ export async function createFormulationCountryUseGroup(formData: FormData) {
   const useGroupVariant = formData.get("use_group_variant") as string;
   const useGroupName = formData.get("use_group_name") as string | null;
   const referenceProductId = formData.get("reference_product_id") as string | null;
-  const registrationStatus = formData.get("registration_status") as string | null;
+  const useGroupStatus = formData.get("use_group_status") as string | null;
+  const targetMarketEntryFy = formData.get("target_market_entry_fy") as string | null;
+  
   const earliestSubmissionDate = formData.get("earliest_submission_date") as string | null;
   const earliestApprovalDate = formData.get("earliest_approval_date") as string | null;
-  const earliestMarketEntryDate = formData.get("earliest_market_entry_date") as string | null;
   const actualSubmissionDate = formData.get("actual_submission_date") as string | null;
   const actualApprovalDate = formData.get("actual_approval_date") as string | null;
-  const actualMarketEntryDate = formData.get("actual_market_entry_date") as string | null;
 
   const eppoCropIdsJson = formData.get("eppo_crop_ids") as string | null;
   const eppoTargetIdsJson = formData.get("eppo_target_ids") as string | null;
@@ -97,10 +97,6 @@ export async function createFormulationCountryUseGroup(formData: FormData) {
     return { error: "At least one target must be selected" };
   }
 
-  // Validate crops/targets are subset of formulation crops/targets
-  // Note: We'll create the use group first, then validate
-  // Database triggers will also enforce this
-
   const { data, error } = await supabase
     .from("formulation_country_use_group")
     .insert({
@@ -108,13 +104,12 @@ export async function createFormulationCountryUseGroup(formData: FormData) {
       use_group_variant: useGroupVariant,
       use_group_name: useGroupName,
       reference_product_id: referenceProductId || null,
-      registration_status: registrationStatus,
-      earliest_submission_date: earliestSubmissionDate || null,
-      earliest_approval_date: earliestApprovalDate || null,
-      earliest_market_entry_date: earliestMarketEntryDate || null,
-      actual_submission_date: actualSubmissionDate || null,
-      actual_approval_date: actualApprovalDate || null,
-      actual_market_entry_date: actualMarketEntryDate || null,
+      use_group_status: useGroupStatus || "Active",
+      target_market_entry_fy: targetMarketEntryFy,
+      earliest_planned_submission_date: earliestSubmissionDate || null,
+      earliest_planned_approval_date: earliestApprovalDate || null,
+      earliest_actual_submission_date: actualSubmissionDate || null,
+      earliest_actual_approval_date: actualApprovalDate || null,
     })
     .select()
     .single();
@@ -178,13 +173,13 @@ export async function updateFormulationCountryUseGroup(
   const useGroupVariant = formData.get("use_group_variant") as string | null;
   const useGroupName = formData.get("use_group_name") as string | null;
   const referenceProductId = formData.get("reference_product_id") as string | null;
-  const registrationStatus = formData.get("registration_status") as string | null;
+  const useGroupStatus = formData.get("use_group_status") as string | null;
+  const targetMarketEntryFy = formData.get("target_market_entry_fy") as string | null;
+  
   const earliestSubmissionDate = formData.get("earliest_submission_date") as string | null;
   const earliestApprovalDate = formData.get("earliest_approval_date") as string | null;
-  const earliestMarketEntryDate = formData.get("earliest_market_entry_date") as string | null;
   const actualSubmissionDate = formData.get("actual_submission_date") as string | null;
   const actualApprovalDate = formData.get("actual_approval_date") as string | null;
-  const actualMarketEntryDate = formData.get("actual_market_entry_date") as string | null;
 
   const eppoCropIdsJson = formData.get("eppo_crop_ids") as string | null;
   const eppoTargetIdsJson = formData.get("eppo_target_ids") as string | null;
@@ -198,17 +193,17 @@ export async function updateFormulationCountryUseGroup(
   if (useGroupVariant !== null) updateData.use_group_variant = useGroupVariant;
   if (useGroupName !== null) updateData.use_group_name = useGroupName;
   if (referenceProductId !== null) updateData.reference_product_id = referenceProductId || null;
-  if (registrationStatus !== null) updateData.registration_status = registrationStatus;
+  if (useGroupStatus !== null) updateData.use_group_status = useGroupStatus;
+  if (targetMarketEntryFy !== null) updateData.target_market_entry_fy = targetMarketEntryFy;
+  
   if (earliestSubmissionDate !== null)
-    updateData.earliest_submission_date = earliestSubmissionDate || null;
+    updateData.earliest_planned_submission_date = earliestSubmissionDate || null;
   if (earliestApprovalDate !== null)
-    updateData.earliest_approval_date = earliestApprovalDate || null;
-  if (earliestMarketEntryDate !== null)
-    updateData.earliest_market_entry_date = earliestMarketEntryDate || null;
-  if (actualSubmissionDate !== null) updateData.actual_submission_date = actualSubmissionDate || null;
-  if (actualApprovalDate !== null) updateData.actual_approval_date = actualApprovalDate || null;
-  if (actualMarketEntryDate !== null)
-    updateData.actual_market_entry_date = actualMarketEntryDate || null;
+    updateData.earliest_planned_approval_date = earliestApprovalDate || null;
+  if (actualSubmissionDate !== null) 
+    updateData.earliest_actual_submission_date = actualSubmissionDate || null;
+  if (actualApprovalDate !== null) 
+    updateData.earliest_actual_approval_date = actualApprovalDate || null;
 
   const { data, error } = await supabase
     .from("formulation_country_use_group")
@@ -316,4 +311,3 @@ export async function deleteFormulationCountryUseGroup(formulationCountryUseGrou
   revalidatePath("/use-groups");
   return { success: true };
 }
-

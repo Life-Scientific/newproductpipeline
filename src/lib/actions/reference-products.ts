@@ -3,6 +3,22 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
+export async function getReferenceProducts() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("reference_products")
+    .select("*")
+    .eq("is_active", true)
+    .order("product_name");
+  
+  if (error) {
+    console.error("Failed to fetch reference products:", error);
+    return [];
+  }
+  
+  return data;
+}
+
 export async function createReferenceProduct(formData: FormData) {
   const supabase = await createClient();
 
@@ -96,4 +112,3 @@ export async function deleteReferenceProduct(referenceProductId: string) {
   revalidatePath("/reference");
   return { success: true };
 }
-
