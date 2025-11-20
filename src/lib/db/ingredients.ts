@@ -34,7 +34,17 @@ export async function getIngredientFormulations(ingredientId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("formulation_ingredients")
-    .select("*, formulations!inner(*)")
+    .select(`
+      *,
+      formulations!inner(
+        formulation_id,
+        formulation_code,
+        formulation_name,
+        formulation_category,
+        formulation_status,
+        is_active
+      )
+    `)
     .eq("ingredient_id", ingredientId)
     .eq("formulations.is_active", true);
 

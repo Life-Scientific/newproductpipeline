@@ -1,6 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createCachedClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
+import { unstable_cache } from "next/cache";
 
 // Re-export types from types.ts
 export type {
@@ -85,19 +86,23 @@ import type {
   BusinessCaseYearData,
 } from "./types";
 
-export async function getFormulations() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("vw_formulations_with_ingredients")
-    .select("*")
-    .order("formulation_code", { ascending: true });
+export const getFormulations = unstable_cache(
+  async () => {
+    const supabase = createCachedClient();
+    const { data, error } = await supabase
+      .from("vw_formulations_with_ingredients")
+      .select("*")
+      .order("formulation_code", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch formulations: ${error.message}`);
-  }
+    if (error) {
+      throw new Error(`Failed to fetch formulations: ${error.message}`);
+    }
 
-  return data as Formulation[];
-}
+    return data as Formulation[];
+  },
+  ["formulations"],
+  { tags: ["formulations"] }
+);
 
 export async function getBlacklistedFormulations() {
   const supabase = await createClient();
@@ -115,308 +120,315 @@ export async function getBlacklistedFormulations() {
   return data as FormulationTable[];
 }
 
-export async function getFormulationsWithNestedData(): Promise<FormulationWithNestedData[]> {
-  const supabase = await createClient();
-  
-  // Get formulations
-  const { data: formulations, error: formulationsError } = await supabase
-    .from("vw_formulations_with_ingredients")
-    .select("*")
-    .order("formulation_code", { ascending: true });
+export const getFormulationsWithNestedData = unstable_cache(
+  async (): Promise<FormulationWithNestedData[]> => {
+    const supabase = createCachedClient();
+    
+    // Get formulations
+    const { data: formulations, error: formulationsError } = await supabase
+      .from("vw_formulations_with_ingredients")
+      .select("*")
+      .order("formulation_code", { ascending: true });
 
-  if (formulationsError || !formulations) {
-    throw new Error(`Failed to fetch formulations: ${formulationsError?.message}`);
-  }
-
-  // Get all related data in parallel
-  const [countriesResult, useGroupsResult, businessCasesResult, cogsResult, protectionResult] = await Promise.all([
-    supabase.from("vw_formulation_country_detail").select("formulation_code, country_name, earliest_market_entry_date, target_market_entry_fy, normal_crop_usage, targets_treated"),
-    supabase.from("vw_formulation_country_use_group").select("formulation_code, use_group_name, use_group_variant, country_name, reference_product_name"),
-    supabase.from("vw_business_case").select("formulation_code, total_revenue, total_margin"),
-    supabase.from("vw_cogs").select("formulation_code, cogs_value, fiscal_year"),
-    supabase.from("vw_patent_protection_status").select("formulation_code, country_name, earliest_ingredient_patent_expiry, earliest_combination_patent_expiry, earliest_formulation_patent_expiry"),
-  ]);
-
-  const countriesData = countriesResult.data || [];
-  const useGroupsData = useGroupsResult.data || [];
-  const businessCasesData = businessCasesResult.data || [];
-  const cogsData = cogsResult.data || [];
-  const protectionData = protectionResult.data || [];
-
-  // Aggregate data by formulation_code
-  const aggregated = new Map<string, {
-    countries: Set<string>;
-    countriesList: Array<{ name: string; status: string; emd: string | null; tme: string | null }>;
-    useGroups: Set<string>;
-    useGroupsList: Array<{ name: string; variant: string; country: string; status: string; ref: string | null }>;
-    businessCases: number;
-    totalRevenue: number;
-    totalMargin: number;
-    cogs: Array<{ value: number; year: string }>;
-    protection: Array<{ country: string; patent: string | null; data: string | null }>;
-    crops: Set<string>;
-    targets: Set<string>;
-  }>();
-
-  // Process countries
-  countriesData.forEach((item: any) => {
-    if (!item.formulation_code) return;
-    if (!aggregated.has(item.formulation_code)) {
-      aggregated.set(item.formulation_code, {
-        countries: new Set(),
-        countriesList: [],
-        useGroups: new Set(),
-        useGroupsList: [],
-        businessCases: 0,
-        totalRevenue: 0,
-        totalMargin: 0,
-        cogs: [],
-        protection: [],
-        crops: new Set(),
-        targets: new Set(),
-      });
+    if (formulationsError || !formulations) {
+      throw new Error(`Failed to fetch formulations: ${formulationsError?.message}`);
     }
-    const agg = aggregated.get(item.formulation_code)!;
-    agg.countries.add(item.country_name);
-    agg.countriesList.push({
-      name: item.country_name,
-      status: "", // registration_status was removed from schema
-      emd: item.earliest_market_entry_date,
-      tme: item.target_market_entry_fy,
-    });
-    // Extract crops and targets from comma-separated strings
-    if (item.normal_crop_usage) {
-      item.normal_crop_usage.split(",").forEach((crop: string) => {
-        const trimmed = crop.trim();
-        if (trimmed) agg.crops.add(trimmed);
+
+    // Get all related data in parallel
+    const [countriesResult, useGroupsResult, businessCasesResult, cogsResult, protectionResult] = await Promise.all([
+      supabase.from("vw_formulation_country_detail").select("formulation_code, country_name, earliest_market_entry_date, target_market_entry_fy, normal_crop_usage, targets_treated"),
+      supabase.from("vw_formulation_country_use_group").select("formulation_code, use_group_name, use_group_variant, country_name, reference_product_name"),
+      supabase.from("vw_business_case").select("formulation_code, total_revenue, total_margin"),
+      supabase.from("vw_cogs").select("formulation_code, cogs_value, fiscal_year"),
+      supabase.from("vw_patent_protection_status").select("formulation_code, country_name, earliest_ingredient_patent_expiry, earliest_combination_patent_expiry, earliest_formulation_patent_expiry"),
+    ]);
+
+    const countriesData = countriesResult.data || [];
+    const useGroupsData = useGroupsResult.data || [];
+    const businessCasesData = businessCasesResult.data || [];
+    const cogsData = cogsResult.data || [];
+    const protectionData = protectionResult.data || [];
+
+    // Aggregate data by formulation_code
+    const aggregated = new Map<string, {
+      countries: Set<string>;
+      countriesList: Array<{ name: string; status: string; emd: string | null; tme: string | null }>;
+      useGroups: Set<string>;
+      useGroupsList: Array<{ name: string; variant: string; country: string; status: string; ref: string | null }>;
+      businessCases: number;
+      totalRevenue: number;
+      totalMargin: number;
+      cogs: Array<{ value: number; year: string }>;
+      protection: Array<{ country: string; patent: string | null; data: string | null }>;
+      crops: Set<string>;
+      targets: Set<string>;
+    }>();
+
+    // Process countries
+    countriesData.forEach((item: any) => {
+      if (!item.formulation_code) return;
+      if (!aggregated.has(item.formulation_code)) {
+        aggregated.set(item.formulation_code, {
+          countries: new Set(),
+          countriesList: [],
+          useGroups: new Set(),
+          useGroupsList: [],
+          businessCases: 0,
+          totalRevenue: 0,
+          totalMargin: 0,
+          cogs: [],
+          protection: [],
+          crops: new Set(),
+          targets: new Set(),
+        });
+      }
+      const agg = aggregated.get(item.formulation_code)!;
+      agg.countries.add(item.country_name);
+      agg.countriesList.push({
+        name: item.country_name,
+        status: "", // registration_status was removed from schema
+        emd: item.earliest_market_entry_date,
+        tme: item.target_market_entry_fy,
       });
-    }
-    if (item.targets_treated) {
-      item.targets_treated.split(",").forEach((target: string) => {
-        const trimmed = target.trim();
-        if (trimmed) agg.targets.add(trimmed);
-      });
-    }
-  });
-
-  // Process use groups
-  useGroupsData.forEach((item: any) => {
-    if (!item.formulation_code) return;
-    if (!aggregated.has(item.formulation_code)) {
-      aggregated.set(item.formulation_code, {
-        countries: new Set(),
-        countriesList: [],
-        useGroups: new Set(),
-        useGroupsList: [],
-        businessCases: 0,
-        totalRevenue: 0,
-        totalMargin: 0,
-        cogs: [],
-        protection: [],
-        crops: new Set(),
-        targets: new Set(),
-      });
-    }
-    const agg = aggregated.get(item.formulation_code)!;
-    const useGroupKey = `${item.use_group_variant || ""} (${item.country_name || ""})`;
-    agg.useGroups.add(useGroupKey);
-    agg.useGroupsList.push({
-      name: item.use_group_name || item.use_group_variant || "",
-      variant: item.use_group_variant || "",
-      country: item.country_name || "",
-      status: "", // registration_status was removed from schema
-      ref: item.reference_product_name,
-    });
-  });
-
-  // Process business cases
-  businessCasesData.forEach((item: any) => {
-    if (!item.formulation_code) return;
-    if (!aggregated.has(item.formulation_code)) {
-      aggregated.set(item.formulation_code, {
-        countries: new Set(),
-        countriesList: [],
-        useGroups: new Set(),
-        useGroupsList: [],
-        businessCases: 0,
-        totalRevenue: 0,
-        totalMargin: 0,
-        cogs: [],
-        protection: [],
-        crops: new Set(),
-        targets: new Set(),
-      });
-    }
-    const agg = aggregated.get(item.formulation_code)!;
-    agg.businessCases += 1;
-    agg.totalRevenue += item.total_revenue || 0;
-    agg.totalMargin += item.total_margin || 0;
-  });
-
-  // Process COGS
-  cogsData.forEach((item: any) => {
-    if (!item.formulation_code) return;
-    if (!aggregated.has(item.formulation_code)) {
-      aggregated.set(item.formulation_code, {
-        countries: new Set(),
-        countriesList: [],
-        useGroups: new Set(),
-        useGroupsList: [],
-        businessCases: 0,
-        totalRevenue: 0,
-        totalMargin: 0,
-        cogs: [],
-        protection: [],
-        crops: new Set(),
-        targets: new Set(),
-      });
-    }
-    const agg = aggregated.get(item.formulation_code)!;
-    agg.cogs.push({
-      value: item.cogs_value || 0,
-      year: item.fiscal_year || "",
-    });
-  });
-
-  // Process protection
-  protectionData.forEach((item: any) => {
-    if (!item.formulation_code) return;
-    if (!aggregated.has(item.formulation_code)) {
-      aggregated.set(item.formulation_code, {
-        countries: new Set(),
-        countriesList: [],
-        useGroups: new Set(),
-        useGroupsList: [],
-        businessCases: 0,
-        totalRevenue: 0,
-        totalMargin: 0,
-        cogs: [],
-        protection: [],
-        crops: new Set(),
-        targets: new Set(),
-      });
-    }
-    const agg = aggregated.get(item.formulation_code)!;
-    // Use earliest_ingredient_patent_expiry as the primary patent expiry (fallback to combination/formulation)
-    const patentExpiry = item.earliest_ingredient_patent_expiry || 
-                         item.earliest_combination_patent_expiry || 
-                         item.earliest_formulation_patent_expiry;
-    agg.protection.push({
-      country: item.country_name || "",
-      patent: patentExpiry,
-      data: null, // Data protections removed from schema
-    });
-  });
-
-  // Combine formulations with aggregated data
-  return formulations.map((formulation) => {
-    const agg = aggregated.get(formulation.formulation_code || "") || {
-      countries: new Set<string>(),
-      countriesList: [],
-      useGroups: new Set<string>(),
-      useGroupsList: [],
-      businessCases: 0,
-      totalRevenue: 0,
-      totalMargin: 0,
-      cogs: [],
-      protection: [],
-      crops: new Set<string>(),
-      targets: new Set<string>(),
-    };
-
-    // Get unique crops and targets from aggregated data
-    const referenceProducts = new Set<string>();
-
-    agg.useGroupsList.forEach((useGroup) => {
-      if (useGroup.ref) referenceProducts.add(useGroup.ref);
-    });
-
-    // Get EMD dates
-    const emdDates = agg.countriesList
-      .map((c) => c.emd)
-      .filter(Boolean)
-      .sort();
-    const earliestEmd = emdDates[0] || null;
-
-    // Get TME FYs
-    const tmeFys = agg.countriesList
-      .map((c) => c.tme)
-      .filter(Boolean)
-      .sort()
-      .reverse();
-    const latestTme = tmeFys[0] || null;
-
-    // Registration statuses summary
-    const statusCounts: Record<string, number> = {};
-    agg.countriesList.forEach((c) => {
-      if (c.status) {
-        statusCounts[c.status] = (statusCounts[c.status] || 0) + 1;
+      // Extract crops and targets from comma-separated strings
+      if (item.normal_crop_usage) {
+        item.normal_crop_usage.split(",").forEach((crop: string) => {
+          const trimmed = crop.trim();
+          if (trimmed) agg.crops.add(trimmed);
+        });
+      }
+      if (item.targets_treated) {
+        item.targets_treated.split(",").forEach((target: string) => {
+          const trimmed = target.trim();
+          if (trimmed) agg.targets.add(trimmed);
+        });
       }
     });
-    const registrationStatuses = Object.entries(statusCounts)
-      .map(([status, count]) => `${status}:${count}`)
-      .join(", ");
 
-    // Protection status summary
-    const hasProtection = agg.protection.length > 0;
-    const earliestPatent = agg.protection
-      .map((p) => p.patent)
-      .filter(Boolean)
-      .sort()[0];
-    const earliestDataProt = agg.protection
-      .map((p) => p.data)
-      .filter(Boolean)
-      .sort()[0];
-    const protectionStatus = hasProtection
-      ? `Patents: ${earliestPatent || "None"}, Data: ${earliestDataProt || "None"}`
-      : "None";
+    // Process use groups
+    useGroupsData.forEach((item: any) => {
+      if (!item.formulation_code) return;
+      if (!aggregated.has(item.formulation_code)) {
+        aggregated.set(item.formulation_code, {
+          countries: new Set(),
+          countriesList: [],
+          useGroups: new Set(),
+          useGroupsList: [],
+          businessCases: 0,
+          totalRevenue: 0,
+          totalMargin: 0,
+          cogs: [],
+          protection: [],
+          crops: new Set(),
+          targets: new Set(),
+        });
+      }
+      const agg = aggregated.get(item.formulation_code)!;
+      const useGroupKey = `${item.use_group_variant || ""} (${item.country_name || ""})`;
+      agg.useGroups.add(useGroupKey);
+      agg.useGroupsList.push({
+        name: item.use_group_name || item.use_group_variant || "",
+        variant: item.use_group_variant || "",
+        country: item.country_name || "",
+        status: "", // registration_status was removed from schema
+        ref: item.reference_product_name,
+      });
+    });
 
-    // Latest COGS
-    const sortedCogs = [...agg.cogs].sort((a, b) => b.year.localeCompare(a.year));
-    const latestCogs = sortedCogs[0]?.value || null;
+    // Process business cases
+    businessCasesData.forEach((item: any) => {
+      if (!item.formulation_code) return;
+      if (!aggregated.has(item.formulation_code)) {
+        aggregated.set(item.formulation_code, {
+          countries: new Set(),
+          countriesList: [],
+          useGroups: new Set(),
+          useGroupsList: [],
+          businessCases: 0,
+          totalRevenue: 0,
+          totalMargin: 0,
+          cogs: [],
+          protection: [],
+          crops: new Set(),
+          targets: new Set(),
+        });
+      }
+      const agg = aggregated.get(item.formulation_code)!;
+      agg.businessCases += 1;
+      agg.totalRevenue += item.total_revenue || 0;
+      agg.totalMargin += item.total_margin || 0;
+    });
 
-    return {
-      ...formulation,
-      countries_count: agg.countries.size,
-      countries_list: Array.from(agg.countries).join(", ") || "—",
-      use_groups_count: agg.useGroups.size,
-      use_groups_list: agg.useGroupsList.map((ug) => `${ug.variant} (${ug.country})`).join("; ") || "—",
-      business_cases_count: agg.businessCases,
-      total_revenue: agg.totalRevenue,
-      total_margin: agg.totalMargin,
-      cogs_count: agg.cogs.length,
-      latest_cogs: latestCogs,
-      registration_statuses: registrationStatuses || "—",
-      protection_status: protectionStatus,
-      earliest_emd: earliestEmd,
-      latest_tme_fy: latestTme,
-      reference_products: Array.from(referenceProducts).join(", ") || "—",
-      crops_list: Array.from(agg.crops).join(", ") || "—",
-      targets_list: Array.from(agg.targets).join(", ") || "—",
-    } as FormulationWithNestedData;
-  });
-}
+    // Process COGS
+    cogsData.forEach((item: any) => {
+      if (!item.formulation_code) return;
+      if (!aggregated.has(item.formulation_code)) {
+        aggregated.set(item.formulation_code, {
+          countries: new Set(),
+          countriesList: [],
+          useGroups: new Set(),
+          useGroupsList: [],
+          businessCases: 0,
+          totalRevenue: 0,
+          totalMargin: 0,
+          cogs: [],
+          protection: [],
+          crops: new Set(),
+          targets: new Set(),
+        });
+      }
+      const agg = aggregated.get(item.formulation_code)!;
+      agg.cogs.push({
+        value: item.cogs_value || 0,
+        year: item.fiscal_year || "",
+      });
+    });
+
+    // Process protection
+    protectionData.forEach((item: any) => {
+      if (!item.formulation_code) return;
+      if (!aggregated.has(item.formulation_code)) {
+        aggregated.set(item.formulation_code, {
+          countries: new Set(),
+          countriesList: [],
+          useGroups: new Set(),
+          useGroupsList: [],
+          businessCases: 0,
+          totalRevenue: 0,
+          totalMargin: 0,
+          cogs: [],
+          protection: [],
+          crops: new Set(),
+          targets: new Set(),
+        });
+      }
+      const agg = aggregated.get(item.formulation_code)!;
+      // Use earliest_ingredient_patent_expiry as the primary patent expiry (fallback to combination/formulation)
+      const patentExpiry = item.earliest_ingredient_patent_expiry || 
+                           item.earliest_combination_patent_expiry || 
+                           item.earliest_formulation_patent_expiry;
+      agg.protection.push({
+        country: item.country_name || "",
+        patent: patentExpiry,
+        data: null, // Data protections removed from schema
+      });
+    });
+
+    // Combine formulations with aggregated data
+    return formulations.map((formulation) => {
+      const agg = aggregated.get(formulation.formulation_code || "") || {
+        countries: new Set<string>(),
+        countriesList: [],
+        useGroups: new Set<string>(),
+        useGroupsList: [],
+        businessCases: 0,
+        totalRevenue: 0,
+        totalMargin: 0,
+        cogs: [],
+        protection: [],
+        crops: new Set<string>(),
+        targets: new Set<string>(),
+      };
+
+      // Get unique crops and targets from aggregated data
+      const referenceProducts = new Set<string>();
+
+      agg.useGroupsList.forEach((useGroup) => {
+        if (useGroup.ref) referenceProducts.add(useGroup.ref);
+      });
+
+      // Get EMD dates
+      const emdDates = agg.countriesList
+        .map((c) => c.emd)
+        .filter(Boolean)
+        .sort();
+      const earliestEmd = emdDates[0] || null;
+
+      // Get TME FYs
+      const tmeFys = agg.countriesList
+        .map((c) => c.tme)
+        .filter(Boolean)
+        .sort()
+        .reverse();
+      const latestTme = tmeFys[0] || null;
+
+      // Registration statuses summary
+      const statusCounts: Record<string, number> = {};
+      agg.countriesList.forEach((c) => {
+        if (c.status) {
+          statusCounts[c.status] = (statusCounts[c.status] || 0) + 1;
+        }
+      });
+      const registrationStatuses = Object.entries(statusCounts)
+        .map(([status, count]) => `${status}:${count}`)
+        .join(", ");
+
+      // Protection status summary
+      const hasProtection = agg.protection.length > 0;
+      const earliestPatent = agg.protection
+        .map((p) => p.patent)
+        .filter(Boolean)
+        .sort()[0];
+      const earliestDataProt = agg.protection
+        .map((p) => p.data)
+        .filter(Boolean)
+        .sort()[0];
+      const protectionStatus = hasProtection
+        ? `Patents: ${earliestPatent || "None"}, Data: ${earliestDataProt || "None"}`
+        : "None";
+
+      // Latest COGS
+      const sortedCogs = [...agg.cogs].sort((a, b) => b.year.localeCompare(a.year));
+      const latestCogs = sortedCogs[0]?.value || null;
+
+      return {
+        ...formulation,
+        countries_count: agg.countries.size,
+        countries_list: Array.from(agg.countries).join(", ") || "—",
+        use_groups_count: agg.useGroups.size,
+        use_groups_list: agg.useGroupsList.map((ug) => `${ug.variant} (${ug.country})`).join("; ") || "—",
+        business_cases_count: agg.businessCases,
+        total_revenue: agg.totalRevenue,
+        total_margin: agg.totalMargin,
+        cogs_count: agg.cogs.length,
+        latest_cogs: latestCogs,
+        registration_statuses: registrationStatuses || "—",
+        protection_status: protectionStatus,
+        earliest_emd: earliestEmd,
+        latest_tme_fy: latestTme,
+        reference_products: Array.from(referenceProducts).join(", ") || "—",
+        crops_list: Array.from(agg.crops).join(", ") || "—",
+        targets_list: Array.from(agg.targets).join(", ") || "—",
+      } as FormulationWithNestedData;
+    });
+  },
+  ["formulations", "nested-data"],
+  { tags: ["formulations"] }
+);
 
 export async function getFormulationById(id: string) {
   const supabase = await createClient();
   
-  // First try to get from formulations table (for editing)
+  // Always try to get from formulations table first (includes inactive formulations)
+  // This ensures we can view any formulation by ID, even if inactive
   const { data: formulationData, error: formulationError } = await supabase
     .from("formulations")
     .select("*")
     .eq("formulation_id", id)
-    .single();
+    .maybeSingle();
 
   if (!formulationError && formulationData) {
     return formulationData as FormulationTable;
   }
 
-  // Fallback to view if not found in table
+  // Fallback to view if not found in table (only active formulations)
+  // Use limit(1) to ensure we only get one row, then maybeSingle() to handle 0 or 1 row
   const { data, error } = await supabase
     .from("vw_formulations_with_ingredients")
     .select("*")
     .eq("formulation_id", id)
-    .single();
+    .limit(1)
+    .maybeSingle();
 
   if (error) {
     throw new Error(`Failed to fetch formulation: ${error.message}`);
@@ -500,7 +512,7 @@ async function enrichBusinessCases(
     return [];
   }
 
-  const supabase = await createClient();
+  const supabase = createCachedClient();
   
   // Get unique business_case_ids
   const businessCaseIds = [
@@ -654,53 +666,35 @@ async function enrichBusinessCases(
   }));
 }
 
-export async function getBusinessCases() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("vw_business_case")
-    .select("*")
-    .order("fiscal_year", { ascending: false })
-    .order("year_offset", { ascending: true });
+export const getBusinessCases = unstable_cache(
+  async () => {
+    const supabase = createCachedClient();
+    const { data, error } = await supabase
+      .from("vw_business_case")
+      .select("*")
+      .order("fiscal_year", { ascending: false })
+      .order("year_offset", { ascending: true });
 
-  if (error) {
-    console.error('getBusinessCases error:', error);
-    throw new Error(`Failed to fetch business cases: ${error.message}`);
-  }
+    if (error) {
+      console.error('getBusinessCases error:', error);
+      throw new Error(`Failed to fetch business cases: ${error.message}`);
+    }
 
-  // Debug logging
-  if (process.env.NODE_ENV === 'development') {
-    console.log('getBusinessCases raw data:', {
-      count: data?.length || 0,
-      sample: data?.[0] ? {
-        business_case_id: data[0].business_case_id,
-        fiscal_year: data[0].fiscal_year,
-        total_revenue: data[0].total_revenue,
-        formulation_country_id: data[0].formulation_country_id,
-        formulation_country_use_group_id: data[0].formulation_country_use_group_id,
-      } : null,
-    });
-  }
-
-  // Deduplicate before enrichment
-  const deduplicated = deduplicateBusinessCases(data || []);
-  const enriched = await enrichBusinessCases(deduplicated);
-  
-  // Debug enriched data
-  if (process.env.NODE_ENV === 'development') {
-    console.log('getBusinessCases enriched:', {
-      count: enriched.length,
-      withCountryId: enriched.filter(bc => (bc as any).country_id).length,
-      sample: enriched[0] ? {
-        business_case_id: enriched[0].business_case_id,
-        fiscal_year: enriched[0].fiscal_year,
-        country_id: (enriched[0] as any).country_id,
-        total_revenue: enriched[0].total_revenue,
-      } : null,
-    });
-  }
-  
-  return enriched;
-}
+    // Deduplicate before enrichment
+    const deduplicated = deduplicateBusinessCases(data || []);
+    const enriched = await enrichBusinessCases(deduplicated);
+    
+    // Filter out orphaned business cases (those without formulation_code or country_name)
+    // These are invalid business cases that shouldn't be returned
+    const validBusinessCases = enriched.filter(
+      (bc) => bc.formulation_code && bc.country_name
+    );
+    
+    return validBusinessCases;
+  },
+  ["business-cases"],
+  { tags: ["business-cases"] }
+);
 
 export async function getBusinessCaseById(businessCaseId: string) {
   const supabase = await createClient();
@@ -914,137 +908,141 @@ function getEffectiveStartYearFromStored(effectiveStartFiscalYear: string | null
 /**
  * Get business cases grouped by business_case_group_id for projection table display
  */
-export async function getBusinessCasesForProjectionTable(): Promise<BusinessCaseGroupData[]> {
-  const supabase = await createClient();
-  
-  // Fetch all active business cases with their relationships
-  const { data, error } = await supabase
-    .from("vw_business_case")
-    .select("*")
-    .eq("status", "active")
-    .order("formulation_name", { ascending: true })
-    .order("country_name", { ascending: true })
-    .order("use_group_name", { ascending: true })
-    .order("year_offset", { ascending: true });
+export const getBusinessCasesForProjectionTable = unstable_cache(
+  async (): Promise<BusinessCaseGroupData[]> => {
+    const supabase = createCachedClient();
+    
+    // Fetch all active business cases with their relationships
+    const { data, error } = await supabase
+      .from("vw_business_case")
+      .select("*")
+      .eq("status", "active")
+      .order("formulation_name", { ascending: true })
+      .order("country_name", { ascending: true })
+      .order("use_group_name", { ascending: true })
+      .order("year_offset", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch business cases: ${error.message}`);
-  }
-
-  if (!data || data.length === 0) {
-    return [];
-  }
-
-  // Fetch target_market_entry_fy for each use group
-  // target_market_entry_fy is now stored at the formulation_country_use_group level
-  const businessCaseIds = data.map(bc => bc.business_case_id).filter(Boolean) as string[];
-  const { data: junctionData } = await supabase
-    .from("business_case_use_groups")
-    .select("business_case_id, formulation_country_use_group_id")
-    .in("business_case_id", businessCaseIds);
-
-  const useGroupIds = Array.from(new Set(junctionData?.map(j => j.formulation_country_use_group_id).filter(Boolean) || []));
-  
-  const { data: useGroupData } = await supabase
-    .from("formulation_country_use_group")
-    .select("formulation_country_use_group_id, target_market_entry_fy")
-    .in("formulation_country_use_group_id", useGroupIds);
-
-  // Create map for lookup: business_case_id -> target_market_entry_fy
-  const businessCaseToTargetEntry = new Map<string, string | null>();
-  junctionData?.forEach((j) => {
-    if (j.business_case_id && j.formulation_country_use_group_id) {
-      const useGroup = useGroupData?.find(ug => ug.formulation_country_use_group_id === j.formulation_country_use_group_id);
-      if (useGroup) {
-        businessCaseToTargetEntry.set(j.business_case_id, useGroup.target_market_entry_fy || null);
-      }
-    }
-  });
-
-  // Group by business_case_group_id
-  const groups = new Map<string, BusinessCaseGroupData>();
-  
-  data.forEach((bc) => {
-    if (!bc.business_case_group_id || !bc.formulation_id || !bc.country_id) {
-      return; // Skip incomplete records
+    if (error) {
+      throw new Error(`Failed to fetch business cases: ${error.message}`);
     }
 
-    const groupId = bc.business_case_group_id;
-    
-    if (!groups.has(groupId)) {
-      // Get target_market_entry_fy for this business case (original from use group)
-      const targetMarketEntry = businessCaseToTargetEntry.get(bc.business_case_id || "") || null;
-      
-      // Use stored effective_start_fiscal_year from database (preserves creation context)
-      const effectiveStartFiscalYear = bc.effective_start_fiscal_year || null;
-      const effectiveStartYear = getEffectiveStartYearFromStored(effectiveStartFiscalYear);
-      
-      groups.set(groupId, {
-        business_case_group_id: groupId,
-        formulation_id: bc.formulation_id,
-        formulation_name: bc.formulation_name || "",
-        formulation_code: bc.formulation_code,
-        uom: bc.uom || null,
-        country_id: bc.country_id,
-        country_name: bc.country_name || "",
-        country_code: bc.country_code || "",
-        currency_code: bc.currency_code || "USD",
-        use_group_id: "", // Will populate below
-        use_group_name: bc.use_group_name || null,
-        use_group_variant: bc.use_group_variant || null,
-        target_market_entry: targetMarketEntry, // Store original target_market_entry
-        effective_start_fiscal_year: effectiveStartFiscalYear, // Store effective start (preserves creation context)
-        years_data: {},
-      });
+    if (!data || data.length === 0) {
+      return [];
     }
 
-    const group = groups.get(groupId)!;
-    
-    // Use stored effective_start_fiscal_year for display calculations
-    // This preserves the fiscal year context when data was created
-    const effectiveStartFiscalYear = group.effective_start_fiscal_year || null;
-    const effectiveStartYear = getEffectiveStartYearFromStored(effectiveStartFiscalYear);
-    
-    // Calculate display fiscal year: effectiveStartYear + (year_offset - 1)
-    // This ensures year_offset 1 maps to effectiveStartYear (e.g., FY26 if created in FY26)
-    const displayFiscalYear = effectiveStartYear + ((bc.year_offset || 1) - 1);
-    const displayFiscalYearStr = `FY${String(displayFiscalYear).padStart(2, "0")}`;
-    
-    // Always overwrite with the current year_offset's data
-    // This ensures we're using the correct mapping regardless of stored fiscal_year
-    group.years_data[displayFiscalYearStr] = {
-      volume: bc.volume,
-      nsp: bc.nsp,
-      cogs_per_unit: bc.cogs_per_unit,
-      total_revenue: bc.total_revenue,
-      total_margin: bc.total_margin,
-      margin_percent: bc.margin_percent,
-    };
-  });
+    // Fetch target_market_entry_fy for each use group
+    // target_market_entry_fy is now stored at the formulation_country_use_group level
+    const businessCaseIds = data.map(bc => bc.business_case_id).filter(Boolean) as string[];
+    const { data: junctionData } = await supabase
+      .from("business_case_use_groups")
+      .select("business_case_id, formulation_country_use_group_id")
+      .in("business_case_id", businessCaseIds);
 
-  // Update groups with use_group_id (using formulation_country_use_group_id as identifier)
-  // junctionData was already fetched above, reuse it
-  const bcToUseGroup = new Map<string, string>();
-  junctionData?.forEach((j) => {
-    if (j.business_case_id && j.formulation_country_use_group_id) {
-      bcToUseGroup.set(j.business_case_id, j.formulation_country_use_group_id);
-    }
-  });
+    const useGroupIds = Array.from(new Set(junctionData?.map(j => j.formulation_country_use_group_id).filter(Boolean) || []));
+    
+    const { data: useGroupData } = await supabase
+      .from("formulation_country_use_group")
+      .select("formulation_country_use_group_id, target_market_entry_fy")
+      .in("formulation_country_use_group_id", useGroupIds);
 
-  data.forEach((bc) => {
-    if (bc.business_case_group_id && bc.business_case_id) {
-      const group = groups.get(bc.business_case_group_id);
-      if (group) {
-        const useGroupId = bcToUseGroup.get(bc.business_case_id);
-        if (useGroupId && !group.use_group_id) {
-          group.use_group_id = useGroupId; // Use formulation_country_use_group_id as identifier
+    // Create map for lookup: business_case_id -> target_market_entry_fy
+    const businessCaseToTargetEntry = new Map<string, string | null>();
+    junctionData?.forEach((j) => {
+      if (j.business_case_id && j.formulation_country_use_group_id) {
+        const useGroup = useGroupData?.find(ug => ug.formulation_country_use_group_id === j.formulation_country_use_group_id);
+        if (useGroup) {
+          businessCaseToTargetEntry.set(j.business_case_id, useGroup.target_market_entry_fy || null);
         }
       }
-    }
-  });
+    });
 
-  return Array.from(groups.values());
-}
+    // Group by business_case_group_id
+    const groups = new Map<string, BusinessCaseGroupData>();
+    
+    data.forEach((bc) => {
+      if (!bc.business_case_group_id || !bc.formulation_id || !bc.country_id) {
+        return; // Skip incomplete records
+      }
+
+      const groupId = bc.business_case_group_id;
+      
+      if (!groups.has(groupId)) {
+        // Get target_market_entry_fy for this business case (original from use group)
+        const targetMarketEntry = businessCaseToTargetEntry.get(bc.business_case_id || "") || null;
+        
+        // Use stored effective_start_fiscal_year from database (preserves creation context)
+        const effectiveStartFiscalYear = bc.effective_start_fiscal_year || null;
+        const effectiveStartYear = getEffectiveStartYearFromStored(effectiveStartFiscalYear);
+        
+        groups.set(groupId, {
+          business_case_group_id: groupId,
+          formulation_id: bc.formulation_id,
+          formulation_name: bc.formulation_name || "",
+          formulation_code: bc.formulation_code,
+          uom: bc.uom || null,
+          country_id: bc.country_id,
+          country_name: bc.country_name || "",
+          country_code: bc.country_code || "",
+          currency_code: bc.currency_code || "USD",
+          use_group_id: "", // Will populate below
+          use_group_name: bc.use_group_name || null,
+          use_group_variant: bc.use_group_variant || null,
+          target_market_entry: targetMarketEntry, // Store original target_market_entry
+          effective_start_fiscal_year: effectiveStartFiscalYear, // Store effective start (preserves creation context)
+          years_data: {},
+        });
+      }
+
+      const group = groups.get(groupId)!;
+      
+      // Use stored effective_start_fiscal_year for display calculations
+      // This preserves the fiscal year context when data was created
+      const effectiveStartFiscalYear = group.effective_start_fiscal_year || null;
+      const effectiveStartYear = getEffectiveStartYearFromStored(effectiveStartFiscalYear);
+      
+      // Calculate display fiscal year: effectiveStartYear + (year_offset - 1)
+      // This ensures year_offset 1 maps to effectiveStartYear (e.g., FY26 if created in FY26)
+      const displayFiscalYear = effectiveStartYear + ((bc.year_offset || 1) - 1);
+      const displayFiscalYearStr = `FY${String(displayFiscalYear).padStart(2, "0")}`;
+      
+      // Always overwrite with the current year_offset's data
+      // This ensures we're using the correct mapping regardless of stored fiscal_year
+      group.years_data[displayFiscalYearStr] = {
+        volume: bc.volume,
+        nsp: bc.nsp,
+        cogs_per_unit: bc.cogs_per_unit,
+        total_revenue: bc.total_revenue,
+        total_margin: bc.total_margin,
+        margin_percent: bc.margin_percent,
+      };
+    });
+
+    // Update groups with use_group_id (using formulation_country_use_group_id as identifier)
+    // junctionData was already fetched above, reuse it
+    const bcToUseGroup = new Map<string, string>();
+    junctionData?.forEach((j) => {
+      if (j.business_case_id && j.formulation_country_use_group_id) {
+        bcToUseGroup.set(j.business_case_id, j.formulation_country_use_group_id);
+      }
+    });
+
+    data.forEach((bc) => {
+      if (bc.business_case_group_id && bc.business_case_id) {
+        const group = groups.get(bc.business_case_group_id);
+        if (group) {
+          const useGroupId = bcToUseGroup.get(bc.business_case_id);
+          if (useGroupId && !group.use_group_id) {
+            group.use_group_id = useGroupId; // Use formulation_country_use_group_id as identifier
+          }
+        }
+      }
+    });
+
+    return Array.from(groups.values());
+  },
+  ["business-cases-projection"],
+  { tags: ["business-cases"] }
+);
 
 /**
  * Get all 10 years of data for a specific business case group

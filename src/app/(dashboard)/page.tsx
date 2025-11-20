@@ -16,6 +16,9 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import Link from "next/link";
 
+// Cache dashboard data for 60 seconds
+export const revalidate = 60;
+
 type StatusHistory = Database["public"]["Tables"]["formulation_status_history"]["Row"];
 
 export default async function Home() {
@@ -28,23 +31,6 @@ export default async function Home() {
       getActivePortfolio(),
       getExchangeRates(),
     ]);
-    
-    // Debug logging in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Dashboard Data Load:', {
-        formulationsCount: formulations?.length || 0,
-        businessCasesCount: businessCases?.length || 0,
-        activePortfolioCount: activePortfolio?.length || 0,
-        exchangeRatesCount: allExchangeRates?.length || 0,
-        sampleBusinessCase: businessCases?.[0] ? {
-          id: businessCases[0].business_case_id,
-          fiscal_year: businessCases[0].fiscal_year,
-          total_revenue: businessCases[0].total_revenue,
-          total_margin: businessCases[0].total_margin,
-          country_id: (businessCases[0] as any).country_id,
-        } : null,
-      });
-    }
   } catch (error) {
     console.error('Dashboard data fetch error:', error);
     // Set defaults on error
@@ -95,23 +81,13 @@ export default async function Home() {
     .limit(10);
 
   // Calculate business case metrics
+  // Note: getBusinessCases() already filters out orphaned business cases
   const totalBusinessCases = businessCases.length;
   const totalRevenue = businessCases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
   const avgMarginPercent =
     businessCases.length > 0
       ? businessCases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) / businessCases.length
       : 0;
-
-  // Debug: Log business cases data
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Dashboard Debug:', {
-      totalBusinessCases,
-      businessCasesWithFiscalYear: businessCases.filter(bc => bc.fiscal_year).length,
-      sampleFiscalYears: businessCases.slice(0, 5).map(bc => bc.fiscal_year),
-      totalRevenue,
-      exchangeRatesCount: exchangeRateMap.size,
-    });
-  }
 
   // Get unique countries from business cases
   const uniqueCountries = new Set(

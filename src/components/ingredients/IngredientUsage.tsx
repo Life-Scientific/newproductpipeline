@@ -8,10 +8,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import type { Database } from "@/lib/supabase/database.types";
 import { TableUtils } from "@/lib/utils/table-utils";
 
-type IngredientUsage = Database["public"]["Views"]["vw_ingredient_usage"]["Row"] & {
-  cas_number?: string | null;
-  standard_density_g_per_l?: number | null;
-};
+type IngredientUsage = Database["public"]["Views"]["vw_ingredient_usage"]["Row"];
 
 // Memoize columns outside component to prevent recreation on every render
 const createColumns = (): ColumnDef<IngredientUsage>[] => [
@@ -36,6 +33,19 @@ const createColumns = (): ColumnDef<IngredientUsage>[] => [
     header: "CAS Number",
     meta: { minWidth: "140px" },
     cell: ({ row }) => TableUtils.renderCASNumber(row.original.cas_number),
+  },
+  {
+    accessorKey: "standard_density_g_per_l",
+    header: "Density (g/L)",
+    meta: { minWidth: "120px" },
+    cell: ({ row }) => {
+      const density = row.getValue("standard_density_g_per_l") as number | null;
+      return density ? (
+        <span className="text-sm">{Number(density).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+      ) : (
+        <span className="text-sm text-muted-foreground">—</span>
+      );
+    },
   },
   {
     accessorKey: "ingredient_type",

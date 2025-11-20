@@ -1,13 +1,14 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createFormulationIngredients,
   updateFormulationIngredients,
   type IngredientInput,
 } from "./formulation-ingredients";
 import { getCurrentUserName } from "@/lib/utils/user-context";
+import { withUserContext } from "@/lib/supabase/user-context";
 
 export async function createFormulation(formData: FormData) {
   const supabase = await createClient();
@@ -138,8 +139,7 @@ export async function createFormulation(formData: FormData) {
     .eq("formulation_id", data.formulation_id)
     .single();
 
-  revalidatePath("/formulations");
-  revalidatePath("/");
+  revalidateTag("formulations");
   return {
     data: updatedFormulation || data,
     success: true,
@@ -150,9 +150,6 @@ export async function createFormulation(formData: FormData) {
 }
 
 export async function updateFormulation(formulationId: string, formData: FormData) {
-  const supabase = await createClient();
-  const userName = await getCurrentUserName();
-
   const formulationName = formData.get("formulation_name") as string;
   const formulationCategory = formData.get("formulation_category") as string;
   const formulationType = formData.get("formulation_type") as string | null;
@@ -165,42 +162,53 @@ export async function updateFormulation(formulationId: string, formData: FormDat
     return { error: "Formulation name, category, type, unit of measure, and status are required" };
   }
 
-  // Get current status to track changes
-  const { data: current } = await supabase
-    .from("formulations")
-    .select("formulation_status")
-    .eq("formulation_id", formulationId)
-    .single();
+  // Update with user context for triggers
+  const result = await withUserContext(async (supabase) => {
+    // Get current status to track changes
+    const { data: current } = await supabase
+      .from("formulations")
+      .select("formulation_status")
+      .eq("formulation_id", formulationId)
+      .single();
 
-  const updateData: any = {
-    formulation_name: formulationName,
-    formulation_category: formulationCategory,
-    formulation_type: formulationType,
-    uom: uom || "L",
-    short_name: shortName,
-    status_rationale: statusRationale,
-    updated_at: new Date().toISOString(),
-  };
+    const updateData: any = {
+      formulation_name: formulationName,
+      formulation_category: formulationCategory,
+      formulation_type: formulationType,
+      uom: uom || "L",
+      short_name: shortName,
+      status_rationale: statusRationale,
+      updated_at: new Date().toISOString(),
+    };
 
-  // Only update status if it changed
-  if (current?.formulation_status !== status) {
-    updateData.formulation_status = status;
-    // The trigger should log this, but we ensure changed_by is set
-    // Note: The trigger should handle logging, but we'll ensure status_rationale is available
+    // Only update status if it changed
+    if (current?.formulation_status !== status) {
+      updateData.formulation_status = status;
+      // The trigger will log this with the correct user context
+    }
+
+    const { data, error } = await supabase
+      .from("formulations")
+      .update(updateData)
+      .eq("formulation_id", formulationId)
+      .select()
+      .single();
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { data };
+  });
+
+  if (result.error) {
+    return { error: result.error };
   }
 
-  const { data, error } = await supabase
-    .from("formulations")
-    .update(updateData)
-    .eq("formulation_id", formulationId)
-    .select()
-    .single();
-
-  if (error) {
-    return { error: error.message };
-  }
+  const { data } = result;
 
   // Handle ingredients if provided
+  const supabase = await createClient();
   const ingredientsJson = formData.get("ingredients") as string | null;
   let assignedCode: string | null = null;
 
@@ -255,10 +263,9 @@ export async function updateFormulation(formulationId: string, formData: FormDat
     .eq("formulation_id", formulationId)
     .single();
 
-  // If status changed, the trigger will log it automatically
-  revalidatePath("/formulations");
+  // If status changed, the trigger will log it automatically with correct user context
+  revalidateTag("formulations");
   revalidatePath(`/formulations/${formulationId}`);
-  revalidatePath("/");
   return {
     data: updatedFormulation || data,
     success: true,
@@ -288,8 +295,7 @@ export async function deleteFormulation(formulationId: string) {
     return { error: error.message };
   }
 
-  revalidatePath("/formulations");
-  revalidatePath("/");
+  revalidateTag("formulations");
   return { success: true };
 }
 

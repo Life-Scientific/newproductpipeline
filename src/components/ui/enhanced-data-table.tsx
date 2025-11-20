@@ -262,6 +262,12 @@ export function EnhancedDataTable<TData, TValue>({
   });
   const [saveViewDialogOpen, setSaveViewDialogOpen] = React.useState(false);
   const [viewName, setViewName] = React.useState("");
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  // Ensure drag-and-drop only renders on client to avoid hydration mismatch
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Memoize columns to prevent unnecessary re-renders
   const memoizedColumns = React.useMemo(() => columns, [columns]);
@@ -657,7 +663,7 @@ export function EnhancedDataTable<TData, TValue>({
 
       {/* Table */}
       <div className="rounded-md border overflow-x-auto relative">
-        {enableColumnReordering ? (
+        {enableColumnReordering && isMounted ? (
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}

@@ -1,8 +1,9 @@
 "use client";
 
+import { useMemo } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/ui/data-table";
+import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import type { Database } from "@/lib/supabase/database.types";
 import { getStatusVariant } from "@/lib/design-system";
 
@@ -120,12 +121,20 @@ interface RegistrationPipelineListProps {
 export function RegistrationPipelineList({
   pipeline,
 }: RegistrationPipelineListProps) {
+  // Memoize columns to prevent recreation
+  const memoizedColumns = useMemo(() => columns, []);
+
   return (
-    <DataTable
-      columns={columns}
+    <EnhancedDataTable
+      columns={memoizedColumns}
       data={pipeline}
       searchKey="display_name"
       searchPlaceholder="Search registrations..."
+      pageSize={25}
+      showPageSizeSelector={true}
+      tableId="registration-pipeline"
+      enableColumnReordering={true}
+      enableViewManagement={true}
     />
   );
 }

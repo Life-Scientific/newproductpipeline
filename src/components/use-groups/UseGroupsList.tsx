@@ -1,17 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
+import { type ColumnDef } from "@tanstack/react-table";
 import type { Database } from "@/lib/supabase/database.types";
 import { FileText, Globe, Package, Pencil } from "lucide-react";
 import { UseGroupEditModal } from "@/components/use-groups/UseGroupEditModal";
@@ -31,114 +25,151 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
   const [editingUseGroupId, setEditingUseGroupId] = useState<string | null>(null);
   const editingUseGroup = useGroups.find((ug) => ug.formulation_country_use_group_id === editingUseGroupId);
 
-  if (useGroups.length === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-        <p>No use groups found.</p>
-      </div>
-    );
-  }
+  const columns = useMemo<ColumnDef<UseGroupWithFormulationId>[]>(() => [
+    {
+      accessorKey: "use_group_name",
+      header: "Use Group",
+      cell: ({ row }) => {
+        const useGroup = row.original;
+        return (
+          <Link
+            href={`/use-groups/${useGroup.formulation_country_use_group_id}`}
+            className="flex items-center gap-2 hover:text-primary hover:underline font-medium"
+          >
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{useGroup.use_group_name || `Use Group ${useGroup.use_group_variant}`}</span>
+          </Link>
+        );
+      },
+    },
+    {
+      accessorKey: "formulation_code",
+      header: "Formulation",
+      cell: ({ row }) => {
+        const useGroup = row.original;
+        return useGroup.formulation_id ? (
+          <Link
+            href={`/formulations/${useGroup.formulation_id}`}
+            className="flex items-center gap-1 hover:text-primary hover:underline"
+          >
+            <Package className="h-3 w-3" />
+            <span className="text-sm font-medium">{useGroup.formulation_code || "—"}</span>
+          </Link>
+        ) : (
+          <span className="text-sm text-muted-foreground">
+            {useGroup.formulation_code || "—"}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "country_name",
+      header: "Country",
+      cell: ({ row }) => {
+        const countryName = row.getValue("country_name") as string | null;
+        return (
+          <div className="flex items-center gap-1">
+            <Globe className="h-3 w-3 text-muted-foreground" />
+            <span className="text-sm">{countryName || "—"}</span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "use_group_variant",
+      header: "Variant",
+      cell: ({ row }) => {
+        const variant = row.getValue("use_group_variant") as string | null;
+        return (
+          <Badge variant="outline" className="text-xs">
+            {variant || "—"}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "registration_status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.getValue("registration_status") as string | null;
+        return status ? (
+          <Badge
+            variant={getStatusVariant(status, "registration")}
+            className="text-xs"
+          >
+            {status}
+          </Badge>
+        ) : (
+          <span className="text-sm text-muted-foreground">—</span>
+        );
+      },
+    },
+    {
+      accessorKey: "reference_product_name",
+      header: "Reference Product",
+      cell: ({ row }) => {
+        const name = row.getValue("reference_product_name") as string | null;
+        return <span className="text-sm">{name || "—"}</span>;
+      },
+    },
+    {
+      accessorKey: "actual_submission_date",
+      header: "Submission Date",
+      cell: ({ row }) => {
+        const actual = row.getValue("actual_submission_date") as string | null;
+        const planned = row.original.earliest_submission_date;
+        const date = actual || planned;
+        return (
+          <span className="text-sm text-muted-foreground">
+            {date ? new Date(date).toLocaleDateString() : "—"}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "actual_approval_date",
+      header: "Approval Date",
+      cell: ({ row }) => {
+        const actual = row.getValue("actual_approval_date") as string | null;
+        const planned = row.original.earliest_approval_date;
+        const date = actual || planned;
+        return (
+          <span className="text-sm text-muted-foreground">
+            {date ? new Date(date).toLocaleDateString() : "—"}
+          </span>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setEditingUseGroupId(row.original.formulation_country_use_group_id)}
+          className="h-8 w-8 p-0"
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+      ),
+    },
+  ], []);
 
   return (
     <>
-      <div className="border rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="min-w-[200px]">Use Group</TableHead>
-              <TableHead className="min-w-[120px]">Formulation</TableHead>
-              <TableHead className="min-w-[100px]">Country</TableHead>
-              <TableHead className="w-[100px]">Variant</TableHead>
-              <TableHead className="w-[120px]">Status</TableHead>
-              <TableHead className="min-w-[150px]">Reference Product</TableHead>
-              <TableHead className="w-[120px]">Submission Date</TableHead>
-              <TableHead className="w-[120px]">Approval Date</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {useGroups.map((useGroup) => (
-              <TableRow key={useGroup.formulation_country_use_group_id}>
-                <TableCell className="font-medium">
-                  <Link
-                    href={`/use-groups/${useGroup.formulation_country_use_group_id}`}
-                    className="flex items-center gap-2 hover:text-primary hover:underline"
-                  >
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{useGroup.use_group_name || `Use Group ${useGroup.use_group_variant}`}</span>
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  {useGroup.formulation_id ? (
-                    <Link
-                      href={`/formulations/${useGroup.formulation_id}`}
-                      className="flex items-center gap-1 hover:text-primary hover:underline"
-                    >
-                      <Package className="h-3 w-3" />
-                      <span className="text-sm font-medium">{useGroup.formulation_code || "—"}</span>
-                    </Link>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      {useGroup.formulation_code || "—"}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Globe className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-sm">{useGroup.country_name || "—"}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="text-xs">
-                    {useGroup.use_group_variant || "—"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {useGroup.registration_status ? (
-                    <Badge
-                      variant={getStatusVariant(useGroup.registration_status, "registration")}
-                      className="text-xs"
-                    >
-                      {useGroup.registration_status}
-                    </Badge>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-sm">
-                  {useGroup.reference_product_name || "—"}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {useGroup.actual_submission_date
-                    ? new Date(useGroup.actual_submission_date).toLocaleDateString()
-                    : useGroup.earliest_submission_date
-                    ? new Date(useGroup.earliest_submission_date).toLocaleDateString()
-                    : "—"}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {useGroup.actual_approval_date
-                    ? new Date(useGroup.actual_approval_date).toLocaleDateString()
-                    : useGroup.earliest_approval_date
-                    ? new Date(useGroup.earliest_approval_date).toLocaleDateString()
-                    : "—"}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditingUseGroupId(useGroup.formulation_country_use_group_id)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <EnhancedDataTable
+        columns={columns}
+        data={useGroups}
+        searchKey="use_group_name"
+        searchPlaceholder="Search use groups..."
+        pageSize={25}
+        showPageSizeSelector={true}
+        tableId="use-groups"
+        emptyMessage="No use groups found"
+        enableColumnReordering={true}
+        enableViewManagement={true}
+      />
 
       {editingUseGroup && (
         <UseGroupEditModal

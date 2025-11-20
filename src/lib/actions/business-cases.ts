@@ -1,11 +1,12 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import { checkExistingBusinessCase, validateUseGroupTargetEntryConsistency } from "@/lib/db/queries";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { lookupCOGSWithCarryForward } from "./cogs";
+import { withUserContext } from "@/lib/supabase/user-context";
 
 export async function createBusinessCase(formData: FormData) {
   const supabase = await createClient();
@@ -96,6 +97,8 @@ export async function createBusinessCase(formData: FormData) {
     return { error: `Failed to link use groups: ${junctionError.message}` };
   }
 
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -103,8 +106,6 @@ export async function createBusinessCase(formData: FormData) {
 }
 
 export async function updateBusinessCase(businessCaseId: string, formData: FormData) {
-  const supabase = await createClient();
-
   const formulationId = formData.get("formulation_id") as string | null;
   const countryId = formData.get("country_id") as string | null;
   const useGroupIds = formData.getAll("use_group_ids") as string[];
@@ -119,80 +120,100 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
     return { error: "Year offset must be between 1 and 10" };
   }
 
-  // Update business case fields
-  // Note: fiscal_year is no longer stored - it's calculated from target_market_entry_fy + year_offset
-  const updateData: any = {
-    updated_at: new Date().toISOString(),
-  };
+  // Update business case fields with user context for triggers
+  const result = await withUserContext(async (supabase) => {
+    // Note: fiscal_year is no longer stored - it's calculated from target_market_entry_fy + year_offset
+    const updateData: any = {
+      updated_at: new Date().toISOString(),
+    };
 
-  if (businessCaseName !== null) updateData.business_case_name = businessCaseName;
-  if (yearOffset !== null) updateData.year_offset = yearOffset;
-  if (volume !== null) updateData.volume = volume;
-  if (nsp !== null) updateData.nsp = nsp;
-  if (cogsPerUnit !== null) updateData.cogs_per_unit = cogsPerUnit;
-  if (assumptions !== null) updateData.assumptions = assumptions;
+    if (businessCaseName !== null) updateData.business_case_name = businessCaseName;
+    if (yearOffset !== null) updateData.year_offset = yearOffset;
+    if (volume !== null) updateData.volume = volume;
+    if (nsp !== null) updateData.nsp = nsp;
+    if (cogsPerUnit !== null) updateData.cogs_per_unit = cogsPerUnit;
+    if (assumptions !== null) updateData.assumptions = assumptions;
 
-  const { data, error } = await supabase
-    .from("business_case")
-    .update(updateData)
-    .eq("business_case_id", businessCaseId)
-    .select()
-    .single();
+    const { data, error } = await supabase
+      .from("business_case")
+      .update(updateData)
+      .eq("business_case_id", businessCaseId)
+      .select()
+      .single();
 
-  if (error) {
-    return { error: error.message };
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { data };
+  });
+
+  if (result.error) {
+    return { error: result.error };
   }
+
+  const { data } = result;
 
   // Update use groups if provided
   if (formulationId && countryId && useGroupIds && useGroupIds.length > 0) {
-    // Find formulation_country_id
-    const { data: formulationCountry, error: fcError } = await supabase
-      .from("formulation_country")
-      .select("formulation_country_id")
-      .eq("formulation_id", formulationId)
-      .eq("country_id", countryId)
-      .single();
+    const useGroupResult = await withUserContext(async (supabase) => {
+      // Find formulation_country_id
+      const { data: formulationCountry, error: fcError } = await supabase
+        .from("formulation_country")
+        .select("formulation_country_id")
+        .eq("formulation_id", formulationId)
+        .eq("country_id", countryId)
+        .single();
 
-    if (fcError || !formulationCountry) {
-      return { error: "Formulation-country combination not found" };
-    }
+      if (fcError || !formulationCountry) {
+        return { error: "Formulation-country combination not found" };
+      }
 
-    // Find formulation_country_use_group_ids
-    const { data: useGroups, error: ugError } = await supabase
-      .from("formulation_country_use_group")
-      .select("formulation_country_use_group_id, use_group_variant")
-      .eq("formulation_country_id", formulationCountry.formulation_country_id)
-      .in("use_group_variant", useGroupIds);
+      // Find formulation_country_use_group_ids
+      const { data: useGroups, error: ugError } = await supabase
+        .from("formulation_country_use_group")
+        .select("formulation_country_use_group_id, use_group_variant")
+        .eq("formulation_country_id", formulationCountry.formulation_country_id)
+        .in("use_group_variant", useGroupIds);
 
-    if (ugError || !useGroups || useGroups.length === 0) {
-      return { error: "Selected use groups not found for this formulation-country combination" };
-    }
+      if (ugError || !useGroups || useGroups.length === 0) {
+        return { error: "Selected use groups not found for this formulation-country combination" };
+      }
 
-    // Delete existing junction entries
-    const { error: deleteError } = await supabase
-      .from("business_case_use_groups")
-      .delete()
-      .eq("business_case_id", businessCaseId);
+      // Delete existing junction entries
+      const { error: deleteError } = await supabase
+        .from("business_case_use_groups")
+        .delete()
+        .eq("business_case_id", businessCaseId);
 
-    if (deleteError) {
-      return { error: `Failed to update use groups: ${deleteError.message}` };
-    }
+      if (deleteError) {
+        return { error: `Failed to update use groups: ${deleteError.message}` };
+      }
 
-    // Insert new junction entries
-    const junctionEntries = useGroups.map((ug) => ({
-      business_case_id: businessCaseId,
-      formulation_country_use_group_id: ug.formulation_country_use_group_id,
-    }));
+      // Insert new junction entries
+      const junctionEntries = useGroups.map((ug) => ({
+        business_case_id: businessCaseId,
+        formulation_country_use_group_id: ug.formulation_country_use_group_id,
+      }));
 
-    const { error: insertError } = await supabase
-      .from("business_case_use_groups")
-      .insert(junctionEntries);
+      const { error: insertError } = await supabase
+        .from("business_case_use_groups")
+        .insert(junctionEntries);
 
-    if (insertError) {
-      return { error: `Failed to link use groups: ${insertError.message}` };
+      if (insertError) {
+        return { error: `Failed to link use groups: ${insertError.message}` };
+      }
+
+      return { success: true };
+    });
+
+    if (useGroupResult.error) {
+      return { error: useGroupResult.error };
     }
   }
 
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -211,6 +232,8 @@ export async function deleteBusinessCase(businessCaseId: string) {
     return { error: error.message };
   }
 
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -380,6 +403,8 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     }
   }
 
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -393,8 +418,6 @@ export async function updateBusinessCaseGroupAction(
   groupId: string,
   formData: FormData
 ) {
-  const supabase = await createClient();
-
   // Extract year data (10 years)
   const updates: Array<{
     year_offset: number;
@@ -420,38 +443,48 @@ export async function updateBusinessCaseGroupAction(
     });
   }
 
-  // Update each year in the group
-  for (const update of updates) {
-    const { error } = await supabase
-      .from("business_case")
-      .update({
-        volume: update.volume,
-        nsp: update.nsp,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("business_case_group_id", groupId)
-      .eq("year_offset", update.year_offset)
-      .eq("status", "active");
+  // Update each year in the group with user context
+  const result = await withUserContext(async (supabase) => {
+    for (const update of updates) {
+      const { error } = await supabase
+        .from("business_case")
+        .update({
+          volume: update.volume,
+          nsp: update.nsp,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("business_case_group_id", groupId)
+        .eq("year_offset", update.year_offset)
+        .eq("status", "active");
 
-    if (error) {
-      return { error: `Failed to update year ${update.year_offset}: ${error.message}` };
+      if (error) {
+        return { error: `Failed to update year ${update.year_offset}: ${error.message}` };
+      }
     }
+
+    // Update business_case_name if provided
+    const businessCaseName = formData.get("business_case_name") as string | null;
+    if (businessCaseName !== null) {
+      const { error: nameError } = await supabase
+        .from("business_case")
+        .update({ business_case_name: businessCaseName })
+        .eq("business_case_group_id", groupId)
+        .eq("status", "active");
+
+      if (nameError) {
+        return { error: `Failed to update business case name: ${nameError.message}` };
+      }
+    }
+
+    return { success: true };
+  });
+
+  if (result.error) {
+    return { error: result.error };
   }
 
-  // Update business_case_name if provided
-  const businessCaseName = formData.get("business_case_name") as string | null;
-  if (businessCaseName !== null) {
-    const { error: nameError } = await supabase
-      .from("business_case")
-      .update({ business_case_name: businessCaseName })
-      .eq("business_case_group_id", groupId)
-      .eq("status", "active");
-
-    if (nameError) {
-      return { error: `Failed to update business case name: ${nameError.message}` };
-    }
-  }
-
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");

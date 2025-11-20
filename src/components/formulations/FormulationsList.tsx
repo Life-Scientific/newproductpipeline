@@ -1,9 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/ui/data-table";
+import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import type { Database } from "@/lib/supabase/database.types";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
@@ -131,12 +132,20 @@ interface FormulationsListProps {
 }
 
 export function FormulationsList({ formulations }: FormulationsListProps) {
+  // Memoize columns to prevent recreation
+  const memoizedColumns = useMemo(() => columns, []);
+
   return (
-    <DataTable
-      columns={columns}
+    <EnhancedDataTable
+      columns={memoizedColumns}
       data={formulations}
       searchKey="product_name"
       searchPlaceholder="Search formulations..."
+      pageSize={25}
+      showPageSizeSelector={true}
+      tableId="formulations"
+      enableColumnReordering={true}
+      enableViewManagement={true}
     />
   );
 }

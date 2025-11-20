@@ -16,7 +16,7 @@ import type { Database } from "@/lib/supabase/database.types";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
-type ProtectionStatus = Database["public"]["Views"]["vw_protection_status"]["Row"];
+type ProtectionStatus = Database["public"]["Views"]["vw_patent_protection_status"]["Row"];
 type ActivePortfolio = Database["public"]["Views"]["vw_active_portfolio"]["Row"];
 
 interface PortfolioStrategyDashboardProps {
@@ -145,7 +145,7 @@ export function PortfolioStrategyDashboard({
     >
       {/* Portfolio Health Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           <PortfolioHealthScore 
             score={healthMetrics.healthScore} 
             trend={5}
@@ -159,27 +159,25 @@ export function PortfolioStrategyDashboard({
           <ActionItemsWidget items={actionItems} />
         </div>
 
-        <div className="md:col-span-2">
-          <CardGrid columns={{ mobile: 1, tablet: 1, desktop: 2 }} gap="md">
-            <ContentCard
-              title="Risk vs. Opportunity"
-              description="Commercial Readiness vs Revenue Potential"
-              variant="chart"
-            >
-              <RiskOpportunityMatrix 
-                formulations={filteredFormulations} 
-                businessCases={filteredBusinessCases} 
-              />
-            </ContentCard>
+        <div className="md:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ContentCard
+            title="Risk vs. Opportunity"
+            description="Commercial Readiness vs Revenue Potential"
+            variant="chart"
+          >
+            <RiskOpportunityMatrix 
+              formulations={filteredFormulations} 
+              businessCases={filteredBusinessCases} 
+            />
+          </ContentCard>
 
-            <ContentCard
-              title="Value Pipeline"
-              description="Revenue & Profitability by Launch Year"
-              variant="chart"
-            >
-              <ResourceAllocationChart businessCases={filteredBusinessCases} />
-            </ContentCard>
-          </CardGrid>
+          <ContentCard
+            title="Value Pipeline"
+            description="Revenue & Profitability by Launch Year"
+            variant="chart"
+          >
+            <ResourceAllocationChart businessCases={filteredBusinessCases} />
+          </ContentCard>
         </div>
       </div>
 

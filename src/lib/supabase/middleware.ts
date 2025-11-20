@@ -39,7 +39,8 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
-  const isPublicPath = pathname === "/" || isAuthPage;
+  const isAcceptInvite = pathname.startsWith("/accept-invite");
+  const isPublicPath = isAuthPage || isAcceptInvite;
 
   // If no user and trying to access protected route, redirect to login
   if (!user && !isPublicPath) {

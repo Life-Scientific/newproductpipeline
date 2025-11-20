@@ -5,6 +5,9 @@ import { FormulationFormButton } from "@/components/forms/FormulationFormButton"
 import { FormulationsViewSwitcher } from "@/components/formulations/FormulationsViewSwitcher";
 import { Suspense } from "react";
 
+// Cache formulations data for 60 seconds
+export const revalidate = 60;
+
 export default async function FormulationsPage() {
   const formulations = await getFormulations();
   const formulationsWithNested = await getFormulationsWithNestedData();

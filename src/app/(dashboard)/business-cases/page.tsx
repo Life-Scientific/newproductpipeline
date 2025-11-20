@@ -3,9 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { BusinessCasesPageClient } from "./BusinessCasesPageClient";
 
-// Force dynamic rendering to prevent caching
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Cache business cases data for 60 seconds
+export const revalidate = 60;
 
 export default async function BusinessCasesPage() {
   const businessCases = await getBusinessCasesForProjectionTable();

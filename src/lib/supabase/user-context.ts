@@ -1,0 +1,43 @@
+"use server";
+
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserName } from "@/lib/utils/user-context";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/db/types";
+
+/**
+ * Sets the current user context in the database for triggers to use.
+ * This allows triggers to track who made changes.
+ * 
+ * @param supabase - The Supabase client instance
+ * @returns Promise that resolves when context is set
+ */
+export async function setUserContext(supabase: SupabaseClient<Database>): Promise<void> {
+  try {
+    const userName = await getCurrentUserName();
+    await supabase.rpc("set_current_user", { user_name: userName });
+  } catch (error) {
+    // If setting context fails, log but don't throw (allows operations to continue)
+    console.error("Failed to set user context:", error);
+  }
+}
+
+/**
+ * Executes an operation with user context set for database triggers.
+ * This ensures that triggers can correctly identify who made changes.
+ * 
+ * @param operation - Function that receives a Supabase client and returns a result
+ * @returns The result of the operation
+ */
+export async function withUserContext<T>(
+  operation: (supabase: SupabaseClient<Database>) => Promise<T>
+): Promise<T> {
+  const supabase = await createClient();
+  
+  // Set user context for triggers
+  await setUserContext(supabase);
+  
+  // Execute the operation
+  return await operation(supabase);
+}
+
