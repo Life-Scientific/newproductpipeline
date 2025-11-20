@@ -45,60 +45,75 @@ export function FormulationIngredients({ ingredients }: FormulationIngredientsPr
     if (ingredientList.length === 0) return null;
 
     return (
-      <div className="space-y-2">
-        <h4 className="text-sm font-semibold">{title}</h4>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Ingredient Name</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>CAS Number</TableHead>
-              <TableHead>Supply Risk</TableHead>
-              <TableHead>EU Approved</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {ingredientList.map((ing) => (
-              <TableRow key={ing.formulation_ingredient_id}>
-                <TableCell className="font-medium">
-                  {ing.ingredients?.ingredient_name || "—"}
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">{ing.ingredients?.ingredient_type || "—"}</Badge>
-                </TableCell>
-                <TableCell>
-                  {ing.quantity} {ing.quantity_unit}
-                </TableCell>
-                <TableCell>{ing.ingredient_role || "—"}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {ing.ingredients?.cas_number || "—"}
-                </TableCell>
-                <TableCell>
-                  {ing.ingredients?.supply_risk ? (
-                    <Badge
-                      variant={
-                        (supplyRiskColors[ing.ingredients.supply_risk] as any) || "outline"
-                      }
-                    >
-                      {ing.ingredients.supply_risk}
-                    </Badge>
-                  ) : (
-                    "—"
-                  )}
-                </TableCell>
-                <TableCell>
-                  {ing.ingredients?.is_eu_approved ? (
-                    <Badge variant="default">Yes</Badge>
-                  ) : (
-                    <Badge variant="outline">No</Badge>
-                  )}
-                </TableCell>
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-foreground">{title}</h4>
+        <div className="border rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[200px]">Ingredient Name</TableHead>
+                <TableHead className="w-[100px]">Type</TableHead>
+                <TableHead className="w-[120px]">Quantity</TableHead>
+                <TableHead className="w-[120px]">Role</TableHead>
+                <TableHead className="w-[140px]">CAS Number</TableHead>
+                <TableHead className="w-[120px]">Supply Risk</TableHead>
+                <TableHead className="w-[100px]">EU Approved</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {ingredientList.map((ing) => (
+                <TableRow key={ing.formulation_ingredient_id}>
+                  <TableCell className="font-medium">
+                    {ing.ingredients?.ingredient_name || "—"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs">
+                      {ing.ingredients?.ingredient_type || "—"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm">
+                      {ing.quantity ? ing.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—"} {ing.quantity_unit || ""}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">{ing.ingredient_role || "—"}</span>
+                  </TableCell>
+                  <TableCell>
+                    {ing.ingredients?.cas_number ? (
+                      <span className="font-mono text-sm text-muted-foreground">
+                        {ing.ingredients.cas_number}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {ing.ingredients?.supply_risk ? (
+                      <Badge
+                        variant={
+                          (supplyRiskColors[ing.ingredients.supply_risk] as any) || "outline"
+                        }
+                        className="text-xs"
+                      >
+                        {ing.ingredients.supply_risk}
+                      </Badge>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {ing.ingredients?.is_eu_approved ? (
+                      <Badge variant="default" className="text-xs">Yes</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-xs">No</Badge>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     );
   };
@@ -116,4 +131,3 @@ export function FormulationIngredients({ ingredients }: FormulationIngredientsPr
     </Card>
   );
 }
-

@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 // Helper function to get icon component from string name
 function getIconComponent(iconName: string | null) {
   if (!iconName) return LayoutDashboard;
-  const IconComponent = (Icons as Record<string, React.ComponentType<any>>)[iconName];
+  const IconComponent = (Icons as unknown as Record<string, React.ComponentType<any>>)[iconName];
   return IconComponent || LayoutDashboard;
 }
 
@@ -48,61 +48,63 @@ export function WorkspaceSwitcher() {
 
   if (isLoadingWorkspaces || isLoading) {
     return (
-      <div className="flex items-center gap-2 px-2 py-3">
-        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
-          <LayoutDashboard className="h-4 w-4" />
+      <div className="flex items-start gap-1.5 flex-1 min-w-0 overflow-hidden px-1.5 py-1.5">
+        <div className="flex aspect-square size-6 items-center justify-center rounded-md bg-primary text-primary-foreground shrink-0 mt-0.5">
+          <LayoutDashboard className="h-3 w-3" />
         </div>
-        <div className="grid flex-1 text-left text-sm leading-tight">
-          <span className="truncate font-semibold">Loading...</span>
+        <div className="flex-1 min-w-0 overflow-hidden text-left leading-tight">
+          <div className="truncate text-xs font-semibold">Loading...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-2 h-auto p-2.5 hover:bg-sidebar-accent"
-        >
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold shrink-0">
-            <CurrentIcon className="h-4 w-4" />
-          </div>
-          <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">
-              {currentWorkspace?.name || "Select Workspace"}
-            </span>
-            <span className="truncate text-xs text-sidebar-foreground/70">
-              Life Scientific
-            </span>
-          </div>
-          <ChevronDown className="ml-auto h-4 w-4 text-sidebar-foreground/50 shrink-0" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="start" side="right">
-        <DropdownMenuLabel>Switch Workspace</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {workspaces.map((workspace) => {
-          const Icon = getIconComponent(workspace.icon);
-          const isActive = currentWorkspace?.workspace_id === workspace.workspace_id;
-          
-          return (
-            <DropdownMenuItem
-              key={workspace.workspace_id}
-              onClick={() => switchWorkspace(workspace.slug)}
-              className={cn(
-                "cursor-pointer",
-                isActive && "bg-accent"
-              )}
-            >
-              <Icon className="mr-2 h-4 w-4" />
-              <span>{workspace.name}</span>
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex-1 min-w-0">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="flex w-full min-w-0 justify-start gap-1.5 h-auto p-1.5 hover:bg-sidebar-accent"
+          >
+            <div className="flex aspect-square size-5 items-center justify-center rounded bg-primary text-primary-foreground shrink-0">
+              <CurrentIcon className="h-2.5 w-2.5" />
+            </div>
+            <div className="flex-1 min-w-0 text-left leading-tight py-0.5">
+              <div className="truncate text-xs font-semibold leading-tight">
+                {currentWorkspace?.name || "Select Workspace"}
+              </div>
+              <div className="truncate text-[10px] text-sidebar-foreground/60 leading-tight mt-0.5">
+                Life Scientific
+              </div>
+            </div>
+            <ChevronDown className="h-3 w-3 text-sidebar-foreground/50 shrink-0 self-start mt-0.5" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="start" side="right">
+          <DropdownMenuLabel>Switch Workspace</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {workspaces.map((workspace) => {
+            const Icon = getIconComponent(workspace.icon);
+            const isActive = currentWorkspace?.workspace_id === workspace.workspace_id;
+            
+            return (
+              <DropdownMenuItem
+                key={workspace.workspace_id}
+                onClick={() => switchWorkspace(workspace.slug)}
+                className={cn(
+                  "cursor-pointer",
+                  isActive && "bg-accent"
+                )}
+              >
+                <Icon className="mr-2 h-4 w-4" />
+                <span>{workspace.name}</span>
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
 

@@ -2,45 +2,88 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
-type FormulationTable = Database["public"]["Tables"]["formulations"]["Row"];
-type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
-type FormulationIngredient = Database["public"]["Tables"]["formulation_ingredients"]["Row"];
-type Ingredient = Database["public"]["Tables"]["ingredients"]["Row"];
-type COGS = Database["public"]["Views"]["vw_cogs"]["Row"];
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
-type StatusHistory = Database["public"]["Tables"]["formulation_status_history"]["Row"];
-type ProtectionStatus = Database["public"]["Views"]["vw_patent_protection_status"]["Row"];
-type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
-type Country = Database["public"]["Tables"]["countries"]["Row"];
-type IngredientUsage = Database["public"]["Views"]["vw_ingredient_usage"]["Row"];
-type ActivePortfolio = Database["public"]["Views"]["vw_active_portfolio"]["Row"];
-type PortfolioGaps = Database["public"]["Views"]["vw_portfolio_gaps"]["Row"];
+// Re-export types from types.ts
+export type {
+  Formulation,
+  FormulationTable,
+  FormulationCountryDetail,
+  FormulationIngredient,
+  Ingredient,
+  COGS,
+  BusinessCase,
+  StatusHistory,
+  ProtectionStatus,
+  FormulationCountryUseGroup,
+  Country,
+  IngredientUsage,
+  ActivePortfolio,
+  PortfolioGaps,
+  EnrichedBusinessCase,
+  FormulationWithNestedData,
+} from "./types";
 
-// Enriched BusinessCase type with formulation_id and country_id
-export type EnrichedBusinessCase = BusinessCase & {
-  formulation_id: string | null;
-  country_id: string | null;
-};
+// Re-export interfaces (not types) separately
+export type {
+  BusinessCaseGroupData,
+  BusinessCaseYearData,
+} from "./types";
 
-export interface FormulationWithNestedData extends Formulation {
-  countries_count: number;
-  countries_list: string;
-  use_groups_count: number;
-  use_groups_list: string;
-  business_cases_count: number;
-  total_revenue: number;
-  total_margin: number;
-  cogs_count: number;
-  latest_cogs: number | null;
-  registration_statuses: string;
-  protection_status: string;
-  earliest_emd: string | null;
-  latest_tme_fy: string | null;
-  reference_products: string;
-  crops_list: string;
-  targets_list: string;
-}
+// Re-export functions from domain modules
+export {
+  getIngredientUsage,
+  getIngredientById,
+  getIngredientFormulations,
+  getIngredientSuppliers,
+} from "./ingredients";
+
+export {
+  getCountries,
+  getExchangeRates,
+  getLatestExchangeRate,
+} from "./countries";
+
+export {
+  getCOGSList,
+  getFormulationCOGS,
+  getCOGSGroup,
+  getFormulationCOGSHistory,
+} from "./cogs";
+
+export {
+  getAllUseGroups,
+  getUseGroupById,
+  getUseGroupCrops,
+  getUseGroupTargets,
+  validateUseGroupTargetEntryConsistency,
+} from "./use-groups";
+
+export {
+  getActivePortfolio,
+  getPortfolioGaps,
+  getPipelineTrackerData,
+} from "./portfolio";
+
+// Import types for use in this file
+import type {
+  Formulation,
+  FormulationTable,
+  FormulationCountryDetail,
+  FormulationIngredient,
+  Ingredient,
+  COGS,
+  BusinessCase,
+  StatusHistory,
+  ProtectionStatus,
+  FormulationCountryUseGroup,
+  Country,
+  IngredientUsage,
+  ActivePortfolio,
+  PortfolioGaps,
+  EnrichedBusinessCase,
+  FormulationWithNestedData,
+  BusinessCaseGroupData,
+  BusinessCaseYearData,
+} from "./types";
 
 export async function getFormulations() {
   const supabase = await createClient();
@@ -54,6 +97,22 @@ export async function getFormulations() {
   }
 
   return data as Formulation[];
+}
+
+export async function getBlacklistedFormulations() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("formulations")
+    .select("*")
+    .eq("is_active", false)
+    .eq("created_by", "Blacklist Import Script")
+    .order("formulation_code", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to fetch blacklisted formulations: ${error.message}`);
+  }
+
+  return data as FormulationTable[];
 }
 
 export async function getFormulationsWithNestedData(): Promise<FormulationWithNestedData[]> {
@@ -664,67 +723,7 @@ export async function getBusinessCaseById(businessCaseId: string) {
   return enriched[0] || null;
 }
 
-export async function getCountries() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("countries")
-    .select("*")
-    .eq("is_active", true)
-    .order("country_name", { ascending: true });
-
-  if (error) {
-    throw new Error(`Failed to fetch countries: ${error.message}`);
-  }
-
-  return data as Country[];
-}
-
-export async function getExchangeRates() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("exchange_rates")
-    .select(
-      `
-      *,
-      countries (
-        country_name,
-        currency_code
-      )
-    `
-    )
-    .order("effective_date", { ascending: false })
-    .order("country_id", { ascending: true });
-
-  if (error) {
-    throw new Error(`Failed to fetch exchange rates: ${error.message}`);
-  }
-
-  return data || [];
-}
-
-export async function getLatestExchangeRate(
-  countryId: string,
-  date: Date = new Date()
-): Promise<number | null> {
-  const supabase = await createClient();
-  const dateStr = date.toISOString().split("T")[0];
-
-  const { data, error } = await supabase
-    .from("exchange_rates")
-    .select("exchange_rate_to_eur")
-    .eq("country_id", countryId)
-    .lte("effective_date", dateStr)
-    .eq("is_active", true)
-    .order("effective_date", { ascending: false })
-    .limit(1)
-    .single();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return data.exchange_rate_to_eur;
-}
+// Countries functions moved to ./countries.ts
 
 export async function getFormulationIngredients(formulationId: string) {
   const supabase = await createClient();
@@ -751,25 +750,7 @@ export async function getFormulationIngredients(formulationId: string) {
   return data as Array<FormulationIngredient & { ingredients: Ingredient | null }>;
 }
 
-export async function getFormulationCOGS(formulationId: string) {
-  const supabase = await createClient();
-  const formulation = await getFormulationById(formulationId);
-  if (!formulation?.formulation_code) {
-    return [];
-  }
-
-  const { data, error } = await supabase
-    .from("vw_cogs")
-    .select("*")
-    .eq("formulation_code", formulation.formulation_code)
-    .order("fiscal_year", { ascending: false });
-
-  if (error) {
-    throw new Error(`Failed to fetch COGS: ${error.message}`);
-  }
-
-  return data as COGS[];
-}
+// getFormulationCOGS moved to ./cogs.ts
 
 export async function getFormulationBusinessCases(formulationId: string) {
   const supabase = await createClient();
@@ -886,127 +867,13 @@ export async function getFormulationUseGroups(formulationId: string) {
   return data as FormulationCountryUseGroup[];
 }
 
-export async function getAllUseGroups() {
-  const supabase = await createClient();
-  
-  // Get all use groups
-  const { data: useGroups, error } = await supabase
-    .from("vw_formulation_country_use_group")
-    .select("*")
-    .order("formulation_code", { ascending: true })
-    .order("country_name", { ascending: true })
-    .order("use_group_name", { ascending: true });
+// Use groups functions moved to ./use-groups.ts
 
-  if (error) {
-    throw new Error(`Failed to fetch use groups: ${error.message}`);
-  }
-
-  if (!useGroups || useGroups.length === 0) {
-    return [];
-  }
-
-  // Get unique formulation_country_ids and fetch formulation_ids
-  const countryIds = [...new Set(useGroups.map((ug) => ug.formulation_country_id).filter(Boolean))];
-  
-  const { data: countryData } = await supabase
-    .from("formulation_country")
-    .select("formulation_country_id, formulation_id")
-    .in("formulation_country_id", countryIds);
-
-  // Create a map for quick lookup
-  const countryIdToFormulationId = new Map<string, string>();
-  countryData?.forEach((fc) => {
-    if (fc.formulation_country_id) {
-      countryIdToFormulationId.set(fc.formulation_country_id, fc.formulation_id);
-    }
-  });
-
-  // Map use groups to include formulation_id
-  const useGroupsWithFormulationId = useGroups.map((useGroup) => ({
-    ...useGroup,
-    formulation_id: useGroup.formulation_country_id
-      ? countryIdToFormulationId.get(useGroup.formulation_country_id) || null
-      : null,
-  }));
-
-  return useGroupsWithFormulationId as (FormulationCountryUseGroup & { formulation_id: string | null })[];
-}
-
-export async function getCOGSList() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("vw_cogs")
-    .select("*")
-    .eq("status", "active")
-    .order("formulation_code", { ascending: true })
-    .order("fiscal_year", { ascending: false });
-
-  if (error) {
-    throw new Error(`Failed to fetch COGS: ${error.message}`);
-  }
-
-  return data as COGS[];
-}
-
-export async function getIngredientUsage() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("vw_ingredient_usage")
-    .select("*")
-    .order("ingredient_name", { ascending: true });
-
-  if (error) {
-    throw new Error(`Failed to fetch ingredient usage: ${error.message}`);
-  }
-
-  return data as IngredientUsage[];
-}
+// COGS functions moved to ./cogs.ts
+// Ingredient functions moved to ./ingredients.ts
 
 // New types for projection table
-export interface BusinessCaseGroupData {
-  business_case_group_id: string;
-  formulation_id: string;
-  formulation_name: string;
-  formulation_code: string | null;
-  uom: string | null;
-  country_id: string;
-  country_name: string;
-  country_code: string;
-  currency_code: string;
-  use_group_id: string;
-  use_group_name: string | null;
-  use_group_variant: string | null;
-  target_market_entry: string | null; // Original target market entry fiscal year from use group (e.g., "FY20")
-  effective_start_fiscal_year: string | null; // Effective start fiscal year at creation time (e.g., "FY26" if created in FY26)
-  years_data: Record<string, {
-    volume: number | null;
-    nsp: number | null;
-    cogs_per_unit: number | null;
-    total_revenue: number | null;
-    total_margin: number | null;
-    margin_percent: number | null;
-  }>;
-}
-
-export interface BusinessCaseYearData {
-  business_case_id: string;
-  business_case_group_id: string;
-  year_offset: number;
-  fiscal_year: string | null;
-  volume: number | null;
-  nsp: number | null;
-  cogs_per_unit: number | null;
-  total_revenue: number | null;
-  total_cogs: number | null;
-  total_margin: number | null;
-  margin_percent: number | null;
-  formulation_name: string | null;
-  uom: string | null;
-  country_name: string | null;
-  currency_code: string | null;
-  use_group_name: string | null;
-  use_group_variant: string | null;
-}
+// BusinessCaseGroupData and BusinessCaseYearData are now defined in ./types.ts
 
 /**
  * Helper function to extract year number from fiscal year string
@@ -1260,51 +1127,7 @@ export async function checkExistingBusinessCase(
  * Validate that all selected use groups have the same target_market_entry_fy
  * Returns { isValid: boolean, targetEntry: string | null, error: string | null }
  */
-export async function validateUseGroupTargetEntryConsistency(
-  useGroupIds: string[]
-): Promise<{ isValid: boolean; targetEntry: string | null; error: string | null }> {
-  const supabase = await createClient();
-  
-  if (!useGroupIds || useGroupIds.length === 0) {
-    return { isValid: false, targetEntry: null, error: "At least one use group must be selected" };
-  }
-
-  // Fetch target_market_entry_fy for all selected use groups
-  const { data: useGroupData, error } = await supabase
-    .from("formulation_country_use_group")
-    .select("formulation_country_use_group_id, target_market_entry_fy")
-    .in("formulation_country_use_group_id", useGroupIds);
-
-  if (error) {
-    return { isValid: false, targetEntry: null, error: `Failed to fetch use groups: ${error.message}` };
-  }
-
-  if (!useGroupData || useGroupData.length === 0) {
-    return { isValid: false, targetEntry: null, error: "No use groups found" };
-  }
-
-  // Get unique non-null target_market_entry_fy values
-  const targetEntries = useGroupData
-    .map(ug => ug.target_market_entry_fy)
-    .filter((entry): entry is string => entry !== null && entry !== undefined);
-
-  if (targetEntries.length === 0) {
-    return { isValid: false, targetEntry: null, error: "Selected use groups do not have target market entry fiscal year set" };
-  }
-
-  // Check if all values are the same
-  const uniqueEntries = Array.from(new Set(targetEntries));
-  
-  if (uniqueEntries.length > 1) {
-    return {
-      isValid: false,
-      targetEntry: null,
-      error: `All selected use groups must have the same target market entry fiscal year. Found values: ${uniqueEntries.join(", ")}`
-    };
-  }
-
-  return { isValid: true, targetEntry: uniqueEntries[0], error: null };
-}
+// validateUseGroupTargetEntryConsistency moved to ./use-groups.ts
 
 export async function getRevenueProjections() {
   const supabase = await createClient();
@@ -1418,116 +1241,7 @@ export async function getFormulationTargetsLegacy(formulationId: string) {
   return [];
 }
 
-export async function getUseGroupById(useGroupId: string) {
-  const supabase = await createClient();
-  
-  const { data, error } = await supabase
-    .from("vw_formulation_country_use_group")
-    .select("*")
-    .eq("formulation_country_use_group_id", useGroupId)
-    .single();
-
-  if (error) {
-    throw new Error(`Failed to fetch use group: ${error.message}`);
-  }
-
-  // Get formulation_id through formulation_country
-  if (data && data.formulation_country_id) {
-    const { data: fcData } = await supabase
-      .from("formulation_country")
-      .select("formulation_id")
-      .eq("formulation_country_id", data.formulation_country_id)
-      .single();
-    
-    if (fcData) {
-      (data as any).formulation_id = fcData.formulation_id;
-    }
-  }
-
-  return data as (FormulationCountryUseGroup & { formulation_id?: string }) | null;
-}
-
-/**
- * Get crops for a use group with critical flags (using EPPO codes)
- */
-export async function getUseGroupCrops(useGroupId: string) {
-  const supabase = await createClient();
-  
-  const { data, error } = await supabase
-    .from("formulation_country_use_group_eppo_crops")
-    .select(`
-      eppo_code_id,
-      is_critical,
-      eppo_codes (
-        eppo_code_id,
-        eppo_code,
-        display_name,
-        classification,
-        eppo_type
-      )
-    `)
-    .eq("formulation_country_use_group_id", useGroupId)
-    .eq("is_excluded", false);
-
-  if (error) {
-    throw new Error(`Failed to fetch use group crops: ${error.message}`);
-  }
-
-  if (!data || data.length === 0) {
-    return [];
-  }
-
-  // Map EPPO codes with is_critical flag
-  return data.map((ugc: any) => ({
-    eppo_code_id: ugc.eppo_code_id,
-    eppo_code: ugc.eppo_codes?.eppo_code,
-    display_name: ugc.eppo_codes?.display_name,
-    classification: ugc.eppo_codes?.classification,
-    eppo_type: ugc.eppo_codes?.eppo_type,
-    is_critical: ugc.is_critical || false,
-  }));
-}
-
-/**
- * Get targets for a use group with critical flags (using EPPO codes)
- */
-export async function getUseGroupTargets(useGroupId: string) {
-  const supabase = await createClient();
-  
-  const { data, error } = await supabase
-    .from("formulation_country_use_group_eppo_targets")
-    .select(`
-      eppo_code_id,
-      is_critical,
-      eppo_codes (
-        eppo_code_id,
-        eppo_code,
-        display_name,
-        classification,
-        eppo_type
-      )
-    `)
-    .eq("formulation_country_use_group_id", useGroupId)
-    .eq("is_excluded", false);
-
-  if (error) {
-    throw new Error(`Failed to fetch use group targets: ${error.message}`);
-  }
-
-  if (!data || data.length === 0) {
-    return [];
-  }
-
-  // Map EPPO codes with is_critical flag
-  return data.map((ugt: any) => ({
-    eppo_code_id: ugt.eppo_code_id,
-    eppo_code: ugt.eppo_codes?.eppo_code,
-    display_name: ugt.eppo_codes?.display_name,
-    classification: ugt.eppo_codes?.classification,
-    eppo_type: ugt.eppo_codes?.eppo_type,
-    is_critical: ugt.is_critical || false,
-  }));
-}
+// Use group functions moved to ./use-groups.ts
 
 /**
  * @deprecated Needs rewrite for EPPO codes system
@@ -1755,83 +1469,12 @@ export async function checkFormulationTargetInUse(
   return { inUse: true, useGroups: useGroupVariants };
 }
 
-export async function getActivePortfolio() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("vw_active_portfolio")
-    .select("*")
-    .order("formulation_code", { ascending: true });
-
-  if (error) {
-    throw new Error(`Failed to fetch active portfolio: ${error.message}`);
-  }
-
-  return data as ActivePortfolio[];
-}
-
-export async function getPortfolioGaps() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("vw_portfolio_gaps")
-    .select("*")
-    .order("country_name", { ascending: true });
-
-  if (error) {
-    throw new Error(`Failed to fetch portfolio gaps: ${error.message}`);
-  }
-
-  return data as PortfolioGaps[];
-}
+// Portfolio functions moved to ./portfolio.ts
 
 /**
  * Get all 5 years of COGS data for a specific COGS group
  */
-export async function getCOGSGroup(groupId: string) {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("vw_cogs")
-    .select("*")
-    .eq("cogs_group_id", groupId)
-    .order("fiscal_year", { ascending: true });
-
-  if (error) {
-    throw new Error(`Failed to fetch COGS group: ${error.message}`);
-  }
-
-  return data as COGS[];
-}
-
-/**
- * Get COGS history (all versions) for a formulation + country
- */
-export async function getFormulationCOGSHistory(
-  formulationId: string,
-  countryId: string | null
-) {
-  const supabase = await createClient();
-
-  const query = supabase
-    .from("vw_cogs")
-    .select("*")
-    .eq("formulation_id", formulationId)
-    .order("created_at", { ascending: false })
-    .order("fiscal_year", { ascending: true });
-
-  if (countryId) {
-    query.eq("formulation_country_id", countryId);
-  } else {
-    query.is("formulation_country_id", null);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    throw new Error(`Failed to fetch COGS history: ${error.message}`);
-  }
-
-  return data as COGS[];
-}
+// COGS group functions moved to ./cogs.ts
 
 /**
  * Get all active business case groups for a formulation + country
@@ -1919,53 +1562,7 @@ export async function getFormulationCountries() {
  * Get all data needed for Pipeline Tracker
  * Returns formulations, countries, use groups, and business cases for the full state management tree
  */
-export async function getPipelineTrackerData() {
-  const supabase = await createClient();
-  
-  const [formulationsResult, countriesResult, useGroupsResult, businessCasesResult] = await Promise.all([
-    supabase
-      .from("vw_formulations_with_ingredients")
-      .select("*")
-      .order("formulation_code", { ascending: true }),
-    supabase
-      .from("vw_formulation_country_detail")
-      .select("*")
-      .order("formulation_code", { ascending: true })
-      .order("country_name", { ascending: true }),
-    supabase
-      .from("vw_formulation_country_use_group")
-      .select("*")
-      .order("formulation_code", { ascending: true })
-      .order("country_name", { ascending: true })
-      .order("use_group_variant", { ascending: true }),
-    supabase
-      .from("vw_business_case")
-      .select("*")
-      .order("formulation_code", { ascending: true })
-      .order("country_name", { ascending: true })
-      .order("fiscal_year", { ascending: true }),
-  ]);
-
-  if (formulationsResult.error) {
-    throw new Error(`Failed to fetch formulations: ${formulationsResult.error.message}`);
-  }
-  if (countriesResult.error) {
-    throw new Error(`Failed to fetch countries: ${countriesResult.error.message}`);
-  }
-  if (useGroupsResult.error) {
-    throw new Error(`Failed to fetch use groups: ${useGroupsResult.error.message}`);
-  }
-  if (businessCasesResult.error) {
-    throw new Error(`Failed to fetch business cases: ${businessCasesResult.error.message}`);
-  }
-
-  return {
-    formulations: formulationsResult.data as Formulation[],
-    countries: countriesResult.data as FormulationCountryDetail[],
-    useGroups: useGroupsResult.data as FormulationCountryUseGroup[],
-    businessCases: businessCasesResult.data as BusinessCase[],
-  };
-}
+// getPipelineTrackerData moved to ./portfolio.ts
 
 
 

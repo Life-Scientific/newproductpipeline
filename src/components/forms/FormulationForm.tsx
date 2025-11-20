@@ -45,6 +45,7 @@ const PRODUCT_CATEGORIES = [
   "Growth Regulator",
   "Adjuvant",
   "Seed Treatment",
+  "Unknown",
 ];
 
 const STATUS_OPTIONS = ["Not Yet Considered", "Selected", "Monitoring", "Killed"];

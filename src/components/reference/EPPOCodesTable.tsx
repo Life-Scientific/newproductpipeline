@@ -1,27 +1,39 @@
 "use client";
 
+import { useMemo } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/components/ui/data-table";
+import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import { Badge } from "@/components/ui/badge";
 import type { Database } from "@/lib/supabase/database.types";
 
 type EPPOCode = Database["public"]["Tables"]["eppo_codes"]["Row"];
 
-const columns: ColumnDef<EPPOCode>[] = [
+// Memoize columns outside component to prevent recreation on every render
+const createColumns = (): ColumnDef<EPPOCode>[] => [
   {
     accessorKey: "eppo_code",
     header: "EPPO Code",
     cell: ({ row }) => {
-      return <span className="font-mono font-medium">{row.getValue("eppo_code")}</span>;
+      return (
+        <span className="font-mono font-medium text-sm">{row.getValue("eppo_code") as string}</span>
+      );
     },
   },
   {
     accessorKey: "display_name",
     header: "Display Name",
+    cell: ({ row }) => {
+      const name = row.getValue("display_name") as string | null;
+      return <span className="font-medium">{name || "—"}</span>;
+    },
   },
   {
     accessorKey: "latin_name",
     header: "Latin Name",
+    cell: ({ row }) => {
+      const name = row.getValue("latin_name") as string | null;
+      return <span className="text-sm italic text-muted-foreground">{name || "—"}</span>;
+    },
   },
   {
     accessorKey: "classification",
@@ -36,7 +48,7 @@ const columns: ColumnDef<EPPOCode>[] = [
             : classification === "disease"
               ? "destructive"
               : "outline";
-      return <Badge variant={variant}>{classification}</Badge>;
+      return <Badge variant={variant} className="text-xs">{classification}</Badge>;
     },
   },
   {
@@ -56,7 +68,11 @@ const columns: ColumnDef<EPPOCode>[] = [
     header: "Parent Code",
     cell: ({ row }) => {
       const parentCode = row.getValue("parent_eppo_code") as string | null;
-      return parentCode ? <span className="font-mono text-sm">{parentCode}</span> : <span className="text-muted-foreground">—</span>;
+      return parentCode ? (
+        <span className="font-mono text-sm text-muted-foreground">{parentCode}</span>
+      ) : (
+        <span className="text-sm text-muted-foreground">—</span>
+      );
     },
   },
   {
@@ -65,13 +81,16 @@ const columns: ColumnDef<EPPOCode>[] = [
     cell: ({ row }) => {
       const isParent = row.getValue("is_parent") as boolean | null;
       return isParent ? (
-        <Badge variant="outline">Yes</Badge>
+        <Badge variant="outline" className="text-xs">Yes</Badge>
       ) : (
-        <span className="text-muted-foreground">No</span>
+        <span className="text-sm text-muted-foreground">No</span>
       );
     },
   },
 ];
+
+// Memoize columns array - only recreate if needed
+const columns = createColumns();
 
 interface EPPOCodesTableProps {
   eppoCodes: EPPOCode[];
@@ -79,17 +98,22 @@ interface EPPOCodesTableProps {
 }
 
 export function EPPOCodesTable({ eppoCodes, classification }: EPPOCodesTableProps) {
+  // Memoize columns to prevent recreation
+  const memoizedColumns = useMemo(() => columns, []);
+  
   const searchPlaceholder = classification
     ? `Search ${classification}s by name or code...`
     : "Search EPPO codes by name or code...";
 
   return (
-    <DataTable
-      columns={columns}
+    <EnhancedDataTable
+      columns={memoizedColumns}
       data={eppoCodes}
       searchKey="display_name"
       searchPlaceholder={searchPlaceholder}
+      pageSize={25}
+      showPageSizeSelector={true}
+      tableId={`eppo-codes-${classification || "all"}`}
     />
   );
 }
-

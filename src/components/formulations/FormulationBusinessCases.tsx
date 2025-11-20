@@ -11,6 +11,21 @@ interface FormulationBusinessCasesProps {
   businessCases: BusinessCase[];
 }
 
+function formatCurrency(value: number | null | undefined): string {
+  if (!value && value !== 0) return "—";
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(2)}M`;
+  }
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(0)}K`;
+  }
+  return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function formatNumber(value: number | null | undefined): string {
+  if (!value && value !== 0) return "—";
+  return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
 
 export function FormulationBusinessCases({ businessCases }: FormulationBusinessCasesProps) {
   if (businessCases.length === 0) {
@@ -34,115 +49,108 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
         <CardDescription>Financial projections and business case analysis</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Formulation</TableHead>
-              <TableHead>Country</TableHead>
-              <TableHead>Use Group</TableHead>
-              <TableHead>Year Offset</TableHead>
-              <TableHead>Fiscal Year</TableHead>
-              <TableHead>Volume</TableHead>
-              <TableHead>NSP</TableHead>
-              <TableHead>COGS/Unit</TableHead>
-              <TableHead>Revenue</TableHead>
-              <TableHead>Margin</TableHead>
-              <TableHead>Margin %</TableHead>
-              <TableHead>Last Updated</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {businessCases.map((bc) => {
-              // Determine most recent update
-              const updates = [
-                { field: "Volume", by: bc.volume_last_updated_by, at: bc.volume_last_updated_at },
-                { field: "NSP", by: bc.nsp_last_updated_by, at: bc.nsp_last_updated_at },
-                { field: "COGS", by: bc.cogs_last_updated_by, at: bc.cogs_last_updated_at },
-              ].filter((u) => u.at);
-
-              const mostRecentUpdate = updates.sort((a, b) => 
-                new Date(b.at!).getTime() - new Date(a.at!).getTime()
-              )[0];
-
-              return (
-                <TableRow key={bc.business_case_id}>
-                  <TableCell className="font-medium">
-                    {bc.formulation_name || "—"}
-                  </TableCell>
-                  <TableCell>{bc.country_name || "—"}</TableCell>
-                  <TableCell>
-                    {bc.use_group_name || "—"}
-                  </TableCell>
-                  <TableCell>{bc.year_offset || "—"}</TableCell>
-                  <TableCell>{bc.fiscal_year || "—"}</TableCell>
-                  <TableCell>
-                    {bc.volume ? bc.volume.toLocaleString() : "—"}
-                    {bc.volume_last_updated_by && (
-                      <div className="text-xs text-muted-foreground">
-                        by {bc.volume_last_updated_by}
-                        {bc.volume_last_updated_at && (
-                          <span> • {new Date(bc.volume_last_updated_at).toLocaleDateString()}</span>
-                        )}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {bc.nsp ? `$${bc.nsp.toLocaleString()}` : "—"}
-                    {bc.nsp_last_updated_by && (
-                      <div className="text-xs text-muted-foreground">
-                        by {bc.nsp_last_updated_by}
-                        {bc.nsp_last_updated_at && (
-                          <span> • {new Date(bc.nsp_last_updated_at).toLocaleDateString()}</span>
-                        )}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {bc.cogs_per_unit ? `$${bc.cogs_per_unit.toLocaleString()}` : "—"}
-                    {bc.cogs_last_updated_by && (
-                      <div className="text-xs text-muted-foreground">
-                        by {bc.cogs_last_updated_by}
-                        {bc.cogs_last_updated_at && (
-                          <span> • {new Date(bc.cogs_last_updated_at).toLocaleDateString()}</span>
-                        )}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {bc.total_revenue ? `$${bc.total_revenue.toLocaleString()}` : "—"}
-                  </TableCell>
-                  <TableCell>
-                    {bc.total_margin ? `$${bc.total_margin.toLocaleString()}` : "—"}
-                  </TableCell>
-                  <TableCell>
-                    {bc.margin_percent !== null && bc.margin_percent !== undefined
-                      ? `${bc.margin_percent.toFixed(1)}%`
-                      : "—"}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {mostRecentUpdate ? (
-                      <div>
-                        <div>{mostRecentUpdate.field}</div>
-                        <div>by {mostRecentUpdate.by}</div>
-                        <div>{new Date(mostRecentUpdate.at!).toLocaleDateString()}</div>
-                      </div>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+        <div className="border rounded-lg overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[120px]">Formulation</TableHead>
+                <TableHead className="min-w-[100px]">Country</TableHead>
+                <TableHead className="min-w-[120px]">Use Group</TableHead>
+                <TableHead className="w-[80px] text-right">Year</TableHead>
+                <TableHead className="w-[100px] text-right">Fiscal Year</TableHead>
+                <TableHead className="w-[100px] text-right">Volume</TableHead>
+                <TableHead className="w-[100px] text-right">NSP</TableHead>
+                <TableHead className="w-[100px] text-right">COGS/Unit</TableHead>
+                <TableHead className="w-[120px] text-right">Revenue</TableHead>
+                <TableHead className="w-[120px] text-right">Margin</TableHead>
+                <TableHead className="w-[100px] text-right">Margin %</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {businessCases.map((bc) => {
+                return (
+                  <TableRow key={bc.business_case_id}>
+                    <TableCell className="font-medium">
+                      <span className="text-sm">{bc.formulation_name || "—"}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">{bc.country_name || "—"}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground">
+                        {bc.use_group_name || "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="text-sm">{bc.year_offset || "—"}</span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="text-sm font-mono">{bc.fiscal_year || "—"}</span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="text-sm font-medium">{formatNumber(bc.volume)}</span>
+                      {bc.volume_last_updated_by && (
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          by {bc.volume_last_updated_by}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="text-sm font-medium">{formatCurrency(bc.nsp)}</span>
+                      {bc.nsp_last_updated_by && (
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          by {bc.nsp_last_updated_by}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="text-sm font-medium">{formatCurrency(bc.cogs_per_unit)}</span>
+                      {bc.cogs_last_updated_by && (
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          by {bc.cogs_last_updated_by}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="text-sm font-semibold">{formatCurrency(bc.total_revenue)}</span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="text-sm font-semibold">{formatCurrency(bc.total_margin)}</span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {bc.margin_percent !== null && bc.margin_percent !== undefined ? (
+                        <Badge
+                          variant={
+                            bc.margin_percent >= 40
+                              ? "default"
+                              : bc.margin_percent >= 20
+                                ? "secondary"
+                                : bc.margin_percent >= 0
+                                  ? "outline"
+                                  : "destructive"
+                          }
+                          className="text-xs"
+                        >
+                          {bc.margin_percent.toFixed(1)}%
+                        </Badge>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
         {businessCases.some((bc) => bc.assumptions) && (
-          <div className="mt-4 space-y-2">
-            <h4 className="text-sm font-semibold">Assumptions</h4>
+          <div className="mt-4 pt-4 border-t space-y-2">
+            <h4 className="text-sm font-semibold text-foreground">Assumptions</h4>
             {businessCases
               .filter((bc) => bc.assumptions)
               .map((bc) => (
                 <div key={bc.business_case_id} className="text-sm text-muted-foreground">
-                  <strong>{bc.formulation_name || bc.business_case_name}:</strong> {bc.assumptions}
+                  <strong className="text-foreground">{bc.formulation_name || bc.business_case_name}:</strong> {bc.assumptions}
                 </div>
               ))}
           </div>
@@ -151,4 +159,3 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
     </Card>
   );
 }
-

@@ -29,8 +29,9 @@ const portfolioMenuItems: MenuItem[] = [
   
   // Core Data
   { title: "Formulations", path: "/formulations", icon: getIconComponent("FlaskConical"), group: "Core Data", order: 1 },
-  { title: "Countries", path: "/countries", icon: getIconComponent("Globe"), group: "Core Data", order: 2 },
-  { title: "Use Groups", path: "/use-groups", icon: getIconComponent("FileText"), group: "Core Data", order: 3 },
+  { title: "Active Ingredients", path: "/active-ingredients", icon: getIconComponent("Beaker"), group: "Core Data", order: 2 },
+  { title: "Countries", path: "/countries", icon: getIconComponent("Globe"), group: "Core Data", order: 3 },
+  { title: "Use Groups", path: "/use-groups", icon: getIconComponent("FileText"), group: "Core Data", order: 4 },
   
   // Financials
   { title: "Business Cases", path: "/business-cases", icon: getIconComponent("TrendingUp"), group: "Financials", order: 1 },
@@ -42,6 +43,7 @@ const portfolioMenuItems: MenuItem[] = [
   
   // System
   { title: "Reference Data", path: "/reference", icon: getIconComponent("Database"), group: "System", order: 1 },
+  { title: "Blacklisted Codes", path: "/formulations/blacklisted", icon: getIconComponent("Ban"), group: "System", order: 2 },
 ];
 
 /**
@@ -88,3 +90,5 @@ export function getGroupedMenuItems(workspaceSlug: string): Map<string, MenuItem
   
   return orderedGroups;
 }
+
+

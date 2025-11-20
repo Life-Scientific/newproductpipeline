@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo, memo } from "react";
 import { useRouter } from "next/navigation";
 import { type ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
@@ -17,7 +17,7 @@ import { Pencil, Trash2 } from "lucide-react";
 
 type BusinessCaseTable = Database["public"]["Tables"]["business_case"]["Row"];
 
-function BusinessCaseActionsCell({ businessCase }: { businessCase: EnrichedBusinessCase }) {
+const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({ businessCase }: { businessCase: EnrichedBusinessCase }) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [businessCaseData, setBusinessCaseData] = useState<BusinessCaseTable | null>(null);
@@ -108,9 +108,10 @@ function BusinessCaseActionsCell({ businessCase }: { businessCase: EnrichedBusin
       />
     </>
   );
-}
+});
 
-const columns: ColumnDef<EnrichedBusinessCase>[] = [
+// Memoize columns outside component to prevent recreation on every render
+const createColumns = (): ColumnDef<EnrichedBusinessCase>[] => [
   {
     accessorKey: "formulation_name",
     header: "Formulation",
@@ -227,19 +228,26 @@ const columns: ColumnDef<EnrichedBusinessCase>[] = [
   },
 ];
 
+// Memoize columns array - only recreate if needed
+const columns = createColumns();
+
 interface BusinessCasesListProps {
   businessCases: EnrichedBusinessCase[];
 }
 
 export function BusinessCasesList({ businessCases }: BusinessCasesListProps) {
+  // Memoize columns to prevent recreation
+  const memoizedColumns = useMemo(() => columns, []);
+
   return (
     <EnhancedDataTable
-      columns={columns}
+      columns={memoizedColumns}
       data={businessCases}
       searchKey="formulation_name"
       searchPlaceholder="Search business cases..."
       pageSize={25}
       showPageSizeSelector={true}
+      tableId="business-cases"
     />
   );
 }

@@ -162,10 +162,10 @@ export function AppSidebar() {
         </div>
       )}
       <Sidebar collapsible="icon" className="border-r">
-        <SidebarHeader className="border-b">
-          <div className="flex items-center gap-2 px-2 py-3">
+        <SidebarHeader className="border-b p-0">
+          <div className="flex items-start gap-1 px-1.5 py-2 min-w-0">
             <WorkspaceSwitcher />
-            <SidebarTrigger className="ml-auto" />
+            <SidebarTrigger className="shrink-0 mt-0.5" />
           </div>
         </SidebarHeader>
       <SidebarContent className="gap-2">

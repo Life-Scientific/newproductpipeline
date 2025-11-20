@@ -1,15 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { BaseModal } from "@/components/ui/BaseModal";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -342,189 +334,177 @@ export function COGSEditModal({
 
   if (loading) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent>
-          <div className="py-8 text-center">Loading...</div>
-        </DialogContent>
-      </Dialog>
+      <BaseModal open={open} onOpenChange={onOpenChange} title="Loading...">
+        <div className="py-8 text-center">Loading...</div>
+      </BaseModal>
     );
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditMode ? "Edit COGS" : "Create COGS"} - {formulationName || ""}
-          </DialogTitle>
-          <DialogDescription asChild>
-            <div className="text-sm text-muted-foreground">
-              {countryName || "Global"} | Fiscal Years: {fiscalYearColumns[0]}-{fiscalYearColumns[4]} | Currency: EUR
-            </div>
-          </DialogDescription>
+    <BaseModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title={`${isEditMode ? "Edit COGS" : "Create COGS"} - ${formulationName || ""}`}
+      description={
+        <div className="flex flex-col gap-1">
+          <span>{countryName || "Global"} | Fiscal Years: {fiscalYearColumns[0]}-{fiscalYearColumns[4]} | Currency: EUR</span>
           {changedCells.size > 0 && (
-            <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950 rounded text-sm text-blue-900 dark:text-blue-100">
+            <div className="text-xs text-blue-600 dark:text-blue-400">
               ℹ️ {changedCells.size} cells changed from original values
             </div>
           )}
           {Object.keys(validationErrors).length > 0 && (
-            <div className="mt-2 p-2 bg-red-50 dark:bg-red-950 rounded text-sm text-red-900 dark:text-red-100">
+            <div className="text-xs text-red-600 dark:text-red-400">
               ⚠️ {Object.values(validationErrors)[0]}
             </div>
           )}
-        </DialogHeader>
-
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="min-w-[200px]">Cost Component</TableHead>
-                {fiscalYearColumns.map((fy) => (
-                  <TableHead key={fy} className="min-w-[140px] text-center">
-                    {fy}
-                    {validationErrors[fy] && <span className="text-red-500 ml-1">⚠️</span>}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {/* Raw Materials row */}
-              <TableRow>
-                <TableCell className="font-medium">Raw Materials (EUR/unit)</TableCell>
-                {fiscalYearColumns.map((fy) => {
-                  const year = yearData.find((y) => y.fiscal_year === fy);
-                  const cellKey = `${fy}_raw`;
-                  const isChanged = changedCells.has(cellKey);
-
-                  return (
-                    <TableCell key={fy} className="p-1">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={year?.raw_material_cost ?? ""}
-                        onChange={(e) => handleCellChange(fy, "raw", e.target.value)}
-                        onBlur={() => autoCalculateTotal(fy)}
-                        className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
-                        placeholder="Optional"
-                      />
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-
-              {/* Manufacturing row */}
-              <TableRow>
-                <TableCell className="font-medium">Manufacturing (EUR/unit)</TableCell>
-                {fiscalYearColumns.map((fy) => {
-                  const year = yearData.find((y) => y.fiscal_year === fy);
-                  const cellKey = `${fy}_mfg`;
-                  const isChanged = changedCells.has(cellKey);
-
-                  return (
-                    <TableCell key={fy} className="p-1">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={year?.manufacturing_cost ?? ""}
-                        onChange={(e) => handleCellChange(fy, "mfg", e.target.value)}
-                        onBlur={() => autoCalculateTotal(fy)}
-                        className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
-                        placeholder="Optional"
-                      />
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-
-              {/* Packaging row */}
-              <TableRow>
-                <TableCell className="font-medium">Packaging (EUR/unit)</TableCell>
-                {fiscalYearColumns.map((fy) => {
-                  const year = yearData.find((y) => y.fiscal_year === fy);
-                  const cellKey = `${fy}_pkg`;
-                  const isChanged = changedCells.has(cellKey);
-
-                  return (
-                    <TableCell key={fy} className="p-1">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={year?.packaging_cost ?? ""}
-                        onChange={(e) => handleCellChange(fy, "pkg", e.target.value)}
-                        onBlur={() => autoCalculateTotal(fy)}
-                        className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
-                        placeholder="Optional"
-                      />
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-
-              {/* Other Costs row */}
-              <TableRow>
-                <TableCell className="font-medium">Other Costs (EUR/unit)</TableCell>
-                {fiscalYearColumns.map((fy) => {
-                  const year = yearData.find((y) => y.fiscal_year === fy);
-                  const cellKey = `${fy}_other`;
-                  const isChanged = changedCells.has(cellKey);
-
-                  return (
-                    <TableCell key={fy} className="p-1">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={year?.other_costs ?? ""}
-                        onChange={(e) => handleCellChange(fy, "other", e.target.value)}
-                        onBlur={() => autoCalculateTotal(fy)}
-                        className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
-                        placeholder="Optional"
-                      />
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-
-              {/* Total COGS row (required) */}
-              <TableRow className="bg-muted/50">
-                <TableCell className="font-bold">Total COGS (EUR/unit) *</TableCell>
-                {fiscalYearColumns.map((fy) => {
-                  const year = yearData.find((y) => y.fiscal_year === fy);
-                  const cellKey = `${fy}_total`;
-                  const isChanged = changedCells.has(cellKey);
-
-                  return (
-                    <TableCell key={fy} className="p-1">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={year?.cogs_value ?? ""}
-                        onChange={(e) => handleCellChange(fy, "total", e.target.value)}
-                        className={`h-9 font-bold ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""} ${validationErrors[fy] ? "border-red-500" : ""}`}
-                        placeholder="Required"
-                        required
-                      />
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            </TableBody>
-          </Table>
         </div>
+      }
+      onSave={handleSave}
+      isSaving={isPending}
+      saveDisabled={Object.keys(validationErrors).length > 0}
+      maxWidth="max-w-[90vw]"
+    >
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="min-w-[200px]">Cost Component</TableHead>
+              {fiscalYearColumns.map((fy) => (
+                <TableHead key={fy} className="min-w-[140px] text-center">
+                  {fy}
+                  {validationErrors[fy] && <span className="text-red-500 ml-1">⚠️</span>}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {/* Raw Materials row */}
+            <TableRow>
+              <TableCell className="font-medium">Raw Materials (EUR/unit)</TableCell>
+              {fiscalYearColumns.map((fy) => {
+                const year = yearData.find((y) => y.fiscal_year === fy);
+                const cellKey = `${fy}_raw`;
+                const isChanged = changedCells.has(cellKey);
 
-        <div className="text-xs text-muted-foreground mt-2">
-          * Total COGS is required for all years. Breakdown fields are optional, but if any are entered, all must be entered and sum to Total COGS.
-        </div>
+                return (
+                  <TableCell key={fy} className="p-1">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={year?.raw_material_cost ?? ""}
+                      onChange={(e) => handleCellChange(fy, "raw", e.target.value)}
+                      onBlur={() => autoCalculateTotal(fy)}
+                      className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                      placeholder="Optional"
+                    />
+                  </TableCell>
+                );
+              })}
+            </TableRow>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={isPending || Object.keys(validationErrors).length > 0}>
-            {isPending ? "Saving..." : "Save"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+            {/* Manufacturing row */}
+            <TableRow>
+              <TableCell className="font-medium">Manufacturing (EUR/unit)</TableCell>
+              {fiscalYearColumns.map((fy) => {
+                const year = yearData.find((y) => y.fiscal_year === fy);
+                const cellKey = `${fy}_mfg`;
+                const isChanged = changedCells.has(cellKey);
+
+                return (
+                  <TableCell key={fy} className="p-1">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={year?.manufacturing_cost ?? ""}
+                      onChange={(e) => handleCellChange(fy, "mfg", e.target.value)}
+                      onBlur={() => autoCalculateTotal(fy)}
+                      className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                      placeholder="Optional"
+                    />
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+
+            {/* Packaging row */}
+            <TableRow>
+              <TableCell className="font-medium">Packaging (EUR/unit)</TableCell>
+              {fiscalYearColumns.map((fy) => {
+                const year = yearData.find((y) => y.fiscal_year === fy);
+                const cellKey = `${fy}_pkg`;
+                const isChanged = changedCells.has(cellKey);
+
+                return (
+                  <TableCell key={fy} className="p-1">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={year?.packaging_cost ?? ""}
+                      onChange={(e) => handleCellChange(fy, "pkg", e.target.value)}
+                      onBlur={() => autoCalculateTotal(fy)}
+                      className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                      placeholder="Optional"
+                    />
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+
+            {/* Other Costs row */}
+            <TableRow>
+              <TableCell className="font-medium">Other Costs (EUR/unit)</TableCell>
+              {fiscalYearColumns.map((fy) => {
+                const year = yearData.find((y) => y.fiscal_year === fy);
+                const cellKey = `${fy}_other`;
+                const isChanged = changedCells.has(cellKey);
+
+                return (
+                  <TableCell key={fy} className="p-1">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={year?.other_costs ?? ""}
+                      onChange={(e) => handleCellChange(fy, "other", e.target.value)}
+                      onBlur={() => autoCalculateTotal(fy)}
+                      className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                      placeholder="Optional"
+                    />
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+
+            {/* Total COGS row (required) */}
+            <TableRow className="bg-muted/50">
+              <TableCell className="font-bold">Total COGS (EUR/unit) *</TableCell>
+              {fiscalYearColumns.map((fy) => {
+                const year = yearData.find((y) => y.fiscal_year === fy);
+                const cellKey = `${fy}_total`;
+                const isChanged = changedCells.has(cellKey);
+
+                return (
+                  <TableCell key={fy} className="p-1">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={year?.cogs_value ?? ""}
+                      onChange={(e) => handleCellChange(fy, "total", e.target.value)}
+                      className={`h-9 font-bold ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""} ${validationErrors[fy] ? "border-red-500" : ""}`}
+                      placeholder="Required"
+                      required
+                    />
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="text-xs text-muted-foreground mt-2">
+        * Total COGS is required for all years. Breakdown fields are optional, but if any are entered, all must be entered and sum to Total COGS.
+      </div>
+    </BaseModal>
   );
 }
-

@@ -88,7 +88,7 @@ export async function updateFormulationCountry(
   if (countryReadiness !== null) updateData.country_readiness = countryReadiness;
   if (countryReadinessNotes !== null) updateData.country_readiness_notes = countryReadinessNotes;
   if (earliestMarketEntryDate !== null) updateData.earliest_market_entry_date = earliestMarketEntryDate || null;
-  
+
   // Booleans - update if present in form data (checked usually sends 'true', unchecked might send 'false' or nothing if not handled)
   // Assuming the caller handles boolean logic correctly
   if (formData.has("is_novel")) updateData.is_novel = isNovel;

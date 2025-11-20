@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo, memo } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,7 @@ const statusColors: Record<string, string> = {
   Killed: "destructive",
 };
 
-function FormulationActionsCell({ formulation }: { formulation: Formulation }) {
+const FormulationActionsCell = memo(function FormulationActionsCell({ formulation }: { formulation: Formulation }) {
   const [editOpen, setEditOpen] = useState(false);
   const [formulationData, setFormulationData] = useState<FormulationTable | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -107,15 +107,10 @@ function FormulationActionsCell({ formulation }: { formulation: Formulation }) {
       )}
     </>
   );
-}
+});
 
-interface FormulationsListWithActionsProps {
-  formulations: Formulation[];
-}
-
-export function FormulationsListWithActions({ formulations }: FormulationsListWithActionsProps) {
-
-  const columns: ColumnDef<Formulation>[] = [
+// Memoize columns outside component to prevent recreation on every render
+const createColumns = (): ColumnDef<Formulation>[] => [
     {
       accessorKey: "formulation_code",
       header: "Code",
@@ -161,20 +156,32 @@ export function FormulationsListWithActions({ formulations }: FormulationsListWi
       },
     },
     {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => <FormulationActionsCell formulation={row.original} />,
-    },
-  ];
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => <FormulationActionsCell formulation={row.original} />,
+  },
+];
+
+// Memoize columns array - only recreate if needed
+const columns = createColumns();
+
+interface FormulationsListWithActionsProps {
+  formulations: Formulation[];
+}
+
+export function FormulationsListWithActions({ formulations }: FormulationsListWithActionsProps) {
+  // Memoize columns to prevent recreation
+  const memoizedColumns = useMemo(() => columns, []);
 
   return (
     <EnhancedDataTable
-      columns={columns}
+      columns={memoizedColumns}
       data={formulations}
       searchKey="product_name"
       searchPlaceholder="Search formulations..."
       pageSize={25}
       showPageSizeSelector={true}
+      tableId="formulations"
     />
   );
 }

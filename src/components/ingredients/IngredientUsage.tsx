@@ -1,78 +1,92 @@
 "use client";
 
+import { useMemo } from "react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import { type ColumnDef } from "@tanstack/react-table";
 import type { Database } from "@/lib/supabase/database.types";
+import { TableUtils } from "@/lib/utils/table-utils";
 
-type IngredientUsage = Database["public"]["Views"]["vw_ingredient_usage"]["Row"];
-
-const supplyRiskColors: Record<string, string> = {
-  Low: "default",
-  Medium: "secondary",
-  High: "outline",
-  Critical: "destructive",
+type IngredientUsage = Database["public"]["Views"]["vw_ingredient_usage"]["Row"] & {
+  cas_number?: string | null;
+  standard_density_g_per_l?: number | null;
 };
 
-const columns: ColumnDef<IngredientUsage>[] = [
+// Memoize columns outside component to prevent recreation on every render
+const createColumns = (): ColumnDef<IngredientUsage>[] => [
   {
     accessorKey: "ingredient_name",
     header: "Ingredient Name",
+    meta: { sticky: "left", minWidth: "200px" }, // Freeze this column on the left
+    cell: ({ row }) => {
+      const name = row.getValue("ingredient_name") as string;
+      const id = row.original.ingredient_id;
+      const type = row.original.ingredient_type;
+      
+      // Only link if it's an active ingredient
+      if (type === "Active") {
+        return TableUtils.renderLink(`/active-ingredients/${id}`, name);
+      }
+      return <span className="font-medium">{name}</span>;
+    },
+  },
+  {
+    accessorKey: "cas_number",
+    header: "CAS Number",
+    meta: { minWidth: "140px" },
+    cell: ({ row }) => TableUtils.renderCASNumber(row.original.cas_number),
   },
   {
     accessorKey: "ingredient_type",
     header: "Type",
+    meta: { minWidth: "100px" },
     cell: ({ row }) => {
       const type = row.getValue("ingredient_type") as string | null;
-      return <Badge variant="outline">{type || "—"}</Badge>;
+      return <Badge variant="outline" className="text-xs">{type || "—"}</Badge>;
     },
   },
-  {
-    accessorKey: "formulation_count",
-    header: "Formulations",
-    cell: ({ row }) => {
-      const count = row.getValue("formulation_count") as number | null;
-      return <span className="font-medium">{count || 0}</span>;
-    },
-  },
+  TableUtils.createNumberColumn("formulation_count", "Formulations", {
+    minWidth: "120px",
+    decimals: 0,
+  }),
   {
     accessorKey: "selected_formulations",
     header: "Selected",
+    meta: { minWidth: "100px", align: "right" },
     cell: ({ row }) => {
       const count = row.getValue("selected_formulations") as number | null;
-      return count ? <Badge variant="default">{count}</Badge> : "0";
+      return (
+        <div className="text-right">
+          {count && count > 0 ? (
+            <Badge variant="default" className="text-xs">{count}</Badge>
+          ) : (
+            <span className="text-sm text-muted-foreground">0</span>
+          )}
+        </div>
+      );
     },
   },
   {
     accessorKey: "supply_risk",
     header: "Supply Risk",
-    cell: ({ row }) => {
-      const risk = row.getValue("supply_risk") as string | null;
-      if (!risk) return "—";
-      return (
-        <Badge variant={(supplyRiskColors[risk] as any) || "outline"}>{risk}</Badge>
-      );
-    },
+    meta: { minWidth: "120px" },
+    cell: ({ row }) => TableUtils.renderSupplyRisk(row.getValue("supply_risk") as string | null),
   },
   {
     accessorKey: "is_eu_approved",
     header: "EU Approved",
-    cell: ({ row }) => {
-      const approved = row.getValue("is_eu_approved") as boolean | null;
-      return approved ? (
-        <Badge variant="default">Yes</Badge>
-      ) : (
-        <Badge variant="outline">No</Badge>
-      );
-    },
+    meta: { minWidth: "100px" },
+    cell: ({ row }) => TableUtils.renderBoolean(row.getValue("is_eu_approved") as boolean | null),
   },
   {
     accessorKey: "suppliers",
     header: "Suppliers",
+    meta: { minWidth: "200px" },
     cell: ({ row }) => {
       const suppliers = row.getValue("suppliers") as string | null;
       return (
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm text-muted-foreground max-w-[200px] truncate block">
           {suppliers || "—"}
         </span>
       );
@@ -81,10 +95,11 @@ const columns: ColumnDef<IngredientUsage>[] = [
   {
     accessorKey: "formulations_used_in",
     header: "Used In",
+    meta: { minWidth: "300px" },
     cell: ({ row }) => {
       const formulations = row.getValue("formulations_used_in") as string | null;
       return (
-        <span className="text-sm text-muted-foreground max-w-md truncate block">
+        <span className="text-sm text-muted-foreground max-w-[300px] truncate block">
           {formulations || "—"}
         </span>
       );
@@ -92,13 +107,19 @@ const columns: ColumnDef<IngredientUsage>[] = [
   },
 ];
 
+// Memoize columns array - only recreate if needed
+const columns = createColumns();
+
 interface IngredientUsageProps {
   ingredients: IngredientUsage[];
 }
 
 export function IngredientUsage({ ingredients }: IngredientUsageProps) {
+  // Memoize columns to prevent recreation
+  const memoizedColumns = useMemo(() => columns, []);
+
   // Group by supply risk
-  const byRisk = ingredients.reduce(
+  const byRisk = useMemo(() => ingredients.reduce(
     (acc, ing) => {
       const risk = ing.supply_risk || "Unknown";
       if (!acc[risk]) {
@@ -108,7 +129,7 @@ export function IngredientUsage({ ingredients }: IngredientUsageProps) {
       return acc;
     },
     {} as Record<string, IngredientUsage[]>
-  );
+  ), [ingredients]);
 
   const criticalIngredients = byRisk["Critical"] || [];
   const highRiskIngredients = byRisk["High"] || [];
@@ -160,12 +181,15 @@ export function IngredientUsage({ ingredients }: IngredientUsageProps) {
       )}
 
       <EnhancedDataTable
-        columns={columns}
+        columns={memoizedColumns}
         data={ingredients}
         searchKey="ingredient_name"
         searchPlaceholder="Search ingredients..."
         pageSize={25}
         showPageSizeSelector={true}
+        tableId="ingredients-usage"
+        enableColumnReordering={true}
+        enableViewManagement={true}
       />
     </div>
   );
