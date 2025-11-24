@@ -317,9 +317,9 @@ export function PipelineNetworkGraph({
     const filteredFormulations = formulations.filter(f => {
       const matchesSearch = (
         (f.formulation_code?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-        (f.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
+        (("formulation_name" in f ? (f as any).formulation_name : null)?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
       );
-      const matchesStatus = statusFilter === "all" || f.formulation_status === statusFilter;
+      const matchesStatus = statusFilter === "all" || ("formulation_status" in f ? f.formulation_status === statusFilter : false);
       return matchesSearch && matchesStatus;
     });
 
@@ -356,8 +356,8 @@ export function PipelineNetworkGraph({
         data: { 
           id: f.formulation_id,
           code: f.formulation_code,
-          name: f.product_name,
-          status: f.formulation_status,
+          name: ("formulation_name" in f ? (f as any).formulation_name : f.formulation_code) || f.formulation_code,
+          status: ("formulation_status" in f ? (f as any).formulation_status : null) || null,
           revenue: formatCurrency(fRevenue),
           countryCount: fCountries.length,
           revenueShare: 0, // Will calculate after total known

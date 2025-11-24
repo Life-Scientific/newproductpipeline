@@ -20,7 +20,7 @@ const TEST_FORMULATION_CODES = ['370-01', '312-01', '371-01', '372-01', '246-01'
 const TEST_BASE_CODES = ['370', '312', '371', '372', '246'];
 const TEST_INDEXES = ['278', '343', '344', '206', '181'];
 
-async function extractSection(sql: string, startMarker: string, endMarker?: string): string {
+async function extractSection(sql: string, startMarker: string, endMarker?: string): Promise<string> {
   const startIdx = sql.indexOf(startMarker);
   if (startIdx === -1) return '';
   
@@ -28,7 +28,7 @@ async function extractSection(sql: string, startMarker: string, endMarker?: stri
   return sql.substring(startIdx, endIdx);
 }
 
-async function extractFormulationCountryEntries(sql: string): string {
+async function extractFormulationCountryEntries(sql: string): Promise<string> {
   const lines = sql.split('\n');
   const result: string[] = [];
   let inSection = false;
@@ -65,7 +65,7 @@ async function extractFormulationCountryEntries(sql: string): string {
   return result.join('\n');
 }
 
-async function extractUseGroups(sql: string): string {
+async function extractUseGroups(sql: string): Promise<string> {
   const lines = sql.split('\n');
   const result: string[] = [];
   
@@ -89,7 +89,7 @@ async function extractUseGroups(sql: string): string {
   return result.join('\n');
 }
 
-async function extractBusinessCases(sql: string): string {
+async function extractBusinessCases(sql: string): Promise<string> {
   const lines = sql.split('\n');
   const result: string[] = [];
   let inGroup = false;
@@ -123,7 +123,7 @@ async function extractBusinessCases(sql: string): string {
   return result.join('\n');
 }
 
-async function extractJunctions(sql: string): string {
+async function extractJunctions(sql: string): Promise<string> {
   const lines = sql.split('\n');
   const result: string[] = [];
   

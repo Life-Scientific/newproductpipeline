@@ -2,14 +2,13 @@
 /**
  * Import Final Data Script
  * 
- * Executes the 4 sequential SQL files from contextsql/Final Import/
- * in order: import_part1.sql, import_part2.sql, import_part3.sql, import_part4.sql
+ * Executes the 3 sequential SQL files from contextsql/Final Import/
+ * in order: import_part1.sql, import_part2.sql, import_part3.sql
  * 
  * These files contain:
  * - Part 1: Base code registry, formulations, and formulation ingredients (with Index references)
- * - Part 2: Formulation countries and use groups
- * - Part 3: Business cases (with Index references)
- * - Part 4: Business case-use group junctions (with Index references)
+ * - Part 2: Formulation countries, use groups, and business cases (with Index references)
+ * - Part 3: Business case-use group junctions (with Index references)
  */
 
 import { readFileSync } from 'fs';
@@ -93,7 +92,6 @@ async function main() {
     'contextsql/Final Import/import_part1.sql',
     'contextsql/Final Import/import_part2.sql',
     'contextsql/Final Import/import_part3.sql',
-    'contextsql/Final Import/import_part4.sql',
   ];
   
   const stats: ImportStats[] = [];

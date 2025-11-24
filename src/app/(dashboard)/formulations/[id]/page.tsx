@@ -70,7 +70,7 @@ export default async function FormulationDetailPage({
 
   const breadcrumbs = [
     { label: "Formulations", href: "/formulations" },
-    { label: formulation.formulation_code || formulation.product_name || "Formulation" },
+    { label: formulation.formulation_code || ("formulation_name" in formulation ? formulation.formulation_name : "") || "Formulation" },
   ];
 
   // Calculate summary metrics
@@ -87,9 +87,9 @@ export default async function FormulationDetailPage({
         
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl font-bold">{formulation.product_name || "Formulation"}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">{"formulation_name" in formulation ? formulation.formulation_name : formulation.formulation_code || "Formulation"}</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              {formulation.formulation_code || "—"} • {formulation.product_category || "—"}
+              {formulation.formulation_code || "—"}{"formulation_category" in formulation && formulation.formulation_category ? ` • ${formulation.formulation_category}` : ""}
             </p>
           </div>
           <Button asChild variant="outline">
@@ -113,7 +113,7 @@ export default async function FormulationDetailPage({
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">{countryDetails.length}</div>
               <p className="text-xs text-muted-foreground">
-                {countryDetails.filter(c => c.registration_status === "Approved").length} approved
+                {countryDetails.filter(c => c.country_status === "Approved").length} approved
               </p>
             </CardContent>
           </Card>
@@ -128,7 +128,7 @@ export default async function FormulationDetailPage({
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">{useGroups.length}</div>
               <p className="text-xs text-muted-foreground">
-                {useGroups.filter(l => l.registration_status === "Approved").length} approved
+                {useGroups.filter(l => l.use_group_status === "Approved").length} approved
               </p>
             </CardContent>
           </Card>
@@ -188,14 +188,14 @@ export default async function FormulationDetailPage({
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground">Status</p>
-                      <Badge variant={formulation.status ? (statusColors[formulation.status] as any) || "secondary" : "secondary"}>
-                        {formulation.status || "—"}
+                      <Badge variant={"formulation_status" in formulation ? (statusColors[formulation.formulation_status] as any) || "secondary" : "secondary"}>
+                        {"formulation_status" in formulation ? formulation.formulation_status : "—"}
                       </Badge>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground">Product Category</p>
-                      <p className="text-sm">{formulation.product_category || "—"}</p>
-                    </div>
+                    {"formulation_category" in formulation && (<div className="space-y-1">
+                      <p className="text-xs font-medium text-muted-foreground">Formulation Category</p>
+                      <p className="text-sm">{formulation.formulation_category || "—"}</p>
+                    </div>)}
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground">Formulation Type</p>
                       <p className="text-sm">{formulation.formulation_type || "—"}</p>
@@ -279,14 +279,14 @@ export default async function FormulationDetailPage({
                         <div className="flex-1 min-w-0 space-y-1">
                           <div className="font-medium text-sm">{detail.country_name}</div>
                           <div className="text-xs text-muted-foreground">
-                            {detail.registration_pathway || "No pathway"} • {detail.target_market_entry_fy || "No target FY"}
-                            {detail.emd && ` • EMD: ${new Date(detail.emd).toLocaleDateString()}`}
+                            {detail.likely_registration_pathway || "No pathway"} • {detail.target_market_entry_fy || "No target FY"}
+                            {detail.earliest_market_entry_date && ` • EMD: ${new Date(detail.earliest_market_entry_date).toLocaleDateString()}`}
                           </div>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          {detail.registration_status && (
+                          {detail.country_status && (
                             <Badge variant="outline" className="text-xs">
-                              {detail.registration_status}
+                              {detail.country_status}
                             </Badge>
                           )}
                           <Badge variant="secondary" className="text-xs">
@@ -312,7 +312,7 @@ export default async function FormulationDetailPage({
             <FormulationTreeView
               formulationId={id}
               formulationCode={formulation.formulation_code || ""}
-              formulationName={formulation.product_name || ""}
+              formulationName={"formulation_name" in formulation ? formulation.formulation_name || "" : formulation.formulation_code || ""}
               countries={countryDetails}
               useGroups={useGroups}
               businessCases={businessCasesForTree}

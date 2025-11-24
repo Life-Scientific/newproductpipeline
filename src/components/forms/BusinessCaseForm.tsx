@@ -61,7 +61,7 @@ export function BusinessCaseForm({
     volume: businessCase?.volume?.toString() || "",
     nsp: businessCase?.nsp?.toString() || "",
     cogs_per_unit: businessCase?.cogs_per_unit?.toString() || "",
-    fiscal_year: businessCase?.fiscal_year || "",
+    fiscal_year: ("fiscal_year" in (businessCase || {}) ? (businessCase as any).fiscal_year : "") || "",
     assumptions: businessCase?.assumptions || "",
   });
 
@@ -161,8 +161,9 @@ export function BusinessCaseForm({
       .eq("business_case_id", businessCase.business_case_id);
 
     if (junctionData && junctionData.length > 0) {
+      const junctionDataTyped = junctionData as any[];
       // Get first use group to determine formulation and country
-      const firstUseGroup = junctionData[0].formulation_country_use_group as any;
+      const firstUseGroup = junctionDataTyped[0]?.formulation_country_use_group as any;
       const fc = firstUseGroup?.formulation_country;
       
       if (fc) {
@@ -173,13 +174,13 @@ export function BusinessCaseForm({
         }));
         
         // Set selected use group IDs (using formulation_country_use_group_id)
-        const useGroupIds = junctionData
+        const useGroupIds = junctionDataTyped
           .map((j) => (j.formulation_country_use_group as any)?.formulation_country_use_group_id)
           .filter((id): id is string => Boolean(id));
         setSelectedUseGroupIds(useGroupIds);
         
         // Set selected use groups for display
-        const useGroups = junctionData
+        const useGroups = junctionDataTyped
           .map((j) => j.formulation_country_use_group as any)
           .filter((ug): ug is FormulationCountryUseGroup => Boolean(ug));
         setSelectedUseGroups(useGroups);
@@ -201,11 +202,13 @@ export function BusinessCaseForm({
       return;
     }
 
+    const fcDataTyped = fcData as { formulation_country_id: string };
+
     // Load use groups for that formulation_country
     const { data } = await supabase
       .from("vw_formulation_country_use_group")
       .select("formulation_country_use_group_id, use_group_variant, use_group_name, display_name, formulation_code, country_name")
-      .eq("formulation_country_id", fcData.formulation_country_id)
+      .eq("formulation_country_id", fcDataTyped.formulation_country_id)
       .order("use_group_variant");
     
     if (data) {

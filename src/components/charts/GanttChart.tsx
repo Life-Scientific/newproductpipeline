@@ -122,7 +122,7 @@ export function GanttChart({
           data={data}
           margin={{ top: 20, right: 20, bottom: 20, left: 100 }} // Left margin for Y-axis labels
           barSize={20}
-          onClick={(state) => {
+          onClick={(state: any) => {
             if (state && state.activePayload && state.activePayload[0]) {
               onTaskClick?.(state.activePayload[0].payload);
             }

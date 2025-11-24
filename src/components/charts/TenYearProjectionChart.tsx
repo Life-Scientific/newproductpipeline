@@ -666,10 +666,7 @@ export function TenYearProjectionChart({
                       }}
                       style={{ cursor: "pointer" }}
                       margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
-                      isAnimationActive={true}
-                      animationBegin={0}
-                      animationDuration={2000}
-                      animationEasing="ease-out"
+                      // Animation props removed - not supported in this chart type
                     >
                 <defs>
                   {/* Revenue gradient using theme color */}
@@ -838,10 +835,7 @@ export function TenYearProjectionChart({
                 }}
                 style={{ cursor: "pointer" }}
                 margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
-                isAnimationActive={true}
-                animationBegin={0}
-                animationDuration={2000}
-                animationEasing="ease-out"
+                // Animation props removed - not supported in this chart type
               >
                 <CartesianGrid 
                   strokeDasharray="3 3" 

@@ -339,7 +339,7 @@ export const getFormulationsWithNestedData = unstable_cache(
 
       // Get EMD dates
       const emdDates = agg.countriesList
-        .map((c) => c.emd)
+        .map((c) => c.earliest_market_entry_date)
         .filter(Boolean)
         .sort();
       const earliestEmd = emdDates[0] || null;

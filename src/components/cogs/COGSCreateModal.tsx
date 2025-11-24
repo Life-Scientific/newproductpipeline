@@ -80,11 +80,11 @@ export function COGSCreateModal({
       .eq("formulation_id", formulationId)
       .single();
 
-    if (formulation?.formulation_code) {
+    if ((formulation as any)?.formulation_code) {
       const { data } = await supabase
         .from("vw_formulation_country_detail")
         .select("formulation_country_id, display_name, country_name")
-        .eq("formulation_code", formulation.formulation_code)
+        .eq("formulation_code", (formulation as any).formulation_code)
         .order("country_name");
 
       if (data) setFormulationCountries(data as FormulationCountry[]);
@@ -158,7 +158,7 @@ export function COGSCreateModal({
                     .filter((f) => f.formulation_id)
                     .map((f) => (
                       <SelectItem key={f.formulation_id!} value={f.formulation_id!}>
-                        {f.formulation_code} - {f.product_name}
+                        {f.formulation_code} - {("formulation_name" in f ? (f as any).formulation_name : f.formulation_code) || f.formulation_code}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -208,7 +208,7 @@ export function COGSCreateModal({
         <COGSEditModal
           groupId={existingGroupId || undefined}
           formulationId={selectedFormulationId}
-          formulationName={selectedFormulation?.product_name || selectedFormulation?.formulation_code || ""}
+          formulationName={"formulation_name" in (selectedFormulation || {}) ? (selectedFormulation as any).formulation_name : selectedFormulation?.formulation_code || ""}
           formulationCountryId={selectedCountryId}
           countryName={selectedCountryName}
           open={showEditModal}

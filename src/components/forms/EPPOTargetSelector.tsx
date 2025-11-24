@@ -97,7 +97,7 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
 
   const performSearch = async () => {
     const result = await searchEPPOCodes({
-      searchTerm,
+      search: searchTerm,
       classification: ["insect", "disease", "weed"],
       limit: 50,
     });

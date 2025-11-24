@@ -48,7 +48,7 @@ export default async function FormulationHierarchyPage({
                 <FormulationTreeView
                   formulationId={id}
                   formulationCode={formulation.formulation_code || ""}
-                  formulationName={formulation.product_name || ""}
+                  formulationName={"formulation_name" in formulation ? formulation.formulation_name || "" : formulation.formulation_code || ""}
                   countries={countryDetails}
                   useGroups={useGroups}
                   businessCases={businessCases}

@@ -30,3 +30,5 @@ WHERE i.is_active = true
 GROUP BY i.ingredient_id, i.ingredient_name, i.ingredient_type, i.cas_number, 
          i.standard_density_g_per_l, i.is_eu_approved, i.supply_risk;
 
+
+

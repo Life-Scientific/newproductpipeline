@@ -63,16 +63,15 @@ async function createTestSQLFiles() {
 
   const baseDir = join(__dirname, '..', 'contextsql', 'Final Import');
   
-  // Read original files
+  // Read original files (3-file structure)
   const part1 = readFileSync(join(baseDir, 'import_part1.sql'), 'utf8');
   const part2 = readFileSync(join(baseDir, 'import_part2.sql'), 'utf8');
   const part3 = readFileSync(join(baseDir, 'import_part3.sql'), 'utf8');
-  const part4 = readFileSync(join(baseDir, 'import_part4.sql'), 'utf8');
 
   // Extract sections using simple pattern matching
   console.log('   Extracting base code registry...');
-  const baseCodePattern = new RegExp(`base_code['"]?\\s*,\\s*['"]?(${TEST_BASE_CODES.join('|')})`);
-  const baseCodes = extractBlocks(part1, baseCodePattern, 10);
+  const baseCodePattern = new RegExp(`-- Base Code:\\s+(${TEST_BASE_CODES.join('|')})`);
+  const baseCodes = extractBlocks(part1, baseCodePattern, 15);
 
   console.log('   Extracting formulations...');
   const formulationPattern = new RegExp(`-- Code:\\s*(${TEST_FORMULATION_CODES.join('|')})`);
@@ -88,10 +87,10 @@ async function createTestSQLFiles() {
 
   console.log('   Extracting business cases...');
   const bcPattern = new RegExp(`Index\\s+(${TEST_INDEXES.join('|')})`);
-  const businessCases = extractBlocks(part3, bcPattern, 200); // 10 years × ~20 lines each
+  const businessCases = extractBlocks(part2, bcPattern, 200); // 10 years × ~20 lines each
 
   console.log('   Extracting junctions...');
-  const junctions = extractBlocks(part4, fcPattern, 20);
+  const junctions = extractBlocks(part3, fcPattern, 20);
 
   // Combine into test files with proper structure
   const testPart1 = `-- TEST IMPORT - First 5 Formulations Only
@@ -112,18 +111,12 @@ COMMIT;
 `;
 
   const testPart2 = `-- TEST IMPORT - Part 2
+-- Formulations: ${TEST_FORMULATION_CODES.join(', ')}
 
 BEGIN;
 
 -- SECTION 4: Formulation Countries & Use Groups
 ${formulationCountries}
-
-COMMIT;
-`;
-
-  const testPart3 = `-- TEST IMPORT - Part 3
-
-BEGIN;
 
 -- SECTION 5: Business Cases
 ${businessCases}
@@ -131,7 +124,8 @@ ${businessCases}
 COMMIT;
 `;
 
-  const testPart4 = `-- TEST IMPORT - Part 4
+  const testPart3 = `-- TEST IMPORT - Part 3
+-- Formulations: ${TEST_FORMULATION_CODES.join(', ')}
 
 BEGIN;
 
@@ -149,18 +143,16 @@ COMMIT;
     // Directory might already exist
   }
 
-  writeFileSync(join(testDir, 'test_part1.sql'), testPart1);
-  writeFileSync(join(testDir, 'test_part2.sql'), testPart2);
-  writeFileSync(join(testDir, 'test_part3.sql'), testPart3);
-  writeFileSync(join(testDir, 'test_part4.sql'), testPart4);
+  writeFileSync(join(testDir, 'test_5_entries_part1.sql'), testPart1);
+  writeFileSync(join(testDir, 'test_5_entries_part2.sql'), testPart2);
+  writeFileSync(join(testDir, 'test_5_entries_part3.sql'), testPart3);
 
   console.log('✅ Test SQL files created in contextsql/Final Import/test/\n');
   
   return [
-    join(testDir, 'test_part1.sql'),
-    join(testDir, 'test_part2.sql'),
-    join(testDir, 'test_part3.sql'),
-    join(testDir, 'test_part4.sql'),
+    join(testDir, 'test_5_entries_part1.sql'),
+    join(testDir, 'test_5_entries_part2.sql'),
+    join(testDir, 'test_5_entries_part3.sql'),
   ];
 }
 
@@ -298,7 +290,25 @@ async function verifyImportedData() {
 
 async function main() {
   try {
-    const testFiles = await createTestSQLFiles();
+    // Use existing test files if they exist, otherwise create new ones
+    const testDir = join(__dirname, '..', 'contextsql', 'Final Import', 'test');
+    const existingPart1 = join(testDir, 'test_part1_complete.sql');
+    const existingPart2 = join(testDir, 'test_part2_complete.sql');
+    const existingPart3 = join(testDir, 'test_part3_complete.sql');
+    
+    let testFiles: string[];
+    
+    // Check if complete test files exist (they're for 3-file structure)
+    if (require('fs').existsSync(existingPart1) && 
+        require('fs').existsSync(existingPart2) && 
+        require('fs').existsSync(existingPart3)) {
+      console.log('📋 Using existing complete test files...\n');
+      testFiles = [existingPart1, existingPart2, existingPart3];
+    } else {
+      // Create new test files
+      testFiles = await createTestSQLFiles();
+    }
+    
     await executeTestImport(testFiles);
   } catch (error: any) {
     console.error('\n❌ Fatal error:', error.message);

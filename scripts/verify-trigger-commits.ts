@@ -197,15 +197,19 @@ async function checkTriggerExists() {
 
   // We can't directly query pg_trigger via Supabase client easily
   // But we can check if the function exists
-  const { data: func, error } = await supabase.rpc("pg_get_function_arguments", {
-    function_name: "track_business_case_field_updates"
-  }).catch(() => ({ data: null, error: { message: "Function check not available via RPC" } }));
+  try {
+    const { data: func, error } = await supabase.rpc("pg_get_function_arguments", {
+      function_name: "track_business_case_field_updates"
+    });
 
-  if (error) {
-    console.log("⚠️  Cannot verify trigger via RPC");
-    console.log("   Use SQL editor to run: SELECT * FROM pg_trigger WHERE tgname = 'trg_track_business_case_field_updates';");
-  } else {
-    console.log("✅ Function exists");
+    if (error) {
+      console.log("⚠️  Cannot verify trigger via RPC");
+      console.log("   Use SQL editor to run: SELECT * FROM pg_trigger WHERE tgname = 'trg_track_business_case_field_updates';");
+    } else {
+      console.log("✅ Function exists");
+    }
+  } catch (e) {
+    console.log("⚠️  Function check not available via RPC");
   }
 }
 

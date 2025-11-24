@@ -155,18 +155,18 @@ export default async function FormulationCountryDetailPage({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              {formulationCountry.registration_status ? (
+              {formulationCountry.country_status ? (
                 <Badge
                   variant={
-                    formulationCountry.registration_status === "Approved"
+                    formulationCountry.country_status === "Approved"
                       ? "default"
-                      : formulationCountry.registration_status === "Submitted"
+                      : formulationCountry.country_status === "Submitted"
                       ? "secondary"
                       : "outline"
                   }
                   className="text-sm"
                 >
-                  {formulationCountry.registration_status}
+                  {formulationCountry.country_status}
                 </Badge>
               ) : (
                 <p className="text-sm text-muted-foreground">Not Started</p>
@@ -237,17 +237,17 @@ export default async function FormulationCountryDetailPage({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-muted-foreground">Registration Status</p>
-                  {formulationCountry.registration_status ? (
+                  {formulationCountry.country_status ? (
                     <Badge
                       variant={
-                        formulationCountry.registration_status === "Approved"
+                        formulationCountry.country_status === "Approved"
                           ? "default"
-                          : formulationCountry.registration_status === "Submitted"
+                          : formulationCountry.country_status === "Submitted"
                           ? "secondary"
                           : "outline"
                       }
                     >
-                      {formulationCountry.registration_status}
+                      {formulationCountry.country_status}
                     </Badge>
                   ) : (
                     <p className="text-sm">Not Started</p>
@@ -256,7 +256,7 @@ export default async function FormulationCountryDetailPage({
 
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-muted-foreground">Has Approval</p>
-                  {formulationCountry.has_approval ? (
+                  {formulationCountry.country_status ? (
                     <Badge variant="default" className="flex items-center gap-1 w-fit">
                       <CheckCircle2 className="h-3 w-3" />
                       Yes
@@ -269,10 +269,10 @@ export default async function FormulationCountryDetailPage({
                   )}
                 </div>
 
-                {formulationCountry.registration_pathway && (
+                {formulationCountry.likely_registration_pathway && (
                   <div className="space-y-1 col-span-2">
                     <p className="text-xs font-medium text-muted-foreground">Registration Pathway</p>
-                    <p className="text-sm">{formulationCountry.registration_pathway}</p>
+                    <p className="text-sm">{formulationCountry.likely_registration_pathway}</p>
                   </div>
                 )}
 
@@ -283,12 +283,12 @@ export default async function FormulationCountryDetailPage({
                   </div>
                 )}
 
-                {formulationCountry.emd && (
+                {formulationCountry.earliest_market_entry_date && (
                   <div className="space-y-1 col-span-2">
                     <p className="text-xs font-medium text-muted-foreground">EMD</p>
                     <p className="text-sm flex items-center gap-2">
                       <Calendar className="h-3 w-3" />
-                      {new Date(formulationCountry.emd).toLocaleDateString()}
+                      {new Date(formulationCountry.earliest_market_entry_date).toLocaleDateString()}
                     </p>
                   </div>
                 )}
@@ -302,14 +302,7 @@ export default async function FormulationCountryDetailPage({
                   </div>
                 )}
 
-                {formulationCountry.is_in_active_portfolio !== null && (
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Active Portfolio</p>
-                    <Badge variant={formulationCountry.is_in_active_portfolio ? "default" : "outline"}>
-                      {formulationCountry.is_in_active_portfolio ? "Yes" : "No"}
-                    </Badge>
-                  </div>
-                )}
+{/* Active Portfolio field removed from schema */}
               </div>
             </CardContent>
           </Card>
@@ -336,11 +329,7 @@ export default async function FormulationCountryDetailPage({
                           <h4 className="font-medium">
                             {bc.display_name || bc.business_case_name || "Business Case"}
                           </h4>
-                          {bc.scenario_name && (
-                            <Badge variant="outline" className="text-xs">
-                              {bc.scenario_name}
-                            </Badge>
-                          )}
+{/* scenario_name field removed from schema */}
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {bc.fiscal_year} • Year {bc.year_offset}
@@ -364,8 +353,7 @@ export default async function FormulationCountryDetailPage({
 
         {/* Additional Info */}
         {(formulationCountry.targets_treated || 
-          formulationCountry.crop_categories || 
-          formulationCountry.reference_product_name) && (
+          formulationCountry.crop_categories) && (
           <Card className="mt-6">
             <CardHeader className="space-y-1.5">
               <CardTitle>Additional Information</CardTitle>
@@ -383,17 +371,7 @@ export default async function FormulationCountryDetailPage({
                   <p className="text-sm">{formulationCountry.crop_categories}</p>
                 </div>
               )}
-              {formulationCountry.reference_product_name && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Reference Product</p>
-                  <p className="text-sm">{formulationCountry.reference_product_name}</p>
-                  {formulationCountry.reference_manufacturer && (
-                    <p className="text-xs text-muted-foreground">
-                      {formulationCountry.reference_manufacturer}
-                    </p>
-                  )}
-                </div>
-              )}
+{/* reference_product_name field removed from schema */}
             </CardContent>
           </Card>
         )}

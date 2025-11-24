@@ -22,7 +22,10 @@ export const revalidate = 60;
 type StatusHistory = Database["public"]["Tables"]["formulation_status_history"]["Row"];
 
 export default async function Home() {
-  let formulations, businessCases, activePortfolio, allExchangeRates;
+  let formulations: any[] = [];
+  let businessCases: any[] = [];
+  let activePortfolio: any[] = [];
+  let allExchangeRates: any[] = [];
   
   try {
     [formulations, businessCases, activePortfolio, allExchangeRates] = await Promise.all([
@@ -74,7 +77,7 @@ export default async function Home() {
       formulations!inner (
         formulation_id,
         formulation_code,
-        product_name
+        formulation_name
       )
     `)
     .order("changed_at", { ascending: false })
@@ -110,7 +113,7 @@ export default async function Home() {
         id: change.history_id,
         date: change.changed_at || new Date(),
         type: change.new_status || "Status Change",
-        title: `${formulation?.formulation_code || "—"} - ${formulation?.product_name || "—"}`,
+        title: `${formulation?.formulation_code || "—"} - ${("formulation_name" in (formulation || {}) ? (formulation as any).formulation_name : formulation?.formulation_code) || "—"}`,
         description: change.old_status
           ? `${change.old_status} → ${change.new_status}`
           : undefined,

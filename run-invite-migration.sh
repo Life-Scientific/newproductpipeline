@@ -35,3 +35,5 @@ echo "✅ Local migration completed!"
 echo ""
 echo "To verify, run: supabase db diff"
 
+
+

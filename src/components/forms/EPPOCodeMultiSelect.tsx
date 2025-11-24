@@ -255,7 +255,7 @@ export function EPPOCodeMultiSelect({
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
                         e.stopPropagation();
-                        handleUnselect(code.eppo_code_id, e);
+                        handleUnselect(code.eppo_code_id, e as any);
                       }
                     }}
                     onMouseDown={(e) => {

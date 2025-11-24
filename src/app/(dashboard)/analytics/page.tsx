@@ -37,7 +37,7 @@ export default async function AnalyticsPage() {
   // Count registrations by status
   const registrationStatusCounts = (registrationPipeline as RegistrationPipeline[] || []).reduce(
     (acc, item) => {
-      const status = item.registration_status || "Unknown";
+      const status = item.country_status || "Unknown";
       acc[status] = (acc[status] || 0) + 1;
       return acc;
     },
@@ -47,7 +47,7 @@ export default async function AnalyticsPage() {
   // Count by pathway
   const pathwayCounts = (registrationPipeline as RegistrationPipeline[] || []).reduce(
     (acc, item) => {
-      const pathway = item.registration_pathway || "Unknown";
+      const pathway = item.likely_registration_pathway || "Unknown";
       acc[pathway] = (acc[pathway] || 0) + 1;
       return acc;
     },

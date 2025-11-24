@@ -89,7 +89,7 @@ export function ScatterPlotChart({
       <ResponsiveContainer width="100%" height={height}>
         <ScatterChart
           margin={{ top: 20, right: 20, bottom: 60, left: 60 }}
-          onClick={(state) => {
+          onClick={(state: any) => {
             if (state && state.activePayload && state.activePayload[0]) {
               onClick?.(state.activePayload[0].payload);
             }

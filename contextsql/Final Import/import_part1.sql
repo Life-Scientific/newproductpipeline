@@ -1,5 +1,5 @@
 -- ============================================================================
--- UUID-BASED FORMULATION IMPORT - PART 1 of 4
+-- UUID-BASED FORMULATION IMPORT - PART 1 of 3
 -- ============================================================================
 
 BEGIN;
@@ -6395,7 +6395,7 @@ INSERT INTO formulations (
   '01',
   '389-01',
   'Chlormequat chloride/750 SC',
-  'Plant Growth Regulator',
+  'Growth Regulator',
   'SC',
   'g/L',
   'Not Yet Evaluated',
@@ -9605,7 +9605,7 @@ INSERT INTO formulations (
   '01',
   '138-01',
   'Mepiquat/Prohexadione-calcium/300/50 SC',
-  'Plant Growth Regulator',
+  'Growth Regulator',
   'SC',
   'g/L',
   'Not Yet Evaluated',
@@ -9629,7 +9629,7 @@ INSERT INTO formulations (
   '01',
   '448-01',
   'Mepiquat chloride/Prohexadione-calcium/300/50 SC',
-  'Plant Growth Regulator',
+  'Growth Regulator',
   'SC',
   'g/L',
   'Not Yet Evaluated',
@@ -10067,7 +10067,7 @@ INSERT INTO formulations (
   '01',
   '454-01',
   'Metalaxyl-M/350 FS',
-  'Seed treatment?',
+  'Fungicide',
   'FS',
   'g/L',
   'Not Yet Evaluated',
@@ -10646,7 +10646,7 @@ INSERT INTO formulations (
   '01',
   '466-01',
   'Pirimicarb/500 WG',
-  'Aphicide',
+  'Insecticide',
   'WG',
   'g/kg',
   'Not Yet Evaluated',
@@ -10717,7 +10717,7 @@ INSERT INTO formulations (
   '01',
   '470-01',
   'Prohexadione-calcium/Trinexapac-ethyl/50/75 WG',
-  'Plant Growth Regulator',
+  'Growth Regulator',
   'WG',
   'g/kg',
   'Killed',
@@ -19133,1288 +19133,309 @@ ON CONFLICT DO NOTHING;
 -- SECTION 4: Formulation-Country Relationships
 -- ============================================================================
 
--- 167-02 - RO
+-- 081-04 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-02'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 167-02 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-02'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 167-02 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-02'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 167-02 - IE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-02'),
-  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 167-02 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-02'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 167-02 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-02'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 322-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 322-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 322-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 322-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
   '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 322-01 - IT
+-- 081-04 - AL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 322-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 322-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 139-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '139-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 139-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '139-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 139-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '139-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 139-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '139-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 077-01 - CA
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '077-01'),
-  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 490-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '490-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 490-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '490-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 490-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '490-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 490-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '490-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 490-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '490-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 490-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '490-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 435-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '435-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 435-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '435-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 435-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '435-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 435-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '435-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 107-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 107-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 107-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 107-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 107-01 - IE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
-  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 107-01 - AL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
   '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 107-01 - BE
+-- 081-04 - HR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 036-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 036-01 - MK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
-  '107159d6-d476-49c3-89f0-b2710676c571'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 036-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 036-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 036-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 036-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 036-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 036-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 430-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '430-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 430-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '430-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 430-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '430-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 430-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '430-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 429-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 429-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 429-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 429-01 - CZ
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
-  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 429-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 429-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 429-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 429-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - NL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  'c7fcd75a-704a-44da-aa6d-73cf8e5eff82'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - MK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  '107159d6-d476-49c3-89f0-b2710676c571'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - IE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - AL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - BG
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  'f9657d38-55a5-49f0-86da-85e6efbc3461'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 004-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 176-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 176-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 176-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 176-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 176-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 176-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 176-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 256-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '256-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 256-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '256-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 256-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '256-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 310-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '310-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 310-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '310-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 310-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '310-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 310-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '310-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 310-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '310-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 054-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 054-01 - HR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
   '488e860e-e4b5-4005-8de1-4f6ff8e50441'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 054-01 - GB
+-- 081-04 - BE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 054-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 054-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 054-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 243-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
   '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 243-01 - IT
+-- 081-04 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 243-01 - CZ
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
-  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 243-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 243-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 243-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 243-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 243-01 - ES
+-- 081-04 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 081-04 - BG
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
+  'f9657d38-55a5-49f0-86da-85e6efbc3461'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 081-04 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
   'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 094-01 - DE
+-- 081-04 - IT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 094-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 094-01 - IE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
-  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 094-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 094-01 - AL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
-  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 094-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 094-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
   '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 094-01 - GR
+-- 081-04 - SK
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 094-01 - RS
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
-  '047aae25-ca57-425c-a0e2-a34675242789'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 094-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 304-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 304-01 - CZ
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
-  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 304-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 304-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
   'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 304-01 - PL
+-- 081-04 - CZ
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
+  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 304-01 - IT
+-- 081-04 - GR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 304-01 - ES
+-- 081-04 - RO
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 305-01 - FR
+-- 081-04 - HU
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '305-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 081-04 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 081-04 - NL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
+  'c7fcd75a-704a-44da-aa6d-73cf8e5eff82'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 152-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '152-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 305-01 - GR
+-- 152-01 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '305-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '152-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 152-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '152-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 152-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '152-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 153-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 153-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 153-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 153-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 153-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 153-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 153-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 153-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -20453,12 +19474,12 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 305-01 - PT
+-- 305-01 - GR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
   (SELECT formulation_id FROM formulations WHERE formulation_code = '305-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -20475,122 +19496,265 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 459-01 - FR
+-- 305-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '459-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '305-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 037-01 - ES
+-- 305-01 - PT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '305-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 037-01 - PL
+-- 229-01 - IT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 037-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 037-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 037-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 037-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 037-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '229-01'),
   '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 037-01 - GB
+-- 229-01 - GB
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '229-01'),
   'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 034-01 - MK
+-- 229-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '034-01'),
-  '107159d6-d476-49c3-89f0-b2710676c571'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '229-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 034-01 - FR
+-- 229-01 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '034-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '229-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 229-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '229-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 150-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '150-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 150-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '150-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 150-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '150-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 150-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '150-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 150-01 - IE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '150-01'),
+  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 150-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '150-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 360-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 360-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 360-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 360-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 360-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 360-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 360-01 - CZ
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
+  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 371-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '371-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 371-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '371-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 371-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '371-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 371-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '371-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -20629,6 +19793,17 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
+-- 034-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '034-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
 -- 034-01 - RS
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
@@ -20640,67 +19815,265 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 064-01 - IE
+-- 034-01 - MK
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '064-01'),
-  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '034-01'),
+  '107159d6-d476-49c3-89f0-b2710676c571'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 064-01 - IT
+-- 243-01 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '064-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 243-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
   '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 064-01 - GB
+-- 243-01 - CZ
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '064-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
+  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 064-01 - PL
+-- 243-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '064-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 243-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 243-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 243-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
   '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 064-01 - RS
+-- 243-01 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '064-01'),
-  '047aae25-ca57-425c-a0e2-a34675242789'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '243-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 064-01 - RO
+-- 435-01 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '064-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '435-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 435-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '435-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 435-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '435-01'),
   'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 435-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '435-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 226-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '226-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 226-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '226-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 226-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '226-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 226-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '226-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 226-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '226-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 226-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '226-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 373-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '373-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 373-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '373-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 373-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '373-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 373-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '373-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 373-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '373-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -20717,6 +20090,17 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
+-- 064-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '064-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
 -- 064-01 - SK
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
@@ -20728,375 +20112,606 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 041-02 - RO
+-- 064-01 - RO
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '064-01'),
   'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 041-02 - IT
+-- 064-01 - GB
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 041-02 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 041-02 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 041-02 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '064-01'),
   'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 041-02 - DE
+-- 064-01 - IE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '064-01'),
+  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 041-02 - CZ
+-- 064-01 - RS
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
-  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '064-01'),
+  '047aae25-ca57-425c-a0e2-a34675242789'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 041-02 - FR
+-- 064-01 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 041-02 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 041-02 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '064-01'),
   '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 166-01 - FR
+-- 001-01 - RO
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '166-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 166-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '166-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 166-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '166-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 166-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '166-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 166-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '166-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 384-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '384-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 184-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '184-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 184-01 - CZ
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '184-01'),
-  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 184-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '184-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 184-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '184-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 184-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '184-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 184-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '184-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 382-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
   'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 382-01 - DE
+-- 001-01 - GB
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 382-01 - FR
+-- 001-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 382-01 - IT
+-- 001-01 - AL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 382-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 382-01 - AL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
   '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 382-01 - PT
+-- 001-01 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 382-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 382-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
   '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 233-01 - FR
+-- 001-01 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '233-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 233-01 - ES
+-- 001-01 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '233-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
   'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 233-01 - PT
+-- 001-01 - IT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '233-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 001-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 001-01 - RS
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
+  '047aae25-ca57-425c-a0e2-a34675242789'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 037-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 037-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 037-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 037-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 037-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 037-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 037-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 037-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '037-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 065-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '065-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 065-01 - MK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '065-01'),
+  '107159d6-d476-49c3-89f0-b2710676c571'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 065-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '065-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 065-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '065-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 488-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '488-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 488-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '488-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 488-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '488-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 404-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
   '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 404-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 404-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 404-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 404-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 404-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 404-01 - CZ
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
+  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 404-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 404-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 404-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 015-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 015-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 015-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 015-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 015-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 244-02 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-02'),
+  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 244-02 - US
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-02'),
+  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 257-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '257-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 257-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '257-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 257-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '257-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 257-01 - IE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '257-01'),
+  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 257-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '257-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 257-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '257-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 033-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '033-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 167-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -21135,187 +20750,11 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 167-01 - DE
+-- 078-01 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - CZ
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - NL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  'c7fcd75a-704a-44da-aa6d-73cf8e5eff82'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - HR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  '488e860e-e4b5-4005-8de1-4f6ff8e50441'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - AL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - BG
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  'f9657d38-55a5-49f0-86da-85e6efbc3461'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 081-04 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '081-04'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
   'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
@@ -21333,6 +20772,39 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
+-- 078-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 078-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 078-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
 -- 078-01 - IE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
@@ -21344,12 +20816,12 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 078-01 - ES
+-- 078-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
   (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -21361,39 +20833,6 @@ INSERT INTO formulation_country (
 ) SELECT
   (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
   '488e860e-e4b5-4005-8de1-4f6ff8e50441'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 078-01 - AL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
-  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 078-01 - CA
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
-  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 078-01 - BG
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
-  'f9657d38-55a5-49f0-86da-85e6efbc3461'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -21421,17 +20860,6 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 078-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
 -- 078-01 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
@@ -21443,12 +20871,34 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 078-01 - RO
+-- 078-01 - AL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
   (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 078-01 - BG
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
+  'f9657d38-55a5-49f0-86da-85e6efbc3461'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 078-01 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
+  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -21465,716 +20915,1134 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 078-01 - FR
+-- 261-01 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 078-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '078-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 153-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 153-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 153-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 153-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 153-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 153-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 153-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 153-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '153-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
   'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 281-01 - CA
+-- 261-01 - SK
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '281-01'),
-  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 361-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 361-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 361-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 361-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 361-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
   'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 361-01 - ES
+-- 261-01 - RO
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 361-01 - HU
+-- 261-01 - HU
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
   '6e366651-b434-4770-b266-247c280829dd'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 361-01 - CZ
+-- 261-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
-  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 302-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '302-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 302-01 - IT
+-- 261-01 - BE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '302-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 302-01 - ES
+-- 261-01 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '302-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 302-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '302-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 246-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
   '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 246-01 - IT
+-- 261-01 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 246-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 246-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
   '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 246-01 - NL
+-- 321-01 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 321-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 321-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 321-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 321-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 321-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 321-01 - NL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
   'c7fcd75a-704a-44da-aa6d-73cf8e5eff82'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 246-01 - FR
+-- 094-01 - GR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 246-01 - IE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
-  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 246-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 246-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 257-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '257-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
   'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 257-01 - DE
+-- 094-01 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '257-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 094-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
   '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 257-01 - FR
+-- 094-01 - AL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '257-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
+  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 257-01 - IT
+-- 094-01 - BE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '257-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 257-01 - IE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '257-01'),
-  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 257-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '257-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 378-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 378-01 - IE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
-  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 378-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 378-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 378-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
   '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 378-01 - GB
+-- 094-01 - RS
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
+  '047aae25-ca57-425c-a0e2-a34675242789'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 094-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
   'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 378-01 - SK
+-- 094-01 - IT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 378-01 - PL
+-- 094-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 378-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 378-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 378-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 413-01 - DE
+-- 094-01 - IE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 413-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 413-01 - IE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-01'),
   '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 413-01 - HU
+-- 388-01 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 413-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 413-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 413-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
   '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 162-01 - PL
+-- 388-01 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 162-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 162-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
   '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 162-01 - FR
+-- 388-01 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 162-01 - SK
+-- 388-01 - IT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 162-01 - BE
+-- 388-01 - GB
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 162-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
   'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 179-01 - FR
+-- 388-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '179-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 179-01 - MK
+-- 388-01 - BE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '179-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 309-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 309-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 309-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 309-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 309-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 309-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 309-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 133-02 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 133-02 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 133-02 - IE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
+  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 133-02 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 133-02 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
+  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 133-02 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 133-02 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 133-02 - CZ
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
+  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 054-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 054-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 054-01 - HR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-01'),
+  '488e860e-e4b5-4005-8de1-4f6ff8e50441'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 054-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 054-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 054-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 492-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '492-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 492-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '492-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 492-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '492-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 492-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '492-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 049-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 049-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 049-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 049-01 - HR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
+  '488e860e-e4b5-4005-8de1-4f6ff8e50441'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 049-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 049-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 049-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 049-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 049-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 049-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 049-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 310-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '310-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 310-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '310-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 310-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '310-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 310-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '310-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 310-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '310-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 156-02 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 156-02 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 156-02 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 156-02 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 156-02 - AL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
+  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 156-02 - HR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
+  '488e860e-e4b5-4005-8de1-4f6ff8e50441'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 156-02 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 156-02 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 086-01 - AL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '086-01'),
+  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 086-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '086-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 286-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '286-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 286-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '286-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 286-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '286-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 286-01 - US
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '286-01'),
+  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 286-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '286-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - AL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - MK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
   '107159d6-d476-49c3-89f0-b2710676c571'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - BG
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  'f9657d38-55a5-49f0-86da-85e6efbc3461'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - NL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  'c7fcd75a-704a-44da-aa6d-73cf8e5eff82'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - IE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 004-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '004-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 179-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '179-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -22191,12 +22059,23 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 179-01 - ES
+-- 179-01 - GB
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
   (SELECT formulation_id FROM formulations WHERE formulation_code = '179-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 179-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '179-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -22235,947 +22114,914 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 179-01 - GB
+-- 179-01 - MK
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
   (SELECT formulation_id FROM formulations WHERE formulation_code = '179-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 158-03 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '158-03'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 158-03 - IE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '158-03'),
-  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 158-03 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '158-03'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 363-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 363-01 - NL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
-  'c7fcd75a-704a-44da-aa6d-73cf8e5eff82'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 363-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 363-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 363-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 363-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 363-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 363-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 363-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 363-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 411-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '411-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 411-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '411-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 411-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '411-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 411-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '411-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 411-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '411-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 411-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '411-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 090-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 090-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 090-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 090-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 090-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 090-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 090-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 090-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 090-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 090-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 055-02 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-02'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 022-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '022-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 416-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '416-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 416-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '416-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 416-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '416-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 416-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '416-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 009-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '009-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 009-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '009-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 009-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '009-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 009-01 - MK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '009-01'),
   '107159d6-d476-49c3-89f0-b2710676c571'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 009-01 - FR
+-- 164-01 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '009-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 150-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '150-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 150-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '150-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 150-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '150-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 150-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '150-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 150-01 - IE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '150-01'),
-  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 150-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '150-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
   'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 309-01 - PT
+-- 164-01 - IT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 309-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 309-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 309-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 309-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
   '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 309-01 - ES
+-- 164-01 - RO
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 309-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '309-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 398-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '398-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 398-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '398-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 398-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '398-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 398-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '398-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 398-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '398-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 457-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 457-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 457-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 457-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 457-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
   'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 457-01 - DE
+-- 164-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 457-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 229-01 - FR
+-- 164-01 - BE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '229-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 229-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '229-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 229-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '229-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 229-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '229-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
   '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 229-01 - GB
+-- 164-01 - SK
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '229-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 049-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 049-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 049-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 049-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 049-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 049-01 - HR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
-  '488e860e-e4b5-4005-8de1-4f6ff8e50441'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 049-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 049-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 049-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 049-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
   'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 049-01 - RO
+-- 164-01 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '049-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 492-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '492-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
   '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 492-01 - DE
+-- 164-01 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '492-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
   '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 492-01 - FR
+-- 414-01 - BE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '492-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '414-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 414-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '414-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 414-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '414-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 414-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '414-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 492-01 - GB
+-- 378-01 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '492-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 378-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 378-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 378-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 378-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
   'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 378-01 - IE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 378-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 378-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 378-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 378-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 378-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '378-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 312-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '312-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 312-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '312-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 312-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '312-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 312-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '312-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 301-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '301-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 301-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '301-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 301-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '301-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 301-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '301-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 430-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '430-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 430-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '430-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 430-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '430-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 430-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '430-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 291-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 291-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 291-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 291-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 291-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 291-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 291-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 291-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 291-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 291-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 149-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '149-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 149-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '149-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 149-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '149-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 149-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '149-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 149-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '149-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 036-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 036-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 036-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 036-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 036-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 036-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 036-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 036-01 - MK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '036-01'),
+  '107159d6-d476-49c3-89f0-b2710676c571'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 322-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 322-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 322-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 322-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 322-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 322-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 322-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '322-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 176-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 176-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 176-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 176-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 176-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 176-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 176-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '176-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 211-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 211-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 211-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 211-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 211-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 211-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 211-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 377-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '377-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 377-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '377-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 377-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '377-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -23203,23 +23049,12 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 377-01 - DE
+-- 377-01 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
   (SELECT formulation_id FROM formulations WHERE formulation_code = '377-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 377-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '377-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -23236,55 +23071,528 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 377-01 - ES
+-- 407-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '377-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 377-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '377-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 255-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '255-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 255-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '255-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '407-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 255-01 - ES
+-- 162-01 - BE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '255-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 162-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 162-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 162-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 162-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 162-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 162-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '162-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 372-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '372-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 372-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '372-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 372-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '372-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 372-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '372-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 372-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '372-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 372-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '372-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 139-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '139-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 139-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '139-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 139-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '139-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 139-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '139-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 256-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '256-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 256-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '256-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 256-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '256-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 365-01 - US
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '365-01'),
+  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 073-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 073-01 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
+  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 073-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 073-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 073-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 073-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 073-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 167-02 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-02'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 167-02 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-02'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 167-02 - IE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-02'),
+  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 167-02 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-02'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 167-02 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-02'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 167-02 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '167-02'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 233-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '233-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 233-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '233-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 233-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '233-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 303-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '303-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 303-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '303-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 303-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '303-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 303-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '303-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 368-01 - US
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '368-01'),
+  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 248-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '248-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 248-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '248-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 248-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '248-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 248-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '248-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 248-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '248-01'),
   'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
@@ -23302,518 +23610,67 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 248-01 - ES
+-- 306-01 - IT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '248-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 248-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '248-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 248-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '248-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 248-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '248-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 248-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '248-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 388-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '306-01'),
   '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 388-01 - ES
+-- 306-01 - HU
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 388-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 388-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 388-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 388-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 388-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '388-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 236-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '236-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 236-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '236-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 236-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '236-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 404-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 404-01 - CZ
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
-  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 404-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 404-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 404-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 404-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 404-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 404-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 404-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 404-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '404-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 001-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 001-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 001-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '306-01'),
   '6e366651-b434-4770-b266-247c280829dd'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 001-01 - AL
+-- 306-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
-  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 001-01 - RS
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
-  '047aae25-ca57-425c-a0e2-a34675242789'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 001-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 001-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 001-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 001-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 001-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '001-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '306-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 278-01 - US
+-- 306-01 - PT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '278-01'),
-  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 371-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '371-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '306-01'),
   '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 371-01 - PL
+-- 323-01 - RO
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '371-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 371-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '371-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '323-01'),
   'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 371-01 - IT
+-- 323-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '371-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 301-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '301-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '323-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 301-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '301-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 301-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '301-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 301-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '301-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 323-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '323-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 323-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '323-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 323-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '323-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -23830,12 +23687,12 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 323-01 - FR
+-- 323-01 - BE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
   (SELECT formulation_id FROM formulations WHERE formulation_code = '323-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -23863,165 +23720,1331 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 323-01 - RO
+-- 323-01 - IT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
   (SELECT formulation_id FROM formulations WHERE formulation_code = '323-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 133-02 - IE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
-  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 133-02 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 133-02 - CA
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
-  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 133-02 - CZ
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
-  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 133-02 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 133-02 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 133-02 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 133-02 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-02'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 226-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '226-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 226-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '226-01'),
   '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 226-01 - GR
+-- 323-01 - HU
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '226-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '323-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 226-01 - PL
+-- 133-04 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '226-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-04'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 133-04 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-04'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 133-03 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-03'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 044-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '044-01'),
   '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 226-01 - DE
+-- 044-01 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '226-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '044-01'),
   '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 226-01 - FR
+-- 044-01 - GB
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '226-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '044-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 308-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '308-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 308-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '308-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 308-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '308-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 308-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '308-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 308-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '308-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 236-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '236-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 236-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '236-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 236-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '236-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 009-01 - MK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '009-01'),
+  '107159d6-d476-49c3-89f0-b2710676c571'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 009-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '009-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 009-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '009-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 009-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '009-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 009-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '009-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 107-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 107-01 - IE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
+  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 107-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 107-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 107-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 107-01 - AL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
+  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 107-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '107-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 359-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 359-01 - CZ
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
+  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 359-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 359-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 359-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 359-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 359-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 359-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 320-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 320-01 - NL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
+  'c7fcd75a-704a-44da-aa6d-73cf8e5eff82'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 320-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 320-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 320-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 320-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 320-01 - CZ
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
+  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 320-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 320-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 320-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 320-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 320-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 413-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 413-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 413-01 - IE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
+  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 413-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 413-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 413-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 413-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '413-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 255-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '255-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 255-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '255-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 255-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '255-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 041-02 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 041-02 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 041-02 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 041-02 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 041-02 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 041-02 - CZ
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 041-02 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 041-02 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 041-02 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 041-02 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '041-02'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 411-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '411-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 411-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '411-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 411-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '411-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 411-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '411-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 411-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '411-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 411-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '411-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 223-01 - US
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '223-01'),
+  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 463-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '463-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 463-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '463-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 283-01 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '283-01'),
+  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 490-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '490-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 490-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '490-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 490-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '490-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 490-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '490-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 490-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '490-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 490-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '490-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 386-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '386-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 386-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '386-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 386-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '386-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 158-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '158-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 055-03 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-03'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 055-03 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-03'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 055-03 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-03'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 055-03 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-03'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 055-03 - AL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-03'),
+  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 398-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '398-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 398-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '398-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 398-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '398-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 398-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '398-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 398-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '398-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 416-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '416-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 416-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '416-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 416-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '416-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 416-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '416-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 363-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 363-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 363-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 363-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 363-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 363-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 363-01 - NL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
+  'c7fcd75a-704a-44da-aa6d-73cf8e5eff82'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 363-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 363-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 363-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '363-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 205-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '205-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 173-01 - US
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '173-01'),
+  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 173-01 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '173-01'),
+  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 432-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '432-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 432-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '432-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 432-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '432-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 432-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '432-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 015-02 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-02'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 015-02 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-02'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
@@ -24039,17 +25062,6 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 015-02 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-02'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
 -- 015-02 - RS
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
@@ -24061,11 +25073,671 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 015-02 - FR
+-- 163-01 - US
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-02'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '163-01'),
+  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 184-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '184-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 184-01 - CZ
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '184-01'),
+  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 184-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '184-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 184-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '184-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 184-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '184-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 184-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '184-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 361-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 361-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 361-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 361-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 361-01 - CZ
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
+  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 361-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 361-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 361-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '361-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 091-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '091-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 039-01 - MK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '039-01'),
+  '107159d6-d476-49c3-89f0-b2710676c571'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 039-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '039-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 055-02 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-02'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 382-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 382-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 382-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 382-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 382-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 382-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 382-01 - AL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 382-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 382-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '382-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 246-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 246-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 246-01 - NL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
+  'c7fcd75a-704a-44da-aa6d-73cf8e5eff82'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 246-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 246-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 246-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 246-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 246-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 246-01 - IE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '246-01'),
+  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 160-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '160-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 160-01 - SK
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '160-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 160-01 - IE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '160-01'),
+  '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 244-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 244-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 244-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 244-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 244-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-01'),
+  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 376-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '376-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 376-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '376-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 376-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '376-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 376-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '376-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 376-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '376-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 166-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '166-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 166-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '166-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 166-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '166-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 166-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '166-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 166-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '166-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 197-02 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '197-02'),
+  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 409-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '409-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 409-01 - BE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '409-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 409-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '409-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 409-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '409-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 409-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '409-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
@@ -24105,342 +25777,353 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 408-01 - PL
+-- 429-01 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '408-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 408-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '408-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
   '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 408-01 - FR
+-- 429-01 - BE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '408-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 408-01 - HU
+-- 429-01 - SK
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '408-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 429-01 - CZ
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
+  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 429-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 429-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 429-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
   '6e366651-b434-4770-b266-247c280829dd'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 408-01 - GB
+-- 429-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '408-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 194-02 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '194-02'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 194-02 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '194-02'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '429-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 283-01 - CA
+-- 304-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '283-01'),
-  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 071-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '071-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 071-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '071-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 211-01 - BE
+-- 304-01 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 211-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 211-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 211-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 211-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 211-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 211-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '211-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 409-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '409-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
   '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 409-01 - DE
+-- 304-01 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '409-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
   '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 409-01 - FR
+-- 304-01 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '409-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 409-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '409-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 409-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '409-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 065-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '065-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 065-01 - MK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '065-01'),
-  '107159d6-d476-49c3-89f0-b2710676c571'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 065-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '065-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 065-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '065-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
   'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 149-01 - IT
+-- 304-01 - IT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '149-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
   '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 149-01 - PT
+-- 304-01 - SK
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '149-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
+  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 304-01 - CZ
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '304-01'),
+  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 455-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '455-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 455-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '455-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 455-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '455-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 090-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 090-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 090-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 090-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 090-01 - RO
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 090-01 - PT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
   '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 149-01 - GB
+-- 090-01 - GB
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '149-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
   'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 149-01 - DE
+-- 090-01 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '149-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 090-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
   '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 149-01 - FR
+-- 090-01 - BE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '149-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '090-01'),
+  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 384-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '384-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 250-01 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '250-01'),
+  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 247-01 - US
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '247-01'),
+  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 247-01 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '247-01'),
+  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -24468,605 +26151,396 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 366-01 - US
+-- 263-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '366-01'),
-  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '263-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 160-01 - IE
+-- 263-01 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '160-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '263-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 194-02 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '194-02'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 194-02 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '194-02'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 158-03 - IE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '158-03'),
   '2ce3c5a6-c471-4eb5-b3c4-8564a9328a20'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 160-01 - GB
+-- 158-03 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '160-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 160-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '160-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 306-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '306-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 306-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '306-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 306-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '306-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 306-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '306-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '158-03'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 291-01 - GR
+-- 158-03 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 291-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 291-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 291-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 291-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 291-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '158-03'),
   'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 291-01 - HU
+-- 116-01 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 291-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 291-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 291-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '291-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 282-01 - US
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '282-01'),
-  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 368-01 - US
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '368-01'),
-  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 055-03 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-03'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '116-01'),
   '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 055-03 - FR
+-- 116-01 - SK
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-03'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 055-03 - AL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-03'),
-  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 055-03 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-03'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 055-03 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-03'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 414-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '414-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 414-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '414-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 414-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '414-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 414-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '414-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 164-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '116-01'),
   'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 164-01 - PL
+-- 116-01 - CZ
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 164-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 164-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 164-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 164-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 164-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 164-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '164-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 359-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 359-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 359-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 359-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 359-01 - CZ
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '116-01'),
   '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 359-01 - FR
+-- 116-01 - GB
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '116-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 116-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '116-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 359-01 - SK
+-- 178-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '178-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 359-01 - PL
+-- 178-01 - PL
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '359-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '178-01'),
   '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 261-01 - RO
+-- 071-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '071-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 261-01 - DE
+-- 071-01 - DE
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '071-01'),
   '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 261-01 - FR
+-- 457-01 - IT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 261-01 - SK
+-- 457-01 - RO
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 261-01 - PL
+-- 457-01 - HU
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 261-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 261-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 261-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '261-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
   '6e366651-b434-4770-b266-247c280829dd'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 178-02 - US
+-- 457-01 - GB
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '178-02'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 457-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 457-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 457-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '457-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 491-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '491-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 094-02 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-02'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 094-02 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-02'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 408-01 - HU
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '408-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 408-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '408-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 408-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '408-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 408-01 - PL
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '408-01'),
+  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 408-01 - DE
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '408-01'),
+  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 024-02 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '024-02'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 493-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '493-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 278-01 - US
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '278-01'),
   'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 178-02 - CA
+-- 144-02 - RO
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '178-02'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '144-02'),
+  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 285-01 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '285-01'),
   'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
@@ -25095,1205 +26569,6 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 321-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 321-01 - NL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
-  'c7fcd75a-704a-44da-aa6d-73cf8e5eff82'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 321-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 321-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 321-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 321-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 321-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '321-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 156-02 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 156-02 - HR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
-  '488e860e-e4b5-4005-8de1-4f6ff8e50441'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 156-02 - AL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
-  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 156-02 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 156-02 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 156-02 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 156-02 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 156-02 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '156-02'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 394-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '394-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 394-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '394-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 059-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '059-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 059-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '059-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 263-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '263-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 263-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '263-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 152-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '152-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 152-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '152-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 152-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '152-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 152-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '152-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 312-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '312-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 312-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '312-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 312-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '312-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 312-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '312-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 247-01 - CA
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '247-01'),
-  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 247-01 - US
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '247-01'),
-  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 320-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 320-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 320-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 320-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 320-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 320-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 320-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 320-01 - CZ
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
-  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 320-01 - NL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
-  'c7fcd75a-704a-44da-aa6d-73cf8e5eff82'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 320-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 320-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 320-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '320-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 086-01 - AL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '086-01'),
-  '83c9e80a-0b09-4882-b9e8-938e0f519599'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 086-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '086-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 205-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '205-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 373-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '373-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 373-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '373-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 373-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '373-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 373-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '373-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 373-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '373-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 039-01 - MK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '039-01'),
-  '107159d6-d476-49c3-89f0-b2710676c571'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 039-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '039-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 015-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 015-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 015-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 015-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 015-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '015-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 158-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '158-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 178-03 - US
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '178-03'),
-  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 094-02 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-02'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 094-02 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '094-02'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 493-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '493-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 073-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 073-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 073-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 073-01 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 073-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 073-01 - CA
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
-  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 073-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 308-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '308-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 308-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '308-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 308-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '308-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 308-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '308-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 308-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '308-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 360-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 360-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 360-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 360-01 - CZ
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
-  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 360-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 360-01 - SK
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 360-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '360-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 054-02 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-02'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 386-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '386-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 386-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '386-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 386-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '386-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 244-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 244-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 244-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 244-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 244-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 303-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '303-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 303-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '303-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 303-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '303-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 303-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '303-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 307-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '307-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 307-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '307-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 307-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '307-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 163-01 - US
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '163-01'),
-  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 277-02 - US
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '277-02'),
-  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 285-01 - CA
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '285-01'),
-  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 376-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '376-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 376-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '376-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 376-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '376-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 376-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '376-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 376-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '376-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 044-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '044-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 044-01 - PL
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '044-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 044-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '044-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
 -- 211-03 - CA
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
@@ -26305,99 +26580,44 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 173-01 - US
+-- 178-02 - US
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '173-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '178-02'),
   'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 173-01 - CA
+-- 178-02 - CA
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '173-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '178-02'),
   'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 244-02 - CA
+-- 366-01 - US
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-02'),
-  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 244-02 - US
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '244-02'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '366-01'),
   'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 250-01 - CA
+-- 264-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '250-01'),
-  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 432-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '432-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 432-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '432-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 432-01 - PT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '432-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 432-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '432-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '264-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
@@ -26437,243 +26657,78 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 264-01 - FR
+-- 039-02 - GB
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '264-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 372-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '372-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 372-01 - HU
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '372-01'),
-  '6e366651-b434-4770-b266-247c280829dd'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 372-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '372-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 372-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '372-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '039-02'),
   'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 372-01 - DE
+-- 292-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '372-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '292-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 372-01 - GR
+-- 277-02 - US
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '372-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 197-02 - CA
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '197-02'),
-  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 286-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '286-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 286-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '286-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 286-01 - GR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '286-01'),
-  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 286-01 - US
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '286-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '277-02'),
   'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 286-01 - PT
+-- 394-01 - IT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '286-01'),
-  '2bffd9b4-f7c2-43b7-ace4-6c63e49d719b'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 033-02 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '033-02'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 455-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '455-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 455-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '455-01'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 455-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '455-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '394-01'),
   '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 116-01 - GB
+-- 394-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '116-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 116-01 - DE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '116-01'),
-  '9589aa8e-433d-42a2-81ad-0f8fdb3fa188'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 116-01 - CZ
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '116-01'),
-  '7676793b-8377-4b1d-a6de-0dfb58473b51'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 116-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '116-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '394-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 116-01 - SK
+-- 280-01 - CA
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '116-01'),
-  'fe75e6fd-f679-4a76-99e0-19b630ff3c30'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '280-01'),
+  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 055-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-01'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -26690,78 +26745,78 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 024-02 - GB
+-- 281-01 - CA
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '024-02'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 488-01 - BE
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '488-01'),
-  '90a533f2-c42a-4c50-8dc5-43fa9caf25d8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 488-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '488-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 488-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '488-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 144-02 - RO
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '144-02'),
-  'a5c2bf27-ae3f-4c65-b36b-eac317b6d40f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 287-01 - CA
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '287-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '281-01'),
   'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 019-01 - GB
+-- 302-01 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '019-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '302-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 302-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '302-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 302-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '302-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 302-01 - GR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '302-01'),
+  'dd14240c-ba2d-4345-80ab-60ece91a4281'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 012-01 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '012-01'),
+  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 367-01 - US
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '367-01'),
+  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
@@ -26789,231 +26844,110 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 178-01 - PL
+-- 307-01 - ES
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '178-01'),
-  '80d4af63-e651-43ab-8da1-255a1b78c55f'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 178-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '178-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 039-02 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '039-02'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 091-01 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '091-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 365-01 - US
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '365-01'),
-  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 407-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '407-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 292-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '292-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 133-03 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-03'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 370-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '370-01'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 370-01 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '370-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '307-01'),
   'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 463-01 - FR
+-- 307-01 - IT
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '463-01'),
-  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 463-01 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '463-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '307-01'),
   '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 033-01 - GB
+-- 307-01 - FR
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '033-01'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 073-02 - GB
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-02'),
-  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 133-04 - IT
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-04'),
-  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 133-04 - ES
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '133-04'),
-  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 367-01 - US
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '367-01'),
-  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 223-01 - US
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '223-01'),
-  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
-ON CONFLICT DO NOTHING;
-
--- 491-01 - FR
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
-) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '491-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '307-01'),
   '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 277-01 - US
+-- 059-01 - HU
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '277-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '059-01'),
+  '6e366651-b434-4770-b266-247c280829dd'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 059-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '059-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 178-03 - US
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '178-03'),
   'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 055-01 - GB
+-- 282-01 - US
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '055-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '282-01'),
+  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 033-02 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '033-02'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 287-01 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '287-01'),
+  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 019-01 - GB
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '019-01'),
   'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
@@ -27031,28 +26965,11649 @@ INSERT INTO formulation_country (
   true
 ON CONFLICT DO NOTHING;
 
--- 012-01 - CA
+-- 073-02 - GB
 INSERT INTO formulation_country (
   formulation_id, country_id, country_status, country_readiness, is_active
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '012-01'),
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '073-02'),
+  'b7a2903a-cea6-47a2-9539-760c06a3b851'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 459-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '459-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 022-01 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '022-01'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 277-01 - US
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '277-01'),
+  'c9cd9ff6-7e65-406c-9848-513ef79ea730'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 370-01 - ES
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '370-01'),
+  'a1a30a5b-0994-47a4-9237-21eb00994ea5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 370-01 - IT
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '370-01'),
+  '4e649dae-cc4c-438a-ae05-9e6967e726e4'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 054-02 - FR
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '054-02'),
+  '07a7b21c-7d58-413f-936d-3e2b8a2a3db5'::uuid,
+  'Not yet evaluated',
+  'Nominated for Review',
+  true
+ON CONFLICT DO NOTHING;
+
+-- 077-01 - CA
+INSERT INTO formulation_country (
+  formulation_id, country_id, country_status, country_readiness, is_active
+) SELECT
+  (SELECT formulation_id FROM formulations WHERE formulation_code = '077-01'),
   'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
   'Not yet evaluated',
   'Nominated for Review',
   true
 ON CONFLICT DO NOTHING;
 
--- 280-01 - CA
-INSERT INTO formulation_country (
-  formulation_id, country_id, country_status, country_readiness, is_active
+-- ============================================================================
+
+-- SECTION 5: Primary Use Groups
+-- ============================================================================
+
+-- Create primary use groups for each formulation-country
+
+-- Primary Use Group: 323-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
 ) SELECT
-  (SELECT formulation_id FROM formulations WHERE formulation_code = '280-01'),
-  'bbdef5d0-64fb-4446-b058-0349878e00a8'::uuid,
-  'Not yet evaluated',
-  'Nominated for Review',
-  true
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '323-01'
+  AND c.country_code = 'BE'
 ON CONFLICT DO NOTHING;
 
+-- Primary Use Group: 323-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '323-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 323-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '323-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 323-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '323-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 323-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '323-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 323-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '323-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 429-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '429-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 429-01 - CZ
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '429-01'
+  AND c.country_code = 'CZ'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 429-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '429-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 429-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '429-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 429-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '429-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 429-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '429-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 320-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '320-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 320-01 - CZ
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '320-01'
+  AND c.country_code = 'CZ'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 320-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '320-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 320-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '320-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 320-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '320-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 320-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '320-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 320-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '320-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 320-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '320-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 359-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '359-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 359-01 - CZ
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '359-01'
+  AND c.country_code = 'CZ'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 359-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '359-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 359-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '359-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 359-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '359-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 359-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '359-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 321-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '321-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 321-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '321-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 321-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '321-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 321-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '321-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 321-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '321-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 361-01 - CZ
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '361-01'
+  AND c.country_code = 'CZ'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 361-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '361-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 361-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '361-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 361-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '361-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 361-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '361-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 361-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '361-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 360-01 - CZ
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '360-01'
+  AND c.country_code = 'CZ'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 360-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '360-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 360-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '360-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 360-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '360-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 360-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '360-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 386-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '386-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 386-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '386-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 430-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '430-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 430-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '430-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 430-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '430-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 414-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '414-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 414-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '414-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 404-01 - CZ
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '404-01'
+  AND c.country_code = 'CZ'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 404-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '404-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 404-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '404-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 404-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '404-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 404-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '404-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 404-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '404-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 404-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '404-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 301-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '301-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 301-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '301-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 306-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '306-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 306-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '306-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 394-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '394-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 116-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '116-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 176-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '176-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 176-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '176-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 176-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '176-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 176-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '176-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 176-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '176-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 416-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '416-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 307-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '307-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 463-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '463-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 408-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '408-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 408-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '408-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 408-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '408-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 363-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '363-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 363-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '363-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 304-01 - CZ
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '304-01'
+  AND c.country_code = 'CZ'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 304-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '304-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 226-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '226-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 309-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '309-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 308-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '308-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 308-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '308-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 308-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '308-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 243-01 - CZ
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '243-01'
+  AND c.country_code = 'CZ'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 243-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '243-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 302-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '302-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 413-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '413-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 413-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '413-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 413-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '413-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 192-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '192-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 407-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '407-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 457-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '457-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 488-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '488-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 322-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '322-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 322-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '322-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 322-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '322-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 322-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '322-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 229-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '229-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 229-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '229-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 490-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '490-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 490-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '490-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 211-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '211-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 211-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '211-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 211-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '211-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 211-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '211-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 178-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '178-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 320-01 - NL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '320-01'
+  AND c.country_code = 'NL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 321-01 - NL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '321-01'
+  AND c.country_code = 'NL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 363-01 - NL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '363-01'
+  AND c.country_code = 'NL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 490-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '490-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 370-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '370-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 370-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '370-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 044-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '044-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 413-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '413-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 307-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '307-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 413-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '413-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 192-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '192-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 116-01 - CZ
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '116-01'
+  AND c.country_code = 'CZ'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 408-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '408-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 363-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '363-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 226-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '226-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 226-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '226-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 166-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '166-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 243-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '243-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 243-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '243-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 243-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '243-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 243-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '243-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 243-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '243-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 398-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '398-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 398-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '398-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 455-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '455-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 455-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '455-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 457-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '457-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 457-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '457-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 432-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '432-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 432-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '432-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 488-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '488-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 184-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '184-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 184-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '184-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 305-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '305-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 305-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '305-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 305-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '305-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 304-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '304-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 304-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '304-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 309-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '309-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 309-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '309-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 309-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '309-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 308-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '308-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 303-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '303-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 302-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '302-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 302-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '302-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 310-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '310-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 310-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '310-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 413-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '413-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 413-01 - IE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '413-01'
+  AND c.country_code = 'IE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 303-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '303-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 493-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '493-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 398-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '398-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 398-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '398-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 455-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '455-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 457-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '457-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 457-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '457-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 457-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '457-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 432-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '432-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 432-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '432-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 488-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '488-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 184-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '184-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 305-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '305-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 305-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '305-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 304-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '304-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 304-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '304-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 309-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '309-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 309-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '309-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 309-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '309-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 308-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '308-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 303-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '303-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 302-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '302-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 310-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '310-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 310-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '310-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 310-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '310-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 229-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '229-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 398-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '398-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 394-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '394-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 116-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '116-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 116-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '116-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 457-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '457-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 416-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '416-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 416-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '416-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 463-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '463-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 408-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '408-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 243-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '243-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 184-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '184-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 305-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '305-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 304-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '304-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 226-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '226-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 301-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '301-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 301-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '301-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 166-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '166-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 166-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '166-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 306-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '306-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 306-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '306-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 303-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '303-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 176-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '176-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 176-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '176-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 307-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '307-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 322-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '322-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 320-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '320-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 363-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '363-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 363-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '363-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 363-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '363-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 363-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '363-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 363-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '363-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 404-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '404-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 490-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '490-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 211-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '211-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 044-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '044-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 414-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '414-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 404-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '404-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 490-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '490-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 044-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '044-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 323-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '323-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 361-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '361-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 429-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '429-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 322-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '322-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 360-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '360-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 320-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '320-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 359-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '359-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 363-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '363-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 229-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '229-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 490-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '490-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 211-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '211-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 323-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '323-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 361-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '361-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 429-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '429-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 430-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '430-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 414-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '414-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 360-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '360-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 320-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '320-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 359-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '359-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 321-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '321-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 404-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '404-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 386-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '386-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 384-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '384-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 291-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '291-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 291-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '291-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 291-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '291-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 291-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '291-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 291-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '291-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 291-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '291-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 291-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '291-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 291-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '291-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 292-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '292-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 149-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '149-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 149-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '149-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 149-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '149-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 286-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '286-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 286-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '286-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 286-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '286-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 286-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '286-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 376-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '376-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 376-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '376-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 376-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '376-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 376-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '376-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 376-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '376-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 373-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '373-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 373-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '373-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 373-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '373-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 373-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '373-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 378-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '378-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 377-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '377-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 377-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '377-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 377-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '377-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 388-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '388-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 388-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '388-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 388-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '388-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 388-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '388-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 388-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '388-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 388-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '388-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 411-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '411-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 411-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '411-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 411-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '411-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 411-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '411-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 409-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '409-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 409-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '409-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 409-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '409-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 409-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '409-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 411-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '411-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 388-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '388-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 411-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '411-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 409-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '409-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 378-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '378-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 378-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '378-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 378-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '378-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 378-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '378-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 378-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '378-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 378-01 - IE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '378-01'
+  AND c.country_code = 'IE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 378-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '378-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 378-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '378-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 378-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '378-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 377-01 - CZ
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '377-01'
+  AND c.country_code = 'CZ'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 377-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '377-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 377-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '377-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 435-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '435-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 435-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '435-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 435-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '435-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 149-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '149-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 149-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '149-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 305-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '305-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 226-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '226-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 226-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '226-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 178-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '178-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 166-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY33'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '166-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 166-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY37'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '166-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 116-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '116-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 059-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '059-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 059-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '059-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 081-04 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '081-04'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 081-04 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '081-04'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 492-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '492-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 312-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '312-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 371-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '371-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 312-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '312-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 312-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '312-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 371-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '371-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 371-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '371-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 312-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '312-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 371-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '371-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 049-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '049-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 049-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '049-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 049-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '049-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 094-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '094-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 094-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '094-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 094-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '094-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 094-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '094-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 015-02 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '015-02'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 015-02 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '015-02'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 081-04 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '081-04'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 081-04 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '081-04'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 492-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '492-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 492-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '492-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 492-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '492-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 015-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '015-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 048-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '048-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 048-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '048-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 048-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '048-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 033-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '033-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 041-02 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY33'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '041-02'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 033-02 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '033-02'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 148-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '148-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 144-02 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '144-02'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 039-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '039-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 160-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '160-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 139-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '139-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 139-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '139-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 139-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '139-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 139-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '139-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 055-02 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '055-02'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 055-03 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '055-03'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 073-02 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '073-02'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 091-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '091-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 156-02 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '156-02'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 156-02 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '156-02'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 156-02 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '156-02'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 065-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '065-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 065-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '065-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 019-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '019-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 246-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 246-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 246-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 246-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 065-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '065-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 065-01 - MK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '065-01'
+  AND c.country_code = 'MK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 022-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '022-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 246-01 - IE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'IE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 246-01 - NL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'NL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 264-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '264-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 264-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '264-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 264-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '264-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 264-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '264-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 152-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '152-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 152-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '152-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 024-02 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '024-02'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 037-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '037-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 158-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '158-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 256-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '256-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 256-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '256-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 257-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '257-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 257-01 - IE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '257-01'
+  AND c.country_code = 'IE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 257-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '257-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 257-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '257-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 261-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '261-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 261-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '261-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 261-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '261-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 261-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '261-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 261-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '261-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 372-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '372-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 372-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '372-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 257-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '257-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 257-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '257-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 372-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '372-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 372-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '372-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 372-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '372-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 071-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '071-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 071-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '071-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 152-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '152-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 152-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '152-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 133-04 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '133-04'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 133-04 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '133-04'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 194-02 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '194-02'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 194-02 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '194-02'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 037-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '037-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 037-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '037-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 037-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '037-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 037-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '037-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 037-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '037-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 037-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '037-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 037-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '037-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 256-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '256-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 261-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '261-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 261-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '261-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 205-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '205-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 263-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '263-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 263-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '263-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 187-02 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '187-02'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 090-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '090-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 090-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '090-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 090-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '090-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 090-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '090-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 090-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '090-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 090-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '090-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 090-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '090-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 054-02 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '054-02'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 153-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '153-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 153-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '153-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 153-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '153-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 153-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '153-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 153-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '153-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 153-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '153-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 148-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '148-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 459-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '459-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 094-02 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY25'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '094-02'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 094-02 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY25'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '094-02'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 039-01 - MK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '039-01'
+  AND c.country_code = 'MK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 039-02 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '039-02'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 133-03 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '133-03'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 233-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '233-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 233-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '233-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 233-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '233-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 236-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '236-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 236-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '236-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 236-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '236-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 009-01 - MK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '009-01'
+  AND c.country_code = 'MK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 009-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '009-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 009-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '009-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 009-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '009-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 009-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '009-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 034-01 - MK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '034-01'
+  AND c.country_code = 'MK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 034-01 - RS
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '034-01'
+  AND c.country_code = 'RS'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 034-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '034-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 034-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '034-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 034-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '034-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 086-01 - AL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '086-01'
+  AND c.country_code = 'AL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 086-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '086-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 090-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '090-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 090-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '090-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 153-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '153-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 054-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '054-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 054-01 - HR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '054-01'
+  AND c.country_code = 'HR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 054-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '054-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 054-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY25'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '054-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 054-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '054-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 054-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '054-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 164-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '164-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 164-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '164-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 164-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '164-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 164-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '164-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 164-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '164-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 164-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '164-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 164-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '164-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 164-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '164-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 036-01 - MK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '036-01'
+  AND c.country_code = 'MK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 064-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '064-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 064-01 - RS
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '064-01'
+  AND c.country_code = 'RS'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 179-01 - MK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '179-01'
+  AND c.country_code = 'MK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 248-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '248-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 248-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '248-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 248-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '248-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 248-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '248-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 248-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '248-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 248-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '248-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 244-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '244-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 244-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '244-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 244-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '244-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 244-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '244-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 244-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '244-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 255-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '255-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 255-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '255-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 255-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '255-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 150-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '150-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 158-03 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '158-03'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 162-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '162-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 156-02 - AL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '156-02'
+  AND c.country_code = 'AL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 156-02 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '156-02'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 156-02 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '156-02'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 156-02 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '156-02'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 167-02 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '167-02'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 167-02 - IE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '167-02'
+  AND c.country_code = 'IE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 167-02 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '167-02'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 167-02 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '167-02'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 167-02 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '167-02'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 167-02 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '167-02'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 167-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '167-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 167-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '167-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 167-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '167-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 167-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '167-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 179-01 - HR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '179-01'
+  AND c.country_code = 'HR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 156-02 - HR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '156-02'
+  AND c.country_code = 'HR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 041-02 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '041-02'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 150-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '150-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 150-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '150-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 036-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '036-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 158-03 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '158-03'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 162-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '162-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - BG
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'BG'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 055-03 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '055-03'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 382-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '382-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 064-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '064-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 179-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '179-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 041-02 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '041-02'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 150-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '150-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 162-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '162-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 001-01 - RS
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '001-01'
+  AND c.country_code = 'RS'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - MK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'MK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - NL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'NL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 382-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '382-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 036-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '036-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 036-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '036-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 001-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '001-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 179-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '179-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 179-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '179-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 150-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '150-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 162-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '162-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 160-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '160-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 179-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY25'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '179-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 179-01 - PT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '179-01'
+  AND c.country_code = 'PT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 179-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '179-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 041-02 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '041-02'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 150-01 - IE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '150-01'
+  AND c.country_code = 'IE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 158-03 - IE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '158-03'
+  AND c.country_code = 'IE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 162-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '162-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 162-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '162-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 162-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '162-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 160-01 - IE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '160-01'
+  AND c.country_code = 'IE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 382-01 - AL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '382-01'
+  AND c.country_code = 'AL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 382-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '382-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 382-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '382-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 107-01 - AL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '107-01'
+  AND c.country_code = 'AL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 107-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY25'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '107-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 107-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY25'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '107-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 001-01 - AL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '001-01'
+  AND c.country_code = 'AL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 001-01 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY25'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '001-01'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - AL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'AL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - GR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'GR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 055-03 - AL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '055-03'
+  AND c.country_code = 'AL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 064-01 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY25'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '064-01'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 382-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '382-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 382-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '382-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 382-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '382-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 382-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '382-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 107-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '107-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 107-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '107-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 107-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '107-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 107-01 - IE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '107-01'
+  AND c.country_code = 'IE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 036-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '036-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 036-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '036-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 036-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '036-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 036-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '036-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 001-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '001-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 001-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '001-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 001-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '001-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 001-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '001-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 001-01 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '001-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 001-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '001-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 004-01 - IE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '004-01'
+  AND c.country_code = 'IE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 055-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '055-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 055-03 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '055-03'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 055-03 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '055-03'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 064-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '064-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 064-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '064-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 064-01 - IE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '064-01'
+  AND c.country_code = 'IE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 064-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '064-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 090-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY27'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '090-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 041-02 - CZ
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '041-02'
+  AND c.country_code = 'CZ'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 041-02 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '041-02'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 041-02 - HU
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '041-02'
+  AND c.country_code = 'HU'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 041-02 - PL
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '041-02'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 041-02 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '041-02'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 041-02 - SK
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '041-02'
+  AND c.country_code = 'SK'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 153-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '153-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 034-01 - IT
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '034-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 246-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 246-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 261-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '261-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 372-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '372-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 012-01 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '012-01'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 211-03 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '211-03'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 491-01 - FR
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '491-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 282-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '282-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 178-02 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY25'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '178-02'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 178-03 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY25'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '178-03'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 173-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY24'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '173-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 223-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '223-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 247-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '247-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 244-02 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '244-02'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 279-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '279-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 278-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '278-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 277-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '277-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 477-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '477-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 277-02 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '277-02'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 163-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '163-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 365-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '365-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 366-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '366-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 367-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '367-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 368-01 - US
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '368-01'
+  AND c.country_code = 'US'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 378-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '378-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 377-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '377-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 291-01 - RO
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '291-01'
+  AND c.country_code = 'RO'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 291-01 - BE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '291-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 435-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '435-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 373-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '373-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 322-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '322-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 211-01 - GB
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '211-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 184-01 - CZ
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '184-01'
+  AND c.country_code = 'CZ'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 184-01 - DE
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '184-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 416-01 - ES
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '416-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 078-01 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '078-01'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 197-02 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '197-02'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 073-01 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '073-01'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 077-01 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '077-01'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 280-01 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '280-01'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 281-01 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '281-01'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 283-01 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '283-01'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 133-02 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '133-02'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 250-01 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '250-01'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 287-01 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY29'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '287-01'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- Primary Use Group: 285-01 - CA
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '001',
+  'Primary Use Group',
+  'Active',
+  'FY28'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '285-01'
+  AND c.country_code = 'CA'
+ON CONFLICT DO NOTHING;
+
+-- ============================================================================
+
+-- SECTION 6: Index-Specific Use Groups
+-- ============================================================================
+
+
+-- Index-Specific Use Group: 246-01 - FR - Index 181
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 181',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 246-01 - PL - Index 181
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 181',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 246-01 - BE - Index 181
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 181',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 246-01 - DE - Index 181
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 181',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 246-01 - IE - Index 181
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 181',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'IE'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 246-01 - NL - Index 181
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 181',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'NL'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 246-01 - GB - Index 181
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 181',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 246-01 - ES - Index 181
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 181',
+  'Active',
+  'FY32'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '246-01'
+  AND c.country_code = 'ES'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 049-01 - DE - Index 337
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 337',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '049-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 049-01 - FR - Index 337
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 337',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '049-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 049-01 - PL - Index 337
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 337',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '049-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 015-01 - DE - Index 345
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 345',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '015-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 015-02 - FR - Index 339
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 339',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '015-02'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 015-02 - GB - Index 339
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 339',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '015-02'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 081-04 - GB - Index 340
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 340',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '081-04'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 081-04 - PL - Index 340
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 340',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '081-04'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 081-04 - DE - Index 340
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 340',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '081-04'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 081-04 - FR - Index 340
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 340',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '081-04'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 229-01 - BE - Index 271
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 271',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '229-01'
+  AND c.country_code = 'BE'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 229-01 - IT - Index 271
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 271',
+  'Active',
+  'FY31'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '229-01'
+  AND c.country_code = 'IT'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 229-01 - GB - Index 271
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 271',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '229-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 229-01 - FR - Index 271
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 271',
+  'Active',
+  'FY30'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '229-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 094-01 - DE - Index 338
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 338',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '094-01'
+  AND c.country_code = 'DE'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 094-01 - FR - Index 338
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 338',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '094-01'
+  AND c.country_code = 'FR'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 094-01 - GB - Index 338
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 338',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '094-01'
+  AND c.country_code = 'GB'
+ON CONFLICT DO NOTHING;
+
+-- Index-Specific Use Group: 094-01 - PL - Index 338
+INSERT INTO formulation_country_use_group (
+  formulation_country_id, use_group_variant, use_group_name,
+  use_group_status, target_market_entry_fy
+) SELECT
+  fc.formulation_country_id,
+  '002',
+  'Index 338',
+  'Active',
+  'FY26'
+FROM formulation_country fc
+JOIN formulations f ON f.formulation_id = fc.formulation_id
+JOIN countries c ON c.country_id = fc.country_id
+WHERE f.formulation_code = '094-01'
+  AND c.country_code = 'PL'
+ON CONFLICT DO NOTHING;
 -- ============================================================================
 
 

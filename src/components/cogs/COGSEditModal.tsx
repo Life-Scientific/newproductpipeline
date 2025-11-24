@@ -314,7 +314,7 @@ export function COGSEditModal({
           ? `COGS updated successfully (${changedCells.size} cells modified)`
           : "COGS created successfully";
         
-        if (isEditMode && result.data?.business_cases_updated) {
+        if (isEditMode && result.data && 'business_cases_updated' in result.data && result.data.business_cases_updated) {
           toast({
             title: "Success",
             description: `${successMsg}. ${result.data.business_cases_updated} business case group(s) updated.`,

@@ -165,9 +165,9 @@ export function PipelineTrackerDashboard({
     const filtered = enrichedFormulations.filter(f => {
       const matchesSearch = (
         (f.formulation_code?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-        (f.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
+        (("formulation_name" in f ? (f as any).formulation_name : null)?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
       );
-      const matchesStatus = statusFilter === "all" || f.formulation_status === statusFilter;
+      const matchesStatus = statusFilter === "all" || ("formulation_status" in f ? (f as any).formulation_status === statusFilter : false);
       return matchesSearch && matchesStatus;
     });
 
@@ -188,7 +188,7 @@ export function PipelineTrackerDashboard({
           comparison = a.stats.countryCount - b.stats.countryCount;
           break;
         case "status":
-          comparison = (a.formulation_status || "").localeCompare(b.formulation_status || "");
+          comparison = (("formulation_status" in a ? (a as any).formulation_status : "") || "").localeCompare(("formulation_status" in b ? (b as any).formulation_status : "") || "");
           break;
       }
       
@@ -406,14 +406,14 @@ export function PipelineTrackerDashboard({
                         <TableCell className="font-medium">
                           <div className="flex flex-col">
                             <span className="font-semibold text-sm">{formulation.formulation_code}</span>
-                            <span className="text-xs text-muted-foreground truncate max-w-[160px]" title={formulation.product_name || ""}>
-                              {formulation.product_name}
+                            <span className="text-xs text-muted-foreground truncate max-w-[160px]" title={("formulation_name" in formulation ? (formulation as any).formulation_name : formulation.formulation_code) || ""}>
+                              {"formulation_name" in formulation ? (formulation as any).formulation_name : formulation.formulation_code}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={getStatusVariant(formulation.formulation_status, 'formulation')} className="text-xs">
-                            {formulation.formulation_status}
+                          <Badge variant={getStatusVariant(("formulation_status" in formulation ? (formulation as any).formulation_status : null) || null, 'formulation')} className="text-xs">
+                            {"formulation_status" in formulation ? (formulation as any).formulation_status : null}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -515,4 +515,5 @@ export function PipelineTrackerDashboard({
     </div>
   );
 }
+
 

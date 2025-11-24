@@ -9,8 +9,8 @@ export default async function UseGroupsPage() {
 
   // Calculate summary statistics
   const totalUseGroups = useGroups.length;
-  const approvedUseGroups = useGroups.filter((ug) => ug.registration_status === "Approved").length;
-  const submittedUseGroups = useGroups.filter((ug) => ug.registration_status === "Submitted").length;
+  const approvedUseGroups = useGroups.filter((ug) => ug.use_group_status === "Approved").length;
+  const submittedUseGroups = useGroups.filter((ug) => ug.use_group_status === "Submitted").length;
   const uniqueFormulations = new Set(useGroups.map((ug) => ug.formulation_code).filter(Boolean)).size;
   const uniqueCountries = new Set(useGroups.map((ug) => ug.country_name).filter(Boolean)).size;
 

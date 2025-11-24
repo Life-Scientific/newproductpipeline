@@ -54,10 +54,10 @@ export default async function ActiveIngredientDetailPage({
   // Calculate statistics
   const totalFormulations = formulations.length;
   const selectedFormulations = formulations.filter(
-    (fi) => fi.formulations?.formulation_status === "Selected"
+    (fi: any) => fi.formulations?.formulation_status === "Selected"
   ).length;
   const monitoringFormulations = formulations.filter(
-    (fi) => fi.formulations?.formulation_status === "Being Monitored"
+    (fi: any) => fi.formulations?.formulation_status === "Being Monitored"
   ).length;
 
   return (
@@ -145,7 +145,7 @@ export default async function ActiveIngredientDetailPage({
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">{suppliers.length}</div>
               <p className="text-xs text-muted-foreground">
-                {suppliers.filter((s) => s.is_primary).length} primary
+                {suppliers.filter((s: any) => s.is_primary).length} primary
               </p>
             </CardContent>
           </Card>
@@ -267,7 +267,7 @@ export default async function ActiveIngredientDetailPage({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {formulations.map((fi) => {
+                        {formulations.map((fi: any) => {
                           const formulation = fi.formulations;
                           if (!formulation) return null;
                           
@@ -352,7 +352,7 @@ export default async function ActiveIngredientDetailPage({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {suppliers.map((is) => {
+                        {suppliers.map((is: any) => {
                           const supplier = is.suppliers;
                           if (!supplier) return null;
                           

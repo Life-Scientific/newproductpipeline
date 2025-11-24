@@ -69,15 +69,15 @@ export function FormulationCountryForm({
   const [formData, setFormData] = useState({
     formulation_id: formulationCountry?.formulation_id || defaultFormulationId || "",
     country_id: formulationCountry?.country_id || defaultCountryId || "",
-    registration_pathway: formulationCountry?.registration_pathway || "",
+    likely_registration_pathway: formulationCountry?.likely_registration_pathway || "",
     registration_status: formulationCountry?.registration_status || "",
     target_market_entry_fy: formulationCountry?.target_market_entry_fy || "",
-    emd: formulationCountry?.emd || "",
+    emd: formulationCountry?.earliest_market_entry_date || "",
     keyedin_project_ids: formulationCountry?.keyedin_project_ids || "",
     is_novel: formulationCountry?.is_novel || false,
     is_eu_approved_formulation: formulationCountry?.is_eu_approved_formulation || false,
-    is_in_active_portfolio: formulationCountry?.is_in_active_portfolio || false,
-    has_approval: formulationCountry?.has_approval || false,
+    // is_in_active_portfolio: removed from schema
+    country_status: formulationCountry?.country_status || false,
   });
 
   useEffect(() => {
@@ -212,11 +212,11 @@ export function FormulationCountryForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="registration_pathway">Registration Pathway</Label>
+              <Label htmlFor="likely_registration_pathway">Registration Pathway</Label>
               <Select
-                value={formData.registration_pathway || "__none__"}
+                value={formData.likely_registration_pathway || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, registration_pathway: value === "__none__" ? "" : value })
+                  setFormData({ ...formData, likely_registration_pathway: value === "__none__" ? "" : value })
                 }
               >
                 <SelectTrigger>
@@ -272,7 +272,7 @@ export function FormulationCountryForm({
               <Input
                 id="emd"
                 type="date"
-                value={formData.emd ? formData.emd.split("T")[0] : ""}
+                value={formData.earliest_market_entry_date ? formData.earliest_market_entry_date.split("T")[0] : ""}
                 onChange={(e) => setFormData({ ...formData, emd: e.target.value })}
               />
             </div>
@@ -308,23 +308,14 @@ export function FormulationCountryForm({
               />
               <Label htmlFor="is_eu_approved_formulation">EU Approved Formulation</Label>
             </div>
+            {/* In Active Portfolio field removed from schema */}
             <div className="flex items-center space-x-2">
               <Switch
-                id="is_in_active_portfolio"
-                checked={formData.is_in_active_portfolio}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, is_in_active_portfolio: checked })
-                }
+                id="country_status"
+                checked={formData.country_status}
+                onCheckedChange={(checked) => setFormData({ ...formData, country_status: checked })}
               />
-              <Label htmlFor="is_in_active_portfolio">In Active Portfolio</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="has_approval"
-                checked={formData.has_approval}
-                onCheckedChange={(checked) => setFormData({ ...formData, has_approval: checked })}
-              />
-              <Label htmlFor="has_approval">Has Approval</Label>
+              <Label htmlFor="country_status">Has Approval</Label>
             </div>
           </div>
 

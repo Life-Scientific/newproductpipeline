@@ -9,9 +9,9 @@ This document explains what happens when you run the final import script. The im
 - The Excel had a different numbering system that wasn't brought over - we only kept the Index numbers
 - Index numbers are preserved in comments throughout the SQL files so relationships can be traced
 
-## What Gets Imported (4 Sequential Files)
+## What Gets Imported (3 Sequential Files)
 
-### Part 1: Foundations (27,059 lines)
+### Part 1: Base Code Registry & Formulations (~1.07 MB)
 **What it does:**
 1. **Base Code Registry Updates**
    - Updates the `base_code_registry` table with next variant numbers
@@ -50,7 +50,7 @@ SELECT (SELECT formulation_id FROM formulations WHERE formulation_code = '323-01
        'some-uuid-here'::uuid, 500, 'g/L', 'Active';
 ```
 
-### Part 2: Geographic & Use Group Setup (12,242 lines)
+### Part 2: Business Cases (~2.23 MB - the biggest file!)
 **What it does:**
 1. **Formulation-Country Links**
    - Creates entries in `formulation_country` table
@@ -64,6 +64,18 @@ SELECT (SELECT formulation_id FROM formulations WHERE formulation_code = '323-01
    - **Relationship preserved:** Links via formulation code + country code
    - Example: `323-01` in `BE` gets a primary use group
 
+3. **Business Case Groups**
+   - Creates business cases with 10 years of projections (Year 1 through Year 10)
+   - Each business case group is identified by:
+     - A UUID (e.g., `2bf77cd9-d17a-4e64-bd25-a4d0e09cb654`)
+     - Index number + Country (preserved in comments)
+   - **Relationship preserved:** Comments show `-- Business Case Group: Index 257, Country BE`
+   - Each year gets its own business case record with volume, NSP, COGS, etc.
+
+4. **Missing Years Handling**
+   - If a business case group is missing years (e.g., only has Years 2-5), missing years are filled with zeros
+   - This ensures all business case groups have complete 10-year projections
+
 **Example from Part 2:**
 ```
 -- Primary Use Group: 323-01 - BE
@@ -73,37 +85,16 @@ FROM formulation_country fc
 JOIN formulations f ON f.formulation_id = fc.formulation_id
 JOIN countries c ON c.country_id = fc.country_id
 WHERE f.formulation_code = '323-01' AND c.country_code = 'BE';
-```
 
-### Part 3: Business Cases (117,373 lines - the biggest file!)
-**What it does:**
-1. **Business Case Groups**
-   - Creates business cases with 10 years of projections (Year 1 through Year 10)
-   - Each business case group is identified by:
-     - A UUID (e.g., `2bf77cd9-d17a-4e64-bd25-a4d0e09cb654`)
-     - Index number + Country (preserved in comments)
-   - **Relationship preserved:** Comments show `-- Business Case Group: Index 257, Country BE`
-   - Each year gets its own business case record with volume, NSP, COGS, etc.
-
-2. **Missing Years Handling**
-   - If a business case group is missing years (e.g., only has Years 2-5), missing years are filled with zeros
-   - This ensures all business case groups have complete 10-year projections
-
-**Example from Part 3:**
-```
 -- Business Case Group: Index 257, Country BE
 -- Group ID: 2bf77cd9-d17a-4e64-bd25-a4d0e09cb654
 -- Year 1
 INSERT INTO business_case (business_case_group_id, year_offset, volume, nsp, ...)
 VALUES ('2bf77cd9-d17a-4e64-bd25-a4d0e09cb654'::uuid, 1, 14000, 0, ...);
-
--- Year 2
-INSERT INTO business_case (business_case_group_id, year_offset, volume, nsp, ...)
-VALUES ('2bf77cd9-d17a-4e64-bd25-a4d0e09cb654'::uuid, 2, 14000, 0, ...);
--- ... continues for Years 3-10
+-- ... continues for Years 2-10
 ```
 
-### Part 4: Final Linking (13,076 lines)
+### Part 3: Business Case Junction Entries (~0.54 MB)
 **What it does:**
 1. **Business Case → Use Group Links**
    - Links all business cases to their corresponding use groups
@@ -111,7 +102,7 @@ VALUES ('2bf77cd9-d17a-4e64-bd25-a4d0e09cb654'::uuid, 2, 14000, 0, ...);
    - **Relationship preserved:** Comments show `-- Junction: Index 257, Country BE → 323-01`
    - All 10 years of business cases get linked to the same use group
 
-**Example from Part 4:**
+**Example from Part 3:**
 ```
 -- Junction: Index 257, Country BE → 323-01
 INSERT INTO business_case_use_groups (business_case_id, formulation_country_use_group_id)
@@ -158,7 +149,7 @@ Here's how one Index from Excel maps through the entire system:
 
 ## What Gets Preserved
 
-✅ **Index Numbers** - Preserved in SQL comments throughout all 4 files
+✅ **Index Numbers** - Preserved in SQL comments throughout all 3 files
 ✅ **Formulation Codes** - Used to link everything together
 ✅ **Country Codes** - Used to link formulations to countries
 ✅ **Ingredient Names** - Mapped to ingredient UUIDs from Supabase
@@ -186,13 +177,13 @@ Here's how one Index from Excel maps through the entire system:
 
 ## Import Statistics
 
-Based on the import log:
+Based on the import log (`import_uuid_summary.csv`):
 - **329 formulations** created/updated
 - **720 formulation-country** relationships
 - **7,200 business cases** (720 groups × 10 years)
 - **40 duplicate Index numbers** consolidated (kept highest Index)
 - **2 conflicts resolved** (different ingredients/concentrations)
-- **45 missing years** filled with zeros
+- **219 missing years** filled with zeros
 
 ## Running the Import
 
@@ -202,12 +193,11 @@ npx tsx scripts/import-final-data.ts
 
 The script will:
 1. Connect to Supabase
-2. Execute Part 1 (foundations)
-3. Execute Part 2 (geographic & use groups)
-4. Execute Part 3 (business cases)
-5. Execute Part 4 (final linking)
-6. Report success/failure for each file
-7. Show summary statistics
+2. Execute Part 1 (base code registry & formulations)
+3. Execute Part 2 (business cases - includes geographic setup, use groups, and business case data)
+4. Execute Part 3 (business case junction entries)
+5. Report success/failure for each file
+6. Show summary statistics
 
 If any file fails, the script stops and reports the error. Previous files remain imported (they succeeded).
 

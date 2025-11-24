@@ -44,9 +44,6 @@ async function inspectTriggers() {
       try {
         const { data, error } = await supabase.rpc("exec_sql", { 
           sql_query: statement 
-        }).catch(() => {
-          // If exec_sql doesn't exist, try direct query
-          return { data: null, error: { message: "Need to use direct SQL connection" } };
         });
 
         if (error) {

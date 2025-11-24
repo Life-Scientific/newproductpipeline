@@ -189,7 +189,7 @@ export function FormulationComparison({ formulations }: FormulationComparisonPro
     const data = comparisonData.get(formulationId);
     if (!data || !data.countries || data.countries.length === 0) return null;
     const emds = data.countries
-      .map((c: any) => c.emd)
+      .map((c: any) => c.earliest_market_entry_date)
       .filter((emd: any) => emd)
       .map((emd: string) => new Date(emd))
       .sort((a, b) => a.getTime() - b.getTime());
@@ -268,7 +268,7 @@ export function FormulationComparison({ formulations }: FormulationComparisonPro
     const data = comparisonData.get(formulationId);
     if (!data || !data.countries) return [];
     const pathways = new Set(
-      data.countries.map((c: any) => c.registration_pathway).filter(Boolean)
+      data.countries.map((c: any) => c.likely_registration_pathway).filter(Boolean)
     );
     return Array.from(pathways);
   };

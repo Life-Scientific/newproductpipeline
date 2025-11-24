@@ -234,7 +234,7 @@ export function FormulationTreeView({
                                       {bc.display_name || bc.business_case_name || "Business Case"}
                                     </div>
                                     <div className="text-xs text-muted-foreground">
-                                      {bc.fiscal_year} • Y{bc.year_offset} • {bc.scenario_name || "Base"}
+                                      {bc.fiscal_year} • Y{bc.year_offset}
                                     </div>
                                   </div>
                                   <div className="text-right flex-shrink-0">
@@ -359,7 +359,7 @@ export function FormulationTreeView({
                                                       {bc.display_name || bc.business_case_name || "Business Case"}
                                                     </div>
                                                     <div className="text-xs text-muted-foreground">
-                                                      {bc.fiscal_year} • Y{bc.year_offset} • {bc.scenario_name || "Base"}
+                                                      {bc.fiscal_year} • Y{bc.year_offset}
                                                     </div>
                                                   </div>
                                                   <div className="text-right flex-shrink-0">

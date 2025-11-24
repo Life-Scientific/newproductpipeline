@@ -14,7 +14,9 @@ import { X } from "lucide-react";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { getFormulationsAction, getCountriesAction } from "@/lib/actions/business-cases";
 import { useSupabase } from "@/hooks/use-supabase";
-import type { Formulation, Country } from "@/lib/supabase/database.types";
+import type { Database } from "@/lib/supabase/database.types";
+type Formulation = Database["public"]["Tables"]["formulations"]["Row"] | Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type Country = Database["public"]["Tables"]["countries"]["Row"];
 
 interface BusinessCaseFiltersProps {
   onFilterChange: (filters: {
@@ -85,7 +87,7 @@ export function BusinessCaseFilters({ onFilterChange }: BusinessCaseFiltersProps
           return;
         }
 
-        const fcIds = fcData.map(fc => fc.formulation_country_id).filter(Boolean) as string[];
+        const fcIds = (fcData as any[]).map((fc: any) => fc.formulation_country_id).filter(Boolean) as string[];
 
         // Get use groups for these formulation_country_ids
         return supabase
@@ -93,30 +95,32 @@ export function BusinessCaseFilters({ onFilterChange }: BusinessCaseFiltersProps
           .select("formulation_country_use_group_id, use_group_name, use_group_variant")
           .in("formulation_country_id", fcIds)
           .eq("is_active", true)
-          .order("use_group_variant");
+          .order("use_group_variant") as any;
       })
-      .then(({ data: useGroups, error: ugError }) => {
-        if (ugError) {
-          console.error("Failed to load use groups:", ugError);
-          setUseGroupOptions([]);
-          return;
-        }
+      .then(async (result: any) => {
+        try {
+          const { data: useGroups, error: ugError } = result || { data: null, error: null };
+          if (ugError) {
+            console.error("Failed to load use groups:", ugError);
+            setUseGroupOptions([]);
+            return;
+          }
 
-        if (useGroups) {
-          const options: MultiSelectOption[] = useGroups.map((ug) => ({
-            value: ug.formulation_country_use_group_id,
-            label: ug.use_group_name
-              ? `${ug.use_group_variant} - ${ug.use_group_name}`
-              : ug.use_group_variant,
-          }));
-          setUseGroupOptions(options);
-        } else {
+          if (useGroups) {
+            const options: MultiSelectOption[] = (useGroups as any[]).map((ug: any) => ({
+              value: ug.formulation_country_use_group_id,
+              label: ug.use_group_name
+                ? `${ug.use_group_variant} - ${ug.use_group_name}`
+                : ug.use_group_variant,
+            }));
+            setUseGroupOptions(options);
+          } else {
+            setUseGroupOptions([]);
+          }
+        } catch (error) {
+          console.error("Failed to load use groups:", error);
           setUseGroupOptions([]);
         }
-      })
-      .catch((error) => {
-        console.error("Failed to load use groups:", error);
-        setUseGroupOptions([]);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.formulationIds, filters.countryIds]); // supabase is stable singleton
@@ -172,8 +176,8 @@ export function BusinessCaseFilters({ onFilterChange }: BusinessCaseFiltersProps
           <Label>Formulation</Label>
           <MultiSelect
             options={formulations.map((f) => ({
-              value: f.formulation_id,
-              label: f.product_name || f.formulation_code || f.formulation_id,
+              value: f.formulation_id || "",
+              label: ("formulation_name" in f ? f.formulation_name : null) || f.formulation_code || f.formulation_id || "",
             }))}
             selected={filters.formulationIds}
             onChange={(selected) => handleFilterChange("formulationIds", selected)}

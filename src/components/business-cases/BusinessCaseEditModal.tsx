@@ -7,27 +7,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { updateBusinessCaseGroupAction, getBusinessCaseGroupAction } from "@/lib/actions/business-cases";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getCurrencySymbol } from "@/lib/utils/currency";
+import type { BusinessCaseYearData } from "@/lib/db/types";
 
-export interface BusinessCaseYearData {
-  business_case_id: string;
-  business_case_group_id: string;
-  year_offset: number;
-  fiscal_year: string | null; // Calculated from effective_start_fiscal_year + year_offset
+// Re-export for backward compatibility
+export type { BusinessCaseYearData };
+
+interface BusinessCaseYearDataExtended extends BusinessCaseYearData {
   target_market_entry_fy: string | null; // Original target market entry from use group
   effective_start_fiscal_year: string | null; // Effective start fiscal year at creation time (preserves context)
-  volume: number | null;
-  nsp: number | null;
-  cogs_per_unit: number | null;
-  total_revenue: number | null;
-  total_cogs: number | null;
-  total_margin: number | null;
-  margin_percent: number | null;
-  formulation_name: string | null;
-  uom: string | null;
-  country_name: string | null;
-  currency_code: string | null;
-  use_group_name: string | null;
-  use_group_variant: string | null;
 }
 
 interface BusinessCaseEditModalProps {
@@ -43,7 +30,7 @@ export function BusinessCaseEditModal({
 }: BusinessCaseEditModalProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [yearData, setYearData] = useState<BusinessCaseYearData[]>([]);
+  const [yearData, setYearData] = useState<BusinessCaseYearDataExtended[]>([]);
   const [originalValues, setOriginalValues] = useState<Record<number, { volume: number | null; nsp: number | null }>>({});
   const [changedCells, setChangedCells] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -64,7 +51,7 @@ export function BusinessCaseEditModal({
             return;
           }
           if (result.data) {
-            setYearData(result.data);
+            setYearData(result.data as BusinessCaseYearDataExtended[]);
             // Store original values for change tracking
             const originals: Record<number, { volume: number | null; nsp: number | null }> = {};
             result.data.forEach((year) => {

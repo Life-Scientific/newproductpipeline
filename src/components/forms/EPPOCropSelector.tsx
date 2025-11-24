@@ -79,7 +79,7 @@ export function EPPOCropSelector({ formulationId, onUpdate }: EPPOCropSelectorPr
 
   const performSearch = async () => {
     const result = await searchEPPOCodes({
-      searchTerm,
+      search: searchTerm,
       classification: "crop",
       limit: 50,
     });
@@ -131,10 +131,7 @@ export function EPPOCropSelector({ formulationId, onUpdate }: EPPOCropSelectorPr
 
   const handleRemove = async (eppoCodeId: string) => {
     startTransition(async () => {
-      const result = await removeFormulationCrop({
-        formulationId,
-        eppoCodeId,
-      });
+      const result = await removeFormulationCrop(formulationId, eppoCodeId);
 
       if (result.error) {
         toast({

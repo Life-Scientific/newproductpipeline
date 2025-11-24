@@ -149,18 +149,18 @@ export default async function UseGroupDetailPage({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              {useGroup.registration_status ? (
+              {useGroup.use_group_status ? (
                 <Badge
                   variant={
-                    useGroup.registration_status === "Approved"
+                    useGroup.use_group_status === "Approved"
                       ? "default"
-                      : useGroup.registration_status === "Submitted"
+                      : useGroup.use_group_status === "Submitted"
                       ? "secondary"
                       : "outline"
                   }
                   className="text-sm"
                 >
-                  {useGroup.registration_status}
+                  {useGroup.use_group_status}
                 </Badge>
               ) : (
                 <p className="text-sm text-muted-foreground">Not Started</p>
@@ -263,82 +263,66 @@ export default async function UseGroupDetailPage({
               <div className="space-y-3">
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-muted-foreground">Registration Status</p>
-                  {useGroup.registration_status ? (
+                  {useGroup.use_group_status ? (
                     <Badge
                       variant={
-                        useGroup.registration_status === "Approved"
+                        useGroup.use_group_status === "Approved"
                           ? "default"
-                          : useGroup.registration_status === "Submitted"
+                          : useGroup.use_group_status === "Submitted"
                           ? "secondary"
                           : "outline"
                       }
                     >
-                      {useGroup.registration_status}
+                      {useGroup.use_group_status}
                     </Badge>
                   ) : (
                     <p className="text-sm">Not Started</p>
                   )}
                 </div>
 
-                {useGroup.earliest_submission_date && (
+                {useGroup.earliest_actual_submission_date && (
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">Earliest Submission Date</p>
                     <p className="text-sm flex items-center gap-2">
                       <Calendar className="h-3 w-3" />
-                      {new Date(useGroup.earliest_submission_date).toLocaleDateString()}
+                      {new Date(useGroup.earliest_actual_submission_date).toLocaleDateString()}
                     </p>
                   </div>
                 )}
 
-                {useGroup.actual_submission_date && (
+                {useGroup.earliest_actual_submission_date && (
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">Actual Submission Date</p>
                     <p className="text-sm flex items-center gap-2">
                       <Calendar className="h-3 w-3" />
-                      {new Date(useGroup.actual_submission_date).toLocaleDateString()}
+                      {new Date(useGroup.earliest_actual_submission_date).toLocaleDateString()}
                     </p>
                   </div>
                 )}
 
-                {useGroup.earliest_approval_date && (
+                {useGroup.earliest_actual_approval_date && (
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">Earliest Approval Date</p>
                     <p className="text-sm flex items-center gap-2">
                       <Calendar className="h-3 w-3" />
-                      {new Date(useGroup.earliest_approval_date).toLocaleDateString()}
+                      {new Date(useGroup.earliest_actual_approval_date).toLocaleDateString()}
                     </p>
                   </div>
                 )}
 
-                {useGroup.actual_approval_date && (
+                {useGroup.earliest_actual_approval_date && (
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">Actual Approval Date</p>
                     <p className="text-sm flex items-center gap-2">
                       <CheckCircle2 className="h-3 w-3 text-green-600" />
-                      {new Date(useGroup.actual_approval_date).toLocaleDateString()}
+                      {new Date(useGroup.earliest_actual_approval_date).toLocaleDateString()}
                     </p>
                   </div>
                 )}
 
-                {useGroup.earliest_market_entry_date && (
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Earliest Market Entry</p>
-                    <p className="text-sm flex items-center gap-2">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(useGroup.earliest_market_entry_date).toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
+{/* earliest_market_entry_date field not available in use group view */}
 
-                {useGroup.actual_market_entry_date && (
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Actual Market Entry</p>
-                    <p className="text-sm flex items-center gap-2">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(useGroup.actual_market_entry_date).toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
+{/* actual_market_entry_date field not available in use group view */}
 
                 {useGroup.is_active !== null && (
                   <div className="space-y-1">
@@ -374,11 +358,7 @@ export default async function UseGroupDetailPage({
                           <h4 className="font-medium">
                             {bc.display_name || bc.business_case_name || "Business Case"}
                           </h4>
-                          {bc.scenario_name && (
-                            <Badge variant="outline" className="text-xs">
-                              {bc.scenario_name}
-                            </Badge>
-                          )}
+{/* scenario_name field removed from schema */}
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {bc.fiscal_year} • Year {bc.year_offset}

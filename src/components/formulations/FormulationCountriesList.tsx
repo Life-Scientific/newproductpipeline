@@ -128,10 +128,10 @@ const createColumns = (onEdit: (id: string) => void): ColumnDef<FormulationCount
       },
     },
     {
-      accessorKey: "likely_registration_pathway",
+      accessorKey: "likely_likely_registration_pathway",
       header: "Pathway",
       cell: ({ row }) => {
-        const pathway = row.original.likely_registration_pathway as string | null;
+        const pathway = row.original.likely_likely_registration_pathway as string | null;
         if (!pathway) return <span className="text-sm text-muted-foreground">—</span>;
         return <span className="text-xs">{pathway}</span>;
       },
@@ -184,7 +184,7 @@ export function FormulationCountriesList({ countries }: FormulationCountriesList
             country_status: editingCountry.country_status || null,
             country_readiness: editingCountry.readiness || null,
             country_readiness_notes: null, // Not in view, would need to fetch separately if needed
-            likely_registration_pathway: editingCountry.likely_registration_pathway || null,
+            likely_likely_registration_pathway: editingCountry.likely_likely_registration_pathway || null,
             earliest_market_entry_date: editingCountry.earliest_market_entry_date || null,
             is_novel: editingCountry.is_novel || null,
             is_eu_approved_formulation: editingCountry.is_eu_approved_formulation || null,

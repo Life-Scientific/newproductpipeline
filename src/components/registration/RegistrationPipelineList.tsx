@@ -31,10 +31,10 @@ const columns: ColumnDef<RegistrationPipeline>[] = [
     header: "Category",
   },
   {
-    accessorKey: "registration_pathway",
+    accessorKey: "likely_registration_pathway",
     header: "Pathway",
     cell: ({ row }) => {
-      const pathway = row.getValue("registration_pathway") as string | null;
+      const pathway = row.getValue("likely_registration_pathway") as string | null;
       if (!pathway) return "—";
       return (
         <Badge variant={pathway.includes("33") ? "default" : "secondary"}>

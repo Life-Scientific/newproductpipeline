@@ -1,10 +1,15 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Database } from "@/lib/supabase/database.types";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Info } from "lucide-react";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -43,6 +48,28 @@ function formatNumber(value: number | null | undefined): string {
 }
 
 export function FormulationTimeline({ businessCases }: FormulationTimelineProps) {
+  const [selectedCountry, setSelectedCountry] = useState<string>("all");
+  const [cumulativeMode, setCumulativeMode] = useState(false);
+
+  // Get unique countries from business cases
+  const uniqueCountries = useMemo(() => {
+    const countries = new Set<string>();
+    businessCases.forEach((bc) => {
+      if (bc.country_name) {
+        countries.add(bc.country_name);
+      }
+    });
+    return Array.from(countries).sort();
+  }, [businessCases]);
+
+  // Filter business cases by selected country
+  const filteredBusinessCases = useMemo(() => {
+    if (selectedCountry === "all") {
+      return businessCases;
+    }
+    return businessCases.filter((bc) => bc.country_name === selectedCountry);
+  }, [businessCases, selectedCountry]);
+
   if (businessCases.length === 0) {
     return (
       <Card>
@@ -60,7 +87,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
   // Aggregate business cases by fiscal year
   const fiscalYearMap = new Map<string, FiscalYearData>();
 
-  businessCases.forEach((bc) => {
+  filteredBusinessCases.forEach((bc) => {
     const fy = bc.fiscal_year || "Unknown";
     const revenue = bc.total_revenue || 0;
     const margin = bc.total_margin || 0;
@@ -114,7 +141,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
   });
 
   // Convert to array and calculate final values
-  const timelineData = Array.from(fiscalYearMap.values()).map((data) => {
+  let timelineData = Array.from(fiscalYearMap.values()).map((data) => {
     // Calculate weighted average NSP
     if (data.volume > 0 && data.nsp > 0) {
       data.nsp = data.nsp / data.volume; // Convert weighted sum to average
@@ -134,6 +161,45 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
     // Fallback to fiscal year string comparison
     return a.fiscalYear.localeCompare(b.fiscalYear);
   });
+
+  // Apply cumulative rollup if enabled
+  if (cumulativeMode && timelineData.length > 0) {
+    let cumulativeRevenue = 0;
+    let cumulativeMargin = 0;
+    let cumulativeVolume = 0;
+    let cumulativeCogs = 0;
+    let cumulativeNspWeightedSum = 0;
+
+    timelineData = timelineData.map((data, index) => {
+      cumulativeRevenue += data.revenue;
+      cumulativeMargin += data.margin;
+      cumulativeVolume += data.volume;
+      cumulativeCogs += data.cogs;
+      
+      // For NSP, we need to recalculate weighted average with cumulative values
+      if (data.volume > 0 && data.nsp > 0) {
+        cumulativeNspWeightedSum += data.nsp * data.volume;
+      }
+
+      const cumulativeNsp = cumulativeVolume > 0 && cumulativeNspWeightedSum > 0
+        ? cumulativeNspWeightedSum / cumulativeVolume
+        : 0;
+
+      const cumulativeMarginPercent = cumulativeRevenue > 0
+        ? (cumulativeMargin / cumulativeRevenue) * 100
+        : 0;
+
+      return {
+        ...data,
+        revenue: cumulativeRevenue,
+        margin: cumulativeMargin,
+        volume: cumulativeVolume,
+        cogs: cumulativeCogs,
+        nsp: cumulativeNsp,
+        marginPercent: cumulativeMarginPercent,
+      };
+    });
+  }
 
   // Calculate totals
   const totalRevenue = timelineData.reduce((sum, d) => sum + d.revenue, 0);
@@ -174,6 +240,62 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {/* Filters */}
+          <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="country-filter" className="text-sm font-medium">Country:</Label>
+              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                <SelectTrigger id="country-filter" className="w-[180px]">
+                  <SelectValue placeholder="All Countries" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Countries</SelectItem>
+                  {uniqueCountries.map((country) => (
+                    <SelectItem key={country} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="cumulative-mode"
+                      checked={cumulativeMode}
+                      onCheckedChange={(checked) => setCumulativeMode(checked === true)}
+                    />
+                    <Label htmlFor="cumulative-mode" className="text-sm font-medium cursor-pointer flex items-center gap-1">
+                      Cumulative Rollup
+                      <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Label>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-[320px]">
+                  <div className="space-y-2 text-xs">
+                    <p className="font-semibold">Cumulative Rollup</p>
+                    <p>
+                      When enabled, values accumulate from Year 1 onwards. Each year shows the running total up to that point.
+                    </p>
+                    <div className="pt-1 border-t border-primary/20 space-y-1">
+                      <p className="font-medium">Mathematical Formula:</p>
+                      <p className="font-mono text-[10px]">
+                        Year N = Σ(Year 1 to Year N)
+                      </p>
+                      <p className="text-[10px] opacity-90">
+                        Example: Year 3 Revenue = Year 1 + Year 2 + Year 3
+                      </p>
+                    </div>
+                    <p className="text-[10px] opacity-90 pt-1 border-t border-primary/20">
+                      Useful for tracking total performance over time rather than year-by-year values.
+                    </p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           {/* Summary Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
             <div>
@@ -327,7 +449,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                       </TableCell>
                     ))}
                     <TableCell className="text-center text-sm text-muted-foreground bg-muted">
-                      {new Set(businessCases.map((bc) => bc.country_name).filter(Boolean)).size}
+                      {new Set(filteredBusinessCases.map((bc) => bc.country_name).filter(Boolean)).size}
                     </TableCell>
                   </TableRow>
                   <TableRow>
@@ -348,10 +470,11 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
           {timelineData.length > 0 && (
             <div className="text-xs text-muted-foreground space-y-1">
               <p>
-                <strong>Note:</strong> Data aggregated from {businessCases.length} business case
-                {businessCases.length !== 1 ? "s" : ""} across{" "}
-                {new Set(businessCases.map((bc) => bc.country_name).filter(Boolean)).size}{" "}
-                countr{new Set(businessCases.map((bc) => bc.country_name).filter(Boolean)).size !== 1 ? "ies" : "y"}.
+                <strong>Note:</strong> Data aggregated from {filteredBusinessCases.length} business case
+                {filteredBusinessCases.length !== 1 ? "s" : ""}
+                {selectedCountry !== "all" && ` for ${selectedCountry}`}
+                {selectedCountry === "all" && ` across ${new Set(filteredBusinessCases.map((bc) => bc.country_name).filter(Boolean)).size} countr${new Set(filteredBusinessCases.map((bc) => bc.country_name).filter(Boolean)).size !== 1 ? "ies" : "y"}`}.
+                {cumulativeMode && " Values shown are cumulative from year 1."}
               </p>
               {timelineData.some((d) => d.businessCaseCount > 1) && (
                 <p>

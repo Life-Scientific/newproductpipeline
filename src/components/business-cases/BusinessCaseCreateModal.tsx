@@ -28,7 +28,9 @@ import {
 import { useSupabase } from "@/hooks/use-supabase";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { Formulation, Country } from "@/lib/supabase/database.types";
+import type { Database } from "@/lib/supabase/database.types";
+type Formulation = Database["public"]["Tables"]["formulations"]["Row"] | Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type Country = Database["public"]["Tables"]["countries"]["Row"];
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { getCurrencySymbol } from "@/lib/utils/currency";
 
@@ -118,10 +120,10 @@ export function BusinessCaseCreateModal({
           }
 
           if (fcData && fcData.length > 0) {
-            const formulationIds = fcData.map(fc => fc.formulation_id).filter(Boolean) as string[];
+            const formulationIds = fcData.map((fc: any) => fc.formulation_id).filter(Boolean) as string[];
             // Filter formulations to only show those available for this country
             const filteredFormulations = allFormulations.filter(f => 
-              formulationIds.includes(f.formulation_id)
+              f.formulation_id && formulationIds.includes(f.formulation_id)
             );
             setFormulations(filteredFormulations);
           } else {
@@ -144,31 +146,35 @@ export function BusinessCaseCreateModal({
         .eq("formulation_id", formData.formulation_id)
         .eq("country_id", formData.country_id)
         .single()
-        .then(({ data: fcData }) => {
-          if (fcData?.formulation_country_id) {
-            // Get use groups for this formulation_country
-            return supabase
-              .from("formulation_country_use_group")
-              .select("formulation_country_use_group_id, use_group_name, use_group_variant, target_market_entry_fy")
-              .eq("formulation_country_id", fcData.formulation_country_id)
-              .eq("is_active", true);
+        .then(async ({ data: fcData, error: fcError }: any) => {
+          if (fcError || !fcData?.formulation_country_id) {
+            setUseGroupOptions([]);
+            return;
           }
-          return { data: null, error: null };
-        })
-        .then(({ data: useGroups, error }) => {
+          
+          // Get use groups for this formulation_country
+          const { data: useGroups, error } = await supabase
+            .from("formulation_country_use_group")
+            .select("formulation_country_use_group_id, use_group_name, use_group_variant, target_market_entry_fy")
+            .eq("formulation_country_id", fcData.formulation_country_id)
+            .eq("is_active", true) as any;
+          
           if (error) {
             console.error("Failed to load use groups:", error);
+            setUseGroupOptions([]);
             return;
           }
 
           if (useGroups) {
-            const options: MultiSelectOption[] = useGroups.map((ug) => ({
+            const options: MultiSelectOption[] = useGroups.map((ug: any) => ({
               value: ug.formulation_country_use_group_id,
               label: ug.use_group_name
                 ? `${ug.use_group_variant} - ${ug.use_group_name}`
                 : ug.use_group_variant,
             }));
             setUseGroupOptions(options);
+          } else {
+            setUseGroupOptions([]);
           }
         });
     } else {
@@ -205,8 +211,8 @@ export function BusinessCaseCreateModal({
         }
 
         // Get unique non-null target_market_entry_fy values
-        const targetEntries = useGroups
-          .map(ug => ug.target_market_entry_fy)
+        const targetEntries = (useGroups as any[])
+          .map((ug: any) => ug.target_market_entry_fy)
           .filter((entry): entry is string => entry !== null && entry !== undefined);
 
         if (targetEntries.length === 0) {
@@ -452,8 +458,8 @@ export function BusinessCaseCreateModal({
                       </SelectItem>
                     ) : (
                       formulations.map((f) => (
-                        <SelectItem key={f.formulation_id} value={f.formulation_id}>
-                          {f.product_name || f.formulation_code || f.formulation_id}
+                        <SelectItem key={f.formulation_id || ""} value={f.formulation_id || ""}>
+                          {("formulation_name" in f ? f.formulation_name : null) || f.formulation_code || f.formulation_id || ""}
                         </SelectItem>
                       ))
                     )}
@@ -517,7 +523,7 @@ export function BusinessCaseCreateModal({
             {/* Header with formulation details */}
             <div className="space-y-2">
               <div className="text-sm text-muted-foreground">
-                {selectedFormulation?.formulation_name || "Formulation"} | {selectedCountry?.country_name || "Country"} | Target Market Entry: {targetMarketEntry}
+                {selectedFormulation && "formulation_name" in selectedFormulation ? selectedFormulation.formulation_name : selectedFormulation?.formulation_code || "Formulation"} | {selectedCountry?.country_name || "Country"} | Target Market Entry: {targetMarketEntry}
                 {effectiveStartFiscalYear && effectiveStartFiscalYear !== targetMarketEntry && (
                   <> | Effective Start: {effectiveStartFiscalYear}</>
                 )}

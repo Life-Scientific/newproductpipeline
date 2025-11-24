@@ -119,7 +119,7 @@ DETAILED LOG
 [INFO] UUID-BASED FORMULATION IMPORT
 [INFO] ================================================================================
 [INFO] Loading ingredient types and names by UUID...
-[INFO] Loaded 170 ingredient type mappings
+[INFO] Loaded 193 ingredient type mappings
 [INFO] Loading country UUIDs...
 [INFO] Loaded 22 country UUIDs
 [INFO] Loading base code registry...
@@ -758,12 +758,11 @@ Generating SQL...
 [INFO] Temporary complete SQL file generated: import_temp_complete.sql
 [INFO] 
 Splitting SQL into multiple files...
-[INFO] Total SQL size: 3.56 MB
-[INFO] Target size per file: 1.02 MB
+[INFO] Total SQL size: 3.67 MB
+[INFO] Target size per file: 1.05 MB
 [INFO] Sections found: 9
-[INFO] Splitting into 4 files
-[INFO] Created import_part1.sql (0.72 MB)
-[INFO] Created import_part2.sql (0.35 MB)
-[INFO] Created import_part3.sql (2.16 MB)
-[INFO] Created import_part4.sql (0.49 MB)
+[INFO] Splitting into 3 files
+[INFO] Created import_part1.sql (1.07 MB)
+[INFO] Created import_part2.sql (2.23 MB)
+[INFO] Created import_part3.sql (0.54 MB)
 [INFO] Removed temporary file: import_temp_complete.sql

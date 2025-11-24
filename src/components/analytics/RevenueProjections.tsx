@@ -39,9 +39,8 @@ export function RevenueProjections({ businessCases }: RevenueProjectionsProps) {
   const totalMargin = businessCases.reduce((sum, bc) => sum + (bc.total_margin || 0), 0);
   const totalCOGS = businessCases.reduce((sum, bc) => sum + (bc.total_cogs || 0), 0);
 
-  // Group by scenario if available
-  const scenarios = new Set(businessCases.map((bc) => bc.scenario_name).filter(Boolean));
-  const hasScenarios = scenarios.size > 0;
+  // Scenario field removed from schema
+  const hasScenarios = false;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -113,22 +112,20 @@ export function RevenueProjections({ businessCases }: RevenueProjectionsProps) {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              {Array.from(scenarios).map((scenario) => {
-                const scenarioCases = businessCases.filter((bc) => bc.scenario_name === scenario);
-                const scenarioRevenue = scenarioCases.reduce(
-                  (sum, bc) => sum + (bc.total_revenue || 0),
-                  0
-                );
-                const scenarioMargin = scenarioCases.reduce(
+              {/* Scenario grouping removed - field no longer in schema */}
+              {/* Show all business cases together since scenario_name was removed */}
+              {(() => {
+                const scenarioRevenue = businessCases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
+                const scenarioMargin = businessCases.reduce(
                   (sum, bc) => sum + (bc.total_margin || 0),
                   0
                 );
                 return (
-                  <div key={scenario} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors gap-4">
+                  <div key="all" className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors gap-4">
                     <div className="flex-1 min-w-0 space-y-1">
-                      <p className="font-medium text-sm truncate">{scenario}</p>
+                      <p className="font-medium text-sm truncate">All Business Cases</p>
                       <p className="text-xs text-muted-foreground">
-                        {scenarioCases.length} business cases
+                        {businessCases.length} business cases
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0 space-y-0.5">
@@ -139,7 +136,7 @@ export function RevenueProjections({ businessCases }: RevenueProjectionsProps) {
                     </div>
                   </div>
                 );
-              })}
+              })()}
             </div>
           </CardContent>
         </Card>
