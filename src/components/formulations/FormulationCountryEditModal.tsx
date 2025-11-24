@@ -18,7 +18,7 @@ interface FormulationCountryEditModalProps {
     country_status: string | null;
     country_readiness: string | null;
     country_readiness_notes: string | null;
-    likely_likely_registration_pathway: string | null;
+    likely_registration_pathway: string | null;
     earliest_market_entry_date: string | null;
     is_novel: boolean | null;
     is_eu_approved_formulation: boolean | null;
@@ -64,7 +64,7 @@ export function FormulationCountryEditModal({
   const [status, setStatus] = useState(formulationCountry.country_status || "Not yet evaluated");
   const [readiness, setReadiness] = useState(formulationCountry.country_readiness || "Nominated for Review");
   const [notes, setNotes] = useState(formulationCountry.country_readiness_notes || "");
-  const [pathway, setPathway] = useState(formulationCountry.likely_likely_registration_pathway || "");
+  const [pathway, setPathway] = useState(formulationCountry.likely_registration_pathway || "");
   const [entryDate, setEntryDate] = useState(formulationCountry.earliest_market_entry_date || "");
   const [isNovel, setIsNovel] = useState(formulationCountry.is_novel || false);
   const [isEuApproved, setIsEuApproved] = useState(formulationCountry.is_eu_approved_formulation || false);
@@ -76,7 +76,7 @@ export function FormulationCountryEditModal({
       formData.append("country_status", status);
       formData.append("country_readiness", readiness);
       formData.append("country_readiness_notes", notes);
-      if (pathway) formData.append("likely_likely_registration_pathway", pathway);
+      if (pathway) formData.append("likely_registration_pathway", pathway);
       if (entryDate) formData.append("earliest_market_entry_date", entryDate);
       
       if (isNovel) formData.append("is_novel", "true");

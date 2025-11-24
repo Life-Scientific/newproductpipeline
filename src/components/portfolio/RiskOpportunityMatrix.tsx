@@ -19,7 +19,7 @@ export function RiskOpportunityMatrix({ formulations, businessCases }: RiskOppor
     "Killed": 0,
   };
 
-  const data: ScatterDataPoint[] = formulations
+  const data = formulations
     .map((f) => {
       const fCases = businessCases.filter(bc => bc.formulation_id === f.formulation_id);
       const totalRevenue = fCases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
@@ -27,20 +27,22 @@ export function RiskOpportunityMatrix({ formulations, businessCases }: RiskOppor
         ? fCases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) / fCases.length 
         : 0;
 
-      if (totalRevenue === 0 && f.status === 'Not Yet Considered') return null;
+      const status = ("formulation_status" in f ? (f as any).formulation_status : ("status" in f ? f.status : null)) as string | null;
+      if (totalRevenue === 0 && status === 'Not Yet Considered') return null;
 
+      const name = ("formulation_name" in f ? (f as any).formulation_name : ("product_name" in f ? f.product_name : null)) as string | null;
       return {
-        id: f.formulation_id,
-        name: f.product_name || f.formulation_code || "Unknown",
-        x: readinessScore[f.status || ""] || 20,
+        id: f.formulation_id || "",
+        name: name || f.formulation_code || "Unknown",
+        x: readinessScore[status || ""] || 20,
         y: totalRevenue / 1000000,
         z: Math.max(10, avgMargin * 10),
-        category: f.status || "Unknown",
-        fill: f.status === 'Selected' ? "var(--color-success)" : 
-              f.status === 'Monitoring' ? "var(--color-info)" : "var(--color-muted)",
+        category: status || "Unknown",
+        fill: status === 'Selected' ? "var(--color-success)" : 
+              status === 'Monitoring' ? "var(--color-info)" : "var(--color-muted)",
       };
     })
-    .filter((d): d is ScatterDataPoint => d !== null);
+    .filter((d) => d !== null) as ScatterDataPoint[];
 
   return (
     <ScatterPlotChart

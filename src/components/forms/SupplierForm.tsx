@@ -149,7 +149,7 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
               value={formData.country_id || ""}
               onValueChange={(value) => setFormData({ ...formData, country_id: value || "" })}
               placeholder="Search countries..."
-              selectedCountry={selectedCountry}
+                selectedCountry={selectedCountry || undefined}
             />
           </div>
 

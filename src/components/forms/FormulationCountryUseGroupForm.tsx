@@ -77,13 +77,12 @@ export function FormulationCountryUseGroupForm({
     use_group_variant: formulationCountryUseGroup?.use_group_variant || "",
     use_group_name: formulationCountryUseGroup?.use_group_name || "",
     reference_product_id: formulationCountryUseGroup?.reference_product_id || "",
-    registration_status: formulationCountryUseGroup?.registration_status || "",
-    earliest_submission_date: formulationCountryUseGroup?.earliest_submission_date || "",
-    earliest_approval_date: formulationCountryUseGroup?.earliest_approval_date || "",
-    earliest_market_entry_date: formulationCountryUseGroup?.earliest_market_entry_date || "",
-    actual_submission_date: formulationCountryUseGroup?.actual_submission_date || "",
-    actual_approval_date: formulationCountryUseGroup?.actual_approval_date || "",
-    actual_market_entry_date: formulationCountryUseGroup?.actual_market_entry_date || "",
+    use_group_status: ("use_group_status" in (formulationCountryUseGroup || {}) ? (formulationCountryUseGroup as any).use_group_status : "") || "",
+    earliest_planned_submission_date: ("earliest_planned_submission_date" in (formulationCountryUseGroup || {}) ? (formulationCountryUseGroup as any).earliest_planned_submission_date : "") || "",
+    earliest_planned_approval_date: ("earliest_planned_approval_date" in (formulationCountryUseGroup || {}) ? (formulationCountryUseGroup as any).earliest_planned_approval_date : "") || "",
+    earliest_actual_submission_date: ("earliest_actual_submission_date" in (formulationCountryUseGroup || {}) ? (formulationCountryUseGroup as any).earliest_actual_submission_date : "") || "",
+    earliest_actual_approval_date: ("earliest_actual_approval_date" in (formulationCountryUseGroup || {}) ? (formulationCountryUseGroup as any).earliest_actual_approval_date : "") || "",
+    // earliest_market_entry_date and actual_market_entry_date removed from use group schema
   });
 
   useEffect(() => {
@@ -128,11 +127,12 @@ export function FormulationCountryUseGroupForm({
 
     if (!fcData) return;
 
-    setFormulationId(fcData.formulation_id);
+    const fcDataTyped = fcData as { formulation_id: string };
+    setFormulationId(fcDataTyped.formulation_id);
 
     // Load formulation EPPO crops using server action
     const { getFormulationCrops } = await import("@/lib/actions/eppo-codes");
-    const cropsResult = await getFormulationCrops(fcData.formulation_id);
+    const cropsResult = await getFormulationCrops(fcDataTyped.formulation_id);
     
     if (cropsResult.data) {
       // Get full EPPO code details
@@ -156,7 +156,7 @@ export function FormulationCountryUseGroupForm({
 
     // Load formulation EPPO targets using server action
     const { getFormulationTargets } = await import("@/lib/actions/eppo-codes");
-    const targetsResult = await getFormulationTargets(fcData.formulation_id);
+    const targetsResult = await getFormulationTargets(fcDataTyped.formulation_id);
     
     if (targetsResult.data) {
       // Get full EPPO code details
@@ -190,11 +190,12 @@ export function FormulationCountryUseGroupForm({
 
     if (!fcData) return;
 
-    setFormulationId(fcData.formulation_id);
+    const fcDataTyped2 = fcData as { formulation_id: string };
+    setFormulationId(fcDataTyped2.formulation_id);
 
     // Load formulation EPPO crops (for reference - all available options)
     const { getFormulationCrops } = await import("@/lib/actions/eppo-codes");
-    const cropsResult = await getFormulationCrops(fcData.formulation_id);
+    const cropsResult = await getFormulationCrops(fcDataTyped2.formulation_id);
     
     if (cropsResult.data) {
       const cropEppoIds = cropsResult.data.map((c: any) => c.eppo_code_id);
@@ -207,7 +208,7 @@ export function FormulationCountryUseGroupForm({
 
     // Load formulation EPPO targets (for reference - all available options)
     const { getFormulationTargets } = await import("@/lib/actions/eppo-codes");
-    const targetsResult = await getFormulationTargets(fcData.formulation_id);
+    const targetsResult = await getFormulationTargets(fcDataTyped2.formulation_id);
     
     if (targetsResult.data) {
       const targetEppoIds = targetsResult.data.map((t: any) => t.eppo_code_id);
@@ -225,9 +226,10 @@ export function FormulationCountryUseGroupForm({
       .eq("formulation_country_use_group_id", formulationCountryUseGroup.formulation_country_use_group_id);
     
     if (useGroupCrops) {
-      setSelectedEppoCropIds(useGroupCrops.map(c => c.eppo_code_id));
+      const cropsTyped = useGroupCrops as any[];
+      setSelectedEppoCropIds(cropsTyped.map((c: any) => c.eppo_code_id));
       const criticalMap: Record<string, boolean> = {};
-      useGroupCrops.forEach(c => {
+      cropsTyped.forEach((c: any) => {
         criticalMap[c.eppo_code_id] = c.is_critical || false;
       });
       setEppoCropsCritical(criticalMap);
@@ -240,9 +242,10 @@ export function FormulationCountryUseGroupForm({
       .eq("formulation_country_use_group_id", formulationCountryUseGroup.formulation_country_use_group_id);
     
     if (useGroupTargets) {
-      setSelectedEppoTargetIds(useGroupTargets.map(t => t.eppo_code_id));
+      const targetsTyped = useGroupTargets as any[];
+      setSelectedEppoTargetIds(targetsTyped.map((t: any) => t.eppo_code_id));
       const criticalMap: Record<string, boolean> = {};
-      useGroupTargets.forEach(t => {
+      targetsTyped.forEach((t: any) => {
         criticalMap[t.eppo_code_id] = t.is_critical || false;
       });
       setEppoTargetsCritical(criticalMap);
@@ -412,7 +415,7 @@ export function FormulationCountryUseGroupForm({
                 placeholder="Search formulation-country combinations..."
                 disabled={!!formulationCountryUseGroup}
                 required
-                selectedFormulationCountry={selectedFormulationCountry}
+                selectedFormulationCountry={selectedFormulationCountry || undefined}
               />
             </div>
             <div className="space-y-2">
@@ -465,9 +468,9 @@ export function FormulationCountryUseGroupForm({
           <div className="space-y-2">
             <Label htmlFor="registration_status">Registration Status</Label>
             <Select
-              value={formData.registration_status || "__none__"}
+              value={formData.use_group_status || "__none__"}
               onValueChange={(value) =>
-                setFormData({ ...formData, registration_status: value === "__none__" ? "" : value })
+                setFormData({ ...formData, use_group_status: value === "__none__" ? "" : value })
               }
             >
               <SelectTrigger>
@@ -492,9 +495,9 @@ export function FormulationCountryUseGroupForm({
                 <Input
                   id="earliest_submission_date"
                   type="date"
-                  value={formatDate(formData.earliest_submission_date)}
+                  value={formatDate(formData.earliest_planned_submission_date)}
                   onChange={(e) =>
-                    setFormData({ ...formData, earliest_submission_date: e.target.value })
+                    setFormData({ ...formData, earliest_planned_submission_date: e.target.value })
                   }
                 />
               </div>
@@ -503,9 +506,9 @@ export function FormulationCountryUseGroupForm({
                 <Input
                   id="earliest_approval_date"
                   type="date"
-                  value={formatDate(formData.earliest_approval_date)}
+                  value={formatDate(formData.earliest_planned_approval_date)}
                   onChange={(e) =>
-                    setFormData({ ...formData, earliest_approval_date: e.target.value })
+                    setFormData({ ...formData, earliest_planned_approval_date: e.target.value })
                   }
                 />
               </div>
@@ -514,10 +517,9 @@ export function FormulationCountryUseGroupForm({
                 <Input
                   id="earliest_market_entry_date"
                   type="date"
-                  value={formatDate(formData.earliest_market_entry_date)}
-                  onChange={(e) =>
-                    setFormData({ ...formData, earliest_market_entry_date: e.target.value })
-                  }
+                  value="" // earliest_market_entry_date removed from use group schema
+                  onChange={() => {}}
+                  disabled
                 />
               </div>
             </div>
@@ -531,9 +533,9 @@ export function FormulationCountryUseGroupForm({
                 <Input
                   id="actual_submission_date"
                   type="date"
-                  value={formatDate(formData.actual_submission_date)}
+                  value={formatDate(formData.earliest_actual_submission_date)}
                   onChange={(e) =>
-                    setFormData({ ...formData, actual_submission_date: e.target.value })
+                    setFormData({ ...formData, earliest_actual_submission_date: e.target.value })
                   }
                 />
               </div>
@@ -542,9 +544,9 @@ export function FormulationCountryUseGroupForm({
                 <Input
                   id="actual_approval_date"
                   type="date"
-                  value={formatDate(formData.actual_approval_date)}
+                  value={formatDate(formData.earliest_actual_approval_date)}
                   onChange={(e) =>
-                    setFormData({ ...formData, actual_approval_date: e.target.value })
+                    setFormData({ ...formData, earliest_actual_approval_date: e.target.value })
                   }
                 />
               </div>
@@ -553,10 +555,9 @@ export function FormulationCountryUseGroupForm({
                 <Input
                   id="actual_market_entry_date"
                   type="date"
-                  value={formatDate(formData.actual_market_entry_date)}
-                  onChange={(e) =>
-                    setFormData({ ...formData, actual_market_entry_date: e.target.value })
-                  }
+                  value="" // actual_market_entry_date removed from use group schema
+                  onChange={() => {}}
+                  disabled
                 />
               </div>
             </div>

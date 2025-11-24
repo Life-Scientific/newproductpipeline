@@ -24,7 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import type { Database } from "@/lib/supabase/database.types";
 
-type Target = Database["public"]["Tables"]["targets"]["Row"];
+type Target = any; // Database["public"]["Tables"]["targets"]["Row"]; // targets table may not exist in current schema
 
 interface TargetFormProps {
   target?: Target | null;

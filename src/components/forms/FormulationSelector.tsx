@@ -35,7 +35,7 @@ export function FormulationSelector({
       getOptionValue={(item) => item.formulation_id}
       getOptionLabel={(item) => {
         const code = item.formulation_code || "";
-        const name = item.product_name || item.formulation_name || "";
+        const name = ("formulation_name" in item ? item.formulation_name : ("product_name" in item ? (item as any).product_name : null)) || "";
         return name ? `${code} - ${name}` : code;
       }}
       getOptionSubtitle={(item) => item.formulation_code}

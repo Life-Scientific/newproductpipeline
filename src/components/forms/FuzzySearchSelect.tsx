@@ -95,13 +95,15 @@ export function FuzzySearchSelect({
       if (result.data) {
         setSearchResults(result.data);
         // Cache items
-        setLoadedItems((prev) => {
-          const newCache = new Map(prev);
-          result.data.forEach((item) => {
-            newCache.set(getOptionValue(item), item);
+        if (result.data) {
+          setLoadedItems((prev) => {
+            const newCache = new Map(prev);
+            result.data!.forEach((item) => {
+              newCache.set(getOptionValue(item), item);
+            });
+            return newCache;
           });
-          return newCache;
-        });
+        }
       } else {
         setSearchResults([]);
       }

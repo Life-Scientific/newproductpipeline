@@ -128,10 +128,10 @@ const createColumns = (onEdit: (id: string) => void): ColumnDef<FormulationCount
       },
     },
     {
-      accessorKey: "likely_likely_registration_pathway",
+      accessorKey: "likely_registration_pathway",
       header: "Pathway",
       cell: ({ row }) => {
-        const pathway = row.original.likely_likely_registration_pathway as string | null;
+        const pathway = row.original.likely_registration_pathway as string | null;
         if (!pathway) return <span className="text-sm text-muted-foreground">—</span>;
         return <span className="text-xs">{pathway}</span>;
       },
@@ -142,7 +142,7 @@ const createColumns = (onEdit: (id: string) => void): ColumnDef<FormulationCount
       cell: ({ row }) => {
         return (
           <FormulationCountryActionCell
-            countryId={row.original.formulation_country_id}
+            countryId={row.original.formulation_country_id || ""}
             onEdit={onEdit}
           />
         );
@@ -180,17 +180,17 @@ export function FormulationCountriesList({ countries }: FormulationCountriesList
       {editingCountry && (
         <FormulationCountryEditModal
           formulationCountry={{
-            formulation_country_id: editingCountry.formulation_country_id,
+            formulation_country_id: editingCountry.formulation_country_id || "",
             country_status: editingCountry.country_status || null,
             country_readiness: editingCountry.readiness || null,
             country_readiness_notes: null, // Not in view, would need to fetch separately if needed
-            likely_likely_registration_pathway: editingCountry.likely_likely_registration_pathway || null,
+            likely_registration_pathway: editingCountry.likely_registration_pathway || null,
             earliest_market_entry_date: editingCountry.earliest_market_entry_date || null,
-            is_novel: editingCountry.is_novel || null,
-            is_eu_approved_formulation: editingCountry.is_eu_approved_formulation || null,
-            is_active: editingCountry.is_active ?? true,
+            is_novel: ("is_novel" in editingCountry ? (editingCountry as any).is_novel : null) as boolean | null,
+            is_eu_approved_formulation: ("is_eu_approved_formulation" in editingCountry ? (editingCountry as any).is_eu_approved_formulation : null) as boolean | null,
+            is_active: ("is_active" in editingCountry ? (editingCountry as any).is_active : true) as boolean | null,
             country_name: editingCountry.country_name || undefined,
-            formulation_name: editingCountry.product_name || editingCountry.formulation_code || undefined,
+            formulation_name: ("product_name" in editingCountry ? (editingCountry as any).product_name : ("formulation_code" in editingCountry ? (editingCountry as any).formulation_code : null)) || ("formulation_code" in editingCountry ? (editingCountry as any).formulation_code : null) || undefined,
           }}
           open={!!editingCountryId}
           onOpenChange={(open) => {

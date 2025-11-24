@@ -36,9 +36,11 @@ export function PortfolioStrategyDashboard({
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredFormulations = formulations.filter(f => {
-    const matchesCategory = categoryFilter === "all" || f.formulation_category === categoryFilter;
+    const category = ("formulation_category" in f ? (f as any).formulation_category : ("product_category" in f ? f.product_category : null)) as string | null;
+    const matchesCategory = categoryFilter === "all" || category === categoryFilter;
+    const name = ("formulation_name" in f ? (f as any).formulation_name : ("product_name" in f ? f.product_name : null)) as string | null;
     const matchesSearch = !searchTerm || 
-      f.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
       f.formulation_code?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -47,7 +49,7 @@ export function PortfolioStrategyDashboard({
     return filteredFormulations.some(f => f.formulation_id === bc.formulation_id);
   });
 
-  const categories = Array.from(new Set(formulations.map(f => f.formulation_category).filter(Boolean)));
+  const categories = Array.from(new Set(formulations.map(f => ("formulation_category" in f ? (f as any).formulation_category : ("product_category" in f ? f.product_category : null)) as string | null).filter(Boolean)));
 
   // Calculate Health Score
   const healthMetrics = useMemo(() => {
@@ -70,7 +72,7 @@ export function PortfolioStrategyDashboard({
       pipelineScore,
       avgMargin,
       activeCount,
-      pendingReview: formulations.filter(f => f.formulation_readiness === 'Nominated for Review').length,
+      pendingReview: formulations.filter(f => ("formulation_readiness" in f ? (f as any).formulation_readiness : null) === 'Nominated for Review').length,
     };
   }, [formulations, businessCases, activePortfolio]);
 
@@ -79,12 +81,13 @@ export function PortfolioStrategyDashboard({
     const items: ActionItem[] = [];
     
     // Formulations needing review
-    const pendingReview = formulations.filter(f => f.formulation_readiness === 'Nominated for Review');
+    const pendingReview = formulations.filter(f => ("formulation_readiness" in f ? (f as any).formulation_readiness : null) === 'Nominated for Review');
     pendingReview.slice(0, 3).forEach(f => {
+      const name = ("formulation_name" in f ? (f as any).formulation_name : ("product_name" in f ? f.product_name : null)) as string | null;
       items.push({
         id: `review-${f.formulation_id}`,
         title: "Review Formulation",
-        description: `${f.product_name || f.formulation_code} is nominated for review`,
+        description: `${name || f.formulation_code} is nominated for review`,
         priority: "medium",
         type: "review",
         href: `/formulations/${f.formulation_id}`,

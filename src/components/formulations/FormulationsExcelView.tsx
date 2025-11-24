@@ -53,12 +53,12 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
   const [editedData, setEditedData] = useState<Record<string, Partial<FormulationTable>>>({});
 
   const editableFields = [
-    "product_name",
+    "formulation_name",
     "short_name",
-    "product_category",
+    "formulation_category",
     "formulation_type",
     "uom",
-    "status",
+    "formulation_status",
     "status_rationale",
     "is_active",
   ] as const;
@@ -305,15 +305,15 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                     </td>
                     <td
                       className="p-3 border-r cursor-pointer"
-                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "product_name")}
+                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "formulation_name")}
                     >
-                      {isEditing && editingCell?.field === "product_name" ? (
+                      {isEditing && editingCell?.field === "formulation_name" ? (
                         <Input
-                          value={String(getCellValue(formulation, "product_name"))}
+                          value={String(getCellValue(formulation, "formulation_name"))}
                           onChange={(e) =>
                             formulation.formulation_id && handleCellChange(
                               formulation.formulation_id,
-                              "product_name",
+                              "formulation_name",
                               e.target.value
                             )
                           }
@@ -325,7 +325,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                               const id = formulation.formulation_id;
                               setEditedData((prev) => {
                                 const newData = { ...prev };
-                                delete newData[id]?.product_name;
+                                delete newData[id]?.formulation_name;
                                 if (Object.keys(newData[id] || {}).length === 0) {
                                   delete newData[id];
                                 }
@@ -339,7 +339,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                         />
                       ) : (
                         <span className="block min-h-[32px] flex items-center">
-                          {getCellValue(formulation, "product_name") || "—"}
+                          {getCellValue(formulation, "formulation_name") || "—"}
                         </span>
                       )}
                     </td>
@@ -385,15 +385,15 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                     </td>
                     <td
                       className="p-3 border-r cursor-pointer"
-                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "product_category")}
+                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "formulation_category")}
                     >
-                      {isEditing && editingCell?.field === "product_category" ? (
+                      {isEditing && editingCell?.field === "formulation_category" ? (
                         <Select
-                          value={String(getCellValue(formulation, "product_category"))}
+                          value={String(getCellValue(formulation, "formulation_category"))}
                           onValueChange={(value) =>
                             formulation.formulation_id && handleCellChange(
                               formulation.formulation_id,
-                              "product_category",
+                              "formulation_category",
                               value
                             )
                           }
@@ -412,7 +412,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                         </Select>
                       ) : (
                         <span className="block min-h-[32px] flex items-center">
-                          {getCellValue(formulation, "product_category") || "—"}
+                          {getCellValue(formulation, "formulation_category") || "—"}
                         </span>
                       )}
                     </td>
@@ -494,13 +494,13 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                     </td>
                     <td
                       className="p-3 cursor-pointer"
-                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "status")}
+                      onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "formulation_status")}
                     >
-                      {isEditing && editingCell?.field === "status" ? (
+                      {isEditing && editingCell?.field === "formulation_status" ? (
                         <Select
-                          value={String(getCellValue(formulation, "status"))}
+                          value={String(getCellValue(formulation, "formulation_status"))}
                           onValueChange={(value) =>
-                            formulation.formulation_id && handleCellChange(formulation.formulation_id, "status", value)
+                            formulation.formulation_id && handleCellChange(formulation.formulation_id, "formulation_status", value)
                           }
                           onOpenChange={(open) => !open && setEditingCell(null)}
                         >
@@ -520,11 +520,11 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                           <Badge
                             variant={
                               (statusColors[
-                                String(getCellValue(formulation, "status")) || "Not Yet Considered"
+                                String(getCellValue(formulation, "formulation_status")) || "Not Yet Considered"
                               ] as any) || "secondary"
                             }
                           >
-                            {getCellValue(formulation, "status") || "Not Yet Considered"}
+                            {getCellValue(formulation, "formulation_status") || "Not Yet Considered"}
                           </Badge>
                         </span>
                       )}

@@ -149,10 +149,7 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
 
   const handleRemove = async (eppoCodeId: string) => {
     startTransition(async () => {
-      const result = await removeFormulationTarget({
-        formulationId,
-        eppoCodeId,
-      });
+      const result = await removeFormulationTarget(formulationId, eppoCodeId);
 
       if (result.error) {
         toast({

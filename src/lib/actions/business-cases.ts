@@ -97,8 +97,8 @@ export async function createBusinessCase(formData: FormData) {
     return { error: `Failed to link use groups: ${junctionError.message}` };
   }
 
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
+  revalidateTag("business-cases", "page");
+  revalidateTag("formulations", "page");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -212,8 +212,8 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
     }
   }
 
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
+  revalidateTag("business-cases", "page");
+  revalidateTag("formulations", "page");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -232,8 +232,8 @@ export async function deleteBusinessCase(businessCaseId: string) {
     return { error: error.message };
   }
 
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
+  revalidateTag("business-cases", "page");
+  revalidateTag("formulations", "page");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -403,8 +403,8 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     }
   }
 
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
+  revalidateTag("business-cases", "page");
+  revalidateTag("formulations", "page");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -483,8 +483,8 @@ export async function updateBusinessCaseGroupAction(
     return { error: result.error };
   }
 
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
+  revalidateTag("business-cases", "page");
+  revalidateTag("formulations", "page");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");

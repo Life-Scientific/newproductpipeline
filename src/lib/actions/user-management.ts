@@ -119,7 +119,7 @@ export async function getAllUsers(): Promise<UserManagementData[]> {
     throw new Error(`Failed to fetch users: ${error.message}`);
   }
 
-  return (data || []).map((user) => ({
+  return (data || []).map((user: any) => ({
     id: user.id,
     email: user.email,
     user_created_at: user.user_created_at,
@@ -211,7 +211,7 @@ export async function getAllInvitations(): Promise<InvitationData[]> {
     throw new Error(`Failed to fetch invitations: ${error.message}`);
   }
 
-  return (data || []).map((invitation) => ({
+  return (data || []).map((invitation: any) => ({
     id: invitation.id,
     email: invitation.email,
     role: invitation.role as AppRole,
@@ -259,9 +259,10 @@ export async function inviteUserByEmail(
     throw new Error("Invalid role");
   }
 
-  // Check if user already exists
-  const { data: existingUser } = await adminSupabase.auth.admin.getUserByEmail(email);
-  if (existingUser?.user) {
+  // Check if user already exists - use listUsers and filter by email
+  const { data: usersData } = await adminSupabase.auth.admin.listUsers();
+  const existingUser = usersData?.users.find(u => u.email === email);
+  if (existingUser) {
     throw new Error("User with this email already exists");
   }
 

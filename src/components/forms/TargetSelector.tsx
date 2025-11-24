@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-type Target = Database["public"]["Tables"]["targets"]["Row"];
+type Target = any; // Database["public"]["Tables"]["targets"]["Row"]; // targets table may not exist in current schema
 
 export interface TargetInput {
   target_id: string;

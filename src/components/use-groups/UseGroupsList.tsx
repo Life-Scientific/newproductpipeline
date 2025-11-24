@@ -113,11 +113,11 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
       },
     },
     {
-      accessorKey: "actual_submission_date",
+      accessorKey: "earliest_actual_submission_date",
       header: "Submission Date",
       cell: ({ row }) => {
-        const actual = row.getValue("actual_submission_date") as string | null;
-        const planned = row.original.earliest_submission_date;
+        const actual = row.getValue("earliest_actual_submission_date") as string | null;
+        const planned = row.original.earliest_planned_submission_date;
         const date = actual || planned;
         return (
           <span className="text-sm text-muted-foreground">
@@ -127,11 +127,11 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
       },
     },
     {
-      accessorKey: "actual_approval_date",
+      accessorKey: "earliest_actual_approval_date",
       header: "Approval Date",
       cell: ({ row }) => {
-        const actual = row.getValue("actual_approval_date") as string | null;
-        const planned = row.original.earliest_approval_date;
+        const actual = row.getValue("earliest_actual_approval_date") as string | null;
+        const planned = row.original.earliest_planned_approval_date;
         const date = actual || planned;
         return (
           <span className="text-sm text-muted-foreground">
@@ -174,15 +174,15 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
       {editingUseGroup && (
         <UseGroupEditModal
           useGroup={{
-            formulation_country_use_group_id: editingUseGroup.formulation_country_use_group_id,
-            use_group_variant: editingUseGroup.use_group_variant || null,
+            formulation_country_use_group_id: editingUseGroup.formulation_country_use_group_id || "",
+            use_group_variant: editingUseGroup.use_group_variant || "",
             use_group_name: editingUseGroup.use_group_name || null,
             use_group_status: editingUseGroup.use_group_status || null,
             target_market_entry_fy: editingUseGroup.target_market_entry_fy || null,
-            earliest_planned_submission_date: editingUseGroup.earliest_submission_date || null,
-            earliest_planned_approval_date: editingUseGroup.earliest_approval_date || null,
-            earliest_actual_submission_date: editingUseGroup.actual_submission_date || null,
-            earliest_actual_approval_date: editingUseGroup.actual_approval_date || null,
+            earliest_planned_submission_date: editingUseGroup.earliest_planned_submission_date || null,
+            earliest_planned_approval_date: editingUseGroup.earliest_planned_approval_date || null,
+            earliest_actual_submission_date: editingUseGroup.earliest_actual_submission_date || null,
+            earliest_actual_approval_date: editingUseGroup.earliest_actual_approval_date || null,
             reference_product_id: editingUseGroup.reference_product_id || null,
             country_name: editingUseGroup.country_name || undefined,
             formulation_name: editingUseGroup.formulation_code || undefined,

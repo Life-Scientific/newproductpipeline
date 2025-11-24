@@ -36,14 +36,17 @@ const FormulationActionsCell = memo(function FormulationActionsCell({ formulatio
           setEditOpen(true);
         } else {
           // Fallback: create minimal formulation object from view data
+          const name = ("formulation_name" in formulation ? (formulation as any).formulation_name : ("product_name" in formulation ? formulation.product_name : null)) as string | null;
+          const category = ("formulation_category" in formulation ? (formulation as any).formulation_category : ("product_category" in formulation ? formulation.product_category : null)) as string | null;
+          const status = ("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) as string | null;
           setFormulationData({
-            formulation_id: formulation.formulation_id,
-            product_name: formulation.product_name || "",
-            product_category: formulation.product_category || "",
+            formulation_id: formulation.formulation_id || "",
+            formulation_name: name || "",
+            formulation_category: category || "",
             formulation_type: formulation.formulation_type || null,
             uom: formulation.uom || "L",
             short_name: formulation.short_name || null,
-            status: formulation.status || "Not Yet Considered",
+            formulation_status: status || "Not Yet Considered",
             status_rationale: null,
             base_code: "",
             variant_suffix: "",
@@ -53,19 +56,24 @@ const FormulationActionsCell = memo(function FormulationActionsCell({ formulatio
             created_by: null,
             created_at: null,
             updated_at: null,
+            formulation_readiness: "",
+            formulation_readiness_notes: null,
           } as FormulationTable);
           setEditOpen(true);
         }
       } catch {
         // Fallback on error
+        const name = ("formulation_name" in formulation ? (formulation as any).formulation_name : ("product_name" in formulation ? formulation.product_name : null)) as string | null;
+        const category = ("formulation_category" in formulation ? (formulation as any).formulation_category : ("product_category" in formulation ? formulation.product_category : null)) as string | null;
+        const status = ("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) as string | null;
         setFormulationData({
-          formulation_id: formulation.formulation_id,
-          product_name: formulation.product_name || "",
-          product_category: formulation.product_category || "",
+          formulation_id: formulation.formulation_id || "",
+          formulation_name: name || "",
+          formulation_category: category || "",
           formulation_type: formulation.formulation_type || null,
           uom: formulation.uom || "L",
           short_name: formulation.short_name || null,
-          status: formulation.status || "Not Yet Considered",
+          formulation_status: status || "Not Yet Considered",
           status_rationale: null,
           base_code: "",
           variant_suffix: "",
@@ -75,6 +83,8 @@ const FormulationActionsCell = memo(function FormulationActionsCell({ formulatio
           created_by: null,
           created_at: null,
           updated_at: null,
+          formulation_readiness: "",
+          formulation_readiness_notes: null,
         } as FormulationTable);
         setEditOpen(true);
       }
@@ -130,6 +140,11 @@ const createColumns = (): ColumnDef<Formulation>[] => [
     {
       accessorKey: "product_name",
       header: "Product Name",
+      cell: ({ row }) => {
+        const formulation = row.original;
+        const name = ("formulation_name" in formulation ? (formulation as any).formulation_name : ("product_name" in formulation ? formulation.product_name : null)) as string | null;
+        return <span>{name || "—"}</span>;
+      },
     },
     {
       accessorKey: "short_name",
@@ -142,15 +157,22 @@ const createColumns = (): ColumnDef<Formulation>[] => [
     {
       accessorKey: "product_category",
       header: "Category",
+      cell: ({ row }) => {
+        const formulation = row.original;
+        const category = ("formulation_category" in formulation ? (formulation as any).formulation_category : ("product_category" in formulation ? formulation.product_category : null)) as string | null;
+        return <span>{category || "—"}</span>;
+      },
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
-        const status = row.getValue("status") as string;
+        const formulation = row.original;
+        const status = ("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) as string | null;
+        const statusValue = status || "Not Yet Considered";
         return (
-          <Badge variant={statusColors[status] as any || "secondary"}>
-            {status}
+          <Badge variant={statusColors[statusValue] as any || "secondary"}>
+            {statusValue}
           </Badge>
         );
       },

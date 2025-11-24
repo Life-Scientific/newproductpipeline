@@ -193,9 +193,9 @@ export function FormulationTreeView({
                           >
                             <Globe className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-muted-foreground flex-shrink-0" />
                             <span className="font-medium truncate">{country.country_name}</span>
-                            {country.registration_status && (
+                            {country.country_status && (
                               <Badge variant="outline" className="ml-1 sm:ml-2 text-xs hidden sm:inline-flex">
-                                {country.registration_status}
+                                {country.country_status}
                               </Badge>
                             )}
                             <div className="ml-auto flex items-center gap-1 sm:gap-2 flex-shrink-0">
@@ -297,9 +297,9 @@ export function FormulationTreeView({
                                                 {useGroup.use_group_variant}
                                               </Badge>
                                             )}
-                                            {useGroup.registration_status && (
+                                            {useGroup.use_group_status && (
                                               <Badge variant="secondary" className="text-xs ml-1 sm:ml-2 hidden sm:inline-flex">
-                                                {useGroup.registration_status}
+                                                {useGroup.use_group_status}
                                               </Badge>
                                             )}
                                             {useGroupBusinessCases.length > 0 && (
@@ -321,22 +321,22 @@ export function FormulationTreeView({
                                                 <span>{useGroup.reference_product_name}</span>
                                               </div>
                                             )}
-                                            {useGroup.earliest_submission_date && (
+                                            {useGroup.earliest_planned_submission_date && (
                                               <div>
                                                 <span className="font-medium">Earliest Submission: </span>
-                                                <span>{new Date(useGroup.earliest_submission_date).toLocaleDateString()}</span>
+                                                <span>{new Date(useGroup.earliest_planned_submission_date).toLocaleDateString()}</span>
                                               </div>
                                             )}
-                                            {useGroup.actual_submission_date && (
+                                            {useGroup.earliest_actual_submission_date && (
                                               <div>
                                                 <span className="font-medium">Actual Submission: </span>
-                                                <span>{new Date(useGroup.actual_submission_date).toLocaleDateString()}</span>
+                                                <span>{new Date(useGroup.earliest_actual_submission_date).toLocaleDateString()}</span>
                                               </div>
                                             )}
-                                            {useGroup.actual_approval_date && (
+                                            {useGroup.earliest_actual_approval_date && (
                                               <div>
                                                 <span className="font-medium">Approved: </span>
-                                                <span>{new Date(useGroup.actual_approval_date).toLocaleDateString()}</span>
+                                                <span>{new Date(useGroup.earliest_actual_approval_date).toLocaleDateString()}</span>
                                               </div>
                                             )}
                                           </div>

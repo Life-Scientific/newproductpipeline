@@ -252,7 +252,7 @@ export function EnhancedDataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() =>
-    columns.map((col) => (col.id as string) || (col.accessorKey as string))
+    columns.map((col) => (col.id as string) || ((col as any).accessorKey as string))
   );
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [rowSelection, setRowSelection] = React.useState({});
@@ -481,7 +481,7 @@ export function EnhancedDataTable<TData, TValue>({
     if (!hasStickyColumns) return new Map<string, React.CSSProperties>();
     const map = new Map<string, React.CSSProperties>();
     visibleColumns.forEach((col) => {
-      const columnId = col.id || (col.columnDef.accessorKey as string);
+      const columnId = col.id || ((col.columnDef as any).accessorKey as string);
       map.set(columnId, getStickyStyle(columnId, false));
     });
     return map;
@@ -491,7 +491,7 @@ export function EnhancedDataTable<TData, TValue>({
     if (!hasStickyColumns) return new Map<string, React.CSSProperties>();
     const map = new Map<string, React.CSSProperties>();
     visibleColumns.forEach((col) => {
-      const columnId = col.id || (col.columnDef.accessorKey as string);
+      const columnId = col.id || ((col.columnDef as any).accessorKey as string);
       map.set(columnId, getStickyStyle(columnId, true));
     });
     return map;
@@ -525,7 +525,7 @@ export function EnhancedDataTable<TData, TValue>({
   const handleResetView = React.useCallback(() => {
     if (tableId) {
       TableUtils.deleteTableView(tableId);
-      setColumnOrder(columns.map((col) => (col.id as string) || (col.accessorKey as string)));
+      setColumnOrder(columns.map((col) => (col.id as string) || ((col as any).accessorKey as string)));
       setColumnVisibility({});
       setColumnSizing({});
       setPagination((prev) => ({ ...prev, pageSize: 25 }));
@@ -686,7 +686,7 @@ export function EnhancedDataTable<TData, TValue>({
                       strategy={horizontalListSortingStrategy}
                     >
                       {headerGroup.headers.map((header) => {
-                        const columnId = header.column.id || (header.column.columnDef.accessorKey as string);
+                        const columnId = header.column.id || ((header.column.columnDef as any).accessorKey as string);
                         const meta = header.column.columnDef.meta as {
                           align?: string;
                           minWidth?: string;
@@ -735,7 +735,7 @@ export function EnhancedDataTable<TData, TValue>({
                       className="h-12"
                     >
                       {row.getVisibleCells().map((cell) => {
-                        const columnId = cell.column.id || (cell.column.columnDef.accessorKey as string);
+                        const columnId = cell.column.id || ((cell.column.columnDef as any).accessorKey as string);
                         const meta = cell.column.columnDef.meta as {
                           align?: string;
                           sticky?: "left" | "right";
@@ -772,7 +772,7 @@ export function EnhancedDataTable<TData, TValue>({
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
-                    const columnId = header.column.id || (header.column.columnDef.accessorKey as string);
+                    const columnId = header.column.id || ((header.column.columnDef as any).accessorKey as string);
                     const meta = header.column.columnDef.meta as {
                       align?: string;
                       minWidth?: string;
@@ -813,7 +813,7 @@ export function EnhancedDataTable<TData, TValue>({
                     className="h-12"
                   >
                     {row.getVisibleCells().map((cell) => {
-                      const columnId = cell.column.id || (cell.column.columnDef.accessorKey as string);
+                      const columnId = cell.column.id || ((cell.column.columnDef as any).accessorKey as string);
                       const meta = cell.column.columnDef.meta as {
                         align?: string;
                         sticky?: "left" | "right";

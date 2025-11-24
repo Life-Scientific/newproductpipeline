@@ -93,9 +93,9 @@ export function FormulationHierarchyView({
                         )}
                         <Globe className="h-4 w-4 mr-2 text-muted-foreground" />
                         <span className="font-medium">{country.country_name}</span>
-                        {country.registration_status && (
+                        {country.country_status && (
                           <Badge variant="outline" className="ml-2">
-                            {country.registration_status}
+                            {country.country_status}
                           </Badge>
                         )}
                         {countryUseGroups.length > 0 && (
@@ -125,9 +125,9 @@ export function FormulationHierarchyView({
                                   {useGroup.use_group_variant}
                                 </Badge>
                               )}
-                              {useGroup.registration_status && (
+                              {useGroup.use_group_status && (
                                 <Badge variant="secondary" className="text-xs ml-auto">
-                                  {useGroup.registration_status}
+                                  {useGroup.use_group_status}
                                 </Badge>
                               )}
                             </Link>

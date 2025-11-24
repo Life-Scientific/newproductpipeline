@@ -28,7 +28,7 @@ export function ResourceAllocationChart({ businessCases }: ResourceAllocationCha
         cogs: 0,
         margin: 0,
         startYear: 9999,
-        name: bc.product_name || code,
+        name: (("formulation_name" in bc ? (bc as any).formulation_name : ("product_name" in bc ? (bc as any).product_name : null)) as string | null) || code,
       };
     }
     
@@ -42,7 +42,7 @@ export function ResourceAllocationChart({ businessCases }: ResourceAllocationCha
     }
   });
 
-  const data: ScatterDataPoint[] = Object.entries(formulationStats)
+  const data = Object.entries(formulationStats)
     .map(([code, stats]) => {
       if (stats.revenue === 0) return null;
       const marginPercent = (stats.margin / stats.revenue) * 100;
@@ -57,7 +57,7 @@ export function ResourceAllocationChart({ businessCases }: ResourceAllocationCha
         fill: marginPercent > 40 ? "var(--color-success)" : marginPercent > 20 ? "var(--color-info)" : "var(--color-warning)",
       };
     })
-    .filter((d): d is ScatterDataPoint => d !== null);
+    .filter((d) => d !== null) as ScatterDataPoint[];
 
   return (
     <ScatterPlotChart

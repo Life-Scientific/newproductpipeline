@@ -70,14 +70,14 @@ export function FormulationCountryForm({
     formulation_id: formulationCountry?.formulation_id || defaultFormulationId || "",
     country_id: formulationCountry?.country_id || defaultCountryId || "",
     likely_registration_pathway: formulationCountry?.likely_registration_pathway || "",
-    registration_status: formulationCountry?.registration_status || "",
-    target_market_entry_fy: formulationCountry?.target_market_entry_fy || "",
-    emd: formulationCountry?.earliest_market_entry_date || "",
-    keyedin_project_ids: formulationCountry?.keyedin_project_ids || "",
+    country_status: ("country_status" in (formulationCountry || {}) ? (formulationCountry as any).country_status : "") || "",
+    target_market_entry_fy: ("target_market_entry_fy" in (formulationCountry || {}) ? (formulationCountry as any).target_market_entry_fy : "") || "",
+    earliest_market_entry_date: formulationCountry?.earliest_market_entry_date || "",
+    keyedin_project_ids: ("keyedin_project_ids" in (formulationCountry || {}) ? (formulationCountry as any).keyedin_project_ids : "") || "",
     is_novel: formulationCountry?.is_novel || false,
     is_eu_approved_formulation: formulationCountry?.is_eu_approved_formulation || false,
     // is_in_active_portfolio: removed from schema
-    country_status: formulationCountry?.country_status || false,
+    // country_status: handled above as string
   });
 
   useEffect(() => {
@@ -98,6 +98,7 @@ export function FormulationCountryForm({
       .eq("formulation_id", formulationCountry.formulation_id)
       .single();
     if (formulationData) setSelectedFormulation(formulationData as Formulation);
+    else setSelectedFormulation(null);
 
     // Load selected country
     const { data: countryData } = await supabase
@@ -192,7 +193,7 @@ export function FormulationCountryForm({
                 placeholder="Search formulations..."
                 disabled={!!formulationCountry}
                 required
-                selectedFormulation={selectedFormulation}
+                selectedFormulation={selectedFormulation || undefined}
               />
             </div>
             <div className="space-y-2">
@@ -205,7 +206,7 @@ export function FormulationCountryForm({
                 placeholder="Search countries..."
                 disabled={!!formulationCountry}
                 required
-                selectedCountry={selectedCountry}
+                selectedCountry={selectedCountry || undefined}
               />
             </div>
           </div>
@@ -233,11 +234,11 @@ export function FormulationCountryForm({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="registration_status">Registration Status</Label>
+              <Label htmlFor="country_status">Registration Status</Label>
               <Select
-                value={formData.registration_status || "__none__"}
+                value={formData.country_status || "__none__"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, registration_status: value === "__none__" ? "" : value })
+                  setFormData({ ...formData, country_status: value === "__none__" ? "" : value })
                 }
               >
                 <SelectTrigger>
@@ -268,12 +269,12 @@ export function FormulationCountryForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="emd">EMD Date</Label>
+              <Label htmlFor="earliest_market_entry_date">EMD Date</Label>
               <Input
-                id="emd"
+                id="earliest_market_entry_date"
                 type="date"
                 value={formData.earliest_market_entry_date ? formData.earliest_market_entry_date.split("T")[0] : ""}
-                onChange={(e) => setFormData({ ...formData, emd: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, earliest_market_entry_date: e.target.value })}
               />
             </div>
           </div>
@@ -309,14 +310,7 @@ export function FormulationCountryForm({
               <Label htmlFor="is_eu_approved_formulation">EU Approved Formulation</Label>
             </div>
             {/* In Active Portfolio field removed from schema */}
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="country_status"
-                checked={formData.country_status}
-                onCheckedChange={(checked) => setFormData({ ...formData, country_status: checked })}
-              />
-              <Label htmlFor="country_status">Has Approval</Label>
-            </div>
+            {/* Has Approval field removed - use country_status Select above instead */}
           </div>
 
           <DialogFooter>

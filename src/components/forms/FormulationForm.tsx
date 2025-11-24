@@ -68,7 +68,7 @@ export function FormulationForm({
     formulation_type: formulation?.formulation_type || "",
     uom: formulation?.uom || "L",
     short_name: formulation?.short_name || "",
-    status: formulation?.status || "Not Yet Considered",
+    formulation_status: ("formulation_status" in (formulation || {}) ? (formulation as any).formulation_status : "") || "Not Yet Considered",
     status_rationale: formulation?.status_rationale || "",
   });
 
@@ -88,7 +88,7 @@ export function FormulationForm({
         formulation_type: formulation.formulation_type || "",
         uom: formulation.uom || "L",
         short_name: formulation.short_name || "",
-        status: formulation.status || "Not Yet Considered",
+        formulation_status: ("formulation_status" in formulation ? formulation.formulation_status : "") || "Not Yet Considered",
         status_rationale: formulation.status_rationale || "",
       });
       // Load existing ingredients when editing
@@ -101,7 +101,7 @@ export function FormulationForm({
         formulation_type: "",
         uom: "L",
         short_name: "",
-        status: "Not Yet Considered",
+        formulation_status: "Not Yet Considered",
         status_rationale: "",
       });
       setIngredients([]);
@@ -144,7 +144,7 @@ export function FormulationForm({
         return;
       }
 
-      const ingredientInputs: IngredientInput[] = (existingIngredients || []).map((ing) => ({
+      const ingredientInputs: IngredientInput[] = ((existingIngredients || []) as any[]).map((ing: any) => ({
         ingredient_id: ing.ingredient_id,
         quantity: ing.quantity.toString(),
         quantity_unit: ing.quantity_unit,
@@ -254,7 +254,7 @@ export function FormulationForm({
     form.append("formulation_type", formData.formulation_type);
     form.append("uom", formData.uom);
     if (formData.short_name) form.append("short_name", formData.short_name);
-    form.append("status", formData.status);
+    form.append("formulation_status", formData.formulation_status);
     if (formData.status_rationale) form.append("status_rationale", formData.status_rationale);
 
     // Add ingredients data
@@ -435,8 +435,8 @@ export function FormulationForm({
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select
-                value={formData.status}
-                onValueChange={(value) => setFormData({ ...formData, status: value })}
+                value={formData.formulation_status}
+                onValueChange={(value) => setFormData({ ...formData, formulation_status: value })}
               >
                 <SelectTrigger>
                   <SelectValue />

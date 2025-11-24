@@ -122,7 +122,7 @@ export function PipelineTrackerTreeView({
     const term = searchTerm.toLowerCase();
     return (
       f.formulation_code?.toLowerCase().includes(term) ||
-      f.product_name?.toLowerCase().includes(term)
+      ("formulation_name" in f ? (f as any).formulation_name : ("product_name" in f ? f.product_name : null))?.toLowerCase().includes(term)
     );
   });
 
@@ -217,20 +217,20 @@ export function PipelineTrackerTreeView({
                           >
                             <FlaskConical className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
                             <span className="font-semibold truncate">{formulationCode}</span>
-                            {formulation.product_name && (
+                            {("formulation_name" in formulation ? (formulation as any).formulation_name : ("product_name" in formulation ? formulation.product_name : null)) && (
                               <span className="text-muted-foreground ml-2 truncate hidden sm:inline">
-                                {formulation.product_name}
+                                {("formulation_name" in formulation ? (formulation as any).formulation_name : ("product_name" in formulation ? formulation.product_name : null)) as string}
                               </span>
                             )}
                             <div className="ml-auto flex items-center gap-2 flex-shrink-0">
-                              {formulation.formulation_status && (
-                                <Badge variant={getStatusVariant(formulation.formulation_status, 'formulation')} className="text-xs">
-                                  {formulation.formulation_status}
+                              {("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) && (
+                                <Badge variant={getStatusVariant(("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) as string, 'formulation')} className="text-xs">
+                                  {("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) as string}
                                 </Badge>
                               )}
-                              {formulation.readiness && (
-                                <Badge variant={getStatusVariant(formulation.readiness, 'country')} className="text-xs">
-                                  {formulation.readiness}
+                              {("formulation_readiness" in formulation ? (formulation as any).formulation_readiness : ("readiness" in formulation ? formulation.readiness : null)) && (
+                                <Badge variant={getStatusVariant(("formulation_readiness" in formulation ? (formulation as any).formulation_readiness : ("readiness" in formulation ? formulation.readiness : null)) as string, 'country')} className="text-xs">
+                                  {("formulation_readiness" in formulation ? (formulation as any).formulation_readiness : ("readiness" in formulation ? formulation.readiness : null)) as string}
                                 </Badge>
                               )}
                               <Badge variant="outline" className="text-xs">

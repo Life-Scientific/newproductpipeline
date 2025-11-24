@@ -40,7 +40,7 @@ export function MultiSelect({
   const inputRef = React.useRef<HTMLInputElement>(null)
   const triggerRef = React.useRef<HTMLDivElement>(null)
 
-  const handleUnselect = (value: string, e?: React.MouseEvent) => {
+  const handleUnselect = (value: string, e?: React.MouseEvent | React.KeyboardEvent) => {
     if (e) {
       e.preventDefault()
       e.stopPropagation()
@@ -132,7 +132,7 @@ export function MultiSelect({
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault()
                           e.stopPropagation()
-                          handleUnselect(option.value, e)
+                          handleUnselect(option.value, e as any)
                         }
                       }}
                       onMouseDown={(e) => {

@@ -57,9 +57,9 @@ export function FormulationRegulatory({
                     <TableHead>Combination Patents</TableHead>
                     <TableHead>Formulation Patents</TableHead>
                     <TableHead>Use Patents</TableHead>
-                    <TableHead>Blocking Assessments</TableHead>
+                    <TableHead>Blocking Patents</TableHead>
                     <TableHead>Earliest Patent Expiry</TableHead>
-                    <TableHead>Earliest Blocking Launch Date</TableHead>
+                    <TableHead>Earliest Estimated Launch Date</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -95,8 +95,8 @@ export function FormulationRegulatory({
                         )}
                       </TableCell>
                       <TableCell>
-                        {ps.blocking_assessments_count ? (
-                          <Badge variant="destructive">{ps.blocking_assessments_count}</Badge>
+                        {ps.blocking_patents_count ? (
+                          <Badge variant="destructive">{ps.blocking_patents_count}</Badge>
                         ) : (
                           "0"
                         )}
@@ -116,8 +116,8 @@ export function FormulationRegulatory({
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {ps.earliest_blocking_launch_date
-                          ? new Date(ps.earliest_blocking_launch_date).toLocaleDateString()
+                        {ps.earliest_estimated_launch_date
+                          ? new Date(ps.earliest_estimated_launch_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                     </TableRow>
@@ -137,13 +137,11 @@ export function FormulationRegulatory({
                     <TableHead>Country</TableHead>
                     <TableHead>Use Group Name</TableHead>
                     <TableHead>Variant</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Use Group Status</TableHead>
                     <TableHead>Earliest Submission</TableHead>
                     <TableHead>Earliest Approval</TableHead>
-                    <TableHead>Earliest Market Entry</TableHead>
                     <TableHead>Actual Submission</TableHead>
                     <TableHead>Actual Approval</TableHead>
-                    <TableHead>Actual Market Entry</TableHead>
                     <TableHead>Reference Product</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -156,40 +154,30 @@ export function FormulationRegulatory({
                         <Badge variant="outline">{useGroup.use_group_variant || "—"}</Badge>
                       </TableCell>
                       <TableCell>
-                        {useGroup.registration_status ? (
-                          <Badge variant="secondary">{useGroup.registration_status}</Badge>
+                        {useGroup.use_group_status ? (
+                          <Badge variant="secondary">{useGroup.use_group_status}</Badge>
                         ) : (
                           "—"
                         )}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {useGroup.earliest_submission_date
-                          ? new Date(useGroup.earliest_submission_date).toLocaleDateString()
+                        {useGroup.earliest_planned_submission_date
+                          ? new Date(useGroup.earliest_planned_submission_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {useGroup.earliest_approval_date
-                          ? new Date(useGroup.earliest_approval_date).toLocaleDateString()
+                        {useGroup.earliest_planned_approval_date
+                          ? new Date(useGroup.earliest_planned_approval_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {useGroup.earliest_market_entry_date
-                          ? new Date(useGroup.earliest_market_entry_date).toLocaleDateString()
+                        {useGroup.earliest_actual_submission_date
+                          ? new Date(useGroup.earliest_actual_submission_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {useGroup.actual_submission_date
-                          ? new Date(useGroup.actual_submission_date).toLocaleDateString()
-                          : "—"}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {useGroup.actual_approval_date
-                          ? new Date(useGroup.actual_approval_date).toLocaleDateString()
-                          : "—"}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {useGroup.actual_market_entry_date
-                          ? new Date(useGroup.actual_market_entry_date).toLocaleDateString()
+                        {useGroup.earliest_actual_approval_date
+                          ? new Date(useGroup.earliest_actual_approval_date).toLocaleDateString()
                           : "—"}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">

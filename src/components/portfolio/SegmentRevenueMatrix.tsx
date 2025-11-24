@@ -16,7 +16,7 @@ export function SegmentRevenueMatrix({ businessCases }: SegmentRevenueMatrixProp
   
   businessCases.forEach(bc => {
     const country = bc.country_name || "Unknown";
-    const category = bc.product_category || "Other";
+    const category = ("formulation_category" in bc ? (bc as any).formulation_category : ("product_category" in bc ? bc.product_category : null)) as string | null || "Other";
     const revenue = bc.total_revenue || 0;
     
     revenueByCountry[country] = (revenueByCountry[country] || 0) + revenue;

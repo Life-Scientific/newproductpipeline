@@ -44,10 +44,10 @@ export function MarketDetailDashboard({
 
     // Count registrations by status
     const approvedCount = registrations.filter(
-      (r) => r.registration_status === "Approved"
+      (r) => r.country_status === "Approved"
     ).length;
     const submittedCount = registrations.filter(
-      (r) => r.registration_status === "Submitted"
+      (r) => r.country_status === "Submitted"
     ).length;
 
     // Get formulation details
@@ -59,12 +59,15 @@ export function MarketDetailDashboard({
         const formMargin = formBCs.reduce((sum, bc) => sum + (bc.total_margin || 0), 0);
         const formMarginPercent = formRevenue > 0 ? (formMargin / formRevenue) * 100 : 0;
 
+        const name = formulation ? ("formulation_name" in formulation ? (formulation as any).formulation_name : ("product_name" in formulation ? formulation.product_name : null)) as string | null : null;
+        const category = formulation ? ("formulation_category" in formulation ? (formulation as any).formulation_category : ("product_category" in formulation ? formulation.product_category : null)) as string | null : null;
+        const status = formulation ? ("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) as string | null : null;
         return {
           id: formId,
           code: formulation?.formulation_code || "—",
-          name: formulation?.product_name || "—",
-          category: formulation?.formulation_category || "—",
-          status: formulation?.formulation_status || "—",
+          name: name || "—",
+          category: category || "—",
+          status: status || "—",
           revenue: formRevenue,
           marginPercent: formMarginPercent,
         };
@@ -263,21 +266,23 @@ export function MarketDetailDashboard({
             <div className="space-y-2">
               {registrations.slice(0, 10).map((reg) => (
                 <div
-                  key={`${reg.formulation_code}-${reg.use_group_variant}`}
+                  key={`${reg.formulation_code}-${reg.formulation_country_id}`}
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-sm font-semibold">
-                        {reg.formulation_code}
+                        {reg.formulation_code || "—"}
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        {reg.use_group_variant}
-                      </span>
+                      {reg.use_group_count && reg.use_group_count > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          {reg.use_group_count} use group{reg.use_group_count > 1 ? "s" : ""}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <Badge variant={reg.registration_status === "Approved" ? "default" : "secondary"}>
-                    {reg.registration_status}
+                  <Badge variant={reg.country_status === "Approved" ? "default" : "secondary"}>
+                    {reg.country_status || "—"}
                   </Badge>
                 </div>
               ))}
@@ -295,7 +300,6 @@ export function MarketDetailDashboard({
       <BusinessCaseCreateModal
         open={createModalOpen}
         onOpenChange={setCreateModalOpen}
-        defaultCountryId={country.country_id}
         onSuccess={() => {
           window.location.reload();
         }}

@@ -101,9 +101,9 @@ export function MarketOverviewDashboard({
 
       metric.registrationCount++;
       
-      if (reg.registration_status === "Approved") {
+      if (reg.country_status === "Approved") {
         metric.approvedRegistrations++;
-      } else if (reg.registration_status === "Submitted") {
+      } else if (reg.country_status === "Submitted") {
         metric.submittedRegistrations++;
       }
     });
