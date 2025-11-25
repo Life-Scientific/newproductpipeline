@@ -618,7 +618,7 @@ export function PipelineTrackerDashboard({
           useGroups={useGroups}
           businessCases={businessCases}
           searchTerm=""
-          statusFilter={Array.from(statusFilters)[0] || null}
+          statusFilter={Array.from(statusFilters)[0] || "all"}
         />
       )}
     </div>
