@@ -1,9 +1,10 @@
-import { getFormulationCountries } from "@/lib/db/queries";
+import { getCountriesWithStats } from "@/lib/db/queries";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
-import { FormulationCountriesList } from "@/components/formulations/FormulationCountriesList";
+import { CountryList } from "@/components/countries/CountryList";
+import type { CountryWithStats } from "@/lib/db/countries";
 
 export default async function CountriesPage() {
-  const countries = await getFormulationCountries();
+  const countries = await getCountriesWithStats() as CountryWithStats[];
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -12,12 +13,12 @@ export default async function CountriesPage() {
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold">Countries</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              View formulations by country and registration status
+              Explore markets by country with formulation and revenue data
             </p>
           </div>
         </div>
 
-        <FormulationCountriesList countries={countries} />
+        <CountryList countries={countries} />
       </AnimatedPage>
     </div>
   );

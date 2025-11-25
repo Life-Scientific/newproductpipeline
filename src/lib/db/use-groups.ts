@@ -4,40 +4,61 @@ import type { FormulationCountryUseGroup } from "./types";
 export async function getAllUseGroups() {
   const supabase = await createClient();
   
-  // Get all use groups
-  const { data: useGroups, error } = await supabase
-    .from("vw_formulation_country_use_group")
-    .select("*")
-    .order("formulation_code", { ascending: true })
-    .order("country_name", { ascending: true })
-    .order("use_group_name", { ascending: true });
+  // Fetch all use groups with pagination to avoid 1000 row limit
+  let allUseGroups: any[] = [];
+  let page = 0;
+  const pageSize = 1000;
+  let hasMore = true;
+  
+  while (hasMore) {
+    const { data: useGroups, error } = await supabase
+      .from("vw_formulation_country_use_group")
+      .select("*")
+      .order("formulation_code", { ascending: true })
+      .order("country_name", { ascending: true })
+      .order("use_group_name", { ascending: true })
+      .range(page * pageSize, (page + 1) * pageSize - 1);
 
-  if (error) {
-    throw new Error(`Failed to fetch use groups: ${error.message}`);
+    if (error) {
+      throw new Error(`Failed to fetch use groups: ${error.message}`);
+    }
+
+    if (!useGroups || useGroups.length === 0) {
+      hasMore = false;
+    } else {
+      allUseGroups = [...allUseGroups, ...useGroups];
+      hasMore = useGroups.length === pageSize;
+      page++;
+    }
   }
 
-  if (!useGroups || useGroups.length === 0) {
+  if (allUseGroups.length === 0) {
     return [];
   }
 
-  // Get unique formulation_country_ids and fetch formulation_ids
-  const countryIds = [...new Set(useGroups.map((ug) => ug.formulation_country_id).filter(Boolean))];
+  // Get unique formulation_country_ids and fetch formulation_ids (also paginated)
+  const countryIds = [...new Set(allUseGroups.map((ug) => ug.formulation_country_id).filter(Boolean))] as string[];
   
-  const { data: countryData } = await supabase
-    .from("formulation_country")
-    .select("formulation_country_id, formulation_id")
-    .in("formulation_country_id", countryIds);
-
-  // Create a map for quick lookup
+  // Fetch in batches to avoid query limits
+  const batchSize = 500;
   const countryIdToFormulationId = new Map<string, string>();
-  countryData?.forEach((fc) => {
-    if (fc.formulation_country_id) {
-      countryIdToFormulationId.set(fc.formulation_country_id, fc.formulation_id);
-    }
-  });
+  
+  for (let i = 0; i < countryIds.length; i += batchSize) {
+    const batch = countryIds.slice(i, i + batchSize);
+    const { data: countryData } = await supabase
+      .from("formulation_country")
+      .select("formulation_country_id, formulation_id")
+      .in("formulation_country_id", batch);
+    
+    countryData?.forEach((fc) => {
+      if (fc.formulation_country_id) {
+        countryIdToFormulationId.set(fc.formulation_country_id, fc.formulation_id);
+      }
+    });
+  }
 
   // Map use groups to include formulation_id
-  const useGroupsWithFormulationId = useGroups.map((useGroup) => ({
+  const useGroupsWithFormulationId = allUseGroups.map((useGroup) => ({
     ...useGroup,
     formulation_id: useGroup.formulation_country_id
       ? countryIdToFormulationId.get(useGroup.formulation_country_id) || null

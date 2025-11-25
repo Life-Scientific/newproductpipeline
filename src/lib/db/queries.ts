@@ -39,8 +39,12 @@ export {
 
 export {
   getCountries,
+  getCountryById,
+  getCountriesWithStats,
+  getCountryDetails,
   getExchangeRates,
   getLatestExchangeRate,
+  type CountryWithStats,
 } from "./countries";
 
 export {

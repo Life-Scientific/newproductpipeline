@@ -1,24 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { X, Filter, CheckCircle2 } from "lucide-react";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
-import { getFormulationsAction, getCountriesAction } from "@/lib/actions/business-cases";
-import { useSupabase } from "@/hooks/use-supabase";
-import type { Database } from "@/lib/supabase/database.types";
-type Formulation = Database["public"]["Tables"]["formulations"]["Row"] | Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
-type Country = Database["public"]["Tables"]["countries"]["Row"];
+import { cn } from "@/lib/utils";
+import type { BusinessCaseGroupData } from "@/lib/db/queries";
 
 interface BusinessCaseFiltersProps {
+  businessCases: BusinessCaseGroupData[];
   onFilterChange: (filters: {
     countryIds: string[];
     formulationIds: string[];
@@ -26,177 +18,316 @@ interface BusinessCaseFiltersProps {
   }) => void;
 }
 
-export function BusinessCaseFilters({ onFilterChange }: BusinessCaseFiltersProps) {
-  const supabase = useSupabase();
-  const [formulations, setFormulations] = useState<Formulation[]>([]);
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [useGroupOptions, setUseGroupOptions] = useState<MultiSelectOption[]>([]);
+export function BusinessCaseFilters({ businessCases, onFilterChange }: BusinessCaseFiltersProps) {
+  const [selectedCountryIds, setSelectedCountryIds] = useState<string[]>([]);
+  const [selectedFormulationIds, setSelectedFormulationIds] = useState<string[]>([]);
+  const [selectedUseGroupIds, setSelectedUseGroupIds] = useState<string[]>([]);
+  
+  // Track if we're doing auto-selection to prevent loops
+  const isAutoSelecting = useRef(false);
 
-  const [filters, setFilters] = useState({
-    countryIds: [] as string[],
-    formulationIds: [] as string[],
-    useGroupIds: [] as string[],
-  });
+  // Build ALL filter options from business cases
+  const allFilterOptions = useMemo(() => {
+    const countries = new Map<string, string>();
+    const formulations = new Map<string, string>();
+    const useGroups = new Map<string, string>();
 
-  // Load formulations and countries
-  useEffect(() => {
-    Promise.all([getFormulationsAction(), getCountriesAction()])
-      .then(([formResult, countryResult]) => {
-        if (formResult.data) setFormulations(formResult.data);
-        if (countryResult.data) setCountries(countryResult.data);
-        if (formResult.error || countryResult.error) {
-          console.error("Failed to load filter data:", formResult.error || countryResult.error);
-        }
-      })
-      .catch((error) => {
-        console.error("Failed to load filter data:", error);
-      });
-  }, []);
+    businessCases.forEach((bc) => {
+      if (bc.country_id && bc.country_name) {
+        countries.set(bc.country_id, bc.country_name);
+      }
+      if (bc.formulation_id && bc.formulation_name) {
+        const display = bc.formulation_code 
+          ? `${bc.formulation_name} (${bc.formulation_code})`
+          : bc.formulation_name;
+        formulations.set(bc.formulation_id, display);
+      }
+      const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+      const useGroupDisplay = bc.use_group_name 
+        ? `${bc.use_group_name}${bc.use_group_variant ? ` (${bc.use_group_variant})` : ''}`
+        : bc.use_group_variant || 'Unknown';
+      if (useGroupKey) {
+        useGroups.set(useGroupKey, useGroupDisplay);
+      }
+    });
 
-  // Load use groups when formulation or country changes
-  useEffect(() => {
-    if (filters.formulationIds.length === 0 && filters.countryIds.length === 0) {
-      setUseGroupOptions([]);
-      return;
-    }
-
-    // Build query to get formulation_country_ids that match selected countries and formulations
-    let query = supabase
-      .from("formulation_country")
-      .select("formulation_country_id")
-      .eq("is_active", true);
-
-    if (filters.countryIds.length > 0) {
-      query = query.in("country_id", filters.countryIds);
-    }
-
-    if (filters.formulationIds.length > 0) {
-      query = query.in("formulation_id", filters.formulationIds);
-    }
-
-    query
-      .then(({ data: fcData, error: fcError }) => {
-        if (fcError) {
-          console.error("Failed to load formulation countries:", fcError);
-          setUseGroupOptions([]);
-          return;
-        }
-
-        if (!fcData || fcData.length === 0) {
-          setUseGroupOptions([]);
-          return;
-        }
-
-        const fcIds = (fcData as any[]).map((fc: any) => fc.formulation_country_id).filter(Boolean) as string[];
-
-        // Get use groups for these formulation_country_ids
-        return supabase
-          .from("formulation_country_use_group")
-          .select("formulation_country_use_group_id, use_group_name, use_group_variant")
-          .in("formulation_country_id", fcIds)
-          .eq("is_active", true)
-          .order("use_group_variant") as any;
-      })
-      .then(async (result: any) => {
-        try {
-          const { data: useGroups, error: ugError } = result || { data: null, error: null };
-          if (ugError) {
-            console.error("Failed to load use groups:", ugError);
-            setUseGroupOptions([]);
-            return;
-          }
-
-          if (useGroups) {
-            const options: MultiSelectOption[] = (useGroups as any[]).map((ug: any) => ({
-              value: ug.formulation_country_use_group_id,
-              label: ug.use_group_name
-                ? `${ug.use_group_variant} - ${ug.use_group_name}`
-                : ug.use_group_variant,
-            }));
-            setUseGroupOptions(options);
-          } else {
-            setUseGroupOptions([]);
-          }
-        } catch (error) {
-          console.error("Failed to load use groups:", error);
-          setUseGroupOptions([]);
-        }
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.formulationIds, filters.countryIds]); // supabase is stable singleton
-
-  const handleFilterChange = (key: keyof typeof filters, value: string[]) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
-  };
-
-  const handleClearFilters = () => {
-    const clearedFilters = {
-      countryIds: [],
-      formulationIds: [],
-      useGroupIds: [],
+    return {
+      countries: Array.from(countries.entries())
+        .map(([value, label]) => ({ value, label }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+      formulations: Array.from(formulations.entries())
+        .map(([value, label]) => ({ value, label }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+      useGroups: Array.from(useGroups.entries())
+        .map(([value, label]) => ({ value, label }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
     };
-    setFilters(clearedFilters);
-    onFilterChange(clearedFilters);
-  };
+  }, [businessCases]);
 
-  const hasActiveFilters =
-    filters.countryIds.length > 0 ||
-    filters.formulationIds.length > 0 ||
-    filters.useGroupIds.length > 0;
+  // Available formulations based on selected countries
+  const availableFormulations = useMemo(() => {
+    if (selectedCountryIds.length === 0) {
+      return allFilterOptions.formulations;
+    }
+
+    const filteredFormulations = new Map<string, string>();
+    
+    businessCases.forEach((bc) => {
+      if (selectedCountryIds.includes(bc.country_id)) {
+        if (bc.formulation_id && bc.formulation_name) {
+          const display = bc.formulation_code 
+            ? `${bc.formulation_name} (${bc.formulation_code})`
+            : bc.formulation_name;
+          filteredFormulations.set(bc.formulation_id, display);
+        }
+      }
+    });
+
+    return Array.from(filteredFormulations.entries())
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [businessCases, selectedCountryIds, allFilterOptions.formulations]);
+
+  // Available use groups based on selected countries AND formulations
+  const availableUseGroups = useMemo(() => {
+    if (selectedCountryIds.length === 0 && selectedFormulationIds.length === 0) {
+      return allFilterOptions.useGroups;
+    }
+
+    const filteredUseGroups = new Map<string, string>();
+    
+    businessCases.forEach((bc) => {
+      const matchesCountry = selectedCountryIds.length === 0 || selectedCountryIds.includes(bc.country_id);
+      const matchesFormulation = selectedFormulationIds.length === 0 || selectedFormulationIds.includes(bc.formulation_id);
+      
+      if (matchesCountry && matchesFormulation) {
+        const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+        const useGroupDisplay = bc.use_group_name 
+          ? `${bc.use_group_name}${bc.use_group_variant ? ` (${bc.use_group_variant})` : ''}`
+          : bc.use_group_variant || 'Unknown';
+        if (useGroupKey) {
+          filteredUseGroups.set(useGroupKey, useGroupDisplay);
+        }
+      }
+    });
+
+    return Array.from(filteredUseGroups.entries())
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [businessCases, selectedCountryIds, selectedFormulationIds, allFilterOptions.useGroups]);
+
+  // Notify parent of filter changes
+  const notifyFilterChange = useCallback((
+    countryIds: string[],
+    formulationIds: string[],
+    useGroupIds: string[]
+  ) => {
+    onFilterChange({ countryIds, formulationIds, useGroupIds });
+  }, [onFilterChange]);
+
+  // Handle country selection change with cascading updates
+  const handleCountryChange = useCallback((newCountryIds: string[]) => {
+    isAutoSelecting.current = true;
+    
+    setSelectedCountryIds(newCountryIds);
+    
+    let newFormulationIds = selectedFormulationIds;
+    let newUseGroupIds = selectedUseGroupIds;
+    
+    // Filter out formulations that are no longer available
+    if (newCountryIds.length > 0) {
+      const validFormulationIds = new Set<string>();
+      businessCases.forEach((bc) => {
+        if (newCountryIds.includes(bc.country_id) && bc.formulation_id) {
+          validFormulationIds.add(bc.formulation_id);
+        }
+      });
+      
+      newFormulationIds = selectedFormulationIds.filter(id => validFormulationIds.has(id));
+      // Auto-select if only one formulation available
+      if (newFormulationIds.length === 0 && validFormulationIds.size === 1) {
+        newFormulationIds = Array.from(validFormulationIds);
+      }
+      setSelectedFormulationIds(newFormulationIds);
+    }
+    
+    // Filter out use groups that are no longer available
+    const validUseGroupIds = new Set<string>();
+    businessCases.forEach((bc) => {
+      const matchesCountry = newCountryIds.length === 0 || newCountryIds.includes(bc.country_id);
+      const matchesFormulation = newFormulationIds.length === 0 || newFormulationIds.includes(bc.formulation_id);
+      if (matchesCountry && matchesFormulation) {
+        const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+        if (useGroupKey) validUseGroupIds.add(useGroupKey);
+      }
+    });
+    newUseGroupIds = selectedUseGroupIds.filter(id => validUseGroupIds.has(id));
+    // Auto-select if only one use group available
+    if (newUseGroupIds.length === 0 && validUseGroupIds.size === 1) {
+      newUseGroupIds = Array.from(validUseGroupIds);
+    }
+    setSelectedUseGroupIds(newUseGroupIds);
+    
+    notifyFilterChange(newCountryIds, newFormulationIds, newUseGroupIds);
+    isAutoSelecting.current = false;
+  }, [businessCases, selectedFormulationIds, selectedUseGroupIds, notifyFilterChange]);
+
+  // Handle formulation selection change with cascading updates
+  const handleFormulationChange = useCallback((newFormulationIds: string[]) => {
+    isAutoSelecting.current = true;
+    
+    setSelectedFormulationIds(newFormulationIds);
+    
+    // Filter out use groups that are no longer available
+    const validUseGroupIds = new Set<string>();
+    businessCases.forEach((bc) => {
+      const matchesCountry = selectedCountryIds.length === 0 || selectedCountryIds.includes(bc.country_id);
+      const matchesFormulation = newFormulationIds.length === 0 || newFormulationIds.includes(bc.formulation_id);
+      if (matchesCountry && matchesFormulation) {
+        const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+        if (useGroupKey) validUseGroupIds.add(useGroupKey);
+      }
+    });
+    let newUseGroupIds = selectedUseGroupIds.filter(id => validUseGroupIds.has(id));
+    // Auto-select if only one use group available
+    if (newUseGroupIds.length === 0 && validUseGroupIds.size === 1) {
+      newUseGroupIds = Array.from(validUseGroupIds);
+    }
+    setSelectedUseGroupIds(newUseGroupIds);
+    
+    notifyFilterChange(selectedCountryIds, newFormulationIds, newUseGroupIds);
+    isAutoSelecting.current = false;
+  }, [businessCases, selectedCountryIds, selectedUseGroupIds, notifyFilterChange]);
+
+  // Handle use group selection change
+  const handleUseGroupChange = useCallback((newUseGroupIds: string[]) => {
+    setSelectedUseGroupIds(newUseGroupIds);
+    notifyFilterChange(selectedCountryIds, selectedFormulationIds, newUseGroupIds);
+  }, [selectedCountryIds, selectedFormulationIds, notifyFilterChange]);
+
+  // Clear all filters
+  const handleClearFilters = useCallback(() => {
+    setSelectedCountryIds([]);
+    setSelectedFormulationIds([]);
+    setSelectedUseGroupIds([]);
+    notifyFilterChange([], [], []);
+  }, [notifyFilterChange]);
+
+  const hasActiveFilters = selectedCountryIds.length > 0 || selectedFormulationIds.length > 0 || selectedUseGroupIds.length > 0;
+
+  // Count filtered business cases
+  const filteredCount = useMemo(() => {
+    return businessCases.filter((bc) => {
+      const matchesCountry = selectedCountryIds.length === 0 || selectedCountryIds.includes(bc.country_id);
+      const matchesFormulation = selectedFormulationIds.length === 0 || selectedFormulationIds.includes(bc.formulation_id);
+      let matchesUseGroup = true;
+      if (selectedUseGroupIds.length > 0) {
+        const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+        matchesUseGroup = selectedUseGroupIds.includes(useGroupKey);
+      }
+      return matchesCountry && matchesFormulation && matchesUseGroup;
+    }).length;
+  }, [businessCases, selectedCountryIds, selectedFormulationIds, selectedUseGroupIds]);
 
   return (
-    <div className="space-y-4 p-4 border rounded-lg bg-card">
+    <div className="space-y-4 p-4 border rounded-lg bg-card mb-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Filters</h3>
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <h3 className="text-sm font-semibold">Filters</h3>
+          {hasActiveFilters && (
+            <Badge variant="secondary" className="text-xs">
+              {filteredCount.toLocaleString()} of {businessCases.length.toLocaleString()}
+            </Badge>
+          )}
+        </div>
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-            <X className="h-4 w-4 mr-2" />
-            Clear Filters
+          <Button variant="ghost" size="sm" onClick={handleClearFilters} className="h-8 text-xs">
+            <X className="h-3 w-3 mr-1" />
+            Clear
           </Button>
         )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label>Country</Label>
+        {/* Country Filter */}
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium flex items-center justify-between">
+            <span>Country</span>
+            <span className="text-muted-foreground font-normal">
+              {allFilterOptions.countries.length}
+            </span>
+          </Label>
           <MultiSelect
-            options={countries.map((c) => ({
-              value: c.country_id,
-              label: c.country_name,
-            }))}
-            selected={filters.countryIds}
-            onChange={(selected) => handleFilterChange("countryIds", selected)}
-            placeholder="Select countries"
+            options={allFilterOptions.countries}
+            selected={selectedCountryIds}
+            onChange={handleCountryChange}
+            placeholder="All countries"
+            searchPlaceholder="Search countries..."
+            emptyText="No countries found"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label>Formulation</Label>
+        {/* Formulation Filter - filtered by country */}
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium flex items-center justify-between">
+            <span>Formulation</span>
+            <span className="text-muted-foreground font-normal">
+              {availableFormulations.length}
+            </span>
+          </Label>
           <MultiSelect
-            options={formulations.map((f) => ({
-              value: f.formulation_id || "",
-              label: ("formulation_name" in f ? f.formulation_name : null) || f.formulation_code || f.formulation_id || "",
-            }))}
-            selected={filters.formulationIds}
-            onChange={(selected) => handleFilterChange("formulationIds", selected)}
-            placeholder="Select formulations"
+            options={availableFormulations}
+            selected={selectedFormulationIds}
+            onChange={handleFormulationChange}
+            placeholder="All formulations"
+            searchPlaceholder="Search formulations..."
+            emptyText="No formulations found"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label>Use Group</Label>
+        {/* Use Group Filter - filtered by country AND formulation */}
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium flex items-center justify-between">
+            <span>Use Group</span>
+            <span className="text-muted-foreground font-normal">
+              {availableUseGroups.length}
+            </span>
+          </Label>
           <MultiSelect
-            options={useGroupOptions}
-            selected={filters.useGroupIds}
-            onChange={(selected) => handleFilterChange("useGroupIds", selected)}
-            placeholder="Select use groups"
-            disabled={useGroupOptions.length === 0}
+            options={availableUseGroups}
+            selected={selectedUseGroupIds}
+            onChange={handleUseGroupChange}
+            placeholder="All use groups"
+            searchPlaceholder="Search use groups..."
+            emptyText="No use groups found"
           />
         </div>
       </div>
+
+      {/* Active filter badges */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap gap-2 pt-2 border-t">
+          {selectedCountryIds.length > 0 && (
+            <Badge variant="outline" className="text-xs gap-1">
+              <CheckCircle2 className="h-3 w-3" />
+              {selectedCountryIds.length} {selectedCountryIds.length === 1 ? "country" : "countries"}
+            </Badge>
+          )}
+          {selectedFormulationIds.length > 0 && (
+            <Badge variant="outline" className="text-xs gap-1">
+              <CheckCircle2 className="h-3 w-3" />
+              {selectedFormulationIds.length} {selectedFormulationIds.length === 1 ? "formulation" : "formulations"}
+            </Badge>
+          )}
+          {selectedUseGroupIds.length > 0 && (
+            <Badge variant="outline" className="text-xs gap-1">
+              <CheckCircle2 className="h-3 w-3" />
+              {selectedUseGroupIds.length} {selectedUseGroupIds.length === 1 ? "use group" : "use groups"}
+            </Badge>
+          )}
+        </div>
+      )}
     </div>
   );
 }
-

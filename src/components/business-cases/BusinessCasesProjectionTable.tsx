@@ -3,10 +3,11 @@
 import { useState, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
+import { Edit, ChevronDown, ChevronsDown } from "lucide-react";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
 import { BusinessCaseEditModal } from "./BusinessCaseEditModal";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 interface BusinessCasesProjectionTableProps {
   businessCases: BusinessCaseGroupData[];
@@ -14,11 +15,14 @@ interface BusinessCasesProjectionTableProps {
   canEdit?: boolean; // Permission to edit business cases
 }
 
+const DEFAULT_PAGE_SIZE = 25;
+const LOAD_MORE_INCREMENT = 25;
+
 export function BusinessCasesProjectionTable({ businessCases, exchangeRates, canEdit = false }: BusinessCasesProjectionTableProps) {
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
+  const [displayCount, setDisplayCount] = useState(DEFAULT_PAGE_SIZE);
 
   // Helper function to get effective start fiscal year from stored value
-  // Use effective_start_fiscal_year from database (preserves creation context)
   const getEffectiveStartFiscalYear = (effectiveStartFiscalYear: string | null): number => {
     if (!effectiveStartFiscalYear) {
       return CURRENT_FISCAL_YEAR;
@@ -37,17 +41,13 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
     const currentFY = CURRENT_FISCAL_YEAR;
     const minFY = currentFY;
 
-    // Find the maximum effective start year across all business cases
-    // Use stored effective_start_fiscal_year (preserves creation context)
     const maxEffectiveStartYear = businessCases.reduce((max, bc) => {
       const effectiveStartYear = getEffectiveStartFiscalYear(bc.effective_start_fiscal_year);
       return Math.max(max, effectiveStartYear);
     }, currentFY);
 
-    // Calculate max fiscal year needed (latest effective start + 10 years for projection)
     const maxFY = Math.max(maxEffectiveStartYear + 10, currentFY + 10);
 
-    // Generate fiscal year columns
     const columns: Array<{ key: string; label: string; fiscalYear: number }> = [];
     for (let fy = minFY; fy <= maxFY; fy++) {
       columns.push({
@@ -60,7 +60,15 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
     return columns;
   }, [businessCases]);
 
-  // Helper function to parse fiscal year (e.g., "FY26" -> 26)
+  // Paginated business cases
+  const displayedBusinessCases = useMemo(() => {
+    return businessCases.slice(0, displayCount);
+  }, [businessCases, displayCount]);
+
+  const hasMore = displayCount < businessCases.length;
+  const remainingCount = businessCases.length - displayCount;
+
+  // Helper function to parse fiscal year
   const parseFiscalYear = (fy: string | null): number | null => {
     if (!fy) return null;
     const match = fy.match(/FY(\d{2})/);
@@ -73,25 +81,19 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
     return value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   };
 
-  // Helper function to convert to EUR and format
+  // Helper function to convert to EUR
   const convertToEUR = (value: number | null | undefined, countryId: string, currencyCode: string): number | null => {
     if (value === null || value === undefined) return null;
     
-    // If already in EUR, no conversion needed
     if (currencyCode?.toUpperCase() === "EUR") {
       return value;
     }
     
-    // Look up exchange rate for this country
     const rate = exchangeRates.get(countryId);
     if (rate && rate > 0) {
-      // exchange_rate_to_eur is the multiplier: local_currency / rate = EUR
-      // Example: if rate = 1.10 (USD to EUR), then $110 / 1.10 = €100
       return value / rate;
     }
     
-    // If no rate found, assume it's already EUR (might be missing exchange rate data)
-    // In production, you might want to log a warning here
     return value;
   };
 
@@ -110,6 +112,16 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
     return `${value.toFixed(1)}%`;
   };
 
+  // Load more handler
+  const handleLoadMore = () => {
+    setDisplayCount(prev => Math.min(prev + LOAD_MORE_INCREMENT, businessCases.length));
+  };
+
+  // Load all handler
+  const handleLoadAll = () => {
+    setDisplayCount(businessCases.length);
+  };
+
   if (businessCases.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -121,17 +133,48 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
 
   return (
     <>
-      <div className="overflow-x-auto">
+      {/* Summary bar */}
+      <div className="flex items-center justify-between mb-4 text-sm text-muted-foreground">
+        <span>
+          Showing {displayedBusinessCases.length.toLocaleString()} of {businessCases.length.toLocaleString()} business cases
+        </span>
+        {hasMore && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLoadMore}
+              className="h-8 text-xs"
+            >
+              <ChevronDown className="h-3 w-3 mr-1" />
+              Load {Math.min(LOAD_MORE_INCREMENT, remainingCount)} More
+            </Button>
+            {remainingCount > LOAD_MORE_INCREMENT && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLoadAll}
+                className="h-8 text-xs"
+              >
+                <ChevronsDown className="h-3 w-3 mr-1" />
+                Load All ({remainingCount.toLocaleString()})
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="overflow-x-auto border rounded-lg">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="sticky left-0 bg-background z-10 min-w-[150px]">Formulation</TableHead>
-              <TableHead className="sticky left-[150px] bg-background z-10 min-w-[120px]">Country</TableHead>
-              <TableHead className="sticky left-[270px] bg-background z-10 min-w-[150px]">Use Group</TableHead>
-              <TableHead className="sticky left-[420px] bg-background z-10 min-w-[120px]">Target Market Year</TableHead>
-              <TableHead className="min-w-[220px]">Metric</TableHead>
+            <TableRow className="bg-muted/50">
+              <TableHead className="sticky left-0 bg-muted/50 z-10 min-w-[150px]">Formulation</TableHead>
+              <TableHead className="sticky left-[150px] bg-muted/50 z-10 min-w-[120px]">Country</TableHead>
+              <TableHead className="sticky left-[270px] bg-muted/50 z-10 min-w-[150px]">Use Group</TableHead>
+              <TableHead className="sticky left-[420px] bg-muted/50 z-10 min-w-[100px]">TME</TableHead>
+              <TableHead className="min-w-[180px]">Metric</TableHead>
               {fiscalYearColumns.map((col) => (
-                <TableHead key={col.key} className="min-w-[100px] text-center">
+                <TableHead key={col.key} className="min-w-[90px] text-center text-xs">
                   {col.label}
                 </TableHead>
               ))}
@@ -139,15 +182,12 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
             </TableRow>
           </TableHeader>
           <TableBody>
-            {businessCases.map((bc, bcIndex) => {
+            {displayedBusinessCases.map((bc, bcIndex) => {
               const targetYear = parseFiscalYear(bc.target_market_entry);
               const uom = bc.uom || "L";
-              // Add subtle background for visual grouping by formulation
-              const isNewFormulation = bcIndex === 0 || businessCases[bcIndex - 1].formulation_id !== bc.formulation_id;
+              const isNewFormulation = bcIndex === 0 || displayedBusinessCases[bcIndex - 1].formulation_id !== bc.formulation_id;
               const rowGroupClass = isNewFormulation ? "border-t-2 border-border" : "";
 
-              // Create 6 rows per business case group (one for each metric)
-              // All currency values are converted to EUR
               const metricRows = [
                 {
                   label: `Volume (${uom})`,
@@ -157,7 +197,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   },
                 },
                 {
-                  label: `NSP (EUR/unit)`,
+                  label: `NSP (€/unit)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.nsp;
@@ -166,7 +206,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   },
                 },
                 {
-                  label: `COGS (EUR/unit)`,
+                  label: `COGS (€/unit)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.cogs_per_unit;
@@ -175,7 +215,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   },
                 },
                 {
-                  label: `Total Revenue (EUR)`,
+                  label: `Revenue (€)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.total_revenue;
@@ -184,7 +224,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   },
                 },
                 {
-                  label: `Total Gross Margin (EUR)`,
+                  label: `Margin (€)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.total_margin;
@@ -202,37 +242,49 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
               ];
 
               return metricRows.map((metric, metricIndex) => {
-                // Use stored effective_start_fiscal_year (preserves creation context)
                 const effectiveStartYear = getEffectiveStartFiscalYear(bc.effective_start_fiscal_year);
                 
                 return (
-                  <TableRow key={`${bc.business_case_group_id}-${metricIndex}`} className={metricIndex === 0 ? rowGroupClass : ""}>
+                  <TableRow 
+                    key={`${bc.business_case_group_id}-${metricIndex}`} 
+                    className={cn(
+                      metricIndex === 0 ? rowGroupClass : "",
+                      "hover:bg-muted/30 transition-colors"
+                    )}
+                  >
                     {metricIndex === 0 ? (
                       <>
-                        <TableCell className="sticky left-0 bg-background z-10 font-medium" rowSpan={6}>
-                          {bc.formulation_name && bc.formulation_code
-                            ? `${bc.formulation_name} (${bc.formulation_code})`
-                            : bc.formulation_name || bc.formulation_code || "—"}
+                        <TableCell className="sticky left-0 bg-background z-10 font-medium text-sm" rowSpan={6}>
+                          <div className="max-w-[140px] truncate" title={bc.formulation_name || bc.formulation_code || ""}>
+                            {bc.formulation_name || bc.formulation_code || "—"}
+                          </div>
+                          {bc.formulation_code && bc.formulation_name && (
+                            <div className="text-xs text-muted-foreground">{bc.formulation_code}</div>
+                          )}
                         </TableCell>
-                        <TableCell className="sticky left-[150px] bg-background z-10" rowSpan={6}>
+                        <TableCell className="sticky left-[150px] bg-background z-10 text-sm" rowSpan={6}>
                           {bc.country_name || "—"}
                         </TableCell>
-                        <TableCell className="sticky left-[270px] bg-background z-10" rowSpan={6}>
-                          {bc.use_group_name || bc.use_group_variant || "—"}
+                        <TableCell className="sticky left-[270px] bg-background z-10 text-sm" rowSpan={6}>
+                          <div className="max-w-[140px] truncate" title={bc.use_group_name || bc.use_group_variant || ""}>
+                            {bc.use_group_name || bc.use_group_variant || "—"}
+                          </div>
                         </TableCell>
-                        <TableCell className="sticky left-[420px] bg-background z-10" rowSpan={6}>
+                        <TableCell className="sticky left-[420px] bg-background z-10 text-sm" rowSpan={6}>
                           {bc.target_market_entry || "—"}
                         </TableCell>
                       </>
                     ) : null}
-                    <TableCell className="font-medium min-w-[220px]">{metric.label}</TableCell>
+                    <TableCell className="font-medium text-sm">{metric.label}</TableCell>
                     {fiscalYearColumns.map((col) => {
-                      // Gray out cells before effective start year (not target_market_entry)
                       const isBeforeEffectiveStart = col.fiscalYear < effectiveStartYear;
                       return (
                         <TableCell
                           key={col.key}
-                          className={`text-center ${isBeforeEffectiveStart ? "bg-muted/50 text-muted-foreground" : ""}`}
+                          className={cn(
+                            "text-center text-sm tabular-nums",
+                            isBeforeEffectiveStart && "bg-muted/50 text-muted-foreground"
+                          )}
                         >
                           {isBeforeEffectiveStart ? "—" : metric.getValue(col.fiscalYear)}
                         </TableCell>
@@ -244,8 +296,9 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                           variant="ghost"
                           size="sm"
                           onClick={() => setEditingGroupId(bc.business_case_group_id)}
+                          className="h-8"
                         >
-                          <Edit className="h-4 w-4 mr-2" />
+                          <Edit className="h-3.5 w-3.5 mr-1" />
                           Edit
                         </Button>
                       </TableCell>
@@ -257,6 +310,33 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
           </TableBody>
         </Table>
       </div>
+
+      {/* Bottom load more */}
+      {hasMore && (
+        <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t">
+          <Button
+            variant="outline"
+            onClick={handleLoadMore}
+            className="gap-2"
+          >
+            <ChevronDown className="h-4 w-4" />
+            Load {Math.min(LOAD_MORE_INCREMENT, remainingCount)} More
+          </Button>
+          {remainingCount > LOAD_MORE_INCREMENT && (
+            <Button
+              variant="ghost"
+              onClick={handleLoadAll}
+              className="gap-2"
+            >
+              <ChevronsDown className="h-4 w-4" />
+              Load All Remaining ({remainingCount.toLocaleString()})
+            </Button>
+          )}
+          <span className="text-sm text-muted-foreground">
+            {remainingCount.toLocaleString()} more to load
+          </span>
+        </div>
+      )}
 
       {canEdit && editingGroupId && (
         <BusinessCaseEditModal
@@ -270,4 +350,3 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
     </>
   );
 }
-
