@@ -238,6 +238,7 @@ export async function getCountryDetails(countryId: string) {
       totalRevenue,
       totalMargin,
       avgMarginPercent,
+      totalBusinessCases: businessCases.length,
     },
   };
 }

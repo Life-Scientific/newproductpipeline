@@ -203,11 +203,13 @@ export async function toggleMenuItemVisibility(menuItemId: string, isActive: boo
   // Schema uses role_id foreign key to roles table with role_name column
   const { data: roleData } = await supabase
     .from("user_roles")
-    .select("role_id, roles(role_name)")
+    .select("role_id, roles!inner(role_name)")
     .eq("user_id", user.id)
     .single();
   
-  const roleName = roleData?.roles?.role_name?.toLowerCase();
+  // With !inner join and single(), roles is returned as a single object but types show array
+  const roles = roleData?.roles as unknown as { role_name: string } | null;
+  const roleName = roles?.role_name?.toLowerCase();
   if (!roleData || (roleName !== "admin" && roleName !== "editor")) {
     throw new Error("Unauthorized: Admin or Editor access required");
   }
