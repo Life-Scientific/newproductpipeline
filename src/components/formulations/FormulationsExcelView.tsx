@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -178,106 +179,106 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-muted border-b">
-                <th className="p-3 text-left text-sm font-semibold border-r sticky left-0 bg-muted z-10 min-w-[120px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r sticky left-0 bg-muted z-10 min-w-[140px]">
                   Code
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[100px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[120px]">
                   Base Code
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[100px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[120px]">
                   Variant
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[220px]">
                   Product Name
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[150px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[170px]">
                   Short Name
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[120px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[140px]">
                   Category
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[150px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[170px]">
                   Type
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[80px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[100px]">
                   UOM
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[150px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[170px]">
                   Status
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[220px]">
                   Status Rationale
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[100px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[120px]">
                   Active
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[250px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[280px]">
                   Active Ingredients
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[300px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[320px]">
                   Full Composition
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[100px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[130px]">
                   Max Supply Risk
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[220px]">
                   Active Signature
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[120px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[140px]">
                   Created At
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[120px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[140px]">
                   Updated At
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[120px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[140px]">
                   Created By
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[80px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[100px]">
                   # Countries
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[220px]">
                   Countries
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[80px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[100px]">
                   # Use Groups
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[250px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[280px]">
                   Use Groups
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[100px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[120px]">
                   # Business Cases
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[120px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[140px]">
                   Total Revenue
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[120px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[140px]">
                   Total Margin
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[80px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[100px]">
                   # COGS
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[100px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[120px]">
                   Latest COGS
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[220px]">
                   Reg Statuses
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[220px]">
                   Protection Status
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[120px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[140px]">
                   Earliest EMD
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[100px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[120px]">
                   Latest TME FY
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[220px]">
                   Reference Products
                 </th>
-                <th className="p-3 text-left text-sm font-semibold border-r min-w-[200px]">
+                <th className="px-4 py-3 text-left text-base font-semibold border-r min-w-[220px]">
                   Crops
                 </th>
-                <th className="p-3 text-left text-sm font-semibold min-w-[200px]">
+                <th className="px-4 py-3 text-left text-base font-semibold min-w-[220px]">
                   Targets
                 </th>
               </tr>
@@ -294,17 +295,22 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                       rowHasChanges ? "bg-yellow-50 dark:bg-yellow-900/10" : ""
                     }`}
                   >
-                    <td className="p-3 border-r sticky left-0 bg-background z-10 font-medium">
-                      {formulation.formulation_code || "—"}
+                    <td className="px-4 py-3 border-r sticky left-0 bg-background z-10 font-medium">
+                      <Link 
+                        href={`/formulations/${formulation.formulation_id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {formulation.formulation_code || "—"}
+                      </Link>
                     </td>
-                    <td className="p-3 border-r text-sm">
+                    <td className="px-4 py-3 border-r">
                       {formulation.formulation_code?.split("-")[0] || "—"}
                     </td>
-                    <td className="p-3 border-r text-sm">
+                    <td className="px-4 py-3 border-r">
                       {formulation.formulation_code?.split("-")[1] || "—"}
                     </td>
                     <td
-                      className="p-3 border-r cursor-pointer"
+                      className="px-4 py-3 border-r cursor-pointer"
                       onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "formulation_name")}
                     >
                       {isEditing && editingCell?.field === "formulation_name" ? (
@@ -335,16 +341,20 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                             }
                           }}
                           autoFocus
-                          className="h-8"
+                          className="h-9"
                         />
                       ) : (
-                        <span className="block min-h-[32px] flex items-center">
+                        <Link
+                          href={`/formulations/${formulation.formulation_id}`}
+                          className="block min-h-[40px] flex items-center text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           {getCellValue(formulation, "formulation_name") || "—"}
-                        </span>
+                        </Link>
                       )}
                     </td>
                     <td
-                      className="p-3 border-r cursor-pointer"
+                      className="px-4 py-3 border-r cursor-pointer"
                       onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "short_name")}
                     >
                       {isEditing && editingCell?.field === "short_name" ? (
@@ -375,16 +385,16 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                             }
                           }}
                           autoFocus
-                          className="h-8"
+                          className="h-9"
                         />
                       ) : (
-                        <span className="block min-h-[32px] flex items-center text-muted-foreground">
+                        <span className="block min-h-[40px] flex items-center text-muted-foreground">
                           {getCellValue(formulation, "short_name") || "—"}
                         </span>
                       )}
                     </td>
                     <td
-                      className="p-3 border-r cursor-pointer"
+                      className="px-4 py-3 border-r cursor-pointer"
                       onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "formulation_category")}
                     >
                       {isEditing && editingCell?.field === "formulation_category" ? (
@@ -399,7 +409,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                           }
                           onOpenChange={(open) => !open && setEditingCell(null)}
                         >
-                          <SelectTrigger className="h-8">
+                          <SelectTrigger className="h-9">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -411,13 +421,13 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                           </SelectContent>
                         </Select>
                       ) : (
-                        <span className="block min-h-[32px] flex items-center">
+                        <span className="block min-h-[40px] flex items-center">
                           {getCellValue(formulation, "formulation_category") || "—"}
                         </span>
                       )}
                     </td>
                     <td
-                      className="p-3 border-r cursor-pointer"
+                      className="px-4 py-3 border-r cursor-pointer"
                       onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "formulation_type")}
                     >
                       {isEditing && editingCell?.field === "formulation_type" ? (
@@ -448,16 +458,16 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                             }
                           }}
                           autoFocus
-                          className="h-8"
+                          className="h-9"
                         />
                       ) : (
-                        <span className="block min-h-[32px] flex items-center">
+                        <span className="block min-h-[40px] flex items-center">
                           {getCellValue(formulation, "formulation_type") || "—"}
                         </span>
                       )}
                     </td>
                     <td
-                      className="p-3 border-r cursor-pointer"
+                      className="px-4 py-3 border-r cursor-pointer"
                       onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "uom")}
                     >
                       {isEditing && editingCell?.field === "uom" ? (
@@ -484,16 +494,16 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                             }
                           }}
                           autoFocus
-                          className="h-8"
+                          className="h-9"
                         />
                       ) : (
-                        <span className="block min-h-[32px] flex items-center">
+                        <span className="block min-h-[40px] flex items-center">
                           {getCellValue(formulation, "uom") || "—"}
                         </span>
                       )}
                     </td>
                     <td
-                      className="p-3 cursor-pointer"
+                      className="px-4 py-3 cursor-pointer"
                       onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "formulation_status")}
                     >
                       {isEditing && editingCell?.field === "formulation_status" ? (
@@ -504,7 +514,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                           }
                           onOpenChange={(open) => !open && setEditingCell(null)}
                         >
-                          <SelectTrigger className="h-8">
+                          <SelectTrigger className="h-9">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -516,7 +526,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                           </SelectContent>
                         </Select>
                       ) : (
-                        <span className="block min-h-[32px] flex items-center">
+                        <span className="block min-h-[40px] flex items-center">
                           <Badge
                             variant={
                               (statusColors[
@@ -530,7 +540,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                       )}
                     </td>
                     <td
-                      className="p-3 border-r cursor-pointer"
+                      className="px-4 py-3 border-r cursor-pointer"
                       onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "status_rationale")}
                     >
                       {isEditing && editingCell?.field === "status_rationale" ? (
@@ -560,17 +570,17 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                             }
                           }}
                           autoFocus
-                          className="h-16 min-w-[200px]"
+                          className="h-20 min-w-[220px]"
                           rows={2}
                         />
                       ) : (
-                        <span className="block min-h-[32px] flex items-center text-xs">
+                        <span className="block min-h-[40px] flex items-center text-sm">
                           {getCellValue(formulation, "status_rationale") || "—"}
                         </span>
                       )}
                     </td>
                     <td
-                      className="p-3 border-r cursor-pointer"
+                      className="px-4 py-3 border-r cursor-pointer"
                       onClick={() => formulation.formulation_id && handleCellClick(formulation.formulation_id, "is_active")}
                     >
                       {isEditing && editingCell?.field === "is_active" ? (
@@ -582,91 +592,91 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                           onBlur={() => setEditingCell(null)}
                         />
                       ) : (
-                        <span className="block min-h-[32px] flex items-center">
+                        <span className="block min-h-[40px] flex items-center">
                           <Badge variant={(getCellValue(formulation, "is_active") as boolean) ? "default" : "secondary"}>
                             {(getCellValue(formulation, "is_active") as boolean) ? "Yes" : "No"}
                           </Badge>
                         </span>
                       )}
                     </td>
-                    <td className="p-3 border-r text-xs text-muted-foreground">
+                    <td className="px-4 py-3 border-r text-sm text-muted-foreground">
                       {formulation.active_ingredients || "—"}
                     </td>
-                    <td className="p-3 border-r text-xs text-muted-foreground">
+                    <td className="px-4 py-3 border-r text-sm text-muted-foreground">
                       {formulation.full_composition || "—"}
                     </td>
-                    <td className="p-3 border-r text-xs">
+                    <td className="px-4 py-3 border-r text-sm">
                       {formulation.max_supply_risk_level
                         ? ["Low", "Medium", "High", "Critical"][formulation.max_supply_risk_level - 1] ||
                           "—"
                         : "—"}
                     </td>
-                    <td className="p-3 border-r text-xs font-mono text-muted-foreground break-all">
+                    <td className="px-4 py-3 border-r text-sm font-mono text-muted-foreground break-all">
                       {formulation.formulation_id?.slice(0, 8) + "..." || "—"}
                     </td>
-                    <td className="p-3 border-r text-xs text-muted-foreground">
+                    <td className="px-4 py-3 border-r text-sm text-muted-foreground">
                       {formulation.created_at
                         ? new Date(formulation.created_at).toLocaleDateString()
                         : "—"}
                     </td>
-                    <td className="p-3 border-r text-xs text-muted-foreground">
+                    <td className="px-4 py-3 border-r text-sm text-muted-foreground">
                       {formulation.updated_at
                         ? new Date(formulation.updated_at).toLocaleDateString()
                         : "—"}
                     </td>
-                    <td className="p-3 text-xs text-muted-foreground">—</td>
-                    <td className="p-3 border-r text-center font-medium">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">—</td>
+                    <td className="px-4 py-3 border-r text-center font-medium">
                       {formulation.countries_count || 0}
                     </td>
-                    <td className="p-3 border-r text-xs text-muted-foreground">
+                    <td className="px-4 py-3 border-r text-sm text-muted-foreground">
                       {formulation.countries_list || "—"}
                     </td>
-                    <td className="p-3 border-r text-center font-medium">
+                    <td className="px-4 py-3 border-r text-center font-medium">
                       {formulation.use_groups_count || 0}
                     </td>
-                    <td className="p-3 border-r text-xs text-muted-foreground">
+                    <td className="px-4 py-3 border-r text-sm text-muted-foreground">
                       {formulation.use_groups_list || "—"}
                     </td>
-                    <td className="p-3 border-r text-center font-medium">
+                    <td className="px-4 py-3 border-r text-center font-medium">
                       {formulation.business_cases_count || 0}
                     </td>
-                    <td className="p-3 border-r text-xs font-medium">
+                    <td className="px-4 py-3 border-r text-sm font-medium">
                       {formulation.total_revenue
                         ? `€${(formulation.total_revenue / 1000).toFixed(0)}K`
                         : "—"}
                     </td>
-                    <td className="p-3 border-r text-xs font-medium">
+                    <td className="px-4 py-3 border-r text-sm font-medium">
                       {formulation.total_margin
                         ? `€${(formulation.total_margin / 1000).toFixed(0)}K`
                         : "—"}
                     </td>
-                    <td className="p-3 border-r text-center">
+                    <td className="px-4 py-3 border-r text-center">
                       {formulation.cogs_count || 0}
                     </td>
-                    <td className="p-3 border-r text-xs">
+                    <td className="px-4 py-3 border-r text-sm">
                       {formulation.latest_cogs ? `€${formulation.latest_cogs.toFixed(2)}` : "—"}
                     </td>
-                    <td className="p-3 border-r text-xs text-muted-foreground">
+                    <td className="px-4 py-3 border-r text-sm text-muted-foreground">
                       {formulation.registration_statuses || "—"}
                     </td>
-                    <td className="p-3 border-r text-xs text-muted-foreground">
+                    <td className="px-4 py-3 border-r text-sm text-muted-foreground">
                       {formulation.protection_status || "—"}
                     </td>
-                    <td className="p-3 border-r text-xs text-muted-foreground">
+                    <td className="px-4 py-3 border-r text-sm text-muted-foreground">
                       {formulation.earliest_emd
                         ? new Date(formulation.earliest_emd).toLocaleDateString()
                         : "—"}
                     </td>
-                    <td className="p-3 border-r text-xs font-medium">
+                    <td className="px-4 py-3 border-r text-sm font-medium">
                       {formulation.latest_tme_fy || "—"}
                     </td>
-                    <td className="p-3 border-r text-xs text-muted-foreground">
+                    <td className="px-4 py-3 border-r text-sm text-muted-foreground">
                       {formulation.reference_products || "—"}
                     </td>
-                    <td className="p-3 border-r text-xs text-muted-foreground">
+                    <td className="px-4 py-3 border-r text-sm text-muted-foreground">
                       {formulation.crops_list || "—"}
                     </td>
-                    <td className="p-3 text-xs text-muted-foreground">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
                       {formulation.targets_list || "—"}
                     </td>
                   </tr>

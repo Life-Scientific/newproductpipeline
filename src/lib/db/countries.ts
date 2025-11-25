@@ -35,7 +35,7 @@ export async function getCountryById(countryId: string) {
 }
 
 /**
- * Helper to fetch all records with pagination (Supabase has 1000 row limit)
+ * Helper to fetch all records with pagination (Supabase has 10k row limit)
  */
 async function fetchAllPaginated<T>(
   supabase: any,
@@ -45,7 +45,7 @@ async function fetchAllPaginated<T>(
 ): Promise<T[]> {
   let allData: T[] = [];
   let page = 0;
-  const pageSize = 1000;
+  const pageSize = 10000;
   let hasMore = true;
   
   while (hasMore) {

@@ -156,7 +156,15 @@ const createColumns = (canEdit: boolean): ColumnDef<Formulation>[] => {
       cell: ({ row }) => {
         const formulation = row.original;
         const name = ("formulation_name" in formulation ? (formulation as any).formulation_name : ("product_name" in formulation ? formulation.product_name : null)) as string | null;
-        return <span>{name || "—"}</span>;
+        const id = formulation.formulation_id;
+        return (
+          <Link
+            href={`/formulations/${id}`}
+            className="text-primary hover:underline"
+          >
+            {name || "—"}
+          </Link>
+        );
       },
     },
     {

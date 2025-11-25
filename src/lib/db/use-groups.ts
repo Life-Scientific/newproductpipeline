@@ -4,10 +4,10 @@ import type { FormulationCountryUseGroup } from "./types";
 export async function getAllUseGroups() {
   const supabase = await createClient();
   
-  // Fetch all use groups with pagination to avoid 1000 row limit
+  // Fetch all use groups with pagination to avoid 10k row limit
   let allUseGroups: any[] = [];
   let page = 0;
-  const pageSize = 1000;
+  const pageSize = 10000;
   let hasMore = true;
   
   while (hasMore) {
@@ -39,8 +39,8 @@ export async function getAllUseGroups() {
   // Get unique formulation_country_ids and fetch formulation_ids (also paginated)
   const countryIds = [...new Set(allUseGroups.map((ug) => ug.formulation_country_id).filter(Boolean))] as string[];
   
-  // Fetch in batches to avoid query limits
-  const batchSize = 500;
+  // Fetch in batches to avoid .in() query URL length limits
+  const batchSize = 5000;
   const countryIdToFormulationId = new Map<string, string>();
   
   for (let i = 0; i < countryIds.length; i += batchSize) {

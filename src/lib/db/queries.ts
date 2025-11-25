@@ -93,16 +93,34 @@ import type {
 export const getFormulations = unstable_cache(
   async () => {
     const supabase = createCachedClient();
-    const { data, error } = await supabase
+    
+    // Supabase limit is 10k rows - fetch all with pagination if needed
+    const { count } = await supabase
       .from("vw_formulations_with_ingredients")
-      .select("*")
-      .order("formulation_code", { ascending: true });
-
-    if (error) {
-      throw new Error(`Failed to fetch formulations: ${error.message}`);
+      .select("*", { count: "exact", head: true });
+    
+    const pageSize = 10000;
+    const totalPages = Math.ceil((count || 0) / pageSize);
+    
+    let allData: any[] = [];
+    
+    for (let page = 0; page < totalPages; page++) {
+      const { data: pageData, error: pageError } = await supabase
+        .from("vw_formulations_with_ingredients")
+        .select("*")
+        .order("formulation_code", { ascending: true })
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+      
+      if (pageError) {
+        throw new Error(`Failed to fetch formulations: ${pageError.message}`);
+      }
+      
+      if (pageData) {
+        allData = allData.concat(pageData);
+      }
     }
 
-    return data as Formulation[];
+    return allData as Formulation[];
   },
   ["formulations"],
   { tags: ["formulations"] }
@@ -124,34 +142,88 @@ export async function getBlacklistedFormulations() {
   return data as FormulationTable[];
 }
 
+// Helper function to fetch all rows from a view/table with pagination
+async function fetchAllPaginatedFromView<T>(
+  supabase: ReturnType<typeof createCachedClient>,
+  viewName: string,
+  selectQuery: string,
+  orderBy?: { column: string; ascending: boolean }
+): Promise<T[]> {
+  const pageSize = 10000;
+  
+  // Get count first
+  const { count } = await supabase
+    .from(viewName)
+    .select("*", { count: "exact", head: true });
+  
+  const totalPages = Math.ceil((count || 0) / pageSize);
+  let allData: T[] = [];
+  
+  for (let page = 0; page < totalPages; page++) {
+    let query = supabase.from(viewName).select(selectQuery);
+    
+    if (orderBy) {
+      query = query.order(orderBy.column, { ascending: orderBy.ascending });
+    }
+    
+    const { data: pageData, error: pageError } = await query.range(page * pageSize, (page + 1) * pageSize - 1);
+    
+    if (pageError) {
+      throw new Error(`Failed to fetch ${viewName}: ${pageError.message}`);
+    }
+    
+    if (pageData) {
+      allData = allData.concat(pageData as T[]);
+    }
+  }
+  
+  return allData;
+}
+
 export const getFormulationsWithNestedData = unstable_cache(
   async (): Promise<FormulationWithNestedData[]> => {
     const supabase = createCachedClient();
     
-    // Get formulations
-    const { data: formulations, error: formulationsError } = await supabase
-      .from("vw_formulations_with_ingredients")
-      .select("*")
-      .order("formulation_code", { ascending: true });
+    // Get formulations with pagination (Supabase default limit is 10k)
+    const formulations = await fetchAllPaginatedFromView<Formulation>(
+      supabase,
+      "vw_formulations_with_ingredients",
+      "*",
+      { column: "formulation_code", ascending: true }
+    );
 
-    if (formulationsError || !formulations) {
-      throw new Error(`Failed to fetch formulations: ${formulationsError?.message}`);
+    if (!formulations || formulations.length === 0) {
+      return [];
     }
 
-    // Get all related data in parallel
-    const [countriesResult, useGroupsResult, businessCasesResult, cogsResult, protectionResult] = await Promise.all([
-      supabase.from("vw_formulation_country_detail").select("formulation_code, country_name, earliest_market_entry_date, target_market_entry_fy, normal_crop_usage, targets_treated"),
-      supabase.from("vw_formulation_country_use_group").select("formulation_code, use_group_name, use_group_variant, country_name, reference_product_name"),
-      supabase.from("vw_business_case").select("formulation_code, total_revenue, total_margin"),
-      supabase.from("vw_cogs").select("formulation_code, cogs_value, fiscal_year"),
-      supabase.from("vw_patent_protection_status").select("formulation_code, country_name, earliest_ingredient_patent_expiry, earliest_combination_patent_expiry, earliest_formulation_patent_expiry"),
+    // Get all related data in parallel with pagination
+    const [countriesData, useGroupsData, businessCasesData, cogsData, protectionData] = await Promise.all([
+      fetchAllPaginatedFromView<any>(
+        supabase,
+        "vw_formulation_country_detail",
+        "formulation_code, country_name, earliest_market_entry_date, target_market_entry_fy, normal_crop_usage, targets_treated"
+      ),
+      fetchAllPaginatedFromView<any>(
+        supabase,
+        "vw_formulation_country_use_group",
+        "formulation_code, use_group_name, use_group_variant, country_name, reference_product_name"
+      ),
+      fetchAllPaginatedFromView<any>(
+        supabase,
+        "vw_business_case",
+        "formulation_code, total_revenue, total_margin"
+      ),
+      fetchAllPaginatedFromView<any>(
+        supabase,
+        "vw_cogs",
+        "formulation_code, cogs_value, fiscal_year"
+      ),
+      fetchAllPaginatedFromView<any>(
+        supabase,
+        "vw_patent_protection_status",
+        "formulation_code, country_name, earliest_ingredient_patent_expiry, earliest_combination_patent_expiry, earliest_formulation_patent_expiry"
+      ),
     ]);
-
-    const countriesData = countriesResult.data || [];
-    const useGroupsData = useGroupsResult.data || [];
-    const businessCasesData = businessCasesResult.data || [];
-    const cogsData = cogsResult.data || [];
-    const protectionData = protectionResult.data || [];
 
     // Aggregate data by formulation_code
     const aggregated = new Map<string, {
@@ -682,13 +754,13 @@ async function enrichBusinessCases(
 export async function getBusinessCases() {
   const supabase = createCachedClient();
   
-  // Supabase has a default limit of 1000 rows - we need to fetch all
+  // Supabase has a default limit of 10k rows - we need to fetch all
   // First get total count, then fetch in batches if needed
   const { count } = await supabase
     .from("vw_business_case")
     .select("*", { count: "exact", head: true });
   
-  const pageSize = 1000;
+  const pageSize = 10000;
   const totalPages = Math.ceil((count || 0) / pageSize);
   
   let allData: any[] = [];
@@ -738,7 +810,7 @@ export async function getBusinessCasesForChart() {
     .from("vw_business_case")
     .select("fiscal_year", { count: "exact", head: true });
   
-  const pageSize = 1000;
+  const pageSize = 10000;
   const totalPages = Math.ceil((count || 0) / pageSize);
   
   let allData: any[] = [];
@@ -1010,7 +1082,7 @@ export const getBusinessCasesForProjectionTable = unstable_cache(
       .select("*", { count: "exact", head: true })
       .eq("status", "active");
     
-    const pageSize = 1000;
+    const pageSize = 10000;
     const totalPages = Math.ceil((count || 0) / pageSize);
     
     let allData: any[] = [];
@@ -1046,8 +1118,8 @@ export const getBusinessCasesForProjectionTable = unstable_cache(
     // target_market_entry_fy is now stored at the formulation_country_use_group level
     const businessCaseIds = data.map(bc => bc.business_case_id).filter(Boolean) as string[];
     
-    // Fetch junction data in batches if needed (Supabase .in() has limits)
-    const junctionBatchSize = 1000;
+    // Fetch junction data in batches if needed (Supabase .in() has URL length limits)
+    const junctionBatchSize = 5000;
     let junctionData: any[] = [];
     for (let i = 0; i < businessCaseIds.length; i += junctionBatchSize) {
       const batch = businessCaseIds.slice(i, i + junctionBatchSize);
