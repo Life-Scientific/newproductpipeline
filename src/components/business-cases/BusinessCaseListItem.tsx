@@ -138,7 +138,9 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
           </p>
           <div className="flex items-center justify-end gap-1">
             {(businessCase.total_margin || 0) < 0 && (
-              <AlertTriangle className="h-3 w-3 text-destructive" title="Negative margin: COGS exceeds NSP" />
+              <span title="Negative margin: COGS exceeds NSP">
+                <AlertTriangle className="h-3 w-3 text-destructive" />
+              </span>
             )}
             <p className={cn("text-xs font-medium", getMarginColorClass(businessCase.margin_percent))}>
               {businessCase.margin_percent !== null &&
