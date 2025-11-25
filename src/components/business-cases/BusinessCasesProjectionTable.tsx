@@ -7,13 +7,13 @@ import { Edit } from "lucide-react";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
 import { BusinessCaseEditModal } from "./BusinessCaseEditModal";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
-import { getCurrencySymbol } from "@/lib/utils/currency";
 
 interface BusinessCasesProjectionTableProps {
   businessCases: BusinessCaseGroupData[];
+  exchangeRates: Map<string, number>; // country_id -> exchange_rate_to_eur
 }
 
-export function BusinessCasesProjectionTable({ businessCases }: BusinessCasesProjectionTableProps) {
+export function BusinessCasesProjectionTable({ businessCases, exchangeRates }: BusinessCasesProjectionTableProps) {
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
 
   // Helper function to get effective start fiscal year from stored value
@@ -72,14 +72,35 @@ export function BusinessCasesProjectionTable({ businessCases }: BusinessCasesPro
     return value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   };
 
-  // Helper function to format currency
-  const formatCurrency = (value: number | null | undefined, currencyCode: string): string => {
-    if (value === null || value === undefined) return "—";
-    const symbol = getCurrencySymbol(currencyCode);
-    if (value >= 1000000) {
-      return `${symbol}${(value / 1000000).toFixed(1)}M`;
+  // Helper function to convert to EUR and format
+  const convertToEUR = (value: number | null | undefined, countryId: string, currencyCode: string): number | null => {
+    if (value === null || value === undefined) return null;
+    
+    // If already in EUR, no conversion needed
+    if (currencyCode?.toUpperCase() === "EUR") {
+      return value;
     }
-    return `${symbol}${formatNumber(value, 0)}`;
+    
+    // Look up exchange rate for this country
+    const rate = exchangeRates.get(countryId);
+    if (rate && rate > 0) {
+      // exchange_rate_to_eur is the multiplier: local_currency / rate = EUR
+      // Example: if rate = 1.10 (USD to EUR), then $110 / 1.10 = €100
+      return value / rate;
+    }
+    
+    // If no rate found, assume it's already EUR (might be missing exchange rate data)
+    // In production, you might want to log a warning here
+    return value;
+  };
+
+  // Helper function to format currency in EUR
+  const formatCurrencyEUR = (value: number | null | undefined): string => {
+    if (value === null || value === undefined) return "—";
+    if (value >= 1000000) {
+      return `€${(value / 1000000).toFixed(1)}M`;
+    }
+    return `€${formatNumber(value, 0)}`;
   };
 
   // Helper function to format percentage
@@ -106,7 +127,7 @@ export function BusinessCasesProjectionTable({ businessCases }: BusinessCasesPro
               <TableHead className="sticky left-[150px] bg-background z-10 min-w-[120px]">Country</TableHead>
               <TableHead className="sticky left-[270px] bg-background z-10 min-w-[150px]">Use Group</TableHead>
               <TableHead className="sticky left-[420px] bg-background z-10 min-w-[120px]">Target Market Year</TableHead>
-              <TableHead className="min-w-[180px]">Metric</TableHead>
+              <TableHead className="min-w-[220px]">Metric</TableHead>
               {fiscalYearColumns.map((col) => (
                 <TableHead key={col.key} className="min-w-[100px] text-center">
                   {col.label}
@@ -119,9 +140,9 @@ export function BusinessCasesProjectionTable({ businessCases }: BusinessCasesPro
             {businessCases.map((bc) => {
               const targetYear = parseFiscalYear(bc.target_market_entry);
               const uom = bc.uom || "L";
-              const currency = bc.currency_code || "USD";
 
               // Create 6 rows per business case group (one for each metric)
+              // All currency values are converted to EUR
               const metricRows = [
                 {
                   label: `Volume (${uom})`,
@@ -131,31 +152,39 @@ export function BusinessCasesProjectionTable({ businessCases }: BusinessCasesPro
                   },
                 },
                 {
-                  label: `NSP (${currency}/unit)`,
+                  label: `NSP (EUR/unit)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    return formatCurrency(bc.years_data[fyStr]?.nsp, currency);
+                    const localValue = bc.years_data[fyStr]?.nsp;
+                    const eurValue = convertToEUR(localValue, bc.country_id, bc.currency_code);
+                    return formatCurrencyEUR(eurValue);
                   },
                 },
                 {
-                  label: `COGS (${currency}/unit)`,
+                  label: `COGS (EUR/unit)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    return formatCurrency(bc.years_data[fyStr]?.cogs_per_unit, currency);
+                    const localValue = bc.years_data[fyStr]?.cogs_per_unit;
+                    const eurValue = convertToEUR(localValue, bc.country_id, bc.currency_code);
+                    return formatCurrencyEUR(eurValue);
                   },
                 },
                 {
-                  label: `Total Revenue (${currency})`,
+                  label: `Total Revenue (EUR)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    return formatCurrency(bc.years_data[fyStr]?.total_revenue, currency);
+                    const localValue = bc.years_data[fyStr]?.total_revenue;
+                    const eurValue = convertToEUR(localValue, bc.country_id, bc.currency_code);
+                    return formatCurrencyEUR(eurValue);
                   },
                 },
                 {
-                  label: `Total Gross Margin (${currency})`,
+                  label: `Total Gross Margin (EUR)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    return formatCurrency(bc.years_data[fyStr]?.total_margin, currency);
+                    const localValue = bc.years_data[fyStr]?.total_margin;
+                    const eurValue = convertToEUR(localValue, bc.country_id, bc.currency_code);
+                    return formatCurrencyEUR(eurValue);
                   },
                 },
                 {
@@ -189,7 +218,7 @@ export function BusinessCasesProjectionTable({ businessCases }: BusinessCasesPro
                         </TableCell>
                       </>
                     ) : null}
-                    <TableCell className="font-medium">{metric.label}</TableCell>
+                    <TableCell className="font-medium min-w-[220px]">{metric.label}</TableCell>
                     {fiscalYearColumns.map((col) => {
                       // Gray out cells before effective start year (not target_market_entry)
                       const isBeforeEffectiveStart = col.fiscalYear < effectiveStartYear;

@@ -18,35 +18,34 @@ const statusColors: Record<string, string> = {
 
 const columns: ColumnDef<Formulation>[] = [
   {
-    accessorKey: "formulation_code",
-    header: "Code",
+    accessorKey: "product_name",
+    header: "Formulation",
     cell: ({ row }) => {
-      const code = row.getValue("formulation_code") as string;
+      const name = row.getValue("product_name") as string;
+      const code = row.original.formulation_code;
       const id = row.original.formulation_id;
+      
+      // Display as "Name (Code)" format
+      const displayText = name && code 
+        ? `${name} (${code})`
+        : name || code || "—";
+      
       return (
         <Link
           href={`/formulations/${id}`}
           className="font-medium text-primary hover:underline"
         >
-          {code || "—"}
+          {displayText}
         </Link>
       );
     },
   },
   {
-    accessorKey: "product_name",
-    header: "Product Name",
+    accessorKey: "formulation_code",
+    header: "Code",
     cell: ({ row }) => {
-      const name = row.getValue("product_name") as string;
-      const id = row.original.formulation_id;
-      return (
-        <Link
-          href={`/formulations/${id}`}
-          className="font-medium text-primary hover:underline"
-        >
-          {name || "—"}
-        </Link>
-      );
+      const code = row.getValue("formulation_code") as string;
+      return <span className="text-sm text-muted-foreground">{code || "—"}</span>;
     },
   },
   {
@@ -116,6 +115,9 @@ const columns: ColumnDef<Formulation>[] = [
       const date = row.getValue("created_at") as string | null;
       return date ? new Date(date).toLocaleDateString() : "—";
     },
+    meta: {
+      minWidth: "100px",
+    },
   },
   {
     accessorKey: "updated_at",
@@ -123,6 +125,9 @@ const columns: ColumnDef<Formulation>[] = [
     cell: ({ row }) => {
       const date = row.getValue("updated_at") as string | null;
       return date ? new Date(date).toLocaleDateString() : "—";
+    },
+    meta: {
+      minWidth: "100px",
     },
   },
 ];

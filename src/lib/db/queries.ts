@@ -459,7 +459,10 @@ export async function getFormulationCountryDetails(formulationId: string) {
 
 /**
  * Helper function to deduplicate business cases by keeping the latest one
- * for each formulation-country-use_group-year combination
+ * for each unique business case + fiscal year combination
+ * 
+ * Each business case can have projections across multiple fiscal years,
+ * so fiscal_year MUST be part of the deduplication key.
  */
 function deduplicateBusinessCases(
   businessCases: BusinessCase[]
@@ -468,12 +471,13 @@ function deduplicateBusinessCases(
     return [];
   }
 
-  // Group by formulation_code + country_name + use_group_variant + year_offset
+  // Group by formulation_code + country_name + use_group_variant + year_offset + fiscal_year
+  // fiscal_year is critical - each year is a separate projection that must be preserved
   const groups = new Map<string, BusinessCase[]>();
   
   businessCases.forEach((bc) => {
-    // Create a unique key for grouping
-    const key = `${bc.formulation_code || ""}_${bc.country_name || ""}_${bc.use_group_variant || ""}_${bc.year_offset || ""}`;
+    // Create a unique key for grouping - INCLUDE fiscal_year
+    const key = `${bc.formulation_code || ""}_${bc.country_name || ""}_${bc.use_group_variant || ""}_${bc.year_offset || ""}_${bc.fiscal_year || ""}`;
     
     if (!groups.has(key)) {
       groups.set(key, []);
@@ -666,35 +670,104 @@ async function enrichBusinessCases(
   }));
 }
 
-export const getBusinessCases = unstable_cache(
-  async () => {
-    const supabase = createCachedClient();
-    const { data, error } = await supabase
+/**
+ * Get business cases - fetches all active business cases with pagination
+ * Note: This is NOT cached due to large payload size (>2MB)
+ * For chart aggregations, use getBusinessCaseSummaryByFiscalYear instead
+ */
+export async function getBusinessCases() {
+  const supabase = createCachedClient();
+  
+  // Supabase has a default limit of 1000 rows - we need to fetch all
+  // First get total count, then fetch in batches if needed
+  const { count } = await supabase
+    .from("vw_business_case")
+    .select("*", { count: "exact", head: true });
+  
+  const pageSize = 1000;
+  const totalPages = Math.ceil((count || 0) / pageSize);
+  
+  let allData: any[] = [];
+  
+  for (let page = 0; page < totalPages; page++) {
+    const { data: pageData, error: pageError } = await supabase
       .from("vw_business_case")
       .select("*")
-      .order("fiscal_year", { ascending: false })
-      .order("year_offset", { ascending: true });
-
-    if (error) {
-      console.error('getBusinessCases error:', error);
-      throw new Error(`Failed to fetch business cases: ${error.message}`);
+      .order("fiscal_year", { ascending: true })
+      .order("year_offset", { ascending: true })
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+    
+    if (pageError) {
+      console.error('getBusinessCases page error:', pageError);
+      throw new Error(`Failed to fetch business cases: ${pageError.message}`);
     }
+    
+    if (pageData) {
+      allData = allData.concat(pageData);
+    }
+  }
+  
+  const data = allData;
 
-    // Deduplicate before enrichment
-    const deduplicated = deduplicateBusinessCases(data || []);
-    const enriched = await enrichBusinessCases(deduplicated);
+  // Deduplicate before enrichment
+  const deduplicated = deduplicateBusinessCases(data || []);
+  const enriched = await enrichBusinessCases(deduplicated);
+  
+  // Filter out orphaned business cases (those without formulation_code or country_name)
+  // These are invalid business cases that shouldn't be returned
+  const validBusinessCases = enriched.filter(
+    (bc) => bc.formulation_code && bc.country_name
+  );
+  
+  return validBusinessCases;
+}
+
+/**
+ * Lightweight business case data for the 10-year projection chart
+ * Only fetches columns needed for chart aggregation
+ * NOT cached - data is too large (>2MB) for Next.js cache limits
+ */
+export async function getBusinessCasesForChart() {
+  const supabase = createCachedClient();
+  
+  const { count } = await supabase
+    .from("vw_business_case")
+    .select("fiscal_year", { count: "exact", head: true });
+  
+  const pageSize = 1000;
+  const totalPages = Math.ceil((count || 0) / pageSize);
+  
+  let allData: any[] = [];
+  
+  for (let page = 0; page < totalPages; page++) {
+    const { data: pageData, error: pageError } = await supabase
+      .from("vw_business_case")
+      .select(`
+        fiscal_year,
+        total_revenue,
+        total_margin,
+        total_cogs,
+        country_name,
+        country_id,
+        formulation_code,
+        formulation_name,
+        use_group_name
+      `)
+      .order("fiscal_year", { ascending: true })
+      .range(page * pageSize, (page + 1) * pageSize - 1);
     
-    // Filter out orphaned business cases (those without formulation_code or country_name)
-    // These are invalid business cases that shouldn't be returned
-    const validBusinessCases = enriched.filter(
-      (bc) => bc.formulation_code && bc.country_name
-    );
+    if (pageError) {
+      throw new Error(`Failed to fetch business cases for chart: ${pageError.message}`);
+    }
     
-    return validBusinessCases;
-  },
-  ["business-cases"],
-  { tags: ["business-cases"] }
-);
+    if (pageData) {
+      allData = allData.concat(pageData);
+    }
+  }
+  
+  // Filter orphans only
+  return allData.filter(bc => bc.formulation_code && bc.country_name);
+}
 
 export async function getBusinessCaseById(businessCaseId: string) {
   const supabase = await createClient();

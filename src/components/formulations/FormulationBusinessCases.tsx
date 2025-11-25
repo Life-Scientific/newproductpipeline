@@ -5,24 +5,52 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 import type { Database } from "@/lib/supabase/database.types";
+import { cn } from "@/lib/utils";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
 interface FormulationBusinessCasesProps {
   businessCases: BusinessCase[];
+  exchangeRates?: Map<string, number>; // country_id -> exchange_rate_to_eur
+}
+
+// Helper function to convert to EUR
+function convertToEUR(
+  value: number | null | undefined,
+  countryId: string | null,
+  currencyCode: string | null,
+  exchangeRates?: Map<string, number>
+): number | null {
+  if (value === null || value === undefined) return null;
+  
+  // If already in EUR, no conversion needed
+  if (currencyCode?.toUpperCase() === "EUR") {
+    return value;
+  }
+  
+  // Convert using exchange rate
+  if (exchangeRates && countryId) {
+    const rate = exchangeRates.get(countryId);
+    if (rate && rate > 0) {
+      return value / rate;
+    }
+  }
+  
+  // If no rate found, assume already EUR
+  return value;
 }
 
 function formatCurrency(value: number | null | undefined): string {
   if (!value && value !== 0) return "—";
   if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(2)}M`;
+    return `€${(value / 1000000).toFixed(2)}M`;
   }
   if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}K`;
+    return `€${(value / 1000).toFixed(0)}K`;
   }
-  return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `€${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function formatNumber(value: number | null | undefined): string {
@@ -30,7 +58,7 @@ function formatNumber(value: number | null | undefined): string {
   return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
-export function FormulationBusinessCases({ businessCases }: FormulationBusinessCasesProps) {
+export function FormulationBusinessCases({ businessCases, exchangeRates }: FormulationBusinessCasesProps) {
   const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
 
   // Group business cases by country
@@ -58,11 +86,23 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
     return new Map([...groups.entries()].sort((a, b) => a[0].localeCompare(b[0])));
   }, [businessCases]);
 
-  // Calculate summary for a country
+  // Calculate summary for a country (converted to EUR)
   const calculateCountrySummary = (cases: BusinessCase[]) => {
-    const totalRevenue = cases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
-    const totalMargin = cases.reduce((sum, bc) => sum + (bc.total_margin || 0), 0);
+    let totalRevenue = 0;
+    let totalMargin = 0;
     const totalVolume = cases.reduce((sum, bc) => sum + (bc.volume || 0), 0);
+    
+    cases.forEach((bc) => {
+      const countryId = (bc as any).country_id || null;
+      const currencyCode = (bc as any).currency_code || null;
+      
+      const revenueEUR = convertToEUR(bc.total_revenue, countryId, currencyCode, exchangeRates) || 0;
+      const marginEUR = convertToEUR(bc.total_margin, countryId, currencyCode, exchangeRates) || 0;
+      
+      totalRevenue += revenueEUR;
+      totalMargin += marginEUR;
+    });
+    
     const avgMarginPercent = cases.length > 0
       ? cases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) / cases.length
       : 0;
@@ -191,7 +231,12 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                                   )}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <span className="text-sm font-medium">{formatCurrency(bc.nsp)}</span>
+                                  {(() => {
+                                    const countryId = (bc as any).country_id || null;
+                                    const currencyCode = (bc as any).currency_code || null;
+                                    const eurValue = convertToEUR(bc.nsp, countryId, currencyCode, exchangeRates);
+                                    return <span className="text-sm font-medium">{formatCurrency(eurValue)}</span>;
+                                  })()}
                                   {bc.nsp_last_updated_by && (
                                     <div className="text-xs text-muted-foreground mt-0.5">
                                       by {bc.nsp_last_updated_by}
@@ -199,7 +244,12 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                                   )}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <span className="text-sm font-medium">{formatCurrency(bc.cogs_per_unit)}</span>
+                                  {(() => {
+                                    const countryId = (bc as any).country_id || null;
+                                    const currencyCode = (bc as any).currency_code || null;
+                                    const eurValue = convertToEUR(bc.cogs_per_unit, countryId, currencyCode, exchangeRates);
+                                    return <span className="text-sm font-medium">{formatCurrency(eurValue)}</span>;
+                                  })()}
                                   {bc.cogs_last_updated_by && (
                                     <div className="text-xs text-muted-foreground mt-0.5">
                                       by {bc.cogs_last_updated_by}
@@ -207,10 +257,29 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                                   )}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <span className="text-sm font-semibold">{formatCurrency(bc.total_revenue)}</span>
+                                  {(() => {
+                                    const countryId = (bc as any).country_id || null;
+                                    const currencyCode = (bc as any).currency_code || null;
+                                    const eurValue = convertToEUR(bc.total_revenue, countryId, currencyCode, exchangeRates);
+                                    return <span className="text-sm font-semibold">{formatCurrency(eurValue)}</span>;
+                                  })()}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <span className="text-sm font-semibold">{formatCurrency(bc.total_margin)}</span>
+                                  <div className="flex items-center justify-end gap-1">
+                                    {(bc.total_margin || 0) < 0 && (
+                                      <AlertTriangle className="h-3 w-3 text-destructive" title="Negative margin: COGS exceeds NSP" />
+                                    )}
+                                    {(() => {
+                                      const countryId = (bc as any).country_id || null;
+                                      const currencyCode = (bc as any).currency_code || null;
+                                      const eurValue = convertToEUR(bc.total_margin, countryId, currencyCode, exchangeRates);
+                                      return (
+                                        <span className={cn("text-sm font-semibold", (eurValue || 0) < 0 && "text-destructive")}>
+                                          {formatCurrency(eurValue)}
+                                        </span>
+                                      );
+                                    })()}
+                                  </div>
                                 </TableCell>
                                 <TableCell className="text-right">
                                   {bc.margin_percent !== null && bc.margin_percent !== undefined ? (

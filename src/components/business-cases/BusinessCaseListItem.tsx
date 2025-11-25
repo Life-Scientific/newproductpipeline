@@ -9,16 +9,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, ExternalLink } from "lucide-react";
+import { MoreHorizontal, ExternalLink, AlertTriangle } from "lucide-react";
 import type { EnrichedBusinessCase } from "@/lib/db/queries";
 import { cn } from "@/lib/utils";
 import { getStatusVariant } from "@/lib/design-system";
 
 interface BusinessCaseListItemProps {
   businessCase: EnrichedBusinessCase;
+  exchangeRates?: Map<string, number>; // country_id -> exchange_rate_to_eur
 }
 
-export function BusinessCaseListItem({ businessCase }: BusinessCaseListItemProps) {
+export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCaseListItemProps) {
   const router = useRouter();
 
   const handleNestedClick = (e: React.MouseEvent, href: string) => {
@@ -45,7 +46,7 @@ export function BusinessCaseListItem({ businessCase }: BusinessCaseListItemProps
           {businessCase.display_name || businessCase.business_case_name || "—"}
         </p>
         <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
-          {businessCase.formulation_id && businessCase.formulation_code ? (
+          {businessCase.formulation_id && (businessCase.formulation_code || businessCase.formulation_name) ? (
             <>
               <button
                 type="button"
@@ -57,7 +58,9 @@ export function BusinessCaseListItem({ businessCase }: BusinessCaseListItemProps
                 }
                 className="hover:text-primary hover:underline text-left"
               >
-                {businessCase.formulation_code}
+                {businessCase.formulation_name && businessCase.formulation_code
+                  ? `${businessCase.formulation_name} (${businessCase.formulation_code})`
+                  : businessCase.formulation_name || businessCase.formulation_code}
               </button>
               <span>•</span>
             </>
@@ -106,17 +109,44 @@ export function BusinessCaseListItem({ businessCase }: BusinessCaseListItemProps
       <div className="flex items-center gap-2 flex-shrink-0">
         <div className="text-right space-y-0.5">
           <p className="font-semibold text-sm">
-            $
-            {businessCase.total_revenue
-              ? (businessCase.total_revenue / 1000).toFixed(0) + "K"
-              : "—"}
+            {(() => {
+              if (!businessCase.total_revenue) return "—";
+              
+              // Convert to EUR if needed
+              let eurValue = businessCase.total_revenue;
+              
+              // Check if already in EUR (currency_code should be available from BusinessCase view)
+              const currencyCode = "currency_code" in businessCase ? (businessCase as any).currency_code : "";
+              if (currencyCode && currencyCode.toUpperCase() !== "EUR") {
+                // Convert from local currency to EUR
+                if (exchangeRates && businessCase.country_id) {
+                  const rate = exchangeRates.get(businessCase.country_id);
+                  if (rate && rate > 0) {
+                    eurValue = businessCase.total_revenue / rate;
+                  }
+                }
+              }
+              
+              if (eurValue >= 1000000) {
+                return `€${(eurValue / 1000000).toFixed(1)}M`;
+              }
+              if (eurValue >= 1000) {
+                return `€${(eurValue / 1000).toFixed(0)}K`;
+              }
+              return `€${eurValue.toFixed(0)}`;
+            })()}
           </p>
-          <p className={cn("text-xs font-medium", getMarginColorClass(businessCase.margin_percent))}>
-            {businessCase.margin_percent !== null &&
-            businessCase.margin_percent !== undefined
-              ? `${businessCase.margin_percent.toFixed(1)}% margin`
-              : "—"}
-          </p>
+          <div className="flex items-center justify-end gap-1">
+            {(businessCase.total_margin || 0) < 0 && (
+              <AlertTriangle className="h-3 w-3 text-destructive" title="Negative margin: COGS exceeds NSP" />
+            )}
+            <p className={cn("text-xs font-medium", getMarginColorClass(businessCase.margin_percent))}>
+              {businessCase.margin_percent !== null &&
+              businessCase.margin_percent !== undefined
+                ? `${businessCase.margin_percent.toFixed(1)}% margin`
+                : "—"}
+            </p>
+          </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

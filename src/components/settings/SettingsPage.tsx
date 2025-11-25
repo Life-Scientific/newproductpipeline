@@ -6,6 +6,7 @@ import { ProfileSettings } from "./ProfileSettings";
 import { ThemeSettings } from "./ThemeSettings";
 import { WorkspaceSettings } from "./WorkspaceSettings";
 import { UserManagement } from "./UserManagement";
+import { MenuVisibilitySettings } from "./MenuVisibilitySettings";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { isEditor } from "@/lib/actions/user-management";
 import { Edit } from "lucide-react";
@@ -52,8 +53,9 @@ export function SettingsPage() {
         <TabsContent value="theme" className="mt-6">
           <ThemeSettings />
         </TabsContent>
-        <TabsContent value="workspace" className="mt-6">
+        <TabsContent value="workspace" className="mt-6 space-y-6">
           <WorkspaceSettings />
+          {isUserEditor && <MenuVisibilitySettings />}
         </TabsContent>
         {isUserEditor && (
           <TabsContent value="users" className="mt-6">

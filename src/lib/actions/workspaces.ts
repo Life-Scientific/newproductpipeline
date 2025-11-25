@@ -167,3 +167,59 @@ export async function setUserDefaultWorkspace(workspaceId: string): Promise<void
   revalidatePath("/settings");
 }
 
+/**
+ * Get all menu items for a workspace (including inactive ones - admin only)
+ */
+export async function getAllWorkspaceMenuItems(workspaceId: string): Promise<WorkspaceMenuItem[]> {
+  const supabase = await createClient();
+  
+  const { data: menuItems, error: menuError } = await supabase
+    .from("workspace_menu_items")
+    .select("*")
+    .eq("workspace_id", workspaceId)
+    .order("group_name")
+    .order("display_order");
+  
+  if (menuError) {
+    throw new Error(`Failed to fetch menu items: ${menuError.message}`);
+  }
+  
+  return menuItems || [];
+}
+
+/**
+ * Toggle menu item visibility (admin only)
+ */
+export async function toggleMenuItemVisibility(menuItemId: string, isActive: boolean): Promise<void> {
+  const supabase = await createClient();
+  
+  // Check if user is admin (we'll import this from user-management)
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+  
+  // Check role - for now, allow editors too (we can restrict to admin later)
+  const { data: roleData } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
+  
+  if (!roleData || (roleData.role !== "admin" && roleData.role !== "editor")) {
+    throw new Error("Unauthorized: Admin or Editor access required");
+  }
+  
+  const { error } = await supabase
+    .from("workspace_menu_items")
+    .update({ is_active: isActive, updated_at: new Date().toISOString() })
+    .eq("menu_item_id", menuItemId);
+  
+  if (error) {
+    throw new Error(`Failed to update menu item: ${error.message}`);
+  }
+  
+  revalidatePath("/settings");
+  revalidatePath("/", "layout"); // Revalidate layout to refresh sidebar
+}
+

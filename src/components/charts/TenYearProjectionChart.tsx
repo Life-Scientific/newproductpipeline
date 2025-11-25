@@ -219,15 +219,33 @@ export function TenYearProjectionChart({
   const marginColor = "#10b981"; // Green
 
   // Get unique filter options
+  // Map formulation codes to "Name (Code)" display format
+  const formulationDisplayMap = useMemo(() => {
+    const map = new Map<string, string>(); // code -> display string
+    businessCases.forEach((bc) => {
+      if (bc.formulation_code && !map.has(bc.formulation_code)) {
+        const display = bc.formulation_name 
+          ? `${bc.formulation_name} (${bc.formulation_code})`
+          : bc.formulation_code;
+        map.set(bc.formulation_code, display);
+      }
+    });
+    return map;
+  }, [businessCases]);
+
   const filterOptions = useMemo(() => {
     const countries = new Set<string>();
-    const formulationCodes = new Set<string>();
+    const formulationDisplays = new Set<string>();
     const useGroups = new Set<string>();
     const statuses = new Set<string>();
 
     businessCases.forEach((bc) => {
       if (bc.country_name) countries.add(bc.country_name);
-      if (bc.formulation_code) formulationCodes.add(bc.formulation_code);
+      if (bc.formulation_code) {
+        // Use display format: "Name (Code)"
+        const display = formulationDisplayMap.get(bc.formulation_code) || bc.formulation_code;
+        formulationDisplays.add(display);
+      }
       if (bc.use_group_name) useGroups.add(bc.use_group_name);
     });
 
@@ -237,11 +255,11 @@ export function TenYearProjectionChart({
 
     return {
       countries: Array.from(countries).sort(),
-      formulations: Array.from(formulationCodes).sort(),
+      formulations: Array.from(formulationDisplays).sort(),
       useGroups: Array.from(useGroups).sort(),
       statuses: Array.from(statuses).sort(),
     };
-  }, [businessCases, formulations]);
+  }, [businessCases, formulations, formulationDisplayMap]);
 
   // Filter business cases based on active filters
   const filteredBusinessCases = useMemo(() => {
@@ -249,11 +267,12 @@ export function TenYearProjectionChart({
       if (filters.countries.length > 0 && !filters.countries.includes(bc.country_name || "")) {
         return false;
       }
-      if (
-        filters.formulations.length > 0 &&
-        !filters.formulations.includes(bc.formulation_code || "")
-      ) {
-        return false;
+      if (filters.formulations.length > 0) {
+        // Formulation filter uses display format "Name (Code)", so check if BC's display matches
+        const bcDisplay = formulationDisplayMap.get(bc.formulation_code || "") || bc.formulation_code || "";
+        if (!filters.formulations.includes(bcDisplay)) {
+          return false;
+        }
       }
       if (filters.useGroups.length > 0 && !filters.useGroups.includes(bc.use_group_name || "")) {
         return false;
@@ -266,11 +285,33 @@ export function TenYearProjectionChart({
       }
       return true;
     });
-  }, [businessCases, formulations, filters]);
+  }, [businessCases, formulations, filters, formulationDisplayMap]);
 
 
-  // Generate 10 years of data starting from current fiscal year
+  // Generate chart data - show consistent range from earliest data year through next 10 years
   const chartData = useMemo(() => {
+    // First, find the earliest fiscal year in the data
+    let earliestYear = CURRENT_FISCAL_YEAR;
+    filteredBusinessCases.forEach((bc) => {
+      if (bc.fiscal_year) {
+        const fyNum = parseInt(bc.fiscal_year.replace("FY", ""), 10);
+        if (fyNum < earliestYear) {
+          earliestYear = fyNum;
+        }
+      }
+    });
+
+    // Generate fiscal years from earliest year through next 10 years from current
+    // This ensures we show all historical data plus future projections
+    const endYear = Math.max(CURRENT_FISCAL_YEAR + 9, earliestYear + 19); // At least 20 years total
+    const fiscalYears: string[] = [];
+    
+    for (let fyNum = earliestYear; fyNum <= endYear; fyNum++) {
+      const fyStr = `FY${String(fyNum).padStart(2, "0")}`;
+      fiscalYears.push(fyStr);
+    }
+
+    // Initialize years array
     const years: Array<{
       fiscalYear: string;
       fiscalYearNum: number;
@@ -282,10 +323,8 @@ export function TenYearProjectionChart({
       count: number;
     }> = [];
 
-    // Generate next 10 fiscal years
-    for (let i = 0; i < 10; i++) {
-      const fyNum = CURRENT_FISCAL_YEAR + i;
-      const fyStr = `FY${String(fyNum).padStart(2, "0")}`;
+    fiscalYears.forEach((fyStr) => {
+      const fyNum = parseInt(fyStr.replace("FY", ""), 10);
       years.push({
         fiscalYear: fyStr,
         fiscalYearNum: fyNum,
@@ -296,22 +335,7 @@ export function TenYearProjectionChart({
         cogs: 0,
         count: 0,
       });
-    }
-
-    // Debug: Log chart generation info
-    if (process.env.NODE_ENV === 'development') {
-      console.log('TenYearProjectionChart Debug:', {
-        currentFiscalYear: CURRENT_FISCAL_YEAR,
-        generatedYears: years.map(y => y.fiscalYear),
-        businessCasesCount: filteredBusinessCases.length,
-        businessCasesWithFiscalYear: filteredBusinessCases.filter(bc => bc.fiscal_year).length,
-        sampleFiscalYears: filteredBusinessCases.slice(0, 5).map(bc => ({
-          fiscal_year: bc.fiscal_year,
-          total_revenue: bc.total_revenue,
-          country_id: bc.country_id,
-        })),
-      });
-    }
+    });
 
     // Aggregate filtered business cases by fiscal year
     filteredBusinessCases.forEach((bc) => {
@@ -349,9 +373,6 @@ export function TenYearProjectionChart({
           years[yearIndex].revenueEUR += localRevenue;
           years[yearIndex].marginEUR += localMargin;
         }
-      } else if (process.env.NODE_ENV === 'development') {
-        // Debug: log unmatched fiscal years
-        console.log('Unmatched fiscal year:', fy, 'from business case:', bc.business_case_id);
       }
     });
 
@@ -415,9 +436,9 @@ export function TenYearProjectionChart({
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <CardTitle className="text-xl font-semibold">10-Year Revenue Projection</CardTitle>
+              <CardTitle className="text-xl font-semibold">Revenue Projection</CardTitle>
               <CardDescription className="text-sm">
-                Projected revenue and margin over the next 10 fiscal years
+                Projected revenue and margin by fiscal year
                 {hasActiveFilters && (
                   <motion.span 
                     className="ml-1 font-medium text-foreground"
@@ -689,13 +710,14 @@ export function TenYearProjectionChart({
                 />
                 <XAxis 
                   dataKey="fiscalYear" 
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12, fontWeight: 500 }}
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11, fontWeight: 500 }}
                   axisLine={{ stroke: "hsl(var(--border))", strokeWidth: 1 }}
                   tickLine={{ stroke: "hsl(var(--border))" }}
-                  interval={0}
+                  interval={chartData.length > 15 ? "preserveStartEnd" : 0}
                   angle={-45}
                   textAnchor="end"
                   height={80}
+                  domain={['dataMin', 'dataMax']}
                 />
                 <YAxis 
                   label={{ 
@@ -790,6 +812,7 @@ export function TenYearProjectionChart({
                   dot={{ r: 3, fill: revenueColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
                   activeDot={false}
                   hide={true}
+                  legendType="none"
                   isAnimationActive={true}
                   animationBegin={2000}
                   animationDuration={400}
@@ -819,6 +842,7 @@ export function TenYearProjectionChart({
                   dot={{ r: 3, fill: marginColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
                   activeDot={false}
                   hide={true}
+                  legendType="none"
                   isAnimationActive={true}
                   animationBegin={2200}
                   animationDuration={400}
@@ -846,13 +870,14 @@ export function TenYearProjectionChart({
                 />
                 <XAxis 
                   dataKey="fiscalYear"
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12, fontWeight: 500 }}
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11, fontWeight: 500 }}
                   axisLine={{ stroke: "hsl(var(--border))", strokeWidth: 1 }}
                   tickLine={{ stroke: "hsl(var(--border))" }}
-                  interval={0}
+                  interval={chartData.length > 15 ? "preserveStartEnd" : 0}
                   angle={-45}
                   textAnchor="end"
                   height={80}
+                  domain={['dataMin', 'dataMax']}
                 />
                 <YAxis 
                   label={{ 

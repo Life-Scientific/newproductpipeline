@@ -1,6 +1,6 @@
 import {
   getFormulations,
-  getBusinessCases,
+  getBusinessCasesForChart,
   getActivePortfolio,
   getExchangeRates,
 } from "@/lib/db/queries";
@@ -30,7 +30,7 @@ export default async function Home() {
   try {
     [formulations, businessCases, activePortfolio, allExchangeRates] = await Promise.all([
       getFormulations(),
-      getBusinessCases(),
+      getBusinessCasesForChart(), // Lightweight version for chart - only essential columns
       getActivePortfolio(),
       getExchangeRates(),
     ]);
@@ -199,8 +199,12 @@ export default async function Home() {
         >
           {businessCases.length > 0 ? (
             <div className="space-y-2">
-              {businessCases.slice(0, 5).map((bc) => (
-                <BusinessCaseListItem key={bc.business_case_id} businessCase={bc} />
+              {businessCases.slice(0, 5).map((bc, index) => (
+                <BusinessCaseListItem 
+                  key={bc.business_case_id || `bc-${index}`} 
+                  businessCase={bc} 
+                  exchangeRates={exchangeRateMap}
+                />
               ))}
               {businessCases.length > 5 && (
                 <div className="pt-2 border-t">

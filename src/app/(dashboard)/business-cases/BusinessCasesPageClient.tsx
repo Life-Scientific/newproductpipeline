@@ -11,9 +11,10 @@ import type { BusinessCaseGroupData } from "@/lib/db/queries";
 
 interface BusinessCasesPageClientProps {
   initialBusinessCases: BusinessCaseGroupData[];
+  exchangeRates: Map<string, number>; // country_id -> exchange_rate_to_eur
 }
 
-export function BusinessCasesPageClient({ initialBusinessCases }: BusinessCasesPageClientProps) {
+export function BusinessCasesPageClient({ initialBusinessCases, exchangeRates }: BusinessCasesPageClientProps) {
   const [businessCases] = useState(initialBusinessCases);
   const [filters, setFilters] = useState({
     countryIds: [] as string[],
@@ -60,7 +61,10 @@ export function BusinessCasesPageClient({ initialBusinessCases }: BusinessCasesP
         </CardHeader>
         <CardContent className="p-0">
           <div className="p-4 sm:p-6 pt-0">
-            <BusinessCasesProjectionTable businessCases={filteredBusinessCases} />
+            <BusinessCasesProjectionTable 
+              businessCases={filteredBusinessCases} 
+              exchangeRates={exchangeRates}
+            />
           </div>
         </CardContent>
       </Card>

@@ -36,7 +36,15 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSupabase } from "@/hooks/use-supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
-import { getGroupedMenuItems } from "@/lib/config/menu";
+import * as Icons from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+// Helper function to get icon component from string name
+function getIconComponent(iconName: string | null): LucideIcon {
+  if (!iconName) return Icons.LayoutDashboard;
+  const IconComponent = (Icons as Record<string, any>)[iconName];
+  return IconComponent || Icons.LayoutDashboard;
+}
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -123,24 +131,54 @@ export function AppSidebar() {
     };
   }, []);
 
-  // Get menu items from config based on workspace
+  // Get menu items from database (respects is_active flag)
   const menuGroups = useMemo(() => {
-    if (!currentWorkspace) return [];
+    if (!workspaceWithMenu || !workspaceWithMenu.menu_items) return [];
     
-    const grouped = getGroupedMenuItems(currentWorkspace.slug);
+    // Group items by group_name
+    const grouped = new Map<string, typeof workspaceWithMenu.menu_items>();
     
-    return Array.from(grouped.entries()).map(([groupName, items]) => ({
-      groupName,
-      items: items.map(item => ({
-        ...item,
-        menu_item_id: item.path, // Use path as ID for compatibility
-        url: item.path,
-        group_name: item.group,
-        display_order: item.order,
-        is_active: true,
-      })),
-    }));
-  }, [currentWorkspace]);
+    workspaceWithMenu.menu_items.forEach((item) => {
+      if (!grouped.has(item.group_name)) {
+        grouped.set(item.group_name, []);
+      }
+      grouped.get(item.group_name)!.push(item);
+    });
+    
+    // Sort items within each group by display_order
+    grouped.forEach((items) => {
+      items.sort((a, b) => a.display_order - b.display_order);
+    });
+    
+    // Return groups in the desired order
+    const orderedGroups: Array<{ groupName: string; items: typeof workspaceWithMenu.menu_items }> = [];
+    const groupOrder = [
+      "Overview",
+      "Market & Strategy",
+      "Core Data",
+      "Financials",
+      "Analysis",
+      "System",
+    ];
+    
+    for (const groupName of groupOrder) {
+      if (grouped.has(groupName)) {
+        orderedGroups.push({
+          groupName,
+          items: grouped.get(groupName)!,
+        });
+      }
+    }
+    
+    // Add any remaining groups not in the order list
+    grouped.forEach((items, groupName) => {
+      if (!groupOrder.includes(groupName)) {
+        orderedGroups.push({ groupName, items });
+      }
+    });
+    
+    return orderedGroups;
+  }, [workspaceWithMenu]);
 
   return (
     <>
@@ -180,8 +218,8 @@ export function AppSidebar() {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {group.items.map((item) => {
-                    // Icon is already a component from the config
-                    const IconComponent = item.icon;
+                    // Get icon component from string name
+                    const IconComponent = getIconComponent(item.icon);
                     return (
                       <SidebarMenuItem key={item.menu_item_id}>
                         <SidebarMenuButton
