@@ -200,13 +200,15 @@ export async function toggleMenuItemVisibility(menuItemId: string, isActive: boo
   }
   
   // Check role - for now, allow editors too (we can restrict to admin later)
+  // Schema uses role_id foreign key to roles table with role_name column
   const { data: roleData } = await supabase
     .from("user_roles")
-    .select("role")
+    .select("role_id, roles(role_name)")
     .eq("user_id", user.id)
     .single();
   
-  if (!roleData || (roleData.role !== "admin" && roleData.role !== "editor")) {
+  const roleName = roleData?.roles?.role_name?.toLowerCase();
+  if (!roleData || (roleName !== "admin" && roleName !== "editor")) {
     throw new Error("Unauthorized: Admin or Editor access required");
   }
   
