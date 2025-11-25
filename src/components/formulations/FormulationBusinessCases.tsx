@@ -271,7 +271,9 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
                                 <TableCell className="text-right">
                                   <div className="flex items-center justify-end gap-1">
                                     {(bc.total_margin || 0) < 0 && (
-                                      <AlertTriangle className="h-3 w-3 text-destructive" title="Negative margin: COGS exceeds NSP" />
+                                      <span title="Negative margin: COGS exceeds NSP">
+                                        <AlertTriangle className="h-3 w-3 text-destructive" />
+                                      </span>
                                     )}
                                     {(() => {
                                       const countryId = (bc as any).country_id || null;
