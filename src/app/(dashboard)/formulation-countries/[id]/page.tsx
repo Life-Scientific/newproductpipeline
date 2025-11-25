@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { HierarchicalBreadcrumb } from "@/components/navigation/HierarchicalBreadcrumb";
+import { RevenueChart } from "@/components/charts/RevenueChart";
 import Link from "next/link";
 import {
   Globe,
@@ -307,6 +308,19 @@ export default async function FormulationCountryDetailPage({
             </CardContent>
           </Card>
         </div>
+
+        {/* Revenue Chart */}
+        {businessCases.length > 0 && (
+          <Card className="mt-6">
+            <CardHeader className="space-y-1.5">
+              <CardTitle>Revenue Projections</CardTitle>
+              <CardDescription>Financial projections by fiscal year for this formulation-country</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RevenueChart businessCases={businessCases} />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Business Cases */}
         {businessCases.length > 0 && (

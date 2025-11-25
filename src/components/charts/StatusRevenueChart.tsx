@@ -82,16 +82,64 @@ export function StatusRevenueChart({
         <ResponsiveContainer width="100%" height={300} className="min-h-[300px]">
           <BarChart data={chartData} onClick={handleClick} style={{ cursor: "pointer" }}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="status" angle={-45} textAnchor="end" height={80} />
+            <XAxis 
+              dataKey="status" 
+              angle={-45} 
+              textAnchor="end" 
+              height={80}
+              tickFormatter={(value) => {
+                const data = chartData.find(d => d.status === value);
+                return data ? `${value} (${data.count})` : value;
+              }}
+            />
             <YAxis label={{ value: "Amount (M$)", angle: -90, position: "insideLeft" }} />
             <Tooltip
-              formatter={(value: number, name: string) => {
+              formatter={(value: number, name: string, props: any) => {
                 if (name === "marginPercent") {
                   return `${value.toFixed(1)}%`;
                 }
+                if (name === "count") {
+                  return `${value} business cases`;
+                }
                 return `$${value.toFixed(2)}M`;
               }}
-              labelFormatter={(label) => `Status: ${label}`}
+              labelFormatter={(label) => {
+                const data = chartData.find(d => d.status === label);
+                return `Status: ${label}${data ? ` (${data.count} cases)` : ''}`;
+              }}
+              content={({ active, payload, label }) => {
+                if (active && payload && payload.length) {
+                  const data = chartData.find(d => d.status === label);
+                  return (
+                    <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
+                      <p className="font-semibold text-sm mb-2">
+                        Status: {label}
+                        {data && <span className="ml-2 text-muted-foreground font-normal">({data.count} business cases)</span>}
+                      </p>
+                      {payload.map((entry: any, index: number) => {
+                        if (entry.dataKey === 'count') return null;
+                        const color = entry.color || (entry.dataKey === 'revenue' ? '#8884d8' : '#82ca9d');
+                        const name = entry.name;
+                        return (
+                          <div key={index} className="flex items-center gap-2 text-sm">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
+                              style={{ backgroundColor: color }}
+                            />
+                            <span className="text-muted-foreground">{name}:</span>
+                            <span className="font-medium">
+                              {name === "Margin %" 
+                                ? `${Number(entry.value).toFixed(1)}%`
+                                : `$${Number(entry.value).toFixed(2)}M`}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                }
+                return null;
+              }}
             />
             <Legend />
             <Bar dataKey="revenue" fill="#8884d8" name="Revenue (M$)" />

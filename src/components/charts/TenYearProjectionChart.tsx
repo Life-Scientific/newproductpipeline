@@ -51,10 +51,12 @@ interface FilterMultiSelectProps {
   options: string[];
   selected: string[];
   onSelectionChange: (selected: string[]) => void;
+  counts?: Map<string, number>; // Map of option -> count
+  disabled?: boolean; // Whether the filter is disabled
 }
 
 // Client-only wrapper to prevent hydration mismatch
-function FilterMultiSelectClient({ label, options, selected, onSelectionChange }: FilterMultiSelectProps) {
+function FilterMultiSelectClient({ label, options, selected, onSelectionChange, counts, disabled = false }: FilterMultiSelectProps) {
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -107,9 +109,11 @@ function FilterMultiSelectClient({ label, options, selected, onSelectionChange }
       <PopoverTrigger asChild>
         <Button
           variant="outline"
+          disabled={disabled}
           className={cn(
             "w-full justify-between transition-colors",
-            selected.length > 0 && "bg-accent border-primary/20"
+            selected.length > 0 && "bg-accent border-primary/20",
+            disabled && "opacity-50 cursor-not-allowed"
           )}
         >
           <span className="truncate text-sm">
@@ -186,6 +190,11 @@ function FilterMultiSelectClient({ label, options, selected, onSelectionChange }
                       onClick={(e) => e.stopPropagation()}
                     />
                     <span className="flex-1 truncate">{option}</span>
+                    {counts && counts.has(option) && (
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        ({counts.get(option)})
+                      </span>
+                    )}
                   </label>
                 );
               })}
@@ -239,18 +248,39 @@ export function TenYearProjectionChart({
     const useGroups = new Set<string>();
     const statuses = new Set<string>();
 
+    // Count maps for each filter type
+    const countryCounts = new Map<string, number>();
+    const formulationCounts = new Map<string, number>();
+    const useGroupCounts = new Map<string, number>();
+    const statusCounts = new Map<string, number>();
+
     businessCases.forEach((bc) => {
-      if (bc.country_name) countries.add(bc.country_name);
+      if (bc.country_name) {
+        countries.add(bc.country_name);
+        countryCounts.set(bc.country_name, (countryCounts.get(bc.country_name) || 0) + 1);
+      }
       if (bc.formulation_code) {
         // Use display format: "Name (Code)"
         const display = formulationDisplayMap.get(bc.formulation_code) || bc.formulation_code;
         formulationDisplays.add(display);
+        formulationCounts.set(display, (formulationCounts.get(display) || 0) + 1);
       }
-      if (bc.use_group_name) useGroups.add(bc.use_group_name);
+      if (bc.use_group_name) {
+        useGroups.add(bc.use_group_name);
+        useGroupCounts.set(bc.use_group_name, (useGroupCounts.get(bc.use_group_name) || 0) + 1);
+      }
     });
 
     formulations.forEach((f) => {
-      if (f.status) statuses.add(f.status);
+      if (f.status) {
+        statuses.add(f.status);
+        // Count business cases for this status
+        const bcCount = businessCases.filter(bc => {
+          const formulation = formulations.find(form => form.formulation_code === bc.formulation_code);
+          return formulation?.status === f.status;
+        }).length;
+        statusCounts.set(f.status, bcCount);
+      }
     });
 
     return {
@@ -258,6 +288,10 @@ export function TenYearProjectionChart({
       formulations: Array.from(formulationDisplays).sort(),
       useGroups: Array.from(useGroups).sort(),
       statuses: Array.from(statuses).sort(),
+      countryCounts,
+      formulationCounts,
+      useGroupCounts,
+      statusCounts,
     };
   }, [businessCases, formulations, formulationDisplayMap]);
 
@@ -507,6 +541,7 @@ export function TenYearProjectionChart({
                 onSelectionChange={(selected) => {
                   setFilters((prev) => ({ ...prev, countries: selected }));
                 }}
+                counts={filterOptions.countryCounts}
               />
             )}
             {filterOptions.formulations.length > 0 && (
@@ -517,6 +552,7 @@ export function TenYearProjectionChart({
                 onSelectionChange={(selected) => {
                   setFilters((prev) => ({ ...prev, formulations: selected }));
                 }}
+                counts={filterOptions.formulationCounts}
               />
             )}
             {filterOptions.useGroups.length > 0 && (
@@ -527,6 +563,8 @@ export function TenYearProjectionChart({
                 onSelectionChange={(selected) => {
                   setFilters((prev) => ({ ...prev, useGroups: selected }));
                 }}
+                counts={filterOptions.useGroupCounts}
+                disabled={filters.formulations.length === 0 || filters.countries.length === 0}
               />
             )}
             {filterOptions.statuses.length > 0 && (
@@ -537,6 +575,7 @@ export function TenYearProjectionChart({
                 onSelectionChange={(selected) => {
                   setFilters((prev) => ({ ...prev, statuses: selected }));
                 }}
+                counts={filterOptions.statusCounts}
               />
             )}
           </div>
@@ -717,7 +756,7 @@ export function TenYearProjectionChart({
                   tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11, fontWeight: 500 }}
                   axisLine={{ stroke: "hsl(var(--border))", strokeWidth: 1 }}
                   tickLine={{ stroke: "hsl(var(--border))" }}
-                  interval={chartData.length > 15 ? "preserveStartEnd" : 0}
+                  interval={chartData.length > 20 ? Math.floor(chartData.length / 10) : 0}
                   angle={-45}
                   textAnchor="end"
                   height={80}
@@ -847,7 +886,7 @@ export function TenYearProjectionChart({
                   tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11, fontWeight: 500 }}
                   axisLine={{ stroke: "hsl(var(--border))", strokeWidth: 1 }}
                   tickLine={{ stroke: "hsl(var(--border))" }}
-                  interval={chartData.length > 15 ? "preserveStartEnd" : 0}
+                  interval={chartData.length > 20 ? Math.floor(chartData.length / 10) : 0}
                   angle={-45}
                   textAnchor="end"
                   height={80}
