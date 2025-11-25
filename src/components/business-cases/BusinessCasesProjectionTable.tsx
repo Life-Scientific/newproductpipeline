@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, ChevronDown, ChevronsDown } from "lucide-react";
@@ -8,6 +9,7 @@ import type { BusinessCaseGroupData } from "@/lib/db/queries";
 import { BusinessCaseEditModal } from "./BusinessCaseEditModal";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { getBusinessCaseGroupAction } from "@/lib/actions/business-cases";
 
 interface BusinessCasesProjectionTableProps {
   businessCases: BusinessCaseGroupData[];
@@ -19,8 +21,10 @@ const DEFAULT_PAGE_SIZE = 25;
 const LOAD_MORE_INCREMENT = 25;
 
 export function BusinessCasesProjectionTable({ businessCases, exchangeRates, canEdit = false }: BusinessCasesProjectionTableProps) {
+  const router = useRouter();
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(DEFAULT_PAGE_SIZE);
+  const [loadingGroupId, setLoadingGroupId] = useState<string | null>(null);
 
   // Helper function to get effective start fiscal year from stored value
   const getEffectiveStartFiscalYear = (effectiveStartFiscalYear: string | null): number => {
@@ -120,6 +124,31 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
   // Load all handler
   const handleLoadAll = () => {
     setDisplayCount(businessCases.length);
+  };
+
+  // Handle row click to navigate to business case detail
+  const handleRowClick = async (groupId: string, e: React.MouseEvent) => {
+    // Don't navigate if clicking on edit button or other interactive elements
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('a')) {
+      return;
+    }
+
+    setLoadingGroupId(groupId);
+    try {
+      const result = await getBusinessCaseGroupAction(groupId);
+      if (result.data && result.data.length > 0) {
+        // Navigate to the first business case in the group (year 1)
+        const firstBusinessCase = result.data[0];
+        if (firstBusinessCase.business_case_id) {
+          router.push(`/business-cases/${firstBusinessCase.business_case_id}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching business case group:', error);
+    } finally {
+      setLoadingGroupId(null);
+    }
   };
 
   if (businessCases.length === 0) {
@@ -244,13 +273,18 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
               return metricRows.map((metric, metricIndex) => {
                 const effectiveStartYear = getEffectiveStartFiscalYear(bc.effective_start_fiscal_year);
                 
+                const isLoading = loadingGroupId === bc.business_case_group_id;
+                
                 return (
                   <TableRow 
                     key={`${bc.business_case_group_id}-${metricIndex}`} 
                     className={cn(
                       metricIndex === 0 ? rowGroupClass : "",
-                      "hover:bg-muted/30 transition-colors"
+                      "hover:bg-muted/30 transition-colors",
+                      metricIndex === 0 && "cursor-pointer",
+                      isLoading && "opacity-50"
                     )}
+                    onClick={metricIndex === 0 ? (e) => handleRowClick(bc.business_case_group_id, e) : undefined}
                   >
                     {metricIndex === 0 ? (
                       <>

@@ -782,24 +782,30 @@ export async function getBusinessCasesForChart() {
 }
 
 export async function getBusinessCaseById(businessCaseId: string) {
-  const supabase = await createClient();
-  
-  const { data, error } = await supabase
-    .from("vw_business_case")
-    .select("*")
-    .eq("business_case_id", businessCaseId)
-    .single();
+  try {
+    const supabase = await createClient();
+    
+    const { data, error } = await supabase
+      .from("vw_business_case")
+      .select("*")
+      .eq("business_case_id", businessCaseId)
+      .single();
 
-  if (error) {
-    throw new Error(`Failed to fetch business case: ${error.message}`);
-  }
+    if (error) {
+      console.error('Error fetching business case:', error);
+      return null;
+    }
 
-  if (!data) {
+    if (!data) {
+      return null;
+    }
+
+    const enriched = await enrichBusinessCases([data]);
+    return enriched[0] || null;
+  } catch (error) {
+    console.error('Error in getBusinessCaseById:', error);
     return null;
   }
-
-  const enriched = await enrichBusinessCases([data]);
-  return enriched[0] || null;
 }
 
 // Countries functions moved to ./countries.ts
@@ -997,19 +1003,40 @@ export const getBusinessCasesForProjectionTable = unstable_cache(
   async (): Promise<BusinessCaseGroupData[]> => {
     const supabase = createCachedClient();
     
-    // Fetch all active business cases with their relationships
-    const { data, error } = await supabase
+    // Supabase has a default limit - we need to fetch all rows with pagination
+    // First get total count
+    const { count } = await supabase
       .from("vw_business_case")
-      .select("*")
-      .eq("status", "active")
-      .order("formulation_name", { ascending: true })
-      .order("country_name", { ascending: true })
-      .order("use_group_name", { ascending: true })
-      .order("year_offset", { ascending: true });
-
-    if (error) {
-      throw new Error(`Failed to fetch business cases: ${error.message}`);
+      .select("*", { count: "exact", head: true })
+      .eq("status", "active");
+    
+    const pageSize = 1000;
+    const totalPages = Math.ceil((count || 0) / pageSize);
+    
+    let allData: any[] = [];
+    
+    // Fetch all pages
+    for (let page = 0; page < totalPages; page++) {
+      const { data: pageData, error: pageError } = await supabase
+        .from("vw_business_case")
+        .select("*")
+        .eq("status", "active")
+        .order("formulation_name", { ascending: true })
+        .order("country_name", { ascending: true })
+        .order("use_group_name", { ascending: true })
+        .order("year_offset", { ascending: true })
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+      
+      if (pageError) {
+        throw new Error(`Failed to fetch business cases: ${pageError.message}`);
+      }
+      
+      if (pageData) {
+        allData = allData.concat(pageData);
+      }
     }
+
+    const data = allData;
 
     if (!data || data.length === 0) {
       return [];
@@ -1018,10 +1045,20 @@ export const getBusinessCasesForProjectionTable = unstable_cache(
     // Fetch target_market_entry_fy for each use group
     // target_market_entry_fy is now stored at the formulation_country_use_group level
     const businessCaseIds = data.map(bc => bc.business_case_id).filter(Boolean) as string[];
-    const { data: junctionData } = await supabase
-      .from("business_case_use_groups")
-      .select("business_case_id, formulation_country_use_group_id")
-      .in("business_case_id", businessCaseIds);
+    
+    // Fetch junction data in batches if needed (Supabase .in() has limits)
+    const junctionBatchSize = 1000;
+    let junctionData: any[] = [];
+    for (let i = 0; i < businessCaseIds.length; i += junctionBatchSize) {
+      const batch = businessCaseIds.slice(i, i + junctionBatchSize);
+      const { data: batchData } = await supabase
+        .from("business_case_use_groups")
+        .select("business_case_id, formulation_country_use_group_id")
+        .in("business_case_id", batch);
+      if (batchData) {
+        junctionData = junctionData.concat(batchData);
+      }
+    }
 
     const useGroupIds = Array.from(new Set(junctionData?.map(j => j.formulation_country_use_group_id).filter(Boolean) || []));
     

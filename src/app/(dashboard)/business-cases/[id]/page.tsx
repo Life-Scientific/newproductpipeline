@@ -47,7 +47,14 @@ export default async function BusinessCaseDetailPage({
   params,
 }: BusinessCaseDetailPageProps) {
   const { id } = await params;
-  const businessCase = await getBusinessCaseById(id);
+  
+  let businessCase;
+  try {
+    businessCase = await getBusinessCaseById(id);
+  } catch (error) {
+    console.error('Error fetching business case:', error);
+    notFound();
+  }
 
   if (!businessCase) {
     notFound();
@@ -132,7 +139,7 @@ export default async function BusinessCaseDetailPage({
                 {formatNumber(businessCase.volume)}
               </div>
               <p className="text-xs text-muted-foreground">
-                {(businessCase as any).uom || "units"}
+                {businessCase.uom || "units"}
               </p>
             </CardContent>
           </Card>
@@ -203,9 +210,9 @@ export default async function BusinessCaseDetailPage({
                     <p className="text-xs font-medium text-muted-foreground">
                       Formulation
                     </p>
-                    {(businessCase as any).formulation_id ? (
+                    {businessCase.formulation_id ? (
                       <Button variant="link" className="h-auto p-0" asChild>
-                        <Link href={`/formulations/${(businessCase as any).formulation_id}`}>
+                        <Link href={`/formulations/${businessCase.formulation_id}`}>
                           <Package className="mr-2 h-4 w-4" />
                           {businessCase.formulation_code}
                           {businessCase.formulation_name &&
@@ -284,7 +291,7 @@ export default async function BusinessCaseDetailPage({
                     <div className="flex justify-between text-sm">
                       <span>Volume:</span>
                       <span className="font-medium">
-                        {formatNumber(businessCase.volume)} {(businessCase as any).uom || "units"}
+                        {formatNumber(businessCase.volume)} {businessCase.uom || "units"}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -308,7 +315,7 @@ export default async function BusinessCaseDetailPage({
                     <div className="flex justify-between text-sm">
                       <span>Volume:</span>
                       <span className="font-medium">
-                        {formatNumber(businessCase.volume)} {(businessCase as any).uom || "units"}
+                        {formatNumber(businessCase.volume)} {businessCase.uom || "units"}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -417,7 +424,7 @@ export default async function BusinessCaseDetailPage({
                   </p>
                   <p className="text-sm flex items-center gap-2">
                     <Calendar className="h-3 w-3" />
-                    {new Date(businessCase.created_at).toLocaleString()}
+                    {businessCase.created_at ? new Date(businessCase.created_at).toLocaleString() : "—"}
                   </p>
                 </div>
               )}
@@ -429,7 +436,7 @@ export default async function BusinessCaseDetailPage({
                   <p className="text-sm">{businessCase.volume_last_updated_by}</p>
                   {businessCase.volume_last_updated_at && (
                     <p className="text-xs text-muted-foreground">
-                      {new Date(businessCase.volume_last_updated_at).toLocaleString()}
+                      {businessCase.volume_last_updated_at ? new Date(businessCase.volume_last_updated_at).toLocaleString() : "—"}
                     </p>
                   )}
                 </div>
@@ -442,7 +449,7 @@ export default async function BusinessCaseDetailPage({
                   <p className="text-sm">{businessCase.nsp_last_updated_by}</p>
                   {businessCase.nsp_last_updated_at && (
                     <p className="text-xs text-muted-foreground">
-                      {new Date(businessCase.nsp_last_updated_at).toLocaleString()}
+                      {businessCase.nsp_last_updated_at ? new Date(businessCase.nsp_last_updated_at).toLocaleString() : "—"}
                     </p>
                   )}
                 </div>
@@ -455,7 +462,7 @@ export default async function BusinessCaseDetailPage({
                   <p className="text-sm">{businessCase.cogs_last_updated_by}</p>
                   {businessCase.cogs_last_updated_at && (
                     <p className="text-xs text-muted-foreground">
-                      {new Date(businessCase.cogs_last_updated_at).toLocaleString()}
+                      {businessCase.cogs_last_updated_at ? new Date(businessCase.cogs_last_updated_at).toLocaleString() : "—"}
                     </p>
                   )}
                 </div>
