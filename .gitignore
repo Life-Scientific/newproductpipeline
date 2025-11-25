@@ -50,6 +50,9 @@ next-env.d.ts
 vikram_functions.sql
 supabase/migrations/*restore*.sql
 
+# archived files
+/archive/
+
 # migration documentation (temporary)
 CLONE_VIKRAM_TO_MAIN.md
 EXPORT_DATA_SIMPLE.md
