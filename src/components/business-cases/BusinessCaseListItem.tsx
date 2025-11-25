@@ -36,10 +36,15 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
     return "text-destructive";
   };
 
+  // Prefer group ID for linking, fall back to individual ID
+  const linkId = ("business_case_group_id" in businessCase && businessCase.business_case_group_id) 
+    ? businessCase.business_case_group_id 
+    : businessCase.business_case_id;
+
   return (
     <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors gap-4 group">
       <Link
-        href={`/business-cases/${businessCase.business_case_id}`}
+        href={linkId ? `/business-cases/${linkId}` : "/business-cases"}
         className="flex-1 min-w-0 space-y-1 group/link"
       >
         <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
@@ -181,7 +186,7 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link href={`/business-cases/${businessCase.business_case_id}`}>
+              <Link href={linkId ? `/business-cases/${linkId}` : "/business-cases"}>
                 <ExternalLink className="mr-2 h-4 w-4" />
                 View Details
               </Link>

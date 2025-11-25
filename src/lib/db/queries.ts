@@ -743,16 +743,24 @@ export async function getBusinessCasesForChart() {
     const { data: pageData, error: pageError } = await supabase
       .from("vw_business_case")
       .select(`
+        business_case_id,
+        business_case_group_id,
         fiscal_year,
         total_revenue,
         total_margin,
         total_cogs,
+        margin_percent,
         country_name,
         country_id,
+        formulation_id,
         formulation_code,
         formulation_name,
-        use_group_name
+        use_group_name,
+        use_group_variant,
+        display_name,
+        business_case_name
       `)
+      .eq("status", "active")
       .order("fiscal_year", { ascending: true })
       .range(page * pageSize, (page + 1) * pageSize - 1);
     

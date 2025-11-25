@@ -18,6 +18,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { 
   createBusinessCaseGroupAction,
@@ -69,6 +83,7 @@ export function BusinessCaseCreateModal({
   
   // Search state for formulation filter
   const [formulationSearch, setFormulationSearch] = useState("");
+  const [formulationPopoverOpen, setFormulationPopoverOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     formulation_id: "",
@@ -520,88 +535,103 @@ export function BusinessCaseCreateModal({
                 </Select>
               </div>
 
-              {/* STEP 2: Formulation Selector with fuzzy search */}
+              {/* STEP 2: Formulation Selector with integrated search */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">2</span>
                   Formulation <span className="text-destructive">*</span>
                 </Label>
                 
-                {/* Search input */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder={!formData.country_id ? "Select country first..." : "Search by name or code..."}
-                    value={formulationSearch}
-                    onChange={(e) => setFormulationSearch(e.target.value)}
-                    disabled={!formData.country_id}
-                    className="pl-9"
-                  />
-                </div>
-                
-                {/* Formulation Select */}
-                <Select
-                  value={formData.formulation_id}
-                  onValueChange={(value) => {
-                    setFormData({ ...formData, formulation_id: value, use_group_ids: [] });
-                    setFormulationSearch("");
-                  }}
-                  disabled={!formData.country_id}
-                >
-                  <SelectTrigger className={cn(!formData.country_id && "opacity-50")}>
-                    {formData.formulation_id ? (
-                      (() => {
-                        const selectedFormulation = formulations.find(f => f.formulation_id === formData.formulation_id);
-                        if (!selectedFormulation) return <SelectValue placeholder="Select formulation..." />;
-                        const name = "product_name" in selectedFormulation ? selectedFormulation.product_name : null;
-                        const code = selectedFormulation.formulation_code;
-                        return (
-                          <div className="flex items-center gap-2 text-left">
-                            <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                            <span className="truncate">
-                              {name ? `${name} (${code})` : code || "Unknown"}
-                            </span>
-                          </div>
-                        );
-                      })()
-                    ) : (
-                      <SelectValue placeholder={
+                <Popover open={formulationPopoverOpen} onOpenChange={setFormulationPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={formulationPopoverOpen}
+                      className={cn(
+                        "w-full justify-between h-10 font-normal",
+                        !formData.country_id && "opacity-50 cursor-not-allowed",
+                        !formData.formulation_id && "text-muted-foreground"
+                      )}
+                      disabled={!formData.country_id}
+                    >
+                      {formData.formulation_id ? (
+                        (() => {
+                          const selectedFormulation = formulations.find(f => f.formulation_id === formData.formulation_id);
+                          if (!selectedFormulation) return "Select formulation...";
+                          const name = "product_name" in selectedFormulation ? selectedFormulation.product_name : null;
+                          const code = selectedFormulation.formulation_code;
+                          return (
+                            <div className="flex items-center gap-2 text-left">
+                              <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                              <span className="truncate">
+                                {name ? `${name} (${code})` : code || "Unknown"}
+                              </span>
+                            </div>
+                          );
+                        })()
+                      ) : (
                         !formData.country_id 
                           ? "Select country first" 
                           : formulations.length === 0 
                             ? "No formulations available" 
-                            : "Select formulation..."
-                      } />
-                    )}
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[300px]">
-                    {filteredFormulations.length === 0 ? (
-                      <div className="py-6 text-center text-sm text-muted-foreground">
-                        {formulations.length === 0 
-                          ? "No formulations available for this country"
-                          : "No formulations match your search"}
-                      </div>
-                    ) : (
-                      filteredFormulations.map((f) => {
-                        const name = "product_name" in f ? f.product_name : null;
-                        const code = f.formulation_code;
-                        return (
-                          <SelectItem key={f.formulation_id || ""} value={f.formulation_id || ""}>
-                            <div className="flex items-center gap-2">
-                              <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                              <span className="font-medium">{name ? `${name} (${code})` : code || "Unknown"}</span>
-                              {f.uom && (
-                                <Badge variant="secondary" className="text-xs ml-2">
-                                  {f.uom}
-                                </Badge>
-                              )}
-                            </div>
-                          </SelectItem>
-                        );
-                      })
-                    )}
-                  </SelectContent>
-                </Select>
+                            : "Search formulations..."
+                      )}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput 
+                        placeholder="Search by name or code..." 
+                        value={formulationSearch}
+                        onValueChange={setFormulationSearch}
+                      />
+                      <CommandList>
+                        <CommandEmpty>
+                          {formulations.length === 0 
+                            ? "No formulations available for this country"
+                            : "No formulations match your search"}
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {filteredFormulations.map((f) => {
+                            const name = "product_name" in f ? f.product_name : null;
+                            const code = f.formulation_code;
+                            const isSelected = formData.formulation_id === f.formulation_id;
+                            return (
+                              <CommandItem
+                                key={f.formulation_id || ""}
+                                value={f.formulation_id || ""}
+                                onSelect={() => {
+                                  setFormData({ ...formData, formulation_id: f.formulation_id || "", use_group_ids: [] });
+                                  setFormulationSearch("");
+                                  setFormulationPopoverOpen(false);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    isSelected ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                <Package className="mr-2 h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <span className="font-medium">{name ? `${name} (${code})` : code || "Unknown"}</span>
+                                </div>
+                                {f.uom && (
+                                  <Badge variant="secondary" className="text-xs ml-2">
+                                    {f.uom}
+                                  </Badge>
+                                )}
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 
                 {formData.country_id && formulations.length > 0 && (
                   <p className="text-xs text-muted-foreground">
@@ -765,9 +795,9 @@ export function BusinessCaseCreateModal({
 
             {/* Shadow values legend */}
             {existingGroupId && Object.keys(shadowData).length > 0 && (
-              <div className="flex items-center gap-4 text-xs text-muted-foreground bg-muted/30 rounded-md px-3 py-2">
-                <span className="font-medium">Previous version reference:</span>
-                <span className="text-purple-600 dark:text-purple-400">Purple text = previous value</span>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2 border border-border/50">
+                <span className="font-medium">Previous version:</span>
+                <span className="italic">Faded rows show values from current version for comparison</span>
               </div>
             )}
 
@@ -789,8 +819,8 @@ export function BusinessCaseCreateModal({
                           <div className="flex items-center justify-between">
                             <Label className="text-xs text-muted-foreground">Volume ({uom})</Label>
                             {hasShadow && shadow.volume !== null && (
-                              <span className="text-[10px] text-purple-600 dark:text-purple-400">
-                                was: {shadow.volume.toLocaleString()}
+                              <span className="text-[10px] text-muted-foreground/70 italic">
+                                prev: {shadow.volume.toLocaleString()}
                               </span>
                             )}
                           </div>
@@ -817,8 +847,8 @@ export function BusinessCaseCreateModal({
                           <div className="flex items-center justify-between">
                             <Label className="text-xs text-muted-foreground">NSP ({currency})</Label>
                             {hasShadow && shadow.nsp !== null && (
-                              <span className="text-[10px] text-purple-600 dark:text-purple-400">
-                                was: {shadow.nsp.toFixed(2)}
+                              <span className="text-[10px] text-muted-foreground/70 italic">
+                                prev: {shadow.nsp.toFixed(2)}
                               </span>
                             )}
                           </div>
@@ -845,8 +875,8 @@ export function BusinessCaseCreateModal({
                           <div className="flex items-center justify-between">
                             <Label className="text-xs text-muted-foreground">COGS ({currency})</Label>
                             {hasShadow && shadow.cogs !== null && (
-                              <span className="text-[10px] text-purple-600 dark:text-purple-400">
-                                was: {shadow.cogs.toFixed(2)}
+                              <span className="text-[10px] text-muted-foreground/70 italic">
+                                prev: {shadow.cogs.toFixed(2)}
                               </span>
                             )}
                           </div>
@@ -912,14 +942,14 @@ export function BusinessCaseCreateModal({
                 <TableBody>
                   {/* Shadow row for previous version - Volume */}
                   {existingGroupId && Object.keys(shadowData).length > 0 && (
-                    <TableRow className="bg-purple-50/50 dark:bg-purple-950/20">
-                      <TableCell className="text-xs text-purple-600 dark:text-purple-400 sticky left-0 bg-purple-50/50 dark:bg-purple-950/20 z-10">
-                        Previous Volume
+                    <TableRow className="bg-muted/30">
+                      <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">
+                        ↳ prev
                       </TableCell>
                       {fiscalYearColumns.map((col) => {
                         const shadow = shadowData[col.yearOffset];
                         return (
-                          <TableCell key={col.yearOffset} className="p-1 text-center text-xs text-purple-600 dark:text-purple-400">
+                          <TableCell key={col.yearOffset} className="p-1 text-center text-xs text-muted-foreground/70 italic">
                             {shadow?.volume?.toLocaleString() || "-"}
                           </TableCell>
                         );
@@ -956,14 +986,14 @@ export function BusinessCaseCreateModal({
 
                   {/* Shadow row for previous version - NSP */}
                   {existingGroupId && Object.keys(shadowData).length > 0 && (
-                    <TableRow className="bg-purple-50/50 dark:bg-purple-950/20">
-                      <TableCell className="text-xs text-purple-600 dark:text-purple-400 sticky left-0 bg-purple-50/50 dark:bg-purple-950/20 z-10">
-                        Previous NSP
+                    <TableRow className="bg-muted/30">
+                      <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">
+                        ↳ prev
                       </TableCell>
                       {fiscalYearColumns.map((col) => {
                         const shadow = shadowData[col.yearOffset];
                         return (
-                          <TableCell key={col.yearOffset} className="p-1 text-center text-xs text-purple-600 dark:text-purple-400">
+                          <TableCell key={col.yearOffset} className="p-1 text-center text-xs text-muted-foreground/70 italic">
                             {shadow?.nsp?.toFixed(2) || "-"}
                           </TableCell>
                         );
@@ -1000,14 +1030,14 @@ export function BusinessCaseCreateModal({
 
                   {/* Shadow row for previous version - COGS */}
                   {existingGroupId && Object.keys(shadowData).length > 0 && (
-                    <TableRow className="bg-purple-50/50 dark:bg-purple-950/20">
-                      <TableCell className="text-xs text-purple-600 dark:text-purple-400 sticky left-0 bg-purple-50/50 dark:bg-purple-950/20 z-10">
-                        Previous COGS
+                    <TableRow className="bg-muted/30">
+                      <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">
+                        ↳ prev
                       </TableCell>
                       {fiscalYearColumns.map((col) => {
                         const shadow = shadowData[col.yearOffset];
                         return (
-                          <TableCell key={col.yearOffset} className="p-1 text-center text-xs text-purple-600 dark:text-purple-400">
+                          <TableCell key={col.yearOffset} className="p-1 text-center text-xs text-muted-foreground/70 italic">
                             {shadow?.cogs?.toFixed(2) || "-"}
                           </TableCell>
                         );

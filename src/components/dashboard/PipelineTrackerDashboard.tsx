@@ -47,6 +47,7 @@ interface EnrichedFormulation extends Formulation {
     marginPercent: number;
     revenueShare: number;
     countryPenetration: number;
+    topCountries: string[]; // Top 3 country names
   };
 }
 
@@ -115,12 +116,16 @@ export function PipelineTrackerDashboard({
       let activeCountries = 0;
       let totalBusinessCases = 0;
 
+      // Track revenue by country for sorting
+      const countryRevenue: { name: string; revenue: number; status: string }[] = [];
+
       fCountries.forEach(c => {
         if (c.country_status === 'Active') activeCountries++;
         const cId = c.formulation_country_id || "";
         const cUseGroups = useGroupsByCountry.get(cId) || [];
         totalUseGroups += cUseGroups.length;
 
+        let countryRev = 0;
         cUseGroups.forEach(ug => {
           const ugId = ug.formulation_country_use_group_id || "";
           const bcs = businessCasesByUseGroup.get(ugId) || [];
@@ -130,6 +135,7 @@ export function PipelineTrackerDashboard({
             const margin = bc.total_margin || 0;
             totalRevenue += rev;
             totalMargin += margin;
+            countryRev += rev;
           });
         });
 
@@ -140,8 +146,21 @@ export function PipelineTrackerDashboard({
           const margin = bc.total_margin || 0;
           totalRevenue += rev;
           totalMargin += margin;
+          countryRev += rev;
+        });
+
+        countryRevenue.push({
+          name: c.country_name || c.country_code || "Unknown",
+          revenue: countryRev,
+          status: c.country_status || "",
         });
       });
+
+      // Sort by revenue and take top 3
+      const topCountries = countryRevenue
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 3)
+        .map(c => c.name);
 
       const revenueShare = (totalRevenue / globalTotalRevenue) * 100;
       const marginPercent = totalRevenue > 0 ? (totalMargin / totalRevenue) * 100 : 0;
@@ -158,7 +177,8 @@ export function PipelineTrackerDashboard({
           totalMargin,
           marginPercent,
           revenueShare,
-          countryPenetration
+          countryPenetration,
+          topCountries,
         },
       };
     });
@@ -206,27 +226,32 @@ export function PipelineTrackerDashboard({
       ),
       cell: ({ row }) => {
         const formulation = row.original;
-        const name = "formulation_name" in formulation 
-          ? (formulation as any).formulation_name 
-          : formulation.formulation_code;
+        // Use product_name from the view, fallback to formulation_code
+        const name = formulation.product_name || formulation.formulation_code;
+        const activeIngredients = formulation.active_ingredients;
         return (
           <Link 
             href={`/formulations/${formulation.formulation_id}`}
-            className="flex flex-col hover:underline"
+            className="flex flex-col hover:underline group/cell"
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="font-semibold text-sm text-primary truncate max-w-[200px]" title={name || ""}>
-              {name || formulation.formulation_code || "—"}
+            <span className="font-semibold text-sm text-primary truncate max-w-[220px] group-hover/cell:underline" title={name || ""}>
+              {name || "—"}
             </span>
             {formulation.formulation_code && name !== formulation.formulation_code && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground">
                 {formulation.formulation_code}
+              </span>
+            )}
+            {activeIngredients && (
+              <span className="text-[10px] text-muted-foreground/70 truncate max-w-[220px]" title={activeIngredients}>
+                {activeIngredients}
               </span>
             )}
           </Link>
         );
       },
-      meta: { sticky: "left" as const, minWidth: "200px" },
+      meta: { sticky: "left" as const, minWidth: "220px" },
       enableHiding: false,
     },
     {
@@ -267,22 +292,30 @@ export function PipelineTrackerDashboard({
           className="h-8 px-2 -ml-2"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Countries
+          Markets
           <ArrowUpDown className="ml-1 h-3 w-3" />
         </Button>
       ),
       cell: ({ row }) => {
-        const { activeCountryCount, countryCount, countryPenetration } = row.original.stats;
+        const { activeCountryCount, countryCount, topCountries } = row.original.stats;
+        const moreCount = countryCount - topCountries.length;
         return (
-          <div className="flex flex-col items-end">
-            <span className="font-medium text-sm">
-              {activeCountryCount}/{countryCount}
-            </span>
-            <Progress value={countryPenetration} className="h-1 w-12 mt-1" />
+          <div className="flex flex-col items-start min-w-[140px]">
+            <div className="flex items-center gap-1.5">
+              <span className="font-medium text-sm">
+                {activeCountryCount}/{countryCount}
+              </span>
+              <span className="text-[10px] text-muted-foreground">active</span>
+            </div>
+            {topCountries.length > 0 && (
+              <div className="text-[10px] text-muted-foreground truncate max-w-[140px]" title={topCountries.join(", ")}>
+                {topCountries.join(", ")}{moreCount > 0 && ` +${moreCount}`}
+              </div>
+            )}
           </div>
         );
       },
-      meta: { align: "right", minWidth: "100px" },
+      meta: { minWidth: "150px" },
     },
     {
       id: "useGroups",
@@ -296,11 +329,26 @@ export function PipelineTrackerDashboard({
     {
       id: "businessCases",
       accessorFn: (row) => row.stats.businessCaseCount,
-      header: "Bus. Cases",
-      cell: ({ row }) => (
-        <span className="font-medium text-sm">{row.original.stats.businessCaseCount}</span>
-      ),
-      meta: { align: "right", minWidth: "90px" },
+      header: "Business Cases",
+      cell: ({ row }) => {
+        const { businessCaseCount, totalRevenue } = row.original.stats;
+        return (
+          <div className="flex flex-col items-end">
+            <span className={cn(
+              "font-medium text-sm",
+              businessCaseCount > 0 ? "text-green-600" : "text-muted-foreground"
+            )}>
+              {businessCaseCount || "—"}
+            </span>
+            {businessCaseCount > 0 && totalRevenue > 0 && (
+              <span className="text-[10px] text-muted-foreground">
+                {formatCurrency(totalRevenue)}
+              </span>
+            )}
+          </div>
+        );
+      },
+      meta: { align: "right", minWidth: "110px" },
     },
     {
       id: "margin",
@@ -394,13 +442,15 @@ export function PipelineTrackerDashboard({
   };
 
   const exportToCSV = () => {
-    const headers = ["Formulation Name", "Code", "Status", "Countries", "Active Countries", "Use Groups", "Business Cases", "Revenue", "Margin", "Margin %"];
+    const headers = ["Product Name", "Code", "Active Ingredients", "Status", "Markets", "Active Markets", "Top Countries", "Use Groups", "Business Cases", "Revenue", "Margin", "Margin %"];
     const rows = processedData.map(f => [
-      ("formulation_name" in f ? (f as any).formulation_name : f.formulation_code) || "",
+      f.product_name || f.formulation_code || "",
       f.formulation_code || "",
-      ("formulation_status" in f ? (f as any).formulation_status : "") || "",
+      f.active_ingredients || "",
+      f.status || "",
       f.stats.countryCount,
       f.stats.activeCountryCount,
+      f.stats.topCountries.join("; "),
       f.stats.useGroupCount,
       f.stats.businessCaseCount,
       f.stats.totalRevenue.toFixed(2),
