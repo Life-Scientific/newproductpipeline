@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { getStatusVariant } from "@/lib/design-system";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface UseGroupEditModalProps {
   useGroup: {
@@ -55,6 +56,7 @@ export function UseGroupEditModal({
 }: UseGroupEditModalProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const { canEditUseGroups, isLoading: permissionsLoading } = usePermissions();
   
   const [variant, setVariant] = useState(useGroup.use_group_variant || "");
   const [name, setName] = useState(useGroup.use_group_name || "");
@@ -104,6 +106,15 @@ export function UseGroupEditModal({
   });
 
   const handleSave = () => {
+    if (!canEditUseGroups) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to edit use groups",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     startTransition(async () => {
       const formData = new FormData();
       formData.append("use_group_variant", variant);
@@ -147,6 +158,7 @@ export function UseGroupEditModal({
       description={useGroup.country_name ? `${useGroup.country_name} | ${useGroup.formulation_name || ""}` : undefined}
       onSave={handleSave}
       isSaving={isPending}
+      saveDisabled={permissionsLoading || !canEditUseGroups}
     >
       <div className="space-y-6">
         {/* Basic Info */}

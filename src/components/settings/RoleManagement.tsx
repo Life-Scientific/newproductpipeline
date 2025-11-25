@@ -37,6 +37,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DeleteConfirmDialog } from "@/components/forms/DeleteConfirmDialog";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface RoleFormData {
   role_name: string;
@@ -46,6 +47,12 @@ interface RoleFormData {
 
 export function RoleManagement() {
   const { toast } = useToast();
+  const { 
+    canManageRoles, 
+    canCreateRoles, 
+    canDeleteRoles, 
+    isLoading: permissionsLoading 
+  } = usePermissions();
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -253,17 +260,22 @@ export function RoleManagement() {
       header: "Actions",
       cell: ({ row }) => {
         const role = row.original;
+        // Don't show actions if user has no role management permissions
+        if (!canManageRoles && !canDeleteRoles) return null;
+        
         return (
           <div className="flex items-center justify-end gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => openEditDialog(role)}
-              className="h-8 w-8 p-0"
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            {!role.is_system_role && (
+            {canManageRoles && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => openEditDialog(role)}
+                className="h-8 w-8 p-0"
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
+            {!role.is_system_role && canDeleteRoles && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -280,9 +292,9 @@ export function RoleManagement() {
         );
       },
     },
-  ], []);
+  ], [canManageRoles, canDeleteRoles]);
 
-  if (loading) {
+  if (loading || permissionsLoading) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
@@ -327,13 +339,15 @@ export function RoleManagement() {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
-              <Button
-                size="sm"
-                onClick={openCreateDialog}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Role
-              </Button>
+              {canCreateRoles && (
+                <Button
+                  size="sm"
+                  onClick={openCreateDialog}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Role
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>

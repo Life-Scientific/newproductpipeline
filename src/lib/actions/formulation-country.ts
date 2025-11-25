@@ -2,8 +2,16 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { hasPermission } from "./user-management";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export async function createFormulationCountry(formData: FormData) {
+  // Permission check
+  const canCreate = await hasPermission(PERMISSIONS.FORMULATION_COUNTRY_CREATE);
+  if (!canCreate) {
+    return { error: "Unauthorized: You don't have permission to create country registrations" };
+  }
+
   const supabase = await createClient();
 
   const formulationId = formData.get("formulation_id") as string;
@@ -67,6 +75,12 @@ export async function updateFormulationCountry(
   formulationCountryId: string,
   formData: FormData
 ) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.FORMULATION_COUNTRY_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to edit country registrations" };
+  }
+
   const supabase = await createClient();
 
   const likelyRegistrationPathway = formData.get("likely_registration_pathway") as string | null;
@@ -113,6 +127,12 @@ export async function updateFormulationCountry(
 }
 
 export async function deleteFormulationCountry(formulationCountryId: string) {
+  // Permission check
+  const canDelete = await hasPermission(PERMISSIONS.FORMULATION_COUNTRY_DELETE);
+  if (!canDelete) {
+    return { error: "Unauthorized: You don't have permission to delete country registrations" };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase

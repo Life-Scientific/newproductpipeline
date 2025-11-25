@@ -2,8 +2,16 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { hasPermission } from "./user-management";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export async function createIngredient(formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.INGREDIENT_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage ingredients" };
+  }
+
   const supabase = await createClient();
 
   const ingredientName = formData.get("ingredient_name") as string;
@@ -46,6 +54,12 @@ export async function createIngredient(formData: FormData) {
 }
 
 export async function updateIngredient(ingredientId: string, formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.INGREDIENT_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage ingredients" };
+  }
+
   const supabase = await createClient();
 
   const ingredientName = formData.get("ingredient_name") as string | null;
@@ -89,6 +103,12 @@ export async function updateIngredient(ingredientId: string, formData: FormData)
 }
 
 export async function deleteIngredient(ingredientId: string) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.INGREDIENT_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage ingredients" };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase.from("ingredients").delete().eq("ingredient_id", ingredientId);

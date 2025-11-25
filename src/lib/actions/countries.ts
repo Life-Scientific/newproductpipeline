@@ -2,8 +2,16 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { hasPermission } from "./user-management";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export async function createCountry(formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.COUNTRY_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage countries" };
+  }
+
   const supabase = await createClient();
 
   const countryCode = formData.get("country_code") as string;
@@ -35,6 +43,12 @@ export async function createCountry(formData: FormData) {
 }
 
 export async function updateCountry(countryId: string, formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.COUNTRY_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage countries" };
+  }
+
   const supabase = await createClient();
 
   const countryCode = formData.get("country_code") as string | null;
@@ -69,6 +83,12 @@ export async function updateCountry(countryId: string, formData: FormData) {
 }
 
 export async function deleteCountry(countryId: string) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.COUNTRY_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage countries" };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase.from("countries").delete().eq("country_id", countryId);

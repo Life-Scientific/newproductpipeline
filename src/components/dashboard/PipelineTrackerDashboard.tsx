@@ -598,7 +598,7 @@ export function PipelineTrackerDashboard({
             <EnhancedDataTable
               columns={columns}
               data={processedData}
-              searchKey="formulation_code"
+              searchKey="formulation"
               searchPlaceholder="Search formulations..."
               pageSize={50}
               showPageSizeSelector={true}

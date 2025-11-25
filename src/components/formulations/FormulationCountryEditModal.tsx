@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { updateFormulationCountry } from "@/lib/actions/formulation-country";
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { getStatusVariant } from "@/lib/design-system";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface FormulationCountryEditModalProps {
   formulationCountry: {
@@ -59,6 +60,7 @@ export function FormulationCountryEditModal({
   onSuccess,
 }: FormulationCountryEditModalProps) {
   const { toast } = useToast();
+  const { canEditFormulationCountries, isLoading: permissionsLoading } = usePermissions();
   const [isPending, startTransition] = useTransition();
   
   const [status, setStatus] = useState(formulationCountry.country_status || "Not yet evaluated");
@@ -71,6 +73,15 @@ export function FormulationCountryEditModal({
   const [isActive, setIsActive] = useState(formulationCountry.is_active ?? true);
 
   const handleSave = () => {
+    if (!canEditFormulationCountries) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to edit country registrations",
+        variant: "destructive",
+      });
+      return;
+    }
+
     startTransition(async () => {
       const formData = new FormData();
       formData.append("country_status", status);
@@ -121,6 +132,7 @@ export function FormulationCountryEditModal({
       description={formulationCountry.formulation_name ? `Formulation: ${formulationCountry.formulation_name}` : undefined}
       onSave={handleSave}
       isSaving={isPending}
+      saveDisabled={permissionsLoading || !canEditFormulationCountries}
     >
       <div className="space-y-6">
         {/* Status & Readiness Section */}

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { IngredientForm } from "@/components/forms/IngredientForm";
 import { DeleteConfirmDialog } from "@/components/forms/DeleteConfirmDialog";
 import { useToast } from "@/components/ui/use-toast";
+import { usePermissions } from "@/hooks/use-permissions";
 import type { Database } from "@/lib/supabase/database.types";
 import { Pencil, Trash2 } from "lucide-react";
 
@@ -27,8 +28,17 @@ const IngredientActionsCell = memo(function IngredientActionsCell({ ingredient }
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const { canEditIngredients, isLoading: permissionsLoading } = usePermissions();
 
   const handleDelete = () => {
+    if (!canEditIngredients) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to delete ingredients",
+        variant: "destructive",
+      });
+      return;
+    }
     startTransition(async () => {
       try {
         const { deleteIngredient } = await import("@/lib/actions/ingredients");
@@ -57,6 +67,11 @@ const IngredientActionsCell = memo(function IngredientActionsCell({ ingredient }
     setDeleteOpen(false);
   };
 
+  // Don't render action buttons if user lacks permission
+  if (!permissionsLoading && !canEditIngredients) {
+    return null;
+  }
+
   return (
     <>
       <div className="flex items-center gap-2">
@@ -65,7 +80,7 @@ const IngredientActionsCell = memo(function IngredientActionsCell({ ingredient }
           size="sm"
           onClick={() => setEditOpen(true)}
           className="h-8 w-8 p-0"
-          disabled={isPending}
+          disabled={isPending || permissionsLoading}
         >
           <Pencil className="h-4 w-4" />
         </Button>
@@ -74,7 +89,7 @@ const IngredientActionsCell = memo(function IngredientActionsCell({ ingredient }
           size="sm"
           onClick={() => setDeleteOpen(true)}
           className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-          disabled={isPending}
+          disabled={isPending || permissionsLoading}
         >
           <Trash2 className="h-4 w-4" />
         </Button>

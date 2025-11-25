@@ -255,23 +255,75 @@ export interface PermissionContextType {
   hasAnyPermission: (permissions: PermissionKey[]) => boolean;
   hasAllPermissions: (permissions: PermissionKey[]) => boolean;
   
-  // Common permission shortcuts
+  // Business Cases
   canViewBusinessCases: boolean;
   canEditBusinessCases: boolean;
   canCreateBusinessCases: boolean;
   canDeleteBusinessCases: boolean;
   
+  // Formulations
   canViewFormulations: boolean;
   canEditFormulations: boolean;
   canCreateFormulations: boolean;
   canDeleteFormulations: boolean;
   
+  // Formulation Countries
+  canViewFormulationCountries: boolean;
+  canEditFormulationCountries: boolean;
+  canCreateFormulationCountries: boolean;
+  canDeleteFormulationCountries: boolean;
+  
+  // Use Groups
   canViewUseGroups: boolean;
   canEditUseGroups: boolean;
   canCreateUseGroups: boolean;
+  canDeleteUseGroups: boolean;
   
+  // COGS
+  canViewCOGS: boolean;
+  canEditCOGS: boolean;
+  
+  // Countries
+  canViewCountries: boolean;
+  canEditCountries: boolean;
+  
+  // Ingredients
+  canViewIngredients: boolean;
+  canEditIngredients: boolean;
+  
+  // Suppliers
+  canViewSuppliers: boolean;
+  canEditSuppliers: boolean;
+  
+  // Exchange Rates
+  canViewExchangeRates: boolean;
+  canEditExchangeRates: boolean;
+  
+  // Reference Products
+  canViewReferenceProducts: boolean;
+  canEditReferenceProducts: boolean;
+  
+  // Reference Data (combined)
   canEditReferenceData: boolean;
+  
+  // User Management
+  canViewUsers: boolean;
+  canInviteUsers: boolean;
   canManageUsers: boolean;
+  canDeleteUsers: boolean;
+  
+  // Role Management
+  canViewRoles: boolean;
+  canCreateRoles: boolean;
   canManageRoles: boolean;
+  canDeleteRoles: boolean;
+  
+  // Analytics
+  canViewAnalytics: boolean;
+  canExportAnalytics: boolean;
+  
+  // Settings
+  canViewSettings: boolean;
+  canEditSettings: boolean;
 }
 

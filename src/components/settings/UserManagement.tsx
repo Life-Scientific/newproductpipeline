@@ -34,9 +34,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DeleteConfirmDialog } from "@/components/forms/DeleteConfirmDialog";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export function UserManagement() {
   const { toast } = useToast();
+  const { 
+    canManageUsers, 
+    canInviteUsers, 
+    canDeleteUsers, 
+    isLoading: permissionsLoading 
+  } = usePermissions();
   const [users, setUsers] = useState<UserManagementData[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [invitations, setInvitations] = useState<InvitationData[]>([]);
@@ -277,33 +284,40 @@ export function UserManagement() {
       header: "Actions",
       cell: ({ row }) => {
         const user = row.original;
+        // Don't show actions if user has no permissions
+        if (!canManageUsers && !canDeleteUsers) return null;
+        
         return (
           <div className="flex items-center justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => openRoleEditDialog(user)}
-              className="h-8"
-            >
-              <UserCog className="h-4 w-4 mr-1" />
-              Edit Roles
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setDeletingUserId(user.id);
-                setDeleteDialogOpen(true);
-              }}
-              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            {canManageUsers && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openRoleEditDialog(user)}
+                className="h-8"
+              >
+                <UserCog className="h-4 w-4 mr-1" />
+                Edit Roles
+              </Button>
+            )}
+            {canDeleteUsers && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setDeletingUserId(user.id);
+                  setDeleteDialogOpen(true);
+                }}
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         );
       },
     },
-  ], []);
+  ], [canManageUsers, canDeleteUsers]);
 
   const invitationColumns = useMemo<ColumnDef<InvitationData>[]>(() => [
     {
@@ -372,7 +386,7 @@ export function UserManagement() {
       header: "Actions",
       cell: ({ row }) => {
         const invitation = row.original;
-        if (invitation.status !== "pending") return null;
+        if (invitation.status !== "pending" || !canInviteUsers) return null;
         
         return (
           <div className="flex items-center justify-end gap-2">
@@ -402,9 +416,9 @@ export function UserManagement() {
         );
       },
     },
-  ], [resending]);
+  ], [resending, canInviteUsers]);
 
-  if (loading) {
+  if (loading || permissionsLoading) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
@@ -447,13 +461,15 @@ export function UserManagement() {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
-              <Button
-                size="sm"
-                onClick={() => setInviteModalOpen(true)}
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Invite User
-              </Button>
+              {canInviteUsers && (
+                <Button
+                  size="sm"
+                  onClick={() => setInviteModalOpen(true)}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Invite User
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>

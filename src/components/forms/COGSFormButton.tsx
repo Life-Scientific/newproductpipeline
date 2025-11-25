@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { COGSCreateModal } from "@/components/cogs/COGSCreateModal";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface COGSFormButtonProps {
   defaultFormulationId?: string;
@@ -13,6 +14,12 @@ interface COGSFormButtonProps {
 export function COGSFormButton({ defaultFormulationId }: COGSFormButtonProps = {}) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const { canEditCOGS, isLoading } = usePermissions();
+
+  // Don't render if user doesn't have permission (COGS uses edit permission for create)
+  if (isLoading || !canEditCOGS) {
+    return null;
+  }
 
   return (
     <>

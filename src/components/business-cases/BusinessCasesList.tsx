@@ -11,6 +11,7 @@ import { BusinessCaseForm } from "@/components/forms/BusinessCaseForm";
 import { DeleteConfirmDialog } from "@/components/forms/DeleteConfirmDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useSupabase } from "@/hooks/use-supabase";
+import { usePermissions } from "@/hooks/use-permissions";
 import type { Database } from "@/lib/supabase/database.types";
 import type { EnrichedBusinessCase } from "@/lib/db/queries";
 import { Pencil, Trash2 } from "lucide-react";
@@ -25,8 +26,17 @@ const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({ business
   const { toast } = useToast();
   const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
+  const { canEditBusinessCases, canDeleteBusinessCases, isLoading: permissionsLoading } = usePermissions();
 
   const handleEdit = async () => {
+    if (!canEditBusinessCases) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to edit business cases",
+        variant: "destructive",
+      });
+      return;
+    }
     if (!businessCase.business_case_id) return;
     const { data } = await supabase
       .from("business_case")
@@ -40,6 +50,14 @@ const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({ business
   };
 
   const handleDelete = () => {
+    if (!canDeleteBusinessCases) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to delete business cases",
+        variant: "destructive",
+      });
+      return;
+    }
     if (!businessCase.business_case_id) return;
     startTransition(async () => {
       try {
@@ -69,27 +87,36 @@ const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({ business
     setDeleteOpen(false);
   };
 
+  // Don't render action buttons if user lacks both permissions
+  if (!permissionsLoading && !canEditBusinessCases && !canDeleteBusinessCases) {
+    return null;
+  }
+
   return (
     <>
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleEdit}
-          className="h-8 w-8 p-0"
-          disabled={isPending}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setDeleteOpen(true)}
-          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-          disabled={isPending}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        {canEditBusinessCases && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleEdit}
+            className="h-8 w-8 p-0"
+            disabled={isPending || permissionsLoading}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        )}
+        {canDeleteBusinessCases && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setDeleteOpen(true)}
+            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+            disabled={isPending || permissionsLoading}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
       </div>
       {businessCaseData && (
         <BusinessCaseForm

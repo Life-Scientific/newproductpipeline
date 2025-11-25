@@ -11,10 +11,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FormulationCountryForm } from "./FormulationCountryForm";
 import { FormulationCountryUseGroupForm } from "./FormulationCountryUseGroupForm";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export function RegistrationFormButton() {
   const [formulationCountryOpen, setFormulationCountryOpen] = useState(false);
   const [formulationCountryUseGroupOpen, setFormulationCountryUseGroupOpen] = useState(false);
+  const { canCreateFormulationCountries, canCreateUseGroups, isLoading } = usePermissions();
+
+  // Don't render if user doesn't have any registration-related permissions
+  if (isLoading || (!canCreateFormulationCountries && !canCreateUseGroups)) {
+    return null;
+  }
 
   return (
     <>
@@ -26,12 +33,16 @@ export function RegistrationFormButton() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setFormulationCountryOpen(true)}>
-            Add Formulation to Country
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setFormulationCountryUseGroupOpen(true)}>
-            Add Use Group Registration
-          </DropdownMenuItem>
+          {canCreateFormulationCountries && (
+            <DropdownMenuItem onClick={() => setFormulationCountryOpen(true)}>
+              Add Formulation to Country
+            </DropdownMenuItem>
+          )}
+          {canCreateUseGroups && (
+            <DropdownMenuItem onClick={() => setFormulationCountryUseGroupOpen(true)}>
+              Add Use Group Registration
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
       <FormulationCountryForm open={formulationCountryOpen} onOpenChange={setFormulationCountryOpen} />

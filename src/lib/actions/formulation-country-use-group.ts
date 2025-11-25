@@ -2,8 +2,16 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { hasPermission } from "./user-management";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export async function createFormulationCountryUseGroup(formData: FormData) {
+  // Permission check
+  const canCreate = await hasPermission(PERMISSIONS.USE_GROUP_CREATE);
+  if (!canCreate) {
+    return { error: "Unauthorized: You don't have permission to create use groups" };
+  }
+
   const supabase = await createClient();
 
   const formulationCountryId = formData.get("formulation_country_id") as string;
@@ -168,6 +176,12 @@ export async function updateFormulationCountryUseGroup(
   formulationCountryUseGroupId: string,
   formData: FormData
 ) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.USE_GROUP_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to edit use groups" };
+  }
+
   const supabase = await createClient();
 
   const useGroupVariant = formData.get("use_group_variant") as string | null;
@@ -295,6 +309,12 @@ export async function updateFormulationCountryUseGroup(
 }
 
 export async function deleteFormulationCountryUseGroup(formulationCountryUseGroupId: string) {
+  // Permission check
+  const canDelete = await hasPermission(PERMISSIONS.USE_GROUP_DELETE);
+  if (!canDelete) {
+    return { error: "Unauthorized: You don't have permission to delete use groups" };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase

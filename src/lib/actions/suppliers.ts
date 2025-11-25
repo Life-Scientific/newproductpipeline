@@ -2,8 +2,16 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { hasPermission } from "./user-management";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export async function createSupplier(formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.SUPPLIER_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage suppliers" };
+  }
+
   const supabase = await createClient();
 
   const supplierName = formData.get("supplier_name") as string;
@@ -35,6 +43,12 @@ export async function createSupplier(formData: FormData) {
 }
 
 export async function updateSupplier(supplierId: string, formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.SUPPLIER_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage suppliers" };
+  }
+
   const supabase = await createClient();
 
   const supplierName = formData.get("supplier_name") as string | null;
@@ -67,6 +81,12 @@ export async function updateSupplier(supplierId: string, formData: FormData) {
 }
 
 export async function deleteSupplier(supplierId: string) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.SUPPLIER_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage suppliers" };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase.from("suppliers").delete().eq("supplier_id", supplierId);

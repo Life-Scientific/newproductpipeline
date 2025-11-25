@@ -291,4 +291,3 @@ export function CountryList({ countries }: CountryListProps) {
     </div>
   );
 }
-

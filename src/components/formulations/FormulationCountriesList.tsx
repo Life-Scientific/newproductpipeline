@@ -10,6 +10,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import { getStatusVariant } from "@/lib/design-system";
 import { Pencil } from "lucide-react";
 import { FormulationCountryEditModal } from "@/components/formulations/FormulationCountryEditModal";
+import { usePermissions } from "@/hooks/use-permissions";
 
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 
@@ -37,8 +38,8 @@ const FormulationCountryActionCell = memo(function FormulationCountryActionCell(
   );
 });
 
-// Memoize columns creation function - takes onEdit callback
-const createColumns = (onEdit: (id: string) => void): ColumnDef<FormulationCountryDetail>[] => [
+// Memoize columns creation function - takes onEdit callback and permission flag
+const createColumns = (onEdit: (id: string) => void, canEdit: boolean): ColumnDef<FormulationCountryDetail>[] => [
     {
       accessorKey: "formulation_code",
       header: "Formulation Code",
@@ -136,10 +137,10 @@ const createColumns = (onEdit: (id: string) => void): ColumnDef<FormulationCount
         return <span className="text-xs">{pathway}</span>;
       },
     },
-    {
+    ...(canEdit ? [{
       id: "actions",
       header: "Actions",
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: FormulationCountryDetail } }) => {
         return (
           <FormulationCountryActionCell
             countryId={row.original.formulation_country_id || ""}
@@ -147,10 +148,11 @@ const createColumns = (onEdit: (id: string) => void): ColumnDef<FormulationCount
           />
         );
       },
-    },
+    }] : []),
   ];
 
 export function FormulationCountriesList({ countries }: FormulationCountriesListProps) {
+  const { canEditFormulationCountries, isLoading: permissionsLoading } = usePermissions();
   const [editingCountryId, setEditingCountryId] = useState<string | null>(null);
   const editingCountry = countries.find((c) => c.formulation_country_id === editingCountryId);
 
@@ -159,8 +161,11 @@ export function FormulationCountriesList({ countries }: FormulationCountriesList
     setEditingCountryId(id);
   }, []);
 
-  // Memoize columns with the edit handler
-  const columns = useMemo(() => createColumns(handleEdit), [handleEdit]);
+  // Memoize columns with the edit handler and permission
+  const columns = useMemo(
+    () => createColumns(handleEdit, canEditFormulationCountries && !permissionsLoading), 
+    [handleEdit, canEditFormulationCountries, permissionsLoading]
+  );
   
   // Memoize columns array to prevent recreation
   const memoizedColumns = useMemo(() => columns, [columns]);

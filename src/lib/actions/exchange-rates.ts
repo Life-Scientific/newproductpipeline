@@ -3,8 +3,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
+import { hasPermission } from "./user-management";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export async function createExchangeRate(formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.EXCHANGE_RATE_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage exchange rates" };
+  }
+
   const supabase = await createClient();
   const userName = await getCurrentUserName();
 
@@ -55,6 +63,12 @@ export async function updateExchangeRate(
   exchangeRateId: string,
   formData: FormData
 ) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.EXCHANGE_RATE_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage exchange rates" };
+  }
+
   const supabase = await createClient();
 
   const currencyCode = formData.get("currency_code") as string;
@@ -99,6 +113,12 @@ export async function updateExchangeRate(
 }
 
 export async function deleteExchangeRate(exchangeRateId: string) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.EXCHANGE_RATE_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage exchange rates" };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase

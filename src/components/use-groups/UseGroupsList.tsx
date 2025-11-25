@@ -23,6 +23,8 @@ import {
 import { UseGroupEditModal } from "@/components/use-groups/UseGroupEditModal";
 import { getStatusVariant } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/use-permissions";
+import { useToast } from "@/components/ui/use-toast";
 
 type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 
@@ -43,8 +45,22 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("grouped");
   const [sortField, setSortField] = useState<SortField>("formulation");
   const [expandedFormulations, setExpandedFormulations] = useState<Set<string>>(new Set());
+  const { canEditUseGroups, isLoading: permissionsLoading } = usePermissions();
+  const { toast } = useToast();
   
   const editingUseGroup = useGroups.find((ug) => ug.formulation_country_use_group_id === editingUseGroupId);
+
+  const handleEditClick = (useGroupId: string | null) => {
+    if (!canEditUseGroups) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to edit use groups",
+        variant: "destructive",
+      });
+      return;
+    }
+    setEditingUseGroupId(useGroupId);
+  };
 
   // Filter use groups by search
   const filteredUseGroups = useMemo(() => {
@@ -277,14 +293,17 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
                                       </div>
                                     </div>
                                   </Link>
+                                  {canEditUseGroups && (
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => setEditingUseGroupId(ug.formulation_country_use_group_id)}
+                                    onClick={() => handleEditClick(ug.formulation_country_use_group_id)}
                                     className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    disabled={permissionsLoading}
                                   >
                                     <Pencil className="h-3.5 w-3.5" />
                                   </Button>
+                                )}
                                 </div>
                               ))}
                             </div>
@@ -345,14 +364,17 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
                   </div>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setEditingUseGroupId(ug.formulation_country_use_group_id)}
-                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
+              {canEditUseGroups && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleEditClick(ug.formulation_country_use_group_id)}
+                  className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  disabled={permissionsLoading}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           ))}
         </div>

@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { hasPermission } from "./user-management";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export async function getReferenceProducts() {
   const supabase = await createClient();
@@ -20,6 +22,12 @@ export async function getReferenceProducts() {
 }
 
 export async function createReferenceProduct(formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.REFERENCE_PRODUCT_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage reference products" };
+  }
+
   const supabase = await createClient();
 
   const productName = formData.get("product_name") as string;
@@ -57,6 +65,12 @@ export async function createReferenceProduct(formData: FormData) {
 }
 
 export async function updateReferenceProduct(referenceProductId: string, formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.REFERENCE_PRODUCT_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage reference products" };
+  }
+
   const supabase = await createClient();
 
   const productName = formData.get("product_name") as string | null;
@@ -98,6 +112,12 @@ export async function updateReferenceProduct(referenceProductId: string, formDat
 }
 
 export async function deleteReferenceProduct(referenceProductId: string) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.REFERENCE_PRODUCT_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage reference products" };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase

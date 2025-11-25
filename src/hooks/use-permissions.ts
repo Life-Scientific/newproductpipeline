@@ -142,10 +142,41 @@ export function usePermissions(options: UsePermissionsOptions = {}): PermissionC
     canCreateFormulations: checkPermission(permissions, PERMISSIONS.FORMULATION_CREATE),
     canDeleteFormulations: checkPermission(permissions, PERMISSIONS.FORMULATION_DELETE),
     
+    // Formulation Countries
+    canViewFormulationCountries: checkPermission(permissions, PERMISSIONS.FORMULATION_COUNTRY_VIEW),
+    canEditFormulationCountries: checkPermission(permissions, PERMISSIONS.FORMULATION_COUNTRY_EDIT),
+    canCreateFormulationCountries: checkPermission(permissions, PERMISSIONS.FORMULATION_COUNTRY_CREATE),
+    canDeleteFormulationCountries: checkPermission(permissions, PERMISSIONS.FORMULATION_COUNTRY_DELETE),
+    
     // Use Groups
     canViewUseGroups: checkPermission(permissions, PERMISSIONS.USE_GROUP_VIEW),
     canEditUseGroups: checkPermission(permissions, PERMISSIONS.USE_GROUP_EDIT),
     canCreateUseGroups: checkPermission(permissions, PERMISSIONS.USE_GROUP_CREATE),
+    canDeleteUseGroups: checkPermission(permissions, PERMISSIONS.USE_GROUP_DELETE),
+    
+    // COGS
+    canViewCOGS: checkPermission(permissions, PERMISSIONS.COGS_VIEW),
+    canEditCOGS: checkPermission(permissions, PERMISSIONS.COGS_EDIT),
+    
+    // Countries
+    canViewCountries: checkPermission(permissions, PERMISSIONS.COUNTRY_VIEW),
+    canEditCountries: checkPermission(permissions, PERMISSIONS.COUNTRY_EDIT),
+    
+    // Ingredients
+    canViewIngredients: checkPermission(permissions, PERMISSIONS.INGREDIENT_VIEW),
+    canEditIngredients: checkPermission(permissions, PERMISSIONS.INGREDIENT_EDIT),
+    
+    // Suppliers
+    canViewSuppliers: checkPermission(permissions, PERMISSIONS.SUPPLIER_VIEW),
+    canEditSuppliers: checkPermission(permissions, PERMISSIONS.SUPPLIER_EDIT),
+    
+    // Exchange Rates
+    canViewExchangeRates: checkPermission(permissions, PERMISSIONS.EXCHANGE_RATE_VIEW),
+    canEditExchangeRates: checkPermission(permissions, PERMISSIONS.EXCHANGE_RATE_EDIT),
+    
+    // Reference Products
+    canViewReferenceProducts: checkPermission(permissions, PERMISSIONS.REFERENCE_PRODUCT_VIEW),
+    canEditReferenceProducts: checkPermission(permissions, PERMISSIONS.REFERENCE_PRODUCT_EDIT),
     
     // Reference Data (combined check for any edit permission)
     canEditReferenceData: checkAnyPermission(permissions, [
@@ -158,10 +189,24 @@ export function usePermissions(options: UsePermissionsOptions = {}): PermissionC
     ]),
     
     // User Management
+    canViewUsers: checkPermission(permissions, PERMISSIONS.USER_VIEW),
+    canInviteUsers: checkPermission(permissions, PERMISSIONS.USER_INVITE),
     canManageUsers: checkPermission(permissions, PERMISSIONS.USER_EDIT_ROLE),
+    canDeleteUsers: checkPermission(permissions, PERMISSIONS.USER_DELETE),
     
     // Role Management
+    canViewRoles: checkPermission(permissions, PERMISSIONS.ROLE_VIEW),
+    canCreateRoles: checkPermission(permissions, PERMISSIONS.ROLE_CREATE),
     canManageRoles: checkPermission(permissions, PERMISSIONS.ROLE_EDIT),
+    canDeleteRoles: checkPermission(permissions, PERMISSIONS.ROLE_DELETE),
+    
+    // Analytics
+    canViewAnalytics: checkPermission(permissions, PERMISSIONS.ANALYTICS_VIEW),
+    canExportAnalytics: checkPermission(permissions, PERMISSIONS.ANALYTICS_EXPORT),
+    
+    // Settings
+    canViewSettings: checkPermission(permissions, PERMISSIONS.SETTINGS_VIEW),
+    canEditSettings: checkPermission(permissions, PERMISSIONS.SETTINGS_EDIT),
   }), [permissions]);
   
   return {

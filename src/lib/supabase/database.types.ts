@@ -1837,7 +1837,7 @@ export type Database = {
           expires_at: string
           id: string
           invited_by: string | null
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           token_hash: string
           updated_at: string | null
         }
@@ -1848,7 +1848,7 @@ export type Database = {
           expires_at: string
           id?: string
           invited_by?: string | null
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: string
           token_hash: string
           updated_at?: string | null
         }
@@ -1859,7 +1859,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by?: string | null
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: string
           token_hash?: string
           updated_at?: string | null
         }
@@ -3793,7 +3793,7 @@ export type Database = {
           expires_at: string
           id: string
           invited_by_email: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           status: string
         }[]
       }
@@ -3804,9 +3804,8 @@ export type Database = {
           email_confirmed_at: string
           id: string
           last_sign_in_at: string
-          role: Database["public"]["Enums"]["app_role"]
-          role_assigned_at: string
-          role_updated_at: string
+          roles: Json
+          role_names: string[]
           user_created_at: string
         }[]
       }
@@ -3899,7 +3898,7 @@ export type Database = {
       }
       get_user_role: {
         Args: never
-        Returns: Database["public"]["Enums"]["app_role"]
+        Returns: string
       }
       is_admin: { Args: never; Returns: boolean }
       is_editor: { Args: never; Returns: boolean }

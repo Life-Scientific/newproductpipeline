@@ -14,6 +14,7 @@ import { getCurrencySymbol } from "@/lib/utils/currency";
 import type { BusinessCaseYearData } from "@/lib/db/types";
 import { GitBranch, Edit3, History } from "lucide-react";
 import { BusinessCaseVersionHistory } from "./BusinessCaseVersionHistory";
+import { usePermissions } from "@/hooks/use-permissions";
 
 // Re-export for backward compatibility
 export type { BusinessCaseYearData };
@@ -38,6 +39,7 @@ export function BusinessCaseEditModal({
   const [originalValues, setOriginalValues] = useState<Record<number, { volume: number | null; nsp: number | null; cogs: number | null }>>({});
   const [changedCells, setChangedCells] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const { canEditBusinessCases, isLoading: permissionsLoading } = usePermissions();
 
   // Load business case data when modal opens
   useEffect(() => {
@@ -157,6 +159,15 @@ export function BusinessCaseEditModal({
 
   // Handle save
   const handleSave = () => {
+    if (!canEditBusinessCases) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to edit business cases",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Validate all 10 years have data
     const missingData: string[] = [];
     yearData.forEach((year) => {
@@ -251,6 +262,7 @@ export function BusinessCaseEditModal({
       onSave={handleSave}
       isSaving={isPending}
       saveText="Save New Version"
+      saveDisabled={permissionsLoading || !canEditBusinessCases}
       maxWidth="max-w-[90vw]"
     >
       <Tabs defaultValue="edit" className="w-full">

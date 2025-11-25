@@ -41,6 +41,7 @@ import {
   getBusinessCaseGroupAction,
 } from "@/lib/actions/business-cases";
 import { useSupabase } from "@/hooks/use-supabase";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -80,6 +81,7 @@ export function BusinessCaseCreateModal({
   const [allFormulations, setAllFormulations] = useState<Formulation[]>([]); // Store all formulations for filtering
   const [countries, setCountries] = useState<Country[]>([]);
   const [useGroupOptions, setUseGroupOptions] = useState<UseGroupOption[]>([]);
+  const { canCreateBusinessCases, canEditBusinessCases, isLoading: permissionsLoading } = usePermissions();
   
   // Search state for formulation filter
   const [formulationSearch, setFormulationSearch] = useState("");
@@ -371,6 +373,19 @@ export function BusinessCaseCreateModal({
 
   // Handle save
   const handleSave = () => {
+    // Check permissions - need create for new, edit for updating existing
+    const hasRequiredPermission = existingGroupId ? canEditBusinessCases : canCreateBusinessCases;
+    if (!hasRequiredPermission) {
+      toast({
+        title: "Permission Denied",
+        description: existingGroupId 
+          ? "You don't have permission to edit business cases"
+          : "You don't have permission to create business cases",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Validate all 10 years have data
     const missingData: string[] = [];
     for (let yearOffset = 1; yearOffset <= 10; yearOffset++) {
@@ -766,7 +781,10 @@ export function BusinessCaseCreateModal({
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleNext} disabled={!!targetEntryError || !targetMarketEntry}>
+              <Button 
+                onClick={handleNext} 
+                disabled={!!targetEntryError || !targetMarketEntry || permissionsLoading || !canCreateBusinessCases}
+              >
                 Next →
               </Button>
             </DialogFooter>
@@ -1132,7 +1150,10 @@ export function BusinessCaseCreateModal({
               <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={isPending}>
+              <Button 
+                onClick={handleSave} 
+                disabled={isPending || permissionsLoading || (existingGroupId ? !canEditBusinessCases : !canCreateBusinessCases)}
+              >
                 {isPending ? "Saving..." : existingGroupId ? "Save New Version" : "Create Business Case"}
               </Button>
             </DialogFooter>

@@ -23,6 +23,8 @@ import { useSupabase } from "@/hooks/use-supabase";
 import { checkExistingCOGSGroupAction } from "@/lib/actions/cogs";
 import { COGSEditModal } from "./COGSEditModal";
 import type { Database } from "@/lib/supabase/database.types";
+import { usePermissions } from "@/hooks/use-permissions";
+import { Loader2 } from "lucide-react";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type FormulationCountry = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
@@ -41,6 +43,7 @@ export function COGSCreateModal({
   defaultFormulationId,
 }: COGSCreateModalProps) {
   const { toast } = useToast();
+  const { canEditCOGS, isLoading: permissionsLoading } = usePermissions();
   const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
   const [formulations, setFormulations] = useState<Formulation[]>([]);
@@ -92,6 +95,15 @@ export function COGSCreateModal({
   };
 
   const handleNext = () => {
+    if (!canEditCOGS) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to manage COGS data",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!selectedFormulationId) {
       toast({
         title: "Error",
@@ -196,8 +208,23 @@ export function COGSCreateModal({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button onClick={handleNext} disabled={!selectedFormulationId || isPending}>
-              {isPending ? "Checking..." : "Next"}
+            <Button 
+              onClick={handleNext} 
+              disabled={!selectedFormulationId || isPending || permissionsLoading || !canEditCOGS}
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Checking...
+                </>
+              ) : permissionsLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                "Next"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

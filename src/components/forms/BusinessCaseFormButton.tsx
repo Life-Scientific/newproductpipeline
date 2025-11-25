@@ -4,9 +4,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { BusinessCaseForm } from "./BusinessCaseForm";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export function BusinessCaseFormButton() {
   const [open, setOpen] = useState(false);
+  const { canCreateBusinessCases, isLoading } = usePermissions();
+
+  // Don't render if user doesn't have permission
+  if (isLoading || !canCreateBusinessCases) {
+    return null;
+  }
 
   return (
     <>

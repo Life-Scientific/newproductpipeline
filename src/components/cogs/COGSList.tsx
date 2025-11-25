@@ -16,6 +16,8 @@ import {
 import { ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import { COGSEditModal } from "./COGSEditModal";
 import type { Database } from "@/lib/supabase/database.types";
+import { usePermissions } from "@/hooks/use-permissions";
+import { useToast } from "@/components/ui/use-toast";
 
 type COGS = Database["public"]["Views"]["vw_cogs"]["Row"];
 
@@ -38,6 +40,8 @@ interface COGSListProps {
 }
 
 export function COGSList({ cogs }: COGSListProps) {
+  const { toast } = useToast();
+  const { canEditCOGS, isLoading: permissionsLoading } = usePermissions();
   const [expandedFormulations, setExpandedFormulations] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFormulation, setSelectedFormulation] = useState<string>("all");
@@ -187,6 +191,15 @@ export function COGSList({ cogs }: COGSListProps) {
   };
 
   const handleEdit = (group: COGSGroup) => {
+    if (!canEditCOGS) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to edit COGS data",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSelectedGroupId(group.cogs_group_id);
     setSelectedGroupInfo({
       formulationId: group.formulation_id,
@@ -314,16 +327,18 @@ export function COGSList({ cogs }: COGSListProps) {
                                 </Badge>
                               </div>
                             </div>
-                            <div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEdit(group)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            {canEditCOGS && !permissionsLoading && (
+                              <div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEdit(group)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
