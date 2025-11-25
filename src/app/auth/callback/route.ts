@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+// Allowed email domains for SSO login
+const ALLOWED_DOMAINS = ["lifescientific.com"];
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -14,9 +17,21 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     
-    if (!error) {
+    if (!error && data.user) {
+      // Verify the user's email domain is allowed
+      const userEmail = data.user.email?.toLowerCase() || "";
+      const emailDomain = userEmail.split("@")[1];
+      
+      if (!emailDomain || !ALLOWED_DOMAINS.includes(emailDomain)) {
+        // Sign out the user - they're not from an allowed domain
+        await supabase.auth.signOut();
+        return NextResponse.redirect(
+          `${origin}/login?error=unauthorized_domain`
+        );
+      }
+      
       const forwardedHost = request.headers.get("x-forwarded-host");
       const isLocalEnv = process.env.NODE_ENV === "development";
       
