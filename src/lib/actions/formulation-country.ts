@@ -10,7 +10,7 @@ export async function createFormulationCountry(formData: FormData) {
   const countryId = formData.get("country_id") as string;
   
   // Fields matching schema
-  const likelyRegistrationPathway = formData.get("likely_likely_registration_pathway") as string | null;
+  const likelyRegistrationPathway = formData.get("likely_registration_pathway") as string | null;
   const countryStatus = formData.get("country_status") as string | null;
   const countryReadiness = formData.get("country_readiness") as string | null;
   const countryReadinessNotes = formData.get("country_readiness_notes") as string | null;
@@ -41,7 +41,7 @@ export async function createFormulationCountry(formData: FormData) {
     .insert({
       formulation_id: formulationId,
       country_id: countryId,
-      likely_likely_registration_pathway: likelyRegistrationPathway,
+      likely_registration_pathway: likelyRegistrationPathway,
       country_status: countryStatus || "Not yet evaluated",
       country_readiness: countryReadiness || "Nominated for Review",
       country_readiness_notes: countryReadinessNotes,
@@ -69,7 +69,7 @@ export async function updateFormulationCountry(
 ) {
   const supabase = await createClient();
 
-  const likelyRegistrationPathway = formData.get("likely_likely_registration_pathway") as string | null;
+  const likelyRegistrationPathway = formData.get("likely_registration_pathway") as string | null;
   const countryStatus = formData.get("country_status") as string | null;
   const countryReadiness = formData.get("country_readiness") as string | null;
   const countryReadinessNotes = formData.get("country_readiness_notes") as string | null;
@@ -83,7 +83,7 @@ export async function updateFormulationCountry(
     updated_at: new Date().toISOString(),
   };
 
-  if (likelyRegistrationPathway !== null) updateData.likely_likely_registration_pathway = likelyRegistrationPathway;
+  if (likelyRegistrationPathway !== null) updateData.likely_registration_pathway = likelyRegistrationPathway;
   if (countryStatus !== null) updateData.country_status = countryStatus;
   if (countryReadiness !== null) updateData.country_readiness = countryReadiness;
   if (countryReadinessNotes !== null) updateData.country_readiness_notes = countryReadinessNotes;

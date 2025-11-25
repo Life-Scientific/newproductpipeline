@@ -4,37 +4,21 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { 
   ChevronRight, 
-  TrendingUp,
-  TrendingDown,
-  ArrowRight,
-  Search,
+  Download,
+  X,
   ArrowUpDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getStatusVariant } from "@/lib/design-system";
 import type { Database } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 import { PipelineNetworkGraph } from "./PipelineNetworkGraph";
+import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
+import { type ColumnDef } from "@tanstack/react-table";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
@@ -48,8 +32,30 @@ interface PipelineTrackerDashboardProps {
   businessCases: BusinessCase[];
 }
 
-type SortField = "code" | "revenue" | "margin" | "countries" | "status";
-type SortDirection = "asc" | "desc";
+// Get unique statuses from formulations
+const STATUS_OPTIONS = ["Selected", "Monitoring", "Not Yet Considered", "Killed"] as const;
+
+// Enriched formulation type with computed stats
+interface EnrichedFormulation extends Formulation {
+  stats: {
+    countryCount: number;
+    activeCountryCount: number;
+    useGroupCount: number;
+    businessCaseCount: number;
+    totalRevenue: number;
+    totalMargin: number;
+    marginPercent: number;
+    revenueShare: number;
+    countryPenetration: number;
+  };
+}
+
+// Helper function to format currency
+function formatCurrency(val: number) {
+  if (val >= 1000000) return `€${(val / 1000000).toFixed(1)}M`;
+  if (val >= 1000) return `€${(val / 1000).toFixed(0)}K`;
+  return `€${val.toFixed(0)}`;
+}
 
 export function PipelineTrackerDashboard({
   formulations,
@@ -57,15 +63,10 @@ export function PipelineTrackerDashboard({
   useGroups,
   businessCases,
 }: PipelineTrackerDashboardProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [sortField, setSortField] = useState<SortField>("revenue");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilters, setStatusFilters] = useState<Set<string>>(new Set());
   const [selectedView, setSelectedView] = useState<"table" | "network">("table");
-  const itemsPerPage = 50;
 
-  // Data processing
+  // Data processing - enriches formulations with computed statistics
   const { processedData, globalStats } = useMemo(() => {
     const countriesByFormulation = new Map<string, FormulationCountryDetail[]>();
     countries.forEach(c => {
@@ -104,7 +105,7 @@ export function PipelineTrackerDashboard({
 
     if (globalTotalRevenue === 0) globalTotalRevenue = 1;
 
-    const enrichedFormulations = formulations.map(f => {
+    const enrichedFormulations: EnrichedFormulation[] = formulations.map(f => {
       const fCode = f.formulation_code || "";
       const fCountries = countriesByFormulation.get(fCode) || [];
       
@@ -162,37 +163,11 @@ export function PipelineTrackerDashboard({
       };
     });
 
+    // Apply status filters only (search is handled by EnhancedDataTable)
     const filtered = enrichedFormulations.filter(f => {
-      const matchesSearch = (
-        (f.formulation_code?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-        (("formulation_name" in f ? (f as any).formulation_name : null)?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
-      );
-      const matchesStatus = statusFilter === "all" || ("formulation_status" in f ? (f as any).formulation_status === statusFilter : false);
-      return matchesSearch && matchesStatus;
-    });
-
-    const sorted = [...filtered].sort((a, b) => {
-      let comparison = 0;
-      
-      switch (sortField) {
-        case "code":
-          comparison = (a.formulation_code || "").localeCompare(b.formulation_code || "");
-          break;
-        case "revenue":
-          comparison = a.stats.totalRevenue - b.stats.totalRevenue;
-          break;
-        case "margin":
-          comparison = a.stats.marginPercent - b.stats.marginPercent;
-          break;
-        case "countries":
-          comparison = a.stats.countryCount - b.stats.countryCount;
-          break;
-        case "status":
-          comparison = (("formulation_status" in a ? (a as any).formulation_status : "") || "").localeCompare(("formulation_status" in b ? (b as any).formulation_status : "") || "");
-          break;
-      }
-      
-      return sortDirection === "asc" ? comparison : -comparison;
+      const status = "formulation_status" in f ? (f as any).formulation_status : null;
+      const matchesStatus = statusFilters.size === 0 || (status && statusFilters.has(status));
+      return matchesStatus;
     });
 
     const globalStats = {
@@ -210,93 +185,298 @@ export function PipelineTrackerDashboard({
       ? (globalStats.totalMargin / globalStats.totalRevenue) * 100 
       : 0;
 
-    return { processedData: sorted, globalStats };
-  }, [formulations, countries, useGroups, businessCases, searchTerm, statusFilter, sortField, sortDirection]);
+    return { processedData: filtered, globalStats };
+  }, [formulations, countries, useGroups, businessCases, statusFilters]);
 
-  const totalPages = Math.ceil(processedData.length / itemsPerPage);
-  const paginatedData = processedData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  // Column definitions for EnhancedDataTable
+  const columns = useMemo<ColumnDef<EnrichedFormulation>[]>(() => [
+    {
+      id: "formulation",
+      accessorKey: "formulation_code",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2 -ml-2"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Formulation
+          <ArrowUpDown className="ml-1 h-3 w-3" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const formulation = row.original;
+        const name = "formulation_name" in formulation 
+          ? (formulation as any).formulation_name 
+          : formulation.formulation_code;
+        return (
+          <Link 
+            href={`/formulations/${formulation.formulation_id}`}
+            className="flex flex-col hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="font-semibold text-sm text-primary truncate max-w-[200px]" title={name || ""}>
+              {name || formulation.formulation_code || "—"}
+            </span>
+            {formulation.formulation_code && name !== formulation.formulation_code && (
+              <span className="text-xs text-muted-foreground">
+                {formulation.formulation_code}
+              </span>
+            )}
+          </Link>
+        );
+      },
+      meta: { sticky: "left" as const, minWidth: "200px" },
+      enableHiding: false,
+    },
+    {
+      id: "status",
+      accessorFn: (row) => "formulation_status" in row ? (row as any).formulation_status : null,
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2 -ml-2"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Status
+          <ArrowUpDown className="ml-1 h-3 w-3" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const status = "formulation_status" in row.original 
+          ? (row.original as any).formulation_status 
+          : null;
+        return status ? (
+          <Badge variant={getStatusVariant(status, 'formulation')} className="text-xs">
+            {status}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      },
+      meta: { minWidth: "120px" },
+    },
+    {
+      id: "countries",
+      accessorFn: (row) => row.stats.countryCount,
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2 -ml-2"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Countries
+          <ArrowUpDown className="ml-1 h-3 w-3" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const { activeCountryCount, countryCount, countryPenetration } = row.original.stats;
+        return (
+          <div className="flex flex-col items-end">
+            <span className="font-medium text-sm">
+              {activeCountryCount}/{countryCount}
+            </span>
+            <Progress value={countryPenetration} className="h-1 w-12 mt-1" />
+          </div>
+        );
+      },
+      meta: { align: "right", minWidth: "100px" },
+    },
+    {
+      id: "useGroups",
+      accessorFn: (row) => row.stats.useGroupCount,
+      header: "Use Groups",
+      cell: ({ row }) => (
+        <span className="font-medium text-sm">{row.original.stats.useGroupCount}</span>
+      ),
+      meta: { align: "right", minWidth: "90px" },
+    },
+    {
+      id: "businessCases",
+      accessorFn: (row) => row.stats.businessCaseCount,
+      header: "Bus. Cases",
+      cell: ({ row }) => (
+        <span className="font-medium text-sm">{row.original.stats.businessCaseCount}</span>
+      ),
+      meta: { align: "right", minWidth: "90px" },
+    },
+    {
+      id: "margin",
+      accessorFn: (row) => row.stats.marginPercent,
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2 -ml-2"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Margin
+          <ArrowUpDown className="ml-1 h-3 w-3" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const marginPercent = row.original.stats.marginPercent;
+        return (
+          <span className={cn(
+            "font-medium text-sm",
+            marginPercent > 40 ? "text-green-600" : 
+            marginPercent > 0 ? "text-amber-600" : "text-muted-foreground"
+          )}>
+            {marginPercent > 0 ? `${marginPercent.toFixed(1)}%` : "—"}
+          </span>
+        );
+      },
+      meta: { align: "right", minWidth: "90px" },
+    },
+    {
+      id: "revenue",
+      accessorFn: (row) => row.stats.totalRevenue,
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2 -ml-2"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Revenue
+          <ArrowUpDown className="ml-1 h-3 w-3" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const { totalRevenue, revenueShare } = row.original.stats;
+        return (
+          <div className="flex flex-col items-end">
+            <span className="font-semibold text-sm">
+              {formatCurrency(totalRevenue)}
+            </span>
+            {revenueShare > 5 && (
+              <span className="text-[10px] text-primary font-medium">
+                {revenueShare.toFixed(0)}% share
+              </span>
+            )}
+          </div>
+        );
+      },
+      meta: { align: "right", minWidth: "110px" },
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <Link href={`/formulations/${row.original.formulation_id}`}>
+          <Button variant="ghost" size="icon" className="h-6 w-6">
+            <ChevronRight className="h-3 w-3" />
+          </Button>
+        </Link>
+      ),
+      meta: { minWidth: "50px" },
+      enableHiding: false,
+      enableSorting: false,
+    },
+  ], []);
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(prev => prev === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("desc");
-    }
-    setCurrentPage(1);
+  const toggleStatusFilter = (status: string) => {
+    setStatusFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(status)) {
+        next.delete(status);
+      } else {
+        next.add(status);
+      }
+      return next;
+    });
   };
 
-  const formatCurrency = (val: number) => {
-    if (val >= 1000000) return `€${(val / 1000000).toFixed(1)}M`;
-    if (val >= 1000) return `€${(val / 1000).toFixed(0)}K`;
-    return `€${val}`;
+  const clearAllFilters = () => {
+    setStatusFilters(new Set());
   };
 
-  const SortButton = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="h-8 px-2 hover:bg-muted"
-      onClick={() => handleSort(field)}
-    >
-      {children}
-      {sortField === field && (
-        sortDirection === "asc" ? 
-          <TrendingUp className="ml-1 h-3 w-3" /> : 
-          <TrendingDown className="ml-1 h-3 w-3" />
-      )}
-    </Button>
-  );
+  const exportToCSV = () => {
+    const headers = ["Formulation Name", "Code", "Status", "Countries", "Active Countries", "Use Groups", "Business Cases", "Revenue", "Margin", "Margin %"];
+    const rows = processedData.map(f => [
+      ("formulation_name" in f ? (f as any).formulation_name : f.formulation_code) || "",
+      f.formulation_code || "",
+      ("formulation_status" in f ? (f as any).formulation_status : "") || "",
+      f.stats.countryCount,
+      f.stats.activeCountryCount,
+      f.stats.useGroupCount,
+      f.stats.businessCaseCount,
+      f.stats.totalRevenue.toFixed(2),
+      f.stats.totalMargin.toFixed(2),
+      f.stats.marginPercent.toFixed(1),
+    ]);
+    
+    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `pipeline-tracker-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
-  // Network view should only show if search is active and results are reasonable
-  const canShowNetwork = searchTerm.length > 0 && processedData.length <= 5;
+  // Network view can show for up to 20 results
+  const canShowNetwork = processedData.length <= 20 && processedData.length > 0;
+
+  const hasActiveFilters = statusFilters.size > 0;
 
   return (
     <div className="space-y-6">
       {/* Controls */}
       <div className="flex flex-col gap-4">
+        {/* View Toggle and Export */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-[300px]">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search formulations..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="pl-9"
-              />
-            </div>
-            <Select 
-              value={statusFilter} 
-              onValueChange={(val) => {
-                setStatusFilter(val);
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Development">Development</SelectItem>
-                <SelectItem value="Pipeline">Pipeline</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Quick Filter Chips */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium text-muted-foreground">Status:</span>
+            {STATUS_OPTIONS.map((status) => (
+              <Badge
+                key={status}
+                variant={statusFilters.has(status) ? "default" : "outline"}
+                className={cn(
+                  "cursor-pointer transition-all hover:scale-105",
+                  statusFilters.has(status) && "bg-primary"
+                )}
+                onClick={() => toggleStatusFilter(status)}
+              >
+                {status}
+                {statusFilters.has(status) && (
+                  <X className="ml-1 h-3 w-3" />
+                )}
+              </Badge>
+            ))}
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs text-muted-foreground hover:text-foreground"
+                onClick={clearAllFilters}
+              >
+                Clear all
+              </Button>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
-            <Tabs value={selectedView} onValueChange={(v) => setSelectedView(v as any)}>
-              <TabsList>
-                <TabsTrigger value="table">Table</TabsTrigger>
-                <TabsTrigger value="network" disabled={!canShowNetwork}>
-                  Network {!canShowNetwork && <span className="ml-1 text-[10px]">(search to enable)</span>}
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8"
+              onClick={exportToCSV}
+              title="Export to CSV"
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Export
+            </Button>
+
+            <Tabs value={selectedView} onValueChange={(v) => setSelectedView(v as "table" | "network")}>
+              <TabsList className="h-8">
+                <TabsTrigger value="table" className="text-xs h-7">Table</TabsTrigger>
+                <TabsTrigger value="network" className="text-xs h-7" disabled={!canShowNetwork}>
+                  Network
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -305,9 +485,9 @@ export function PipelineTrackerDashboard({
 
         {selectedView === "network" && !canShowNetwork && (
           <Card className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <p className="text-sm text-amber-900 dark:text-amber-100">
-                <strong>Network view is disabled for scale.</strong> Search for a specific formulation (≤5 results) to explore its network graph.
+                Network view works best with ≤20 results. Filter or search to reduce results.
               </p>
             </CardContent>
           </Card>
@@ -364,140 +544,19 @@ export function PipelineTrackerDashboard({
       {/* Content */}
       {selectedView === "table" ? (
         <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader className="sticky top-0 bg-background z-10">
-                  <TableRow>
-                    <TableHead className="w-[180px]">
-                      <SortButton field="code">Formulation</SortButton>
-                    </TableHead>
-                    <TableHead className="w-[120px]">
-                      <SortButton field="status">Status</SortButton>
-                    </TableHead>
-                    <TableHead className="w-[100px] text-right">
-                      <SortButton field="countries">Countries</SortButton>
-                    </TableHead>
-                    <TableHead className="w-[80px] text-right">Use Groups</TableHead>
-                    <TableHead className="w-[80px] text-right">Bus. Cases</TableHead>
-                    <TableHead className="w-[100px] text-right">
-                      <SortButton field="margin">Margin</SortButton>
-                    </TableHead>
-                    <TableHead className="w-[120px] text-right">
-                      <SortButton field="revenue">Revenue</SortButton>
-                    </TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedData.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                        No formulations found
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    paginatedData.map((formulation) => (
-                      <TableRow 
-                        key={formulation.formulation_id}
-                        className="hover:bg-muted/50 cursor-pointer"
-                        onClick={() => window.location.href = `/formulations/${formulation.formulation_id}`}
-                      >
-                        <TableCell className="font-medium">
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-sm">{formulation.formulation_code}</span>
-                            <span className="text-xs text-muted-foreground truncate max-w-[160px]" title={("formulation_name" in formulation ? (formulation as any).formulation_name : formulation.formulation_code) || ""}>
-                              {"formulation_name" in formulation ? (formulation as any).formulation_name : formulation.formulation_code}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getStatusVariant(("formulation_status" in formulation ? (formulation as any).formulation_status : null) || null, 'formulation')} className="text-xs">
-                            {"formulation_status" in formulation ? (formulation as any).formulation_status : null}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex flex-col items-end">
-                            <span className="font-medium text-sm">
-                              {formulation.stats.activeCountryCount}/{formulation.stats.countryCount}
-                            </span>
-                            <Progress 
-                              value={formulation.stats.countryPenetration} 
-                              className="h-1 w-12 mt-1" 
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right font-medium text-sm">
-                          {formulation.stats.useGroupCount}
-                        </TableCell>
-                        <TableCell className="text-right font-medium text-sm">
-                          {formulation.stats.businessCaseCount}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <span className={cn("font-medium text-sm", 
-                            formulation.stats.marginPercent > 40 ? "text-green-600" : 
-                            formulation.stats.marginPercent > 0 ? "text-amber-600" : "text-muted-foreground"
-                          )}>
-                            {formulation.stats.marginPercent > 0 ? `${formulation.stats.marginPercent.toFixed(1)}%` : "—"}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex flex-col items-end">
-                            <span className="font-semibold text-sm">
-                              {formatCurrency(formulation.stats.totalRevenue)}
-                            </span>
-                            {formulation.stats.revenueShare > 5 && (
-                              <span className="text-[10px] text-primary font-medium">
-                                {formulation.stats.revenueShare.toFixed(0)}% share
-                              </span>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-6 w-6"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.location.href = `/formulations/${formulation.formulation_id}`;
-                            }}
-                          >
-                            <ChevronRight className="h-3 w-3" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t px-4 py-3">
-                <div className="text-sm text-muted-foreground">
-                  Page {currentPage} of {totalPages}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            )}
+          <CardContent className="p-4">
+            <EnhancedDataTable
+              columns={columns}
+              data={processedData}
+              searchKey="formulation_code"
+              searchPlaceholder="Search formulations..."
+              pageSize={50}
+              showPageSizeSelector={true}
+              emptyMessage="No formulations found"
+              tableId="pipeline-tracker"
+              enableColumnReordering={true}
+              enableViewManagement={true}
+            />
           </CardContent>
         </Card>
       ) : (
@@ -508,8 +567,8 @@ export function PipelineTrackerDashboard({
           countries={countries}
           useGroups={useGroups}
           businessCases={businessCases}
-          searchTerm={searchTerm}
-          statusFilter={statusFilter}
+          searchTerm=""
+          statusFilter={Array.from(statusFilters)[0] || null}
         />
       )}
     </div>

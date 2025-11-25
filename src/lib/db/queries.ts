@@ -1138,6 +1138,20 @@ export async function getBusinessCaseGroup(groupId: string): Promise<BusinessCas
     return [];
   }
 
+  // Get the formulation_country_use_group_id from junction table
+  const firstBusinessCaseId = data[0]?.business_case_id;
+  let useGroupId: string | null = null;
+  
+  if (firstBusinessCaseId) {
+    const { data: junctionData } = await supabase
+      .from("business_case_use_groups")
+      .select("formulation_country_use_group_id")
+      .eq("business_case_id", firstBusinessCaseId)
+      .limit(1);
+    
+    useGroupId = junctionData?.[0]?.formulation_country_use_group_id || null;
+  }
+
   return data.map((bc) => ({
     business_case_id: bc.business_case_id || "",
     business_case_group_id: bc.business_case_group_id || "",
@@ -1158,6 +1172,7 @@ export async function getBusinessCaseGroup(groupId: string): Promise<BusinessCas
     currency_code: bc.currency_code || null,
     use_group_name: bc.use_group_name || null,
     use_group_variant: bc.use_group_variant || null,
+    formulation_country_use_group_id: useGroupId, // For version history lookup
   }));
 }
 
@@ -1192,6 +1207,105 @@ export async function checkExistingBusinessCase(
     .single();
 
   return bcData?.business_case_group_id || null;
+}
+
+/**
+ * Business case version history entry
+ */
+export interface BusinessCaseVersionHistoryEntry {
+  business_case_group_id: string;
+  status: string;
+  created_at: string | null;
+  created_by: string | null;
+  updated_at: string | null;
+  version_number: number;
+  year_1_summary: {
+    volume: number | null;
+    nsp: number | null;
+    total_revenue: number | null;
+  };
+}
+
+/**
+ * Get version history for a use group's business cases
+ * Returns all versions (active and inactive) sorted by creation date
+ */
+export async function getBusinessCaseVersionHistory(
+  useGroupId: string
+): Promise<BusinessCaseVersionHistoryEntry[]> {
+  const supabase = await createClient();
+  
+  // Get all business case IDs linked to this use group
+  const { data: junctionData, error: junctionError } = await supabase
+    .from("business_case_use_groups")
+    .select("business_case_id")
+    .eq("formulation_country_use_group_id", useGroupId);
+
+  if (junctionError || !junctionData || junctionData.length === 0) {
+    return [];
+  }
+
+  const businessCaseIds = junctionData.map((j) => j.business_case_id);
+
+  // Get all business cases (both active and inactive)
+  const { data: businessCases, error: bcError } = await supabase
+    .from("business_case")
+    .select("business_case_group_id, status, created_at, created_by, updated_at, year_offset, volume, nsp, total_revenue")
+    .in("business_case_id", businessCaseIds)
+    .order("created_at", { ascending: false });
+
+  if (bcError || !businessCases) {
+    return [];
+  }
+
+  // Group by business_case_group_id and get summary from year 1
+  const groupMap = new Map<string, BusinessCaseVersionHistoryEntry>();
+  
+  businessCases.forEach((bc) => {
+    if (!bc.business_case_group_id) return;
+    
+    if (!groupMap.has(bc.business_case_group_id)) {
+      groupMap.set(bc.business_case_group_id, {
+        business_case_group_id: bc.business_case_group_id,
+        status: bc.status || "active",
+        created_at: bc.created_at,
+        created_by: bc.created_by,
+        updated_at: bc.updated_at,
+        version_number: 0, // Will be calculated after
+        year_1_summary: {
+          volume: null,
+          nsp: null,
+          total_revenue: null,
+        },
+      });
+    }
+    
+    // Use year 1 data for summary
+    if (bc.year_offset === 1) {
+      const entry = groupMap.get(bc.business_case_group_id)!;
+      entry.year_1_summary = {
+        volume: bc.volume,
+        nsp: bc.nsp,
+        total_revenue: bc.total_revenue,
+      };
+    }
+  });
+
+  // Convert to array and sort by created_at descending
+  const versions = Array.from(groupMap.values())
+    .sort((a, b) => {
+      const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return bTime - aTime;
+    });
+
+  // Assign version numbers (newest = highest number)
+  const totalVersions = versions.length;
+  versions.forEach((v, index) => {
+    v.version_number = totalVersions - index;
+  });
+
+  return versions;
 }
 
 /**

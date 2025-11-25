@@ -2,7 +2,6 @@ import {
   getFormulationById,
   getFormulationCountryDetails,
   getFormulationIngredients,
-  getFormulationCOGS,
   getFormulationBusinessCases,
   getFormulationStatusHistory,
   getFormulationProtectionStatus,
@@ -16,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { FormulationIngredients } from "@/components/formulations/FormulationIngredients";
-import { FormulationCOGS } from "@/components/formulations/FormulationCOGS";
 import { FormulationBusinessCases } from "@/components/formulations/FormulationBusinessCases";
 import { FormulationStatusHistory } from "@/components/formulations/FormulationStatusHistory";
 import { FormulationRegulatory } from "@/components/formulations/FormulationRegulatory";
@@ -48,7 +46,6 @@ export default async function FormulationDetailPage({
     formulation,
     countryDetails,
     ingredients,
-    cogs,
     businessCases,
     statusHistory,
     protectionStatus,
@@ -59,7 +56,6 @@ export default async function FormulationDetailPage({
     getFormulationById(id),
     getFormulationCountryDetails(id),
     getFormulationIngredients(id),
-    getFormulationCOGS(id),
     getFormulationBusinessCases(id),
     getFormulationStatusHistory(id),
     getFormulationProtectionStatus(id),
@@ -321,42 +317,102 @@ export default async function FormulationDetailPage({
             {/* Business Cases */}
             <FormulationBusinessCases businessCases={businessCases} exchangeRates={exchangeRateMap} />
 
-            {/* COGS */}
-            <FormulationCOGS cogs={cogs} />
-
-            {/* Countries */}
+            {/* Country Portfolio Overview */}
             {countryDetails.length > 0 && (
               <Card>
                 <CardHeader className="space-y-1.5">
-                  <CardTitle>Countries ({countryDetails.length})</CardTitle>
-                  <CardDescription>Formulation registrations by country</CardDescription>
+                  <CardTitle>Country Portfolio ({countryDetails.length})</CardTitle>
+                  <CardDescription>Revenue and margin breakdown by country</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-2">
-                    {countryDetails.map((detail) => (
-                      <div
-                        key={detail.formulation_country_id}
-                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors gap-4"
-                      >
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <div className="font-medium text-sm">{detail.country_name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {detail.likely_registration_pathway || "No pathway"} • {detail.target_market_entry_fy || "No target FY"}
-                            {detail.earliest_market_entry_date && ` • EMD: ${new Date(detail.earliest_market_entry_date).toLocaleDateString()}`}
+                <CardContent>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {countryDetails.map((detail) => {
+                      // Calculate country-specific metrics from business cases
+                      const countryBusinessCases = businessCases.filter(
+                        (bc) => bc.country_name === detail.country_name
+                      );
+                      const countryRevenue = countryBusinessCases.reduce(
+                        (sum, bc) => sum + (bc.total_revenue || 0),
+                        0
+                      );
+                      const countryMargin = countryBusinessCases.reduce(
+                        (sum, bc) => sum + (bc.total_margin || 0),
+                        0
+                      );
+                      const countryMarginPercent = countryRevenue > 0 
+                        ? (countryMargin / countryRevenue) * 100 
+                        : 0;
+                      const countryUseGroups = useGroups.filter(
+                        (ug) => ug.formulation_country_id === detail.formulation_country_id
+                      );
+
+                      return (
+                        <Link
+                          key={detail.formulation_country_id}
+                          href={`/formulations/${id}?country=${encodeURIComponent(detail.country_name || '')}`}
+                          className="block"
+                        >
+                          <div className="p-4 border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all cursor-pointer">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <h4 className="font-semibold text-sm">{detail.country_name}</h4>
+                                <p className="text-xs text-muted-foreground">
+                                  {detail.target_market_entry_fy || "No target FY"}
+                                </p>
+                              </div>
+                              {detail.country_status && (
+                                <Badge 
+                                  variant={detail.country_status === "Approved" ? "default" : "outline"} 
+                                  className="text-xs"
+                                >
+                                  {detail.country_status}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {countryBusinessCases.length > 0 ? (
+                              <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Revenue</span>
+                                  <span className="font-medium">{formatCurrency(countryRevenue)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Margin</span>
+                                  <span className={cn(
+                                    "font-medium",
+                                    countryMargin < 0 && "text-destructive"
+                                  )}>
+                                    {formatCurrency(countryMargin)}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Margin %</span>
+                                  <Badge 
+                                    variant={
+                                      countryMarginPercent >= 40 ? "default" :
+                                      countryMarginPercent >= 20 ? "secondary" :
+                                      countryMarginPercent >= 0 ? "outline" : "destructive"
+                                    }
+                                    className="text-xs"
+                                  >
+                                    {countryMarginPercent.toFixed(1)}%
+                                  </Badge>
+                                </div>
+                                <div className="pt-2 border-t mt-2 flex justify-between text-xs text-muted-foreground">
+                                  <span>{countryBusinessCases.length} business cases</span>
+                                  <span>{countryUseGroups.length} use groups</span>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-sm text-muted-foreground">
+                                <p>No business cases yet</p>
+                                <p className="text-xs mt-1">{countryUseGroups.length} use groups</p>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {detail.country_status && (
-                            <Badge variant="outline" className="text-xs">
-                              {detail.country_status}
-                            </Badge>
-                          )}
-                          <Badge variant="secondary" className="text-xs">
-                            {useGroups.filter(ug => ug.formulation_country_id === detail.formulation_country_id).length} use groups
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>

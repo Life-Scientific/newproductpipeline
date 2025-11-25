@@ -288,25 +288,32 @@ export function TenYearProjectionChart({
   }, [businessCases, formulations, filters, formulationDisplayMap]);
 
 
-  // Generate chart data - show consistent range from earliest data year through next 10 years
+  // Generate chart data - show only years with actual data
   const chartData = useMemo(() => {
-    // First, find the earliest fiscal year in the data
-    let earliestYear = CURRENT_FISCAL_YEAR;
+    // Find the actual range of fiscal years in the data
+    let earliestYear = Infinity;
+    let latestYear = -Infinity;
+    
     filteredBusinessCases.forEach((bc) => {
       if (bc.fiscal_year) {
         const fyNum = parseInt(bc.fiscal_year.replace("FY", ""), 10);
-        if (fyNum < earliestYear) {
-          earliestYear = fyNum;
+        if (!isNaN(fyNum)) {
+          if (fyNum < earliestYear) earliestYear = fyNum;
+          if (fyNum > latestYear) latestYear = fyNum;
         }
       }
     });
 
-    // Generate fiscal years from earliest year through next 10 years from current
-    // This ensures we show all historical data plus future projections
-    const endYear = Math.max(CURRENT_FISCAL_YEAR + 9, earliestYear + 19); // At least 20 years total
+    // If no valid data, use current fiscal year as default
+    if (earliestYear === Infinity || latestYear === -Infinity) {
+      earliestYear = CURRENT_FISCAL_YEAR;
+      latestYear = CURRENT_FISCAL_YEAR + 9;
+    }
+
+    // Generate fiscal years only for the data range (no extra empty years)
     const fiscalYears: string[] = [];
     
-    for (let fyNum = earliestYear; fyNum <= endYear; fyNum++) {
+    for (let fyNum = earliestYear; fyNum <= latestYear; fyNum++) {
       const fyStr = `FY${String(fyNum).padStart(2, "0")}`;
       fiscalYears.push(fyStr);
     }
@@ -344,35 +351,32 @@ export function TenYearProjectionChart({
       if (yearIndex >= 0) {
         const localRevenue = bc.total_revenue || 0;
         const localMargin = bc.total_margin || 0;
+        const localCogs = bc.total_cogs || 0;
+        
+        // Skip if values are invalid (e.g., NaN, Infinity)
+        if (!Number.isFinite(localRevenue) || !Number.isFinite(localMargin)) {
+          return;
+        }
         
         years[yearIndex].revenue += localRevenue;
         years[yearIndex].margin += localMargin;
-        years[yearIndex].cogs += bc.total_cogs || 0;
+        years[yearIndex].cogs += localCogs;
         years[yearIndex].count += 1;
 
-        // Convert to EUR if exchange rate available
-        // Note: country_id might not be in the view, try to get it from country_name lookup
-        let countryId = bc.country_id;
-        if (!countryId && bc.country_name) {
-          // Try to find country_id from exchange rates map (if we stored it by name)
-          // For now, we'll use the exchange rate lookup by country_id from the enriched data
+        // Convert to EUR using exchange rate if available
+        // Default to rate of 1.0 (assume EUR) if no rate found
+        const countryId = bc.country_id;
+        let rate = 1.0;
+        
+        if (countryId && exchangeRates.has(countryId)) {
+          const foundRate = exchangeRates.get(countryId);
+          if (foundRate && foundRate > 0 && Number.isFinite(foundRate)) {
+            rate = foundRate;
+          }
         }
         
-        if (countryId) {
-          const rate = exchangeRates.get(countryId);
-          if (rate && rate > 0) {
-            years[yearIndex].revenueEUR += localRevenue / rate;
-            years[yearIndex].marginEUR += localMargin / rate;
-          } else {
-            // If no rate, assume EUR (rate = 1.0) or add to EUR anyway
-            years[yearIndex].revenueEUR += localRevenue;
-            years[yearIndex].marginEUR += localMargin;
-          }
-        } else {
-          // No country_id, add to EUR as-is (might be EUR already)
-          years[yearIndex].revenueEUR += localRevenue;
-          years[yearIndex].marginEUR += localMargin;
-        }
+        years[yearIndex].revenueEUR += localRevenue / rate;
+        years[yearIndex].marginEUR += localMargin / rate;
       }
     });
 
@@ -796,26 +800,11 @@ export function TenYearProjectionChart({
                   strokeWidth={2.5}
                   fill={`url(#colorRevenue-${chartId})`}
                   name="Revenue (EUR)"
-                  dot={false}
+                  dot={{ r: 3, fill: revenueColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
                   activeDot={{ r: 5, fill: revenueColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
                   isAnimationActive={true}
                   animationBegin={0}
-                  animationDuration={2000}
-                  animationEasing="ease-out"
-                />
-                {/* Revenue dots - appear after line animation and remain visible */}
-                <Area
-                  type="monotone"
-                  dataKey="revenueEUR"
-                  stroke="none"
-                  fill="none"
-                  dot={{ r: 3, fill: revenueColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
-                  activeDot={false}
-                  hide={true}
-                  legendType="none"
-                  isAnimationActive={true}
-                  animationBegin={2000}
-                  animationDuration={400}
+                  animationDuration={1500}
                   animationEasing="ease-out"
                 />
                 {/* Margin Area with gradient fill and line (EUR) */}
@@ -826,26 +815,11 @@ export function TenYearProjectionChart({
                   strokeWidth={2.5}
                   fill={`url(#colorMargin-${chartId})`}
                   name="Margin (EUR)"
-                  dot={false}
+                  dot={{ r: 3, fill: marginColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
                   activeDot={{ r: 5, fill: marginColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
                   isAnimationActive={true}
                   animationBegin={200}
-                  animationDuration={2000}
-                  animationEasing="ease-out"
-                />
-                {/* Margin dots - appear after line animation and remain visible */}
-                <Area
-                  type="monotone"
-                  dataKey="marginEUR"
-                  stroke="none"
-                  fill="none"
-                  dot={{ r: 3, fill: marginColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
-                  activeDot={false}
-                  hide={true}
-                  legendType="none"
-                  isAnimationActive={true}
-                  animationBegin={2200}
-                  animationDuration={400}
+                  animationDuration={1500}
                   animationEasing="ease-out"
                 />
               </AreaChart>

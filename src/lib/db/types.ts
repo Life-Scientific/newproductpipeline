@@ -70,6 +70,8 @@ export interface BusinessCaseYearData {
   business_case_group_id: string;
   year_offset: number;
   fiscal_year: string | null;
+  target_market_entry_fy: string | null; // Original target market entry from use group
+  effective_start_fiscal_year: string | null; // Effective start fiscal year at creation time
   volume: number | null;
   nsp: number | null;
   cogs_per_unit: number | null;
@@ -83,5 +85,6 @@ export interface BusinessCaseYearData {
   currency_code: string | null;
   use_group_name: string | null;
   use_group_variant: string | null;
+  formulation_country_use_group_id: string | null; // For version history lookup
 }
 

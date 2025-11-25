@@ -291,9 +291,18 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     useGroupIds[0]
   );
 
+  // If existing business case found, we'll create a new version (mark old as inactive)
   if (existingGroupId) {
-    // Return the existing group ID so the UI can switch to update mode
-    return { data: { business_case_group_id: existingGroupId }, exists: true };
+    // Mark old business cases as inactive
+    const { error: deactivateError } = await supabase
+      .from("business_case")
+      .update({ status: "inactive", updated_at: new Date().toISOString() })
+      .eq("business_case_group_id", existingGroupId)
+      .eq("status", "active");
+
+    if (deactivateError) {
+      return { error: `Failed to archive old version: ${deactivateError.message}` };
+    }
   }
 
   // Generate a single UUID for the group
@@ -321,9 +330,11 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
   for (let yearOffset = 1; yearOffset <= 10; yearOffset++) {
     const volumeKey = `year_${yearOffset}_volume`;
     const nspKey = `year_${yearOffset}_nsp`;
+    const cogsKey = `year_${yearOffset}_cogs`;
     
     const volume = formData.get(volumeKey) ? Number(formData.get(volumeKey)) : null;
     const nsp = formData.get(nspKey) ? Number(formData.get(nspKey)) : null;
+    const cogsOverride = formData.get(cogsKey) ? Number(formData.get(cogsKey)) : null;
 
     if (volume === null || nsp === null || volume <= 0 || nsp <= 0) {
       return { error: `Year ${yearOffset}: Volume and NSP are required and must be greater than 0` };
@@ -333,12 +344,17 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     const fiscalYearNum = effectiveStartYear + (yearOffset - 1);
     const fiscalYear = `FY${String(fiscalYearNum).padStart(2, "0")}`;
 
-    // Lookup COGS value with carry-forward logic
-    const cogsValue = await lookupCOGSWithCarryForward(
-      formulationId,
-      formulationCountryId,
-      fiscalYear
-    );
+    // Use manual override if provided, otherwise lookup COGS with carry-forward logic
+    let cogsValue: number | null = null;
+    if (cogsOverride !== null && cogsOverride > 0) {
+      cogsValue = cogsOverride;
+    } else {
+      cogsValue = await lookupCOGSWithCarryForward(
+        formulationId,
+        formulationCountryId,
+        fiscalYear
+      );
+    }
 
     yearData.push({
       year_offset: yearOffset,
@@ -412,14 +428,19 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
 }
 
 /**
- * Update an existing business case group (all 10 years)
+ * Create a new version of a business case group (version control)
+ * This marks the old version as inactive and creates a new active version.
+ * All changes to business cases are tracked as new versions - we never edit in place.
  */
 export async function updateBusinessCaseGroupAction(
-  groupId: string,
+  oldGroupId: string,
   formData: FormData
 ) {
+  const supabase = await createClient();
+  const userName = await getCurrentUserName();
+
   // Extract year data (10 years)
-  const updates: Array<{
+  const yearData: Array<{
     year_offset: number;
     volume: number;
     nsp: number;
@@ -436,47 +457,150 @@ export async function updateBusinessCaseGroupAction(
       return { error: `Year ${yearOffset}: Volume and NSP are required and must be greater than 0` };
     }
 
-    updates.push({
+    yearData.push({
       year_offset: yearOffset,
       volume,
       nsp,
     });
   }
 
-  // Update each year in the group with user context
+  // Get the existing business case group data
+  const { data: existingCases, error: fetchError } = await supabase
+    .from("business_case")
+    .select("*, business_case_use_groups(formulation_country_use_group_id)")
+    .eq("business_case_group_id", oldGroupId)
+    .eq("status", "active");
+
+  if (fetchError || !existingCases || existingCases.length === 0) {
+    return { error: "Could not find existing business case group to version" };
+  }
+
+  // Get the common data from the first existing case
+  const firstCase = existingCases[0];
+  const businessCaseName = (formData.get("business_case_name") as string | null) ?? firstCase.business_case_name;
+  const effectiveStartFiscalYear = firstCase.effective_start_fiscal_year;
+
+  // Get use group IDs from the junction table
+  const { data: useGroupLinks } = await supabase
+    .from("business_case_use_groups")
+    .select("formulation_country_use_group_id")
+    .in("business_case_id", existingCases.map(c => c.business_case_id));
+
+  const useGroupIds = [...new Set(useGroupLinks?.map(l => l.formulation_country_use_group_id) || [])];
+
+  if (useGroupIds.length === 0) {
+    return { error: "No use groups linked to existing business case" };
+  }
+
+  // Get formulation_id and formulation_country_id from the first use group
+  const { data: useGroupData } = await supabase
+    .from("formulation_country_use_group")
+    .select("formulation_country_id, formulation_country(formulation_id)")
+    .eq("formulation_country_use_group_id", useGroupIds[0])
+    .single();
+
+  const formulationId = (useGroupData?.formulation_country as any)?.formulation_id;
+  const formulationCountryId = useGroupData?.formulation_country_id;
+
+  // Generate new group ID for the new version
+  const newGroupId = crypto.randomUUID();
+
+  // Create new business case records (new version)
+  const newBusinessCaseInserts = await Promise.all(
+    yearData.map(async (year) => {
+      // Calculate fiscal year for COGS lookup
+      const match = effectiveStartFiscalYear?.match(/FY(\d{2})/);
+      const startYear = match ? parseInt(match[1], 10) : CURRENT_FISCAL_YEAR;
+      const fiscalYearNum = startYear + (year.year_offset - 1);
+      const fiscalYear = `FY${String(fiscalYearNum).padStart(2, "0")}`;
+
+      // Check for COGS override from form data
+      const cogsOverrideKey = `year_${year.year_offset}_cogs`;
+      const cogsOverride = formData.get(cogsOverrideKey) ? Number(formData.get(cogsOverrideKey)) : null;
+
+      // Use override if provided and valid, otherwise lookup COGS
+      let cogsValue: number | null = null;
+      if (cogsOverride !== null && cogsOverride > 0) {
+        cogsValue = cogsOverride;
+      } else if (formulationId) {
+        cogsValue = await lookupCOGSWithCarryForward(formulationId, formulationCountryId || null, fiscalYear);
+      }
+
+      return {
+        business_case_group_id: newGroupId,
+        business_case_name: businessCaseName,
+        year_offset: year.year_offset,
+        volume: year.volume,
+        nsp: year.nsp,
+        cogs_per_unit: cogsValue,
+        effective_start_fiscal_year: effectiveStartFiscalYear,
+        status: "active" as const,
+        created_by: userName,
+      };
+    })
+  );
+
+  // Start transaction: mark old as inactive, create new
   const result = await withUserContext(async (supabase) => {
-    for (const update of updates) {
-      const { error } = await supabase
-        .from("business_case")
-        .update({
-          volume: update.volume,
-          nsp: update.nsp,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("business_case_group_id", groupId)
-        .eq("year_offset", update.year_offset)
-        .eq("status", "active");
+    // Mark old business cases as inactive
+    const { error: deactivateError } = await supabase
+      .from("business_case")
+      .update({ status: "inactive", updated_at: new Date().toISOString() })
+      .eq("business_case_group_id", oldGroupId)
+      .eq("status", "active");
 
-      if (error) {
-        return { error: `Failed to update year ${update.year_offset}: ${error.message}` };
-      }
+    if (deactivateError) {
+      return { error: `Failed to archive old version: ${deactivateError.message}` };
     }
 
-    // Update business_case_name if provided
-    const businessCaseName = formData.get("business_case_name") as string | null;
-    if (businessCaseName !== null) {
-      const { error: nameError } = await supabase
-        .from("business_case")
-        .update({ business_case_name: businessCaseName })
-        .eq("business_case_group_id", groupId)
-        .eq("status", "active");
+    // Create new business case records
+    const { data: newCases, error: insertError } = await supabase
+      .from("business_case")
+      .insert(newBusinessCaseInserts)
+      .select();
 
-      if (nameError) {
-        return { error: `Failed to update business case name: ${nameError.message}` };
-      }
+    if (insertError || !newCases || newCases.length !== 10) {
+      // Rollback: reactivate old records
+      await supabase
+        .from("business_case")
+        .update({ status: "active" })
+        .eq("business_case_group_id", oldGroupId);
+      return { error: `Failed to create new version: ${insertError?.message || "Unknown error"}` };
     }
 
-    return { success: true };
+    // Link new business cases to the same use groups
+    const junctionEntries: Array<{
+      business_case_id: string;
+      formulation_country_use_group_id: string;
+    }> = [];
+
+    newCases.forEach((bc) => {
+      useGroupIds.forEach((useGroupId) => {
+        junctionEntries.push({
+          business_case_id: bc.business_case_id,
+          formulation_country_use_group_id: useGroupId,
+        });
+      });
+    });
+
+    const { error: junctionError } = await supabase
+      .from("business_case_use_groups")
+      .insert(junctionEntries);
+
+    if (junctionError) {
+      // Rollback: delete new cases and reactivate old ones
+      await supabase
+        .from("business_case")
+        .delete()
+        .eq("business_case_group_id", newGroupId);
+      await supabase
+        .from("business_case")
+        .update({ status: "active" })
+        .eq("business_case_group_id", oldGroupId);
+      return { error: `Failed to link use groups: ${junctionError.message}` };
+    }
+
+    return { success: true, data: { business_case_group_id: newGroupId } };
   });
 
   if (result.error) {
@@ -488,7 +612,7 @@ export async function updateBusinessCaseGroupAction(
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
-  return { success: true };
+  return { success: true, data: result.data };
 }
 
 /**
@@ -544,6 +668,19 @@ export async function getCountriesAction() {
     return { data, error: null };
   } catch (error) {
     return { data: null, error: error instanceof Error ? error.message : "Failed to fetch countries" };
+  }
+}
+
+/**
+ * Server action to get business case version history (for client components)
+ */
+export async function getBusinessCaseVersionHistoryAction(useGroupId: string) {
+  const { getBusinessCaseVersionHistory } = await import("@/lib/db/queries");
+  try {
+    const data = await getBusinessCaseVersionHistory(useGroupId);
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : "Failed to fetch version history" };
   }
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,15 +24,28 @@ import {
   checkExistingBusinessCaseAction,
   getFormulationsAction,
   getCountriesAction,
+  getBusinessCaseGroupAction,
 } from "@/lib/actions/business-cases";
 import { useSupabase } from "@/hooks/use-supabase";
-import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { GitBranch, Search, Calendar, Tag, Package } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Database } from "@/lib/supabase/database.types";
 type Formulation = Database["public"]["Tables"]["formulations"]["Row"] | Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { getCurrencySymbol } from "@/lib/utils/currency";
+
+// Use group with extended info for display
+interface UseGroupOption {
+  id: string;
+  variant: string;
+  name: string | null;
+  targetMarketEntry: string | null;
+}
 
 interface BusinessCaseCreateModalProps {
   open: boolean;
@@ -52,7 +65,10 @@ export function BusinessCaseCreateModal({
   const [formulations, setFormulations] = useState<Formulation[]>([]);
   const [allFormulations, setAllFormulations] = useState<Formulation[]>([]); // Store all formulations for filtering
   const [countries, setCountries] = useState<Country[]>([]);
-  const [useGroupOptions, setUseGroupOptions] = useState<MultiSelectOption[]>([]);
+  const [useGroupOptions, setUseGroupOptions] = useState<UseGroupOption[]>([]);
+  
+  // Search state for formulation filter
+  const [formulationSearch, setFormulationSearch] = useState("");
   
   const [formData, setFormData] = useState({
     formulation_id: "",
@@ -61,10 +77,13 @@ export function BusinessCaseCreateModal({
     business_case_name: "",
   });
 
-  const [yearData, setYearData] = useState<Record<number, { volume: string; nsp: string }>>({});
+  const [yearData, setYearData] = useState<Record<number, { volume: string; nsp: string; cogs: string }>>({});
   const [existingGroupId, setExistingGroupId] = useState<string | null>(null);
   const [targetMarketEntry, setTargetMarketEntry] = useState<string | null>(null);
   const [targetEntryError, setTargetEntryError] = useState<string | null>(null);
+  
+  // Shadow data - previous version's values for comparison
+  const [shadowData, setShadowData] = useState<Record<number, { volume: number | null; nsp: number | null; cogs: number | null }>>({});
 
   // Load formulations and countries when modal opens
   useEffect(() => {
@@ -152,7 +171,7 @@ export function BusinessCaseCreateModal({
             return;
           }
           
-          // Get use groups for this formulation_country
+          // Get use groups for this formulation_country with extended info
           const { data: useGroups, error } = await supabase
             .from("formulation_country_use_group")
             .select("formulation_country_use_group_id, use_group_name, use_group_variant, target_market_entry_fy")
@@ -166,11 +185,11 @@ export function BusinessCaseCreateModal({
           }
 
           if (useGroups) {
-            const options: MultiSelectOption[] = useGroups.map((ug: any) => ({
-              value: ug.formulation_country_use_group_id,
-              label: ug.use_group_name
-                ? `${ug.use_group_variant} - ${ug.use_group_name}`
-                : ug.use_group_variant,
+            const options: UseGroupOption[] = useGroups.map((ug: any) => ({
+              id: ug.formulation_country_use_group_id,
+              variant: ug.use_group_variant || "A",
+              name: ug.use_group_name || null,
+              targetMarketEntry: ug.target_market_entry_fy || null,
             }));
             setUseGroupOptions(options);
           } else {
@@ -183,6 +202,22 @@ export function BusinessCaseCreateModal({
       setTargetEntryError(null);
     }
   }, [formData.formulation_id, formData.country_id]);
+
+  // Filtered formulations based on search - fuzzy match on name and code
+  // Note: View uses product_name for the formulation name
+  const filteredFormulations = useMemo(() => {
+    if (!formulationSearch.trim()) return formulations;
+    
+    const search = formulationSearch.toLowerCase().trim();
+    return formulations.filter((f) => {
+      const name = ("product_name" in f ? f.product_name : null) || "";
+      const code = f.formulation_code || "";
+      return (
+        name.toLowerCase().includes(search) ||
+        code.toLowerCase().includes(search)
+      );
+    });
+  }, [formulations, formulationSearch]);
 
   // Validate target_market_entry_fy when use groups are selected
   useEffect(() => {
@@ -282,10 +317,38 @@ export function BusinessCaseCreateModal({
 
     if (result.data) {
       setExistingGroupId(result.data);
+      
+      // Load existing business case data as shadow values
+      const existingDataResult = await getBusinessCaseGroupAction(result.data);
+      if (existingDataResult.data && existingDataResult.data.length > 0) {
+        const shadow: Record<number, { volume: number | null; nsp: number | null; cogs: number | null }> = {};
+        const prefill: Record<number, { volume: string; nsp: string; cogs: string }> = {};
+        
+        existingDataResult.data.forEach((year: any) => {
+          shadow[year.year_offset] = {
+            volume: year.volume,
+            nsp: year.nsp,
+            cogs: year.cogs_per_unit,
+          };
+          // Pre-fill with existing values
+          prefill[year.year_offset] = {
+            volume: year.volume?.toString() || "",
+            nsp: year.nsp?.toString() || "",
+            cogs: year.cogs_per_unit?.toString() || "",
+          };
+        });
+        
+        setShadowData(shadow);
+        setYearData(prefill);
+      }
+      
       toast({
         title: "Existing Business Case Found",
-        description: "An existing business case was found. You can modify the values below.",
+        description: "Previous values are shown as reference. Modify and save to create a new version.",
       });
+    } else {
+      // Clear shadow data if no existing business case
+      setShadowData({});
     }
 
     setStep("data");
@@ -326,11 +389,15 @@ export function BusinessCaseCreateModal({
         formDataToSubmit.append("business_case_name", formData.business_case_name);
       }
 
-      // Add year data
+      // Add year data including COGS overrides
       for (let yearOffset = 1; yearOffset <= 10; yearOffset++) {
         const year = yearData[yearOffset];
         formDataToSubmit.append(`year_${yearOffset}_volume`, year?.volume || "0");
         formDataToSubmit.append(`year_${yearOffset}_nsp`, year?.nsp || "0");
+        // Include COGS if user provided a manual override
+        if (year?.cogs && parseFloat(year.cogs) > 0) {
+          formDataToSubmit.append(`year_${yearOffset}_cogs`, year.cogs);
+        }
       }
 
       const result = await createBusinessCaseGroupAction(formDataToSubmit);
@@ -343,8 +410,10 @@ export function BusinessCaseCreateModal({
         });
       } else {
         toast({
-          title: "Success",
-          description: "Business case created successfully",
+          title: existingGroupId ? "New Version Created" : "Business Case Created",
+          description: existingGroupId 
+            ? "New version saved. Previous version has been archived." 
+            : "Business case created successfully.",
         });
         onOpenChange(false);
         if (onSuccess) onSuccess();
@@ -381,7 +450,7 @@ export function BusinessCaseCreateModal({
     const year = yearData[yearOffset];
     const volume = parseFloat(year?.volume || "0") || 0;
     const nsp = parseFloat(year?.nsp || "0") || 0;
-    const cogs = 0; // COGS will be populated from database after creation
+    const cogs = parseFloat(year?.cogs || "0") || 0;
 
     const revenue = volume * nsp;
     const margin = revenue - volume * cogs;
@@ -391,6 +460,7 @@ export function BusinessCaseCreateModal({
       revenue,
       margin,
       marginPercent,
+      cogs,
     };
   };
 
@@ -408,14 +478,22 @@ export function BusinessCaseCreateModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={step === "data" ? "max-w-[90vw] max-h-[90vh] overflow-y-auto" : "max-w-4xl max-h-[90vh] overflow-y-auto"}>
         <DialogHeader>
-          <DialogTitle>Create/Update Business Case</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {existingGroupId ? "Create New Version" : "Create Business Case"}
+            <Badge variant="outline" className="text-xs font-normal gap-1">
+              <GitBranch className="h-3 w-3" />
+              Version Controlled
+            </Badge>
+          </DialogTitle>
         </DialogHeader>
 
         {step === "select" ? (
           <div className="space-y-6">
-            <div className="space-y-4">
+            <div className="space-y-5">
+              {/* STEP 1: Country Selector */}
               <div className="space-y-2">
-                <Label htmlFor="country_id">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">1</span>
                   Country <span className="text-destructive">*</span>
                 </Label>
                 <Select
@@ -424,83 +502,234 @@ export function BusinessCaseCreateModal({
                     setFormData({ ...formData, country_id: value, formulation_id: "", use_group_ids: [] })
                   }
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select country" />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select country..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[300px]">
                     {countries.map((c) => (
                       <SelectItem key={c.country_id} value={c.country_id}>
-                        {c.country_name}
+                        <div className="flex items-center gap-2">
+                          <span>{c.country_name}</span>
+                          {c.currency_code && (
+                            <span className="text-xs text-muted-foreground">({c.currency_code})</span>
+                          )}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
+              {/* STEP 2: Formulation Selector with fuzzy search */}
               <div className="space-y-2">
-                <Label htmlFor="formulation_id">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">2</span>
                   Formulation <span className="text-destructive">*</span>
                 </Label>
+                
+                {/* Search input */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={!formData.country_id ? "Select country first..." : "Search by name or code..."}
+                    value={formulationSearch}
+                    onChange={(e) => setFormulationSearch(e.target.value)}
+                    disabled={!formData.country_id}
+                    className="pl-9"
+                  />
+                </div>
+                
+                {/* Formulation Select */}
                 <Select
                   value={formData.formulation_id}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, formulation_id: value, use_group_ids: [] })
-                  }
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, formulation_id: value, use_group_ids: [] });
+                    setFormulationSearch("");
+                  }}
                   disabled={!formData.country_id}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select formulation" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {formulations.length === 0 && formData.country_id ? (
-                      <SelectItem value="__no_formulations__" disabled>
-                        No formulations available for this country
-                      </SelectItem>
+                  <SelectTrigger className={cn(!formData.country_id && "opacity-50")}>
+                    {formData.formulation_id ? (
+                      (() => {
+                        const selectedFormulation = formulations.find(f => f.formulation_id === formData.formulation_id);
+                        if (!selectedFormulation) return <SelectValue placeholder="Select formulation..." />;
+                        const name = "product_name" in selectedFormulation ? selectedFormulation.product_name : null;
+                        const code = selectedFormulation.formulation_code;
+                        return (
+                          <div className="flex items-center gap-2 text-left">
+                            <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <span className="truncate">
+                              {name ? `${name} (${code})` : code || "Unknown"}
+                            </span>
+                          </div>
+                        );
+                      })()
                     ) : (
-                      formulations.map((f) => (
-                        <SelectItem key={f.formulation_id || ""} value={f.formulation_id || ""}>
-                          {("formulation_name" in f ? f.formulation_name : null) || f.formulation_code || f.formulation_id || ""}
-                        </SelectItem>
-                      ))
+                      <SelectValue placeholder={
+                        !formData.country_id 
+                          ? "Select country first" 
+                          : formulations.length === 0 
+                            ? "No formulations available" 
+                            : "Select formulation..."
+                      } />
+                    )}
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {filteredFormulations.length === 0 ? (
+                      <div className="py-6 text-center text-sm text-muted-foreground">
+                        {formulations.length === 0 
+                          ? "No formulations available for this country"
+                          : "No formulations match your search"}
+                      </div>
+                    ) : (
+                      filteredFormulations.map((f) => {
+                        const name = "product_name" in f ? f.product_name : null;
+                        const code = f.formulation_code;
+                        return (
+                          <SelectItem key={f.formulation_id || ""} value={f.formulation_id || ""}>
+                            <div className="flex items-center gap-2">
+                              <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                              <span className="font-medium">{name ? `${name} (${code})` : code || "Unknown"}</span>
+                              {f.uom && (
+                                <Badge variant="secondary" className="text-xs ml-2">
+                                  {f.uom}
+                                </Badge>
+                              )}
+                            </div>
+                          </SelectItem>
+                        );
+                      })
                     )}
                   </SelectContent>
                 </Select>
+                
+                {formData.country_id && formulations.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {filteredFormulations.length === formulations.length 
+                      ? `${formulations.length} formulation${formulations.length !== 1 ? "s" : ""} available`
+                      : `${filteredFormulations.length} of ${formulations.length} formulations shown`}
+                  </p>
+                )}
               </div>
 
+              {/* STEP 3: Use Group Selector with rich info */}
               <div className="space-y-2">
-                <Label htmlFor="use_group_ids">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">3</span>
                   Use Group <span className="text-destructive">*</span>
                 </Label>
-                <MultiSelect
-                  options={useGroupOptions}
-                  selected={formData.use_group_ids}
-                  onChange={(selected) =>
-                    setFormData({ ...formData, use_group_ids: selected })
-                  }
-                  placeholder="Select use groups"
-                  disabled={!formData.country_id || !formData.formulation_id}
-                />
+                
+                {!formData.country_id || !formData.formulation_id ? (
+                  <div className="px-3 py-4 border rounded-md bg-muted/30 text-sm text-muted-foreground text-center">
+                    Select country and formulation first
+                  </div>
+                ) : useGroupOptions.length === 0 ? (
+                  <div className="px-3 py-4 border rounded-md bg-amber-50 dark:bg-amber-950/30 text-sm text-amber-700 dark:text-amber-300 text-center">
+                    No use groups available for this combination
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[250px] overflow-y-auto border rounded-md p-2">
+                    {useGroupOptions.map((ug) => {
+                      const isSelected = formData.use_group_ids.includes(ug.id);
+                      return (
+                        <Card 
+                          key={ug.id}
+                          className={cn(
+                            "cursor-pointer transition-all hover:shadow-sm",
+                            isSelected && "ring-2 ring-primary bg-primary/5"
+                          )}
+                          onClick={() => {
+                            const newSelected = isSelected
+                              ? formData.use_group_ids.filter((id) => id !== ug.id)
+                              : [...formData.use_group_ids, ug.id];
+                            setFormData({ ...formData, use_group_ids: newSelected });
+                          }}
+                        >
+                          <CardContent className="p-3">
+                            <div className="flex items-start gap-3">
+                              <Checkbox 
+                                checked={isSelected}
+                                className="mt-0.5"
+                                onCheckedChange={(checked) => {
+                                  const newSelected = checked
+                                    ? [...formData.use_group_ids, ug.id]
+                                    : formData.use_group_ids.filter((id) => id !== ug.id);
+                                  setFormData({ ...formData, use_group_ids: newSelected });
+                                }}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Badge variant="outline" className="font-mono">
+                                    <Tag className="h-3 w-3 mr-1" />
+                                    {ug.variant}
+                                  </Badge>
+                                  {ug.name && (
+                                    <span className="font-medium text-sm truncate">{ug.name}</span>
+                                  )}
+                                </div>
+                                {ug.targetMarketEntry && (
+                                  <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <Calendar className="h-3 w-3" />
+                                    <span>Target Market Entry:</span>
+                                    <Badge variant="secondary" className="text-xs font-medium">
+                                      {ug.targetMarketEntry}
+                                    </Badge>
+                                  </div>
+                                )}
+                                {!ug.targetMarketEntry && (
+                                  <div className="mt-1.5 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                                    <Calendar className="h-3 w-3" />
+                                    <span>No target market entry set</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+                
+                {formData.use_group_ids.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {formData.use_group_ids.length} use group{formData.use_group_ids.length !== 1 ? "s" : ""} selected
+                  </p>
+                )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="target_market_entry">
-                  Target Market Entry <span className="text-destructive">*</span>
-                </Label>
-                <div className="flex flex-col gap-2">
-                  {targetMarketEntry ? (
-                    <div className="px-3 py-2 bg-muted rounded-md text-sm text-muted-foreground">
-                      {targetMarketEntry}
-                    </div>
-                  ) : (
-                    <div className="px-3 py-2 bg-muted rounded-md text-sm text-muted-foreground italic">
-                      Select use groups to see target market entry
-                    </div>
-                  )}
-                  {targetEntryError && (
-                    <p className="text-sm text-destructive">{targetEntryError}</p>
-                  )}
+              {/* Target Market Entry Summary */}
+              {formData.use_group_ids.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Target Market Entry Summary</Label>
+                  <div className="flex flex-col gap-2">
+                    {targetMarketEntry ? (
+                      <div className="px-4 py-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                            {targetMarketEntry}
+                          </span>
+                          {effectiveStartFiscalYear && effectiveStartFiscalYear !== targetMarketEntry && (
+                            <Badge variant="outline" className="text-xs ml-auto">
+                              Effective: {effectiveStartFiscalYear}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="px-4 py-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md text-sm text-amber-700 dark:text-amber-300">
+                        Selected use groups do not have target market entry fiscal year set
+                      </div>
+                    )}
+                    {targetEntryError && (
+                      <div className="px-4 py-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm text-destructive">
+                        {targetEntryError}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <DialogFooter>
@@ -515,37 +744,192 @@ export function BusinessCaseCreateModal({
         ) : (
           <div className="space-y-6">
             {existingGroupId && (
-              <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded text-sm text-blue-900 dark:text-blue-100">
-                ℹ️ Existing business case found for this combination. Current values are pre-populated. Modify any values you wish to update.
+              <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded text-sm text-blue-900 dark:text-blue-100 flex items-start gap-2">
+                <GitBranch className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <div>
+                  <strong>Existing business case found.</strong> Saving will create a new version and archive the current one. 
+                  Previous versions are preserved in history for audit tracking.
+                </div>
               </div>
             )}
 
             {/* Header with formulation details */}
             <div className="space-y-2">
               <div className="text-sm text-muted-foreground">
-                {selectedFormulation && "formulation_name" in selectedFormulation ? selectedFormulation.formulation_name : selectedFormulation?.formulation_code || "Formulation"} | {selectedCountry?.country_name || "Country"} | Target Market Entry: {targetMarketEntry}
+                {selectedFormulation && "product_name" in selectedFormulation ? selectedFormulation.product_name : selectedFormulation?.formulation_code || "Formulation"} | {selectedCountry?.country_name || "Country"} | Target Market Entry: {targetMarketEntry}
                 {effectiveStartFiscalYear && effectiveStartFiscalYear !== targetMarketEntry && (
                   <> | Effective Start: {effectiveStartFiscalYear}</>
                 )}
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Shadow values legend */}
+            {existingGroupId && Object.keys(shadowData).length > 0 && (
+              <div className="flex items-center gap-4 text-xs text-muted-foreground bg-muted/30 rounded-md px-3 py-2">
+                <span className="font-medium">Previous version reference:</span>
+                <span className="text-purple-600 dark:text-purple-400">Purple text = previous value</span>
+              </div>
+            )}
+
+            {/* Mobile/Tablet: Card-based vertical layout */}
+            <div className="block xl:hidden space-y-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {fiscalYearColumns.map((col) => {
+                  const metrics = calculateMetrics(col.yearOffset);
+                  const shadow = shadowData[col.yearOffset];
+                  const hasShadow = shadow && existingGroupId;
+                  
+                  return (
+                    <Card key={col.yearOffset} className="overflow-hidden">
+                      <div className="bg-muted/50 px-3 py-2 border-b">
+                        <span className="font-semibold text-sm">{col.fiscalYear}</span>
+                      </div>
+                      <CardContent className="p-3 space-y-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs text-muted-foreground">Volume ({uom})</Label>
+                            {hasShadow && shadow.volume !== null && (
+                              <span className="text-[10px] text-purple-600 dark:text-purple-400">
+                                was: {shadow.volume.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={yearData[col.yearOffset]?.volume || ""}
+                            onChange={(e) =>
+                              setYearData({
+                                ...yearData,
+                                [col.yearOffset]: {
+                                  ...yearData[col.yearOffset],
+                                  volume: e.target.value,
+                                  nsp: yearData[col.yearOffset]?.nsp || "",
+                                  cogs: yearData[col.yearOffset]?.cogs || "",
+                                },
+                              })
+                            }
+                            className="h-8 text-sm"
+                            placeholder="0"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs text-muted-foreground">NSP ({currency})</Label>
+                            {hasShadow && shadow.nsp !== null && (
+                              <span className="text-[10px] text-purple-600 dark:text-purple-400">
+                                was: {shadow.nsp.toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={yearData[col.yearOffset]?.nsp || ""}
+                            onChange={(e) =>
+                              setYearData({
+                                ...yearData,
+                                [col.yearOffset]: {
+                                  ...yearData[col.yearOffset],
+                                  volume: yearData[col.yearOffset]?.volume || "",
+                                  nsp: e.target.value,
+                                  cogs: yearData[col.yearOffset]?.cogs || "",
+                                },
+                              })
+                            }
+                            className="h-8 text-sm"
+                            placeholder="0"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs text-muted-foreground">COGS ({currency})</Label>
+                            {hasShadow && shadow.cogs !== null && (
+                              <span className="text-[10px] text-purple-600 dark:text-purple-400">
+                                was: {shadow.cogs.toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={yearData[col.yearOffset]?.cogs || ""}
+                            onChange={(e) =>
+                              setYearData({
+                                ...yearData,
+                                [col.yearOffset]: {
+                                  ...yearData[col.yearOffset],
+                                  volume: yearData[col.yearOffset]?.volume || "",
+                                  nsp: yearData[col.yearOffset]?.nsp || "",
+                                  cogs: e.target.value,
+                                },
+                              })
+                            }
+                            className="h-8 text-sm"
+                            placeholder="Auto or enter value"
+                          />
+                        </div>
+                        <div className="pt-2 border-t space-y-1.5 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Revenue</span>
+                            <span className="font-medium">
+                              {metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Margin</span>
+                            <span className="font-medium">
+                              {metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Margin %</span>
+                            <span className="font-medium">
+                              {metrics.marginPercent > 0 ? `${metrics.marginPercent.toFixed(1)}%` : "-"}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Desktop: Traditional table layout with sticky first column */}
+            <div className="hidden xl:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="min-w-[200px]">Metric</TableHead>
+                    <TableHead className="min-w-[180px] sticky left-0 bg-background z-10">Metric</TableHead>
                     {fiscalYearColumns.map((col) => (
-                      <TableHead key={col.yearOffset} className="min-w-[120px] text-center">
+                      <TableHead key={col.yearOffset} className="min-w-[100px] text-center">
                         {col.fiscalYear}
                       </TableHead>
                     ))}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {/* Shadow row for previous version - Volume */}
+                  {existingGroupId && Object.keys(shadowData).length > 0 && (
+                    <TableRow className="bg-purple-50/50 dark:bg-purple-950/20">
+                      <TableCell className="text-xs text-purple-600 dark:text-purple-400 sticky left-0 bg-purple-50/50 dark:bg-purple-950/20 z-10">
+                        Previous Volume
+                      </TableCell>
+                      {fiscalYearColumns.map((col) => {
+                        const shadow = shadowData[col.yearOffset];
+                        return (
+                          <TableCell key={col.yearOffset} className="p-1 text-center text-xs text-purple-600 dark:text-purple-400">
+                            {shadow?.volume?.toLocaleString() || "-"}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  )}
+                  
                   {/* Volume row */}
                   <TableRow>
-                    <TableCell className="font-medium">Volume ({uom})</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">Volume ({uom})</TableCell>
                     {fiscalYearColumns.map((col) => (
                       <TableCell key={col.yearOffset} className="p-1">
                         <Input
@@ -559,19 +943,37 @@ export function BusinessCaseCreateModal({
                                 ...yearData[col.yearOffset],
                                 volume: e.target.value,
                                 nsp: yearData[col.yearOffset]?.nsp || "",
+                                cogs: yearData[col.yearOffset]?.cogs || "",
                               },
                             })
                           }
-                          className="h-9"
+                          className="h-8 text-sm"
                           placeholder="0"
                         />
                       </TableCell>
                     ))}
                   </TableRow>
 
+                  {/* Shadow row for previous version - NSP */}
+                  {existingGroupId && Object.keys(shadowData).length > 0 && (
+                    <TableRow className="bg-purple-50/50 dark:bg-purple-950/20">
+                      <TableCell className="text-xs text-purple-600 dark:text-purple-400 sticky left-0 bg-purple-50/50 dark:bg-purple-950/20 z-10">
+                        Previous NSP
+                      </TableCell>
+                      {fiscalYearColumns.map((col) => {
+                        const shadow = shadowData[col.yearOffset];
+                        return (
+                          <TableCell key={col.yearOffset} className="p-1 text-center text-xs text-purple-600 dark:text-purple-400">
+                            {shadow?.nsp?.toFixed(2) || "-"}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  )}
+
                   {/* NSP row */}
                   <TableRow>
-                    <TableCell className="font-medium">NSP ({currency}/unit)</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">NSP ({currency}/unit)</TableCell>
                     {fiscalYearColumns.map((col) => (
                       <TableCell key={col.yearOffset} className="p-1">
                         <Input
@@ -585,26 +987,61 @@ export function BusinessCaseCreateModal({
                                 ...yearData[col.yearOffset],
                                 volume: yearData[col.yearOffset]?.volume || "",
                                 nsp: e.target.value,
+                                cogs: yearData[col.yearOffset]?.cogs || "",
                               },
                             })
                           }
-                          className="h-9"
+                          className="h-8 text-sm"
                           placeholder="0"
                         />
                       </TableCell>
                     ))}
                   </TableRow>
 
-                  {/* COGS row (read-only, will be auto-populated) */}
+                  {/* Shadow row for previous version - COGS */}
+                  {existingGroupId && Object.keys(shadowData).length > 0 && (
+                    <TableRow className="bg-purple-50/50 dark:bg-purple-950/20">
+                      <TableCell className="text-xs text-purple-600 dark:text-purple-400 sticky left-0 bg-purple-50/50 dark:bg-purple-950/20 z-10">
+                        Previous COGS
+                      </TableCell>
+                      {fiscalYearColumns.map((col) => {
+                        const shadow = shadowData[col.yearOffset];
+                        return (
+                          <TableCell key={col.yearOffset} className="p-1 text-center text-xs text-purple-600 dark:text-purple-400">
+                            {shadow?.cogs?.toFixed(2) || "-"}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  )}
+
+                  {/* COGS row (editable) */}
                   <TableRow>
-                    <TableCell className="font-medium">COGS ({currency}/unit)</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">
+                      <div className="flex flex-col">
+                        <span>COGS ({currency}/unit)</span>
+                        <span className="text-xs text-muted-foreground font-normal">Optional override</span>
+                      </div>
+                    </TableCell>
                     {fiscalYearColumns.map((col) => (
                       <TableCell key={col.yearOffset} className="p-1">
                         <Input
-                          type="text"
-                          value="Auto-populated"
-                          disabled
-                          className="h-9 bg-muted cursor-not-allowed opacity-70"
+                          type="number"
+                          step="0.01"
+                          value={yearData[col.yearOffset]?.cogs || ""}
+                          onChange={(e) =>
+                            setYearData({
+                              ...yearData,
+                              [col.yearOffset]: {
+                                ...yearData[col.yearOffset],
+                                volume: yearData[col.yearOffset]?.volume || "",
+                                nsp: yearData[col.yearOffset]?.nsp || "",
+                                cogs: e.target.value,
+                              },
+                            })
+                          }
+                          className="h-8 text-sm"
+                          placeholder="Auto"
                         />
                       </TableCell>
                     ))}
@@ -612,17 +1049,14 @@ export function BusinessCaseCreateModal({
 
                   {/* Revenue row (calculated, read-only) */}
                   <TableRow>
-                    <TableCell className="font-medium">Total Revenue ({currency})</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">Total Revenue ({currency})</TableCell>
                     {fiscalYearColumns.map((col) => {
                       const metrics = calculateMetrics(col.yearOffset);
                       return (
-                        <TableCell key={col.yearOffset} className="p-1">
-                          <Input
-                            type="text"
-                            value={metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
-                            disabled
-                            className="h-9 bg-muted cursor-not-allowed opacity-70"
-                          />
+                        <TableCell key={col.yearOffset} className="p-1 text-center">
+                          <span className="text-sm">
+                            {metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                          </span>
                         </TableCell>
                       );
                     })}
@@ -630,17 +1064,14 @@ export function BusinessCaseCreateModal({
 
                   {/* Margin row (calculated, read-only) */}
                   <TableRow>
-                    <TableCell className="font-medium">Total Gross Margin ({currency})</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">Gross Margin ({currency})</TableCell>
                     {fiscalYearColumns.map((col) => {
                       const metrics = calculateMetrics(col.yearOffset);
                       return (
-                        <TableCell key={col.yearOffset} className="p-1">
-                          <Input
-                            type="text"
-                            value={metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
-                            disabled
-                            className="h-9 bg-muted cursor-not-allowed opacity-70"
-                          />
+                        <TableCell key={col.yearOffset} className="p-1 text-center">
+                          <span className="text-sm">
+                            {metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                          </span>
                         </TableCell>
                       );
                     })}
@@ -648,17 +1079,14 @@ export function BusinessCaseCreateModal({
 
                   {/* Margin % row (calculated, read-only) */}
                   <TableRow>
-                    <TableCell className="font-medium">Margin %</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">Margin %</TableCell>
                     {fiscalYearColumns.map((col) => {
                       const metrics = calculateMetrics(col.yearOffset);
                       return (
-                        <TableCell key={col.yearOffset} className="p-1">
-                          <Input
-                            type="text"
-                            value={metrics.marginPercent > 0 ? `${metrics.marginPercent.toFixed(2)}%` : ""}
-                            disabled
-                            className="h-9 bg-muted cursor-not-allowed opacity-70"
-                          />
+                        <TableCell key={col.yearOffset} className="p-1 text-center">
+                          <span className="text-sm">
+                            {metrics.marginPercent > 0 ? `${metrics.marginPercent.toFixed(1)}%` : "-"}
+                          </span>
                         </TableCell>
                       );
                     })}
@@ -675,7 +1103,7 @@ export function BusinessCaseCreateModal({
                 Cancel
               </Button>
               <Button onClick={handleSave} disabled={isPending}>
-                {isPending ? "Saving..." : "Save Changes"}
+                {isPending ? "Saving..." : existingGroupId ? "Save New Version" : "Create Business Case"}
               </Button>
             </DialogFooter>
           </div>

@@ -3,19 +3,23 @@
 import { useState, useEffect, useTransition } from "react";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { updateBusinessCaseGroupAction, getBusinessCaseGroupAction } from "@/lib/actions/business-cases";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCurrencySymbol } from "@/lib/utils/currency";
 import type { BusinessCaseYearData } from "@/lib/db/types";
+import { GitBranch, Edit3, History } from "lucide-react";
+import { BusinessCaseVersionHistory } from "./BusinessCaseVersionHistory";
 
 // Re-export for backward compatibility
 export type { BusinessCaseYearData };
 
-interface BusinessCaseYearDataExtended extends BusinessCaseYearData {
-  target_market_entry_fy: string | null; // Original target market entry from use group
-  effective_start_fiscal_year: string | null; // Effective start fiscal year at creation time (preserves context)
-}
+// The BusinessCaseYearData now includes target_market_entry_fy and effective_start_fiscal_year
+type BusinessCaseYearDataExtended = BusinessCaseYearData;
 
 interface BusinessCaseEditModalProps {
   groupId: string;
@@ -31,7 +35,7 @@ export function BusinessCaseEditModal({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [yearData, setYearData] = useState<BusinessCaseYearDataExtended[]>([]);
-  const [originalValues, setOriginalValues] = useState<Record<number, { volume: number | null; nsp: number | null }>>({});
+  const [originalValues, setOriginalValues] = useState<Record<number, { volume: number | null; nsp: number | null; cogs: number | null }>>({});
   const [changedCells, setChangedCells] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
@@ -52,12 +56,13 @@ export function BusinessCaseEditModal({
           }
           if (result.data) {
             setYearData(result.data as BusinessCaseYearDataExtended[]);
-            // Store original values for change tracking
-            const originals: Record<number, { volume: number | null; nsp: number | null }> = {};
+            // Store original values for change tracking (including COGS)
+            const originals: Record<number, { volume: number | null; nsp: number | null; cogs: number | null }> = {};
             result.data.forEach((year) => {
               originals[year.year_offset] = {
                 volume: year.volume,
                 nsp: year.nsp,
+                cogs: year.cogs_per_unit,
               };
             });
             setOriginalValues(originals);
@@ -106,7 +111,7 @@ export function BusinessCaseEditModal({
   const effectiveStartFiscalYear = yearData[0]?.effective_start_fiscal_year || "";
 
   // Handle cell value change
-  const handleCellChange = (yearOffset: number, field: "volume" | "nsp", value: string) => {
+  const handleCellChange = (yearOffset: number, field: "volume" | "nsp" | "cogs_per_unit", value: string) => {
     const numValue = value === "" ? null : parseFloat(value);
     
     setYearData((prev) =>
@@ -119,7 +124,8 @@ export function BusinessCaseEditModal({
 
     // Update change tracking
     const cellKey = `${yearOffset}_${field}`;
-    const original = originalValues[yearOffset]?.[field];
+    const originalField = field === "cogs_per_unit" ? "cogs" : field;
+    const original = originalValues[yearOffset]?.[originalField as "volume" | "nsp" | "cogs"];
     
     if (numValue !== original) {
       setChangedCells((prev) => new Set(prev).add(cellKey));
@@ -174,10 +180,14 @@ export function BusinessCaseEditModal({
     startTransition(async () => {
       const formData = new FormData();
       
-      // Add year data
+      // Add year data including COGS
       yearData.forEach((year) => {
         formData.append(`year_${year.year_offset}_volume`, String(year.volume || 0));
         formData.append(`year_${year.year_offset}_nsp`, String(year.nsp || 0));
+        // Include COGS if present
+        if (year.cogs_per_unit !== null && year.cogs_per_unit !== undefined) {
+          formData.append(`year_${year.year_offset}_cogs`, String(year.cogs_per_unit));
+        }
       });
 
       const result = await updateBusinessCaseGroupAction(groupId, formData);
@@ -190,10 +200,12 @@ export function BusinessCaseEditModal({
         });
       } else {
         toast({
-          title: "Success",
-          description: `Business case updated successfully (${changedCells.size} cells modified)`,
+          title: "New Version Created",
+          description: `Business case version saved successfully. Previous version archived.`,
         });
         onOpenChange(false);
+        // Refresh the page to show new version
+        window.location.reload();
       }
     });
   };
@@ -210,158 +222,270 @@ export function BusinessCaseEditModal({
     <BaseModal
       open={open}
       onOpenChange={onOpenChange}
-      title={`Edit Business Case - ${formulationName}`}
+      title={
+        <div className="flex items-center gap-2">
+          <span>Update Business Case - {formulationName}</span>
+          <Badge variant="outline" className="text-xs font-normal gap-1">
+            <GitBranch className="h-3 w-3" />
+            Creates New Version
+          </Badge>
+        </div>
+      }
       description={
         <div className="flex flex-col gap-1">
           <span>{countryName} | {useGroupName} | Target Market Entry: {targetMarketEntry}</span>
           {effectiveStartFiscalYear && effectiveStartFiscalYear !== targetMarketEntry && (
             <span className="text-xs text-muted-foreground">Effective Start: {effectiveStartFiscalYear}</span>
           )}
+          <span className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1 mt-1">
+            <GitBranch className="h-3 w-3" />
+            Saving will create a new version in the history. Previous versions are preserved.
+          </span>
           {changedCells.size > 0 && (
-            <span className="text-xs text-blue-600 dark:text-blue-400">
-              ℹ️ {changedCells.size} cells changed from original values
+            <span className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+              {changedCells.size} {changedCells.size === 1 ? "cell" : "cells"} modified from current version
             </span>
           )}
         </div>
       }
       onSave={handleSave}
       isSaving={isPending}
+      saveText="Save New Version"
       maxWidth="max-w-[90vw]"
     >
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="min-w-[200px]">Metric</TableHead>
-              {fiscalYearColumns.map((col) => (
-                <TableHead key={col.yearOffset} className="min-w-[120px] text-center">
-                  {col.fiscalYear}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {/* Volume row */}
-            <TableRow>
-              <TableCell className="font-medium">Volume ({uom})</TableCell>
+      <Tabs defaultValue="edit" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="edit" className="gap-2">
+            <Edit3 className="h-4 w-4" />
+            Edit Data
+          </TabsTrigger>
+          <TabsTrigger value="history" className="gap-2">
+            <History className="h-4 w-4" />
+            Version History
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="edit">
+          {/* Mobile/Tablet: Card-based vertical layout */}
+          <div className="block xl:hidden space-y-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {fiscalYearColumns.map((col) => {
                 const year = yearData.find((y) => y.year_offset === col.yearOffset);
-                const cellKey = `${col.yearOffset}_volume`;
-                const isChanged = changedCells.has(cellKey);
+                const metrics = year ? calculateMetrics(year) : { revenue: 0, margin: 0, marginPercent: 0 };
+                const volumeChanged = changedCells.has(`${col.yearOffset}_volume`);
+                const nspChanged = changedCells.has(`${col.yearOffset}_nsp`);
+                const cogsChanged = changedCells.has(`${col.yearOffset}_cogs_per_unit`);
                 
                 return (
-                  <TableCell key={col.yearOffset} className="p-1">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={year?.volume || ""}
-                      onChange={(e) => handleCellChange(col.yearOffset, "volume", e.target.value)}
-                      className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
-                    />
-                  </TableCell>
+                  <Card key={col.yearOffset} className="overflow-hidden">
+                    <div className="bg-muted/50 px-3 py-2 border-b">
+                      <span className="font-semibold text-sm">{col.fiscalYear}</span>
+                    </div>
+                    <CardContent className="p-3 space-y-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Volume ({uom})</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={year?.volume || ""}
+                          onChange={(e) => handleCellChange(col.yearOffset, "volume", e.target.value)}
+                          className={`h-8 text-sm ${volumeChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">NSP ({currency})</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={year?.nsp || ""}
+                          onChange={(e) => handleCellChange(col.yearOffset, "nsp", e.target.value)}
+                          className={`h-8 text-sm ${nspChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">COGS ({currency})</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={year?.cogs_per_unit || ""}
+                          onChange={(e) => handleCellChange(col.yearOffset, "cogs_per_unit", e.target.value)}
+                          className={`h-8 text-sm ${cogsChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                        />
+                      </div>
+                      <div className="pt-2 border-t space-y-1.5 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Revenue</span>
+                          <span className="font-medium">
+                            {metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Margin</span>
+                          <span className="font-medium">
+                            {metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Margin %</span>
+                          <span className="font-medium">
+                            {metrics.marginPercent > 0 ? `${metrics.marginPercent.toFixed(1)}%` : "-"}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 );
               })}
-            </TableRow>
+            </div>
+          </div>
 
-            {/* NSP row */}
-            <TableRow>
-              <TableCell className="font-medium">NSP ({currency}/unit)</TableCell>
-              {fiscalYearColumns.map((col) => {
-                const year = yearData.find((y) => y.year_offset === col.yearOffset);
-                const cellKey = `${col.yearOffset}_nsp`;
-                const isChanged = changedCells.has(cellKey);
-                
-                return (
-                  <TableCell key={col.yearOffset} className="p-1">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={year?.nsp || ""}
-                      onChange={(e) => handleCellChange(col.yearOffset, "nsp", e.target.value)}
-                      className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
-                    />
-                  </TableCell>
-                );
-              })}
-            </TableRow>
+          {/* Desktop: Traditional table layout with sticky first column */}
+          <div className="hidden xl:block overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[180px] sticky left-0 bg-background z-10">Metric</TableHead>
+                  {fiscalYearColumns.map((col) => (
+                    <TableHead key={col.yearOffset} className="min-w-[100px] text-center">
+                      {col.fiscalYear}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {/* Volume row */}
+                <TableRow>
+                  <TableCell className="font-medium sticky left-0 bg-background z-10">Volume ({uom})</TableCell>
+                  {fiscalYearColumns.map((col) => {
+                    const year = yearData.find((y) => y.year_offset === col.yearOffset);
+                    const cellKey = `${col.yearOffset}_volume`;
+                    const isChanged = changedCells.has(cellKey);
+                    
+                    return (
+                      <TableCell key={col.yearOffset} className="p-1">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={year?.volume || ""}
+                          onChange={(e) => handleCellChange(col.yearOffset, "volume", e.target.value)}
+                          className={`h-8 text-sm ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                        />
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
 
-            {/* COGS row (read-only) */}
-            <TableRow>
-              <TableCell className="font-medium">COGS ({currency}/unit)</TableCell>
-              {fiscalYearColumns.map((col) => {
-                const year = yearData.find((y) => y.year_offset === col.yearOffset);
-                return (
-                  <TableCell key={col.yearOffset} className="p-1">
-                    <Input
-                      type="number"
-                      value={year?.cogs_per_unit || ""}
-                      disabled
-                      className="h-9 bg-muted cursor-not-allowed opacity-70"
-                    />
-                  </TableCell>
-                );
-              })}
-            </TableRow>
+                {/* NSP row */}
+                <TableRow>
+                  <TableCell className="font-medium sticky left-0 bg-background z-10">NSP ({currency}/unit)</TableCell>
+                  {fiscalYearColumns.map((col) => {
+                    const year = yearData.find((y) => y.year_offset === col.yearOffset);
+                    const cellKey = `${col.yearOffset}_nsp`;
+                    const isChanged = changedCells.has(cellKey);
+                    
+                    return (
+                      <TableCell key={col.yearOffset} className="p-1">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={year?.nsp || ""}
+                          onChange={(e) => handleCellChange(col.yearOffset, "nsp", e.target.value)}
+                          className={`h-8 text-sm ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                        />
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
 
-            {/* Revenue row (calculated, read-only) */}
-            <TableRow>
-              <TableCell className="font-medium">Total Revenue ({currency})</TableCell>
-              {fiscalYearColumns.map((col) => {
-                const year = yearData.find((y) => y.year_offset === col.yearOffset);
-                const metrics = year ? calculateMetrics(year) : { revenue: null };
-                return (
-                  <TableCell key={col.yearOffset} className="p-1">
-                    <Input
-                      type="text"
-                      value={metrics.revenue !== null ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
-                      disabled
-                      className="h-9 bg-muted cursor-not-allowed opacity-70"
-                    />
-                  </TableCell>
-                );
-              })}
-            </TableRow>
+                {/* COGS row (editable) */}
+                <TableRow>
+                  <TableCell className="font-medium sticky left-0 bg-background z-10">COGS ({currency}/unit)</TableCell>
+                  {fiscalYearColumns.map((col) => {
+                    const year = yearData.find((y) => y.year_offset === col.yearOffset);
+                    const cellKey = `${col.yearOffset}_cogs_per_unit`;
+                    const isChanged = changedCells.has(cellKey);
+                    
+                    return (
+                      <TableCell key={col.yearOffset} className="p-1">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={year?.cogs_per_unit || ""}
+                          onChange={(e) => handleCellChange(col.yearOffset, "cogs_per_unit", e.target.value)}
+                          className={`h-8 text-sm ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                        />
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
 
-            {/* Margin row (calculated, read-only) */}
-            <TableRow>
-              <TableCell className="font-medium">Total Gross Margin ({currency})</TableCell>
-              {fiscalYearColumns.map((col) => {
-                const year = yearData.find((y) => y.year_offset === col.yearOffset);
-                const metrics = year ? calculateMetrics(year) : { margin: null };
-                return (
-                  <TableCell key={col.yearOffset} className="p-1">
-                    <Input
-                      type="text"
-                      value={metrics.margin !== null ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ""}
-                      disabled
-                      className="h-9 bg-muted cursor-not-allowed opacity-70"
-                    />
-                  </TableCell>
-                );
-              })}
-            </TableRow>
+                {/* Revenue row (calculated, read-only) */}
+                <TableRow>
+                  <TableCell className="font-medium sticky left-0 bg-background z-10">Total Revenue ({currency})</TableCell>
+                  {fiscalYearColumns.map((col) => {
+                    const year = yearData.find((y) => y.year_offset === col.yearOffset);
+                    const metrics = year ? calculateMetrics(year) : { revenue: 0 };
+                    return (
+                      <TableCell key={col.yearOffset} className="p-1 text-center">
+                        <span className="text-sm">
+                          {metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                        </span>
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
 
-            {/* Margin % row (calculated, read-only) */}
-            <TableRow>
-              <TableCell className="font-medium">Margin %</TableCell>
-              {fiscalYearColumns.map((col) => {
-                const year = yearData.find((y) => y.year_offset === col.yearOffset);
-                const metrics = year ? calculateMetrics(year) : { marginPercent: null };
-                return (
-                  <TableCell key={col.yearOffset} className="p-1">
-                    <Input
-                      type="text"
-                      value={metrics.marginPercent !== null ? `${metrics.marginPercent.toFixed(2)}%` : ""}
-                      disabled
-                      className="h-9 bg-muted cursor-not-allowed opacity-70"
-                    />
-                  </TableCell>
-                );
-              })}
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
+                {/* Margin row (calculated, read-only) */}
+                <TableRow>
+                  <TableCell className="font-medium sticky left-0 bg-background z-10">Gross Margin ({currency})</TableCell>
+                  {fiscalYearColumns.map((col) => {
+                    const year = yearData.find((y) => y.year_offset === col.yearOffset);
+                    const metrics = year ? calculateMetrics(year) : { margin: 0 };
+                    return (
+                      <TableCell key={col.yearOffset} className="p-1 text-center">
+                        <span className="text-sm">
+                          {metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                        </span>
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+
+                {/* Margin % row (calculated, read-only) */}
+                <TableRow>
+                  <TableCell className="font-medium sticky left-0 bg-background z-10">Margin %</TableCell>
+                  {fiscalYearColumns.map((col) => {
+                    const year = yearData.find((y) => y.year_offset === col.yearOffset);
+                    const metrics = year ? calculateMetrics(year) : { marginPercent: 0 };
+                    return (
+                      <TableCell key={col.yearOffset} className="p-1 text-center">
+                        <span className="text-sm">
+                          {metrics.marginPercent > 0 ? `${metrics.marginPercent.toFixed(1)}%` : "-"}
+                        </span>
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="history">
+          {yearData[0]?.formulation_country_use_group_id ? (
+            <BusinessCaseVersionHistory
+              useGroupId={yearData[0].formulation_country_use_group_id}
+              currentGroupId={groupId}
+              formulationName={formulationName}
+              countryName={countryName}
+            />
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Version history is not available for this business case.</p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </BaseModal>
   );
 }

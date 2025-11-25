@@ -25,27 +25,21 @@ const columns: ColumnDef<Formulation>[] = [
       const code = row.original.formulation_code;
       const id = row.original.formulation_id;
       
-      // Display as "Name (Code)" format
-      const displayText = name && code 
-        ? `${name} (${code})`
-        : name || code || "—";
-      
       return (
         <Link
           href={`/formulations/${id}`}
-          className="font-medium text-primary hover:underline"
+          className="block hover:opacity-80 transition-opacity"
         >
-          {displayText}
+          <div className="font-semibold text-primary hover:underline">
+            {name || code || "—"}
+          </div>
+          {code && name && (
+            <div className="text-xs text-muted-foreground mt-0.5">
+              {code}
+            </div>
+          )}
         </Link>
       );
-    },
-  },
-  {
-    accessorKey: "formulation_code",
-    header: "Code",
-    cell: ({ row }) => {
-      const code = row.getValue("formulation_code") as string;
-      return <span className="text-sm text-muted-foreground">{code || "—"}</span>;
     },
   },
   {
