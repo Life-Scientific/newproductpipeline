@@ -459,6 +459,17 @@ export function TenYearProjectionChart({
     filters.useGroups.length > 0 ||
     filters.statuses.length > 0;
 
+  // Calculate unique formulations in the filtered view
+  const uniqueFormulations = useMemo(() => {
+    const formulationSet = new Set<string>();
+    filteredBusinessCases.forEach((bc) => {
+      if (bc.formulation_code) {
+        formulationSet.add(bc.formulation_code);
+      }
+    });
+    return formulationSet.size;
+  }, [filteredBusinessCases]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -484,7 +495,17 @@ export function TenYearProjectionChart({
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3 }}
                   >
-                    ({filteredBusinessCases.length} business cases)
+                    ({filteredBusinessCases.length} business cases, {uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''})
+                  </motion.span>
+                )}
+                {!hasActiveFilters && (
+                  <motion.span 
+                    className="ml-1 text-muted-foreground"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    ({uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''} represented)
                   </motion.span>
                 )}
               </CardDescription>
