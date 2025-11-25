@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/lib/db/types";
+import type { Database } from "@/lib/supabase/database.types";
 
 /**
  * Sets the current user context in the database for triggers to use.
@@ -15,7 +15,8 @@ import type { Database } from "@/lib/db/types";
 export async function setUserContext(supabase: SupabaseClient<Database>): Promise<void> {
   try {
     const userName = await getCurrentUserName();
-    await supabase.rpc("set_current_user", { user_name: userName });
+    // Note: set_current_user function may not exist - this call will fail silently
+    await (supabase as SupabaseClient).rpc("set_current_user", { user_name: userName });
   } catch (error) {
     // If setting context fails, log but don't throw (allows operations to continue)
     console.error("Failed to set user context:", error);

@@ -94,7 +94,7 @@ export function FormulationCountryForm({
     // Load selected formulation
     const { data: formulationData } = await supabase
       .from("vw_formulations_with_ingredients")
-      .select("formulation_id, formulation_code, product_name, formulation_name")
+      .select("formulation_id, formulation_code, product_name")
       .eq("formulation_id", formulationCountry.formulation_id)
       .single();
     if (formulationData) setSelectedFormulation(formulationData as Formulation);

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { ActivePortfolio, PortfolioGaps, Formulation, FormulationCountryDetail, FormulationCountryUseGroup, BusinessCase } from "./types";
+import type { ActivePortfolio, Formulation, FormulationCountryDetail, FormulationCountryUseGroup, BusinessCase } from "./types";
 
 export async function getActivePortfolio() {
   const supabase = await createClient();
@@ -15,19 +15,6 @@ export async function getActivePortfolio() {
   return data as ActivePortfolio[];
 }
 
-export async function getPortfolioGaps() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("vw_portfolio_gaps")
-    .select("*")
-    .order("country_name", { ascending: true });
-
-  if (error) {
-    throw new Error(`Failed to fetch portfolio gaps: ${error.message}`);
-  }
-
-  return data as PortfolioGaps[];
-}
 
 /**
  * Get all data needed for Pipeline Tracker

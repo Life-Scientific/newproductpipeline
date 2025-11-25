@@ -1,4 +1,4 @@
-{"types":"export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: \"13.0.5\"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -137,46 +137,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"business_case_use_groups_business_case_id_fkey\"
-            columns: [\"business_case_id\"]
+            foreignKeyName: "business_case_use_groups_business_case_id_fkey"
+            columns: ["business_case_id"]
             isOneToOne: false
-            referencedRelation: \"business_case\"
-            referencedColumns: [\"business_case_id\"]
+            referencedRelation: "business_case"
+            referencedColumns: ["business_case_id"]
           },
           {
-            foreignKeyName: \"business_case_use_groups_business_case_id_fkey\"
-            columns: [\"business_case_id\"]
+            foreignKeyName: "business_case_use_groups_business_case_id_fkey"
+            columns: ["business_case_id"]
             isOneToOne: false
-            referencedRelation: \"vw_business_case\"
-            referencedColumns: [\"business_case_id\"]
+            referencedRelation: "vw_business_case"
+            referencedColumns: ["business_case_id"]
           },
           {
-            foreignKeyName: \"business_case_use_groups_business_case_id_fkey\"
-            columns: [\"business_case_id\"]
+            foreignKeyName: "business_case_use_groups_business_case_id_fkey"
+            columns: ["business_case_id"]
             isOneToOne: false
-            referencedRelation: \"vw_business_case_detail\"
-            referencedColumns: [\"business_case_id\"]
+            referencedRelation: "vw_business_case_detail"
+            referencedColumns: ["business_case_id"]
           },
           {
-            foreignKeyName: \"business_case_use_groups_formulation_country_use_group_id_fkey\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "business_case_use_groups_formulation_country_use_group_id_fkey"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"business_case_use_groups_formulation_country_use_group_id_fkey\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "business_case_use_groups_formulation_country_use_group_id_fkey"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"business_case_use_groups_formulation_country_use_group_id_fkey\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "business_case_use_groups_formulation_country_use_group_id_fkey"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_use_group_details\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_use_group_details"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
         ]
       }
@@ -243,74 +243,74 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "formulation_country"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_active_portfolio\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_active_portfolio"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_detail\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_formulation_country_detail"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_protection_status\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_protection_status"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_registration_pipeline\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_registration_pipeline"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "cogs_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "cogs_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -494,25 +494,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_eppo_codes_parent\"
-            columns: [\"parent_eppo_code\"]
+            foreignKeyName: "fk_eppo_codes_parent"
+            columns: ["parent_eppo_code"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code"]
           },
           {
-            foreignKeyName: \"fk_eppo_codes_parent\"
-            columns: [\"parent_eppo_code\"]
+            foreignKeyName: "fk_eppo_codes_parent"
+            columns: ["parent_eppo_code"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"crop_eppo_code\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["crop_eppo_code"]
           },
           {
-            foreignKeyName: \"fk_eppo_codes_parent\"
-            columns: [\"parent_eppo_code\"]
+            foreignKeyName: "fk_eppo_codes_parent"
+            columns: ["parent_eppo_code"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"target_eppo_code\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["target_eppo_code"]
           },
         ]
       }
@@ -555,11 +555,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_exchange_rates_country\"
-            columns: [\"country_id\"]
+            foreignKeyName: "fk_exchange_rates_country"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"country_id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["country_id"]
           },
         ]
       }
@@ -590,18 +590,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"external_links_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "external_links_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"external_links_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "external_links_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -653,25 +653,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_country_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "formulation_country_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"country_id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"formulation_country_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -708,60 +708,60 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_country_readiness_history_formulation_country_id_fk\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_readiness_history_formulation_country_id_fk"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "formulation_country"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_readiness_history_formulation_country_id_fk\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_readiness_history_formulation_country_id_fk"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_active_portfolio\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_active_portfolio"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_readiness_history_formulation_country_id_fk\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_readiness_history_formulation_country_id_fk"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_readiness_history_formulation_country_id_fk\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_readiness_history_formulation_country_id_fk"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_detail\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_formulation_country_detail"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_readiness_history_formulation_country_id_fk\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_readiness_history_formulation_country_id_fk"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_readiness_history_formulation_country_id_fk\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_readiness_history_formulation_country_id_fk"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_readiness_history_formulation_country_id_fk\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_readiness_history_formulation_country_id_fk"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_protection_status\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_protection_status"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_readiness_history_formulation_country_id_fk\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_readiness_history_formulation_country_id_fk"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_registration_pipeline\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_registration_pipeline"
+            referencedColumns: ["formulation_country_id"]
           },
         ]
       }
@@ -798,60 +798,60 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_country_status_history_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_status_history_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "formulation_country"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_status_history_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_status_history_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_active_portfolio\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_active_portfolio"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_status_history_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_status_history_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_status_history_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_status_history_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_detail\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_formulation_country_detail"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_status_history_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_status_history_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_status_history_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_status_history_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_status_history_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_status_history_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_protection_status\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_protection_status"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_status_history_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_status_history_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_registration_pipeline\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_registration_pipeline"
+            referencedColumns: ["formulation_country_id"]
           },
         ]
       }
@@ -906,67 +906,67 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "formulation_country"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_active_portfolio\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_active_portfolio"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_detail\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_formulation_country_detail"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_protection_status\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_protection_status"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_registration_pipeline\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_registration_pipeline"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_reference_product_id_fkey\"
-            columns: [\"reference_product_id\"]
+            foreignKeyName: "formulation_country_use_group_reference_product_id_fkey"
+            columns: ["reference_product_id"]
             isOneToOne: false
-            referencedRelation: \"reference_products\"
-            referencedColumns: [\"reference_product_id\"]
+            referencedRelation: "reference_products"
+            referencedColumns: ["reference_product_id"]
           },
         ]
       }
@@ -1000,32 +1000,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_fcug_eppo_crops_eppo_code\"
-            columns: [\"eppo_code_id\"]
+            foreignKeyName: "fk_fcug_eppo_crops_eppo_code"
+            columns: ["eppo_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"fk_fcug_eppo_crops_fcug\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "fk_fcug_eppo_crops_fcug"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"fk_fcug_eppo_crops_fcug\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "fk_fcug_eppo_crops_fcug"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"fk_fcug_eppo_crops_fcug\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "fk_fcug_eppo_crops_fcug"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_use_group_details\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_use_group_details"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
         ]
       }
@@ -1068,32 +1068,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_fcug_crops_audit_eppo_code\"
-            columns: [\"eppo_code_id\"]
+            foreignKeyName: "fk_fcug_crops_audit_eppo_code"
+            columns: ["eppo_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"fk_fcug_crops_audit_fcug\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "fk_fcug_crops_audit_fcug"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"fk_fcug_crops_audit_fcug\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "fk_fcug_crops_audit_fcug"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"fk_fcug_crops_audit_fcug\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "fk_fcug_crops_audit_fcug"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_use_group_details\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_use_group_details"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
         ]
       }
@@ -1130,32 +1130,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_fcug_eppo_targets_eppo_code\"
-            columns: [\"eppo_code_id\"]
+            foreignKeyName: "fk_fcug_eppo_targets_eppo_code"
+            columns: ["eppo_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"fk_fcug_eppo_targets_fcug\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "fk_fcug_eppo_targets_fcug"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"fk_fcug_eppo_targets_fcug\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "fk_fcug_eppo_targets_fcug"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"fk_fcug_eppo_targets_fcug\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "fk_fcug_eppo_targets_fcug"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_use_group_details\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_use_group_details"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
         ]
       }
@@ -1201,32 +1201,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_fcug_targets_audit_eppo_code\"
-            columns: [\"eppo_code_id\"]
+            foreignKeyName: "fk_fcug_targets_audit_eppo_code"
+            columns: ["eppo_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"fk_fcug_targets_audit_fcug\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "fk_fcug_targets_audit_fcug"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"fk_fcug_targets_audit_fcug\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "fk_fcug_targets_audit_fcug"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"fk_fcug_targets_audit_fcug\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "fk_fcug_targets_audit_fcug"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_use_group_details\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_use_group_details"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
         ]
       }
@@ -1263,25 +1263,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_country_use_group_status_history_fcug_id_fkey\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "formulation_country_use_group_status_history_fcug_id_fkey"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_status_history_fcug_id_fkey\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "formulation_country_use_group_status_history_fcug_id_fkey"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_status_history_fcug_id_fkey\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "formulation_country_use_group_status_history_fcug_id_fkey"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_use_group_details\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_use_group_details"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
         ]
       }
@@ -1315,25 +1315,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_formulation_eppo_crops_eppo_code\"
-            columns: [\"eppo_code_id\"]
+            foreignKeyName: "fk_formulation_eppo_crops_eppo_code"
+            columns: ["eppo_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"fk_formulation_eppo_crops_formulation\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "fk_formulation_eppo_crops_formulation"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"fk_formulation_eppo_crops_formulation\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "fk_formulation_eppo_crops_formulation"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -1376,25 +1376,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_formulation_crops_audit_eppo_code\"
-            columns: [\"eppo_code_id\"]
+            foreignKeyName: "fk_formulation_crops_audit_eppo_code"
+            columns: ["eppo_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"fk_formulation_crops_audit_formulation\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "fk_formulation_crops_audit_formulation"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"fk_formulation_crops_audit_formulation\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "fk_formulation_crops_audit_formulation"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -1428,25 +1428,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_formulation_eppo_targets_eppo_code\"
-            columns: [\"eppo_code_id\"]
+            foreignKeyName: "fk_formulation_eppo_targets_eppo_code"
+            columns: ["eppo_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"fk_formulation_eppo_targets_formulation\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "fk_formulation_eppo_targets_formulation"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"fk_formulation_eppo_targets_formulation\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "fk_formulation_eppo_targets_formulation"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -1489,25 +1489,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_formulation_targets_audit_eppo_code\"
-            columns: [\"eppo_code_id\"]
+            foreignKeyName: "fk_formulation_targets_audit_eppo_code"
+            columns: ["eppo_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"fk_formulation_targets_audit_formulation\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "fk_formulation_targets_audit_formulation"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"fk_formulation_targets_audit_formulation\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "fk_formulation_targets_audit_formulation"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -1547,32 +1547,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_ingredients_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_ingredients_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"formulation_ingredients_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_ingredients_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"formulation_ingredients_ingredient_id_fkey\"
-            columns: [\"ingredient_id\"]
+            foreignKeyName: "formulation_ingredients_ingredient_id_fkey"
+            columns: ["ingredient_id"]
             isOneToOne: false
-            referencedRelation: \"ingredients\"
-            referencedColumns: [\"ingredient_id\"]
+            referencedRelation: "ingredients"
+            referencedColumns: ["ingredient_id"]
           },
           {
-            foreignKeyName: \"formulation_ingredients_ingredient_id_fkey\"
-            columns: [\"ingredient_id\"]
+            foreignKeyName: "formulation_ingredients_ingredient_id_fkey"
+            columns: ["ingredient_id"]
             isOneToOne: false
-            referencedRelation: \"vw_ingredient_usage\"
-            referencedColumns: [\"ingredient_id\"]
+            referencedRelation: "vw_ingredient_usage"
+            referencedColumns: ["ingredient_id"]
           },
         ]
       }
@@ -1609,18 +1609,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_readiness_history_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_readiness_history_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"formulation_readiness_history_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_readiness_history_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -1657,18 +1657,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_status_history_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_status_history_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"formulation_status_history_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_status_history_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -1762,25 +1762,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"ingredient_suppliers_ingredient_id_fkey\"
-            columns: [\"ingredient_id\"]
+            foreignKeyName: "ingredient_suppliers_ingredient_id_fkey"
+            columns: ["ingredient_id"]
             isOneToOne: false
-            referencedRelation: \"ingredients\"
-            referencedColumns: [\"ingredient_id\"]
+            referencedRelation: "ingredients"
+            referencedColumns: ["ingredient_id"]
           },
           {
-            foreignKeyName: \"ingredient_suppliers_ingredient_id_fkey\"
-            columns: [\"ingredient_id\"]
+            foreignKeyName: "ingredient_suppliers_ingredient_id_fkey"
+            columns: ["ingredient_id"]
             isOneToOne: false
-            referencedRelation: \"vw_ingredient_usage\"
-            referencedColumns: [\"ingredient_id\"]
+            referencedRelation: "vw_ingredient_usage"
+            referencedColumns: ["ingredient_id"]
           },
           {
-            foreignKeyName: \"ingredient_suppliers_supplier_id_fkey\"
-            columns: [\"supplier_id\"]
+            foreignKeyName: "ingredient_suppliers_supplier_id_fkey"
+            columns: ["supplier_id"]
             isOneToOne: false
-            referencedRelation: \"suppliers\"
-            referencedColumns: [\"supplier_id\"]
+            referencedRelation: "suppliers"
+            referencedColumns: ["supplier_id"]
           },
         ]
       }
@@ -1837,7 +1837,7 @@ export type Database = {
           expires_at: string
           id: string
           invited_by: string | null
-          role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role: Database["public"]["Enums"]["app_role"]
           token_hash: string
           updated_at: string | null
         }
@@ -1848,7 +1848,7 @@ export type Database = {
           expires_at: string
           id?: string
           invited_by?: string | null
-          role?: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role?: Database["public"]["Enums"]["app_role"]
           token_hash: string
           updated_at?: string | null
         }
@@ -1859,7 +1859,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by?: string | null
-          role?: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role?: Database["public"]["Enums"]["app_role"]
           token_hash?: string
           updated_at?: string | null
         }
@@ -1910,95 +1910,95 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"patent_assessments_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "patent_assessments_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "formulation_country"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"patent_assessments_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "patent_assessments_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_active_portfolio\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_active_portfolio"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"patent_assessments_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "patent_assessments_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"patent_assessments_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "patent_assessments_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_detail\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_formulation_country_detail"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"patent_assessments_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "patent_assessments_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"patent_assessments_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "patent_assessments_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"patent_assessments_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "patent_assessments_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_protection_status\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_protection_status"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"patent_assessments_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "patent_assessments_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_registration_pipeline\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_registration_pipeline"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"patent_assessments_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_assessments_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_assessments_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_assessments_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_assessments_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_assessments_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_applicable_countries\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_applicable_countries"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_assessments_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_assessments_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_assessments_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_assessments_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["patent_id"]
           },
         ]
       }
@@ -2023,53 +2023,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"patent_combination_ingredients_ingredient_id_fkey\"
-            columns: [\"ingredient_id\"]
+            foreignKeyName: "patent_combination_ingredients_ingredient_id_fkey"
+            columns: ["ingredient_id"]
             isOneToOne: false
-            referencedRelation: \"ingredients\"
-            referencedColumns: [\"ingredient_id\"]
+            referencedRelation: "ingredients"
+            referencedColumns: ["ingredient_id"]
           },
           {
-            foreignKeyName: \"patent_combination_ingredients_ingredient_id_fkey\"
-            columns: [\"ingredient_id\"]
+            foreignKeyName: "patent_combination_ingredients_ingredient_id_fkey"
+            columns: ["ingredient_id"]
             isOneToOne: false
-            referencedRelation: \"vw_ingredient_usage\"
-            referencedColumns: [\"ingredient_id\"]
+            referencedRelation: "vw_ingredient_usage"
+            referencedColumns: ["ingredient_id"]
           },
           {
-            foreignKeyName: \"patent_combination_ingredients_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_combination_ingredients_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_combination_ingredients_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_combination_ingredients_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_combination_ingredients_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_combination_ingredients_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_applicable_countries\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_applicable_countries"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_combination_ingredients_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_combination_ingredients_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_combination_ingredients_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_combination_ingredients_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["patent_id"]
           },
         ]
       }
@@ -2094,53 +2094,53 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"patent_ingredient_protections_ingredient_id_fkey\"
-            columns: [\"ingredient_id\"]
+            foreignKeyName: "patent_ingredient_protections_ingredient_id_fkey"
+            columns: ["ingredient_id"]
             isOneToOne: false
-            referencedRelation: \"ingredients\"
-            referencedColumns: [\"ingredient_id\"]
+            referencedRelation: "ingredients"
+            referencedColumns: ["ingredient_id"]
           },
           {
-            foreignKeyName: \"patent_ingredient_protections_ingredient_id_fkey\"
-            columns: [\"ingredient_id\"]
+            foreignKeyName: "patent_ingredient_protections_ingredient_id_fkey"
+            columns: ["ingredient_id"]
             isOneToOne: false
-            referencedRelation: \"vw_ingredient_usage\"
-            referencedColumns: [\"ingredient_id\"]
+            referencedRelation: "vw_ingredient_usage"
+            referencedColumns: ["ingredient_id"]
           },
           {
-            foreignKeyName: \"patent_ingredient_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_ingredient_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_ingredient_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_ingredient_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_ingredient_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_ingredient_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_applicable_countries\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_applicable_countries"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_ingredient_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_ingredient_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_ingredient_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_ingredient_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["patent_id"]
           },
         ]
       }
@@ -2165,46 +2165,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"patent_reference_product_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_reference_product_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_reference_product_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_reference_product_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_reference_product_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_reference_product_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_applicable_countries\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_applicable_countries"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_reference_product_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_reference_product_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_reference_product_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_reference_product_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_reference_product_protections_reference_product_id_fkey\"
-            columns: [\"reference_product_id\"]
+            foreignKeyName: "patent_reference_product_protections_reference_product_id_fkey"
+            columns: ["reference_product_id"]
             isOneToOne: false
-            referencedRelation: \"reference_products\"
-            referencedColumns: [\"reference_product_id\"]
+            referencedRelation: "reference_products"
+            referencedColumns: ["reference_product_id"]
           },
         ]
       }
@@ -2235,60 +2235,60 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"patent_use_protections_eppo_crop_code_id_fkey\"
-            columns: [\"eppo_crop_code_id\"]
+            foreignKeyName: "patent_use_protections_eppo_crop_code_id_fkey"
+            columns: ["eppo_crop_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"patent_use_protections_eppo_target_code_id_fkey\"
-            columns: [\"eppo_target_code_id\"]
+            foreignKeyName: "patent_use_protections_eppo_target_code_id_fkey"
+            columns: ["eppo_target_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"patent_use_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_use_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_use_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_use_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_use_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_use_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_applicable_countries\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_applicable_countries"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_use_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_use_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_use_protections_patent_id_fkey\"
-            columns: [\"patent_id\"]
+            foreignKeyName: "patent_use_protections_patent_id_fkey"
+            columns: ["patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patent_use_protections_reference_product_id_fkey\"
-            columns: [\"reference_product_id\"]
+            foreignKeyName: "patent_use_protections_reference_product_id_fkey"
+            columns: ["reference_product_id"]
             isOneToOne: false
-            referencedRelation: \"reference_products\"
-            referencedColumns: [\"reference_product_id\"]
+            referencedRelation: "reference_products"
+            referencedColumns: ["reference_product_id"]
           },
         ]
       }
@@ -2352,39 +2352,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"patents_parent_patent_id_fkey\"
-            columns: [\"parent_patent_id\"]
+            foreignKeyName: "patents_parent_patent_id_fkey"
+            columns: ["parent_patent_id"]
             isOneToOne: false
-            referencedRelation: \"patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patents_parent_patent_id_fkey\"
-            columns: [\"parent_patent_id\"]
+            foreignKeyName: "patents_parent_patent_id_fkey"
+            columns: ["parent_patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patents_parent_patent_id_fkey\"
-            columns: [\"parent_patent_id\"]
+            foreignKeyName: "patents_parent_patent_id_fkey"
+            columns: ["parent_patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_applicable_countries\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_applicable_countries"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patents_parent_patent_id_fkey\"
-            columns: [\"parent_patent_id\"]
+            foreignKeyName: "patents_parent_patent_id_fkey"
+            columns: ["parent_patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patents_parent_patent_id_fkey\"
-            columns: [\"parent_patent_id\"]
+            foreignKeyName: "patents_parent_patent_id_fkey"
+            columns: ["parent_patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["patent_id"]
           },
         ]
       }
@@ -2415,18 +2415,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_ref_prod_eppo_crops_eppo_code\"
-            columns: [\"eppo_code_id\"]
+            foreignKeyName: "fk_ref_prod_eppo_crops_eppo_code"
+            columns: ["eppo_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"fk_ref_prod_eppo_crops_ref_prod\"
-            columns: [\"reference_product_id\"]
+            foreignKeyName: "fk_ref_prod_eppo_crops_ref_prod"
+            columns: ["reference_product_id"]
             isOneToOne: false
-            referencedRelation: \"reference_products\"
-            referencedColumns: [\"reference_product_id\"]
+            referencedRelation: "reference_products"
+            referencedColumns: ["reference_product_id"]
           },
         ]
       }
@@ -2466,18 +2466,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_ref_prod_crops_audit_eppo_code\"
-            columns: [\"eppo_code_id\"]
+            foreignKeyName: "fk_ref_prod_crops_audit_eppo_code"
+            columns: ["eppo_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"fk_ref_prod_crops_audit_ref_prod\"
-            columns: [\"reference_product_id\"]
+            foreignKeyName: "fk_ref_prod_crops_audit_ref_prod"
+            columns: ["reference_product_id"]
             isOneToOne: false
-            referencedRelation: \"reference_products\"
-            referencedColumns: [\"reference_product_id\"]
+            referencedRelation: "reference_products"
+            referencedColumns: ["reference_product_id"]
           },
         ]
       }
@@ -2508,18 +2508,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_ref_prod_eppo_targets_eppo_code\"
-            columns: [\"eppo_code_id\"]
+            foreignKeyName: "fk_ref_prod_eppo_targets_eppo_code"
+            columns: ["eppo_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"fk_ref_prod_eppo_targets_ref_prod\"
-            columns: [\"reference_product_id\"]
+            foreignKeyName: "fk_ref_prod_eppo_targets_ref_prod"
+            columns: ["reference_product_id"]
             isOneToOne: false
-            referencedRelation: \"reference_products\"
-            referencedColumns: [\"reference_product_id\"]
+            referencedRelation: "reference_products"
+            referencedColumns: ["reference_product_id"]
           },
         ]
       }
@@ -2559,18 +2559,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_ref_prod_targets_audit_eppo_code\"
-            columns: [\"eppo_code_id\"]
+            foreignKeyName: "fk_ref_prod_targets_audit_eppo_code"
+            columns: ["eppo_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"fk_ref_prod_targets_audit_ref_prod\"
-            columns: [\"reference_product_id\"]
+            foreignKeyName: "fk_ref_prod_targets_audit_ref_prod"
+            columns: ["reference_product_id"]
             isOneToOne: false
-            referencedRelation: \"reference_products\"
-            referencedColumns: [\"reference_product_id\"]
+            referencedRelation: "reference_products"
+            referencedColumns: ["reference_product_id"]
           },
         ]
       }
@@ -2616,11 +2616,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"reference_products_supplier_id_fkey\"
-            columns: [\"supplier_id\"]
+            foreignKeyName: "reference_products_supplier_id_fkey"
+            columns: ["supplier_id"]
             isOneToOne: false
-            referencedRelation: \"suppliers\"
-            referencedColumns: [\"supplier_id\"]
+            referencedRelation: "suppliers"
+            referencedColumns: ["supplier_id"]
           },
         ]
       }
@@ -2663,25 +2663,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"submissions_formulation_country_use_group_id_fkey\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "submissions_formulation_country_use_group_id_fkey"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"submissions_formulation_country_use_group_id_fkey\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "submissions_formulation_country_use_group_id_fkey"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"submissions_formulation_country_use_group_id_fkey\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "submissions_formulation_country_use_group_id_fkey"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_use_group_details\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_use_group_details"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
         ]
       }
@@ -2715,11 +2715,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"suppliers_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "suppliers_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"country_id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["country_id"]
           },
         ]
       }
@@ -2750,11 +2750,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_theme_colors_theme\"
-            columns: [\"theme_id\"]
+            foreignKeyName: "fk_theme_colors_theme"
+            columns: ["theme_id"]
             isOneToOne: false
-            referencedRelation: \"themes\"
-            referencedColumns: [\"theme_id\"]
+            referencedRelation: "themes"
+            referencedColumns: ["theme_id"]
           },
         ]
       }
@@ -2809,11 +2809,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_user_preferences_theme\"
-            columns: [\"theme_id\"]
+            foreignKeyName: "fk_user_preferences_theme"
+            columns: ["theme_id"]
             isOneToOne: false
-            referencedRelation: \"themes\"
-            referencedColumns: [\"theme_id\"]
+            referencedRelation: "themes"
+            referencedColumns: ["theme_id"]
           },
         ]
       }
@@ -2821,21 +2821,21 @@ export type Database = {
         Row: {
           created_at: string | null
           id: number
-          role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role: Database["public"]["Enums"]["app_role"]
           updated_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
           id?: number
-          role?: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
           id?: number
-          role?: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string | null
           user_id?: string
         }
@@ -2865,11 +2865,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_user_workspace_preferences_workspace\"
-            columns: [\"workspace_id\"]
+            foreignKeyName: "fk_user_workspace_preferences_workspace"
+            columns: ["workspace_id"]
             isOneToOne: false
-            referencedRelation: \"workspaces\"
-            referencedColumns: [\"workspace_id\"]
+            referencedRelation: "workspaces"
+            referencedColumns: ["workspace_id"]
           },
         ]
       }
@@ -2912,11 +2912,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"fk_workspace_menu_items_workspace\"
-            columns: [\"workspace_id\"]
+            foreignKeyName: "fk_workspace_menu_items_workspace"
+            columns: ["workspace_id"]
             isOneToOne: false
-            referencedRelation: \"workspaces\"
-            referencedColumns: [\"workspace_id\"]
+            referencedRelation: "workspaces"
+            referencedColumns: ["workspace_id"]
           },
         ]
       }
@@ -3003,25 +3003,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_country_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "formulation_country_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"country_id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"formulation_country_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -3067,102 +3067,102 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"business_case_use_groups_formulation_country_use_group_id_fkey\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "business_case_use_groups_formulation_country_use_group_id_fkey"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"business_case_use_groups_formulation_country_use_group_id_fkey\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "business_case_use_groups_formulation_country_use_group_id_fkey"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_use_group\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_formulation_country_use_group"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"business_case_use_groups_formulation_country_use_group_id_fkey\"
-            columns: [\"formulation_country_use_group_id\"]
+            foreignKeyName: "business_case_use_groups_formulation_country_use_group_id_fkey"
+            columns: ["formulation_country_use_group_id"]
             isOneToOne: false
-            referencedRelation: \"vw_use_group_details\"
-            referencedColumns: [\"formulation_country_use_group_id\"]
+            referencedRelation: "vw_use_group_details"
+            referencedColumns: ["formulation_country_use_group_id"]
           },
           {
-            foreignKeyName: \"formulation_country_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "formulation_country_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"country_id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"formulation_country_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "formulation_country"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_active_portfolio\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_active_portfolio"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_detail\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_formulation_country_detail"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_protection_status\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_protection_status"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_registration_pipeline\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_registration_pipeline"
+            referencedColumns: ["formulation_country_id"]
           },
         ]
       }
@@ -3229,74 +3229,74 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "formulation_country"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_active_portfolio\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_active_portfolio"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_detail\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_formulation_country_detail"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_protection_status\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_protection_status"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "cogs_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_registration_pipeline\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_registration_pipeline"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "cogs_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"cogs_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "cogs_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -3354,67 +3354,67 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"formulation_country\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "formulation_country"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_active_portfolio\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_active_portfolio"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulation_country_detail\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_formulation_country_detail"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_protection_status\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_patent_protection_status"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_formulation_country_id_fkey\"
-            columns: [\"formulation_country_id\"]
+            foreignKeyName: "formulation_country_use_group_formulation_country_id_fkey"
+            columns: ["formulation_country_id"]
             isOneToOne: false
-            referencedRelation: \"vw_registration_pipeline\"
-            referencedColumns: [\"formulation_country_id\"]
+            referencedRelation: "vw_registration_pipeline"
+            referencedColumns: ["formulation_country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_use_group_reference_product_id_fkey\"
-            columns: [\"reference_product_id\"]
+            foreignKeyName: "formulation_country_use_group_reference_product_id_fkey"
+            columns: ["reference_product_id"]
             isOneToOne: false
-            referencedRelation: \"reference_products\"
-            referencedColumns: [\"reference_product_id\"]
+            referencedRelation: "reference_products"
+            referencedColumns: ["reference_product_id"]
           },
         ]
       }
@@ -3504,25 +3504,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_country_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "formulation_country_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"country_id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"formulation_country_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -3575,95 +3575,95 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_country_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "formulation_country_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"country_id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"formulation_country_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"patent_ingredient_protections_ingredient_id_fkey\"
-            columns: [\"ingredient_id\"]
+            foreignKeyName: "patent_ingredient_protections_ingredient_id_fkey"
+            columns: ["ingredient_id"]
             isOneToOne: false
-            referencedRelation: \"ingredients\"
-            referencedColumns: [\"ingredient_id\"]
+            referencedRelation: "ingredients"
+            referencedColumns: ["ingredient_id"]
           },
           {
-            foreignKeyName: \"patent_ingredient_protections_ingredient_id_fkey\"
-            columns: [\"ingredient_id\"]
+            foreignKeyName: "patent_ingredient_protections_ingredient_id_fkey"
+            columns: ["ingredient_id"]
             isOneToOne: false
-            referencedRelation: \"vw_ingredient_usage\"
-            referencedColumns: [\"ingredient_id\"]
+            referencedRelation: "vw_ingredient_usage"
+            referencedColumns: ["ingredient_id"]
           },
           {
-            foreignKeyName: \"patent_reference_product_protections_reference_product_id_fkey\"
-            columns: [\"reference_product_id\"]
+            foreignKeyName: "patent_reference_product_protections_reference_product_id_fkey"
+            columns: ["reference_product_id"]
             isOneToOne: false
-            referencedRelation: \"reference_products\"
-            referencedColumns: [\"reference_product_id\"]
+            referencedRelation: "reference_products"
+            referencedColumns: ["reference_product_id"]
           },
           {
-            foreignKeyName: \"patent_use_protections_eppo_crop_code_id_fkey\"
-            columns: [\"eppo_crop_code_id\"]
+            foreignKeyName: "patent_use_protections_eppo_crop_code_id_fkey"
+            columns: ["eppo_crop_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"patent_use_protections_eppo_target_code_id_fkey\"
-            columns: [\"eppo_target_code_id\"]
+            foreignKeyName: "patent_use_protections_eppo_target_code_id_fkey"
+            columns: ["eppo_target_code_id"]
             isOneToOne: false
-            referencedRelation: \"eppo_codes\"
-            referencedColumns: [\"eppo_code_id\"]
+            referencedRelation: "eppo_codes"
+            referencedColumns: ["eppo_code_id"]
           },
           {
-            foreignKeyName: \"patents_parent_patent_id_fkey\"
-            columns: [\"parent_patent_id\"]
+            foreignKeyName: "patents_parent_patent_id_fkey"
+            columns: ["parent_patent_id"]
             isOneToOne: false
-            referencedRelation: \"patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patents_parent_patent_id_fkey\"
-            columns: [\"parent_patent_id\"]
+            foreignKeyName: "patents_parent_patent_id_fkey"
+            columns: ["parent_patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_blocking_patents\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_blocking_patents"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patents_parent_patent_id_fkey\"
-            columns: [\"parent_patent_id\"]
+            foreignKeyName: "patents_parent_patent_id_fkey"
+            columns: ["parent_patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_applicable_countries\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_applicable_countries"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patents_parent_patent_id_fkey\"
-            columns: [\"parent_patent_id\"]
+            foreignKeyName: "patents_parent_patent_id_fkey"
+            columns: ["parent_patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_assessments_effective\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_assessments_effective"
+            referencedColumns: ["patent_id"]
           },
           {
-            foreignKeyName: \"patents_parent_patent_id_fkey\"
-            columns: [\"parent_patent_id\"]
+            foreignKeyName: "patents_parent_patent_id_fkey"
+            columns: ["parent_patent_id"]
             isOneToOne: false
-            referencedRelation: \"vw_patent_landscape\"
-            referencedColumns: [\"patent_id\"]
+            referencedRelation: "vw_patent_landscape"
+            referencedColumns: ["patent_id"]
           },
         ]
       }
@@ -3689,25 +3689,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: \"formulation_country_country_id_fkey\"
-            columns: [\"country_id\"]
+            foreignKeyName: "formulation_country_country_id_fkey"
+            columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: \"countries\"
-            referencedColumns: [\"country_id\"]
+            referencedRelation: "countries"
+            referencedColumns: ["country_id"]
           },
           {
-            foreignKeyName: \"formulation_country_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"formulations\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "formulations"
+            referencedColumns: ["formulation_id"]
           },
           {
-            foreignKeyName: \"formulation_country_formulation_id_fkey\"
-            columns: [\"formulation_id\"]
+            foreignKeyName: "formulation_country_formulation_id_fkey"
+            columns: ["formulation_id"]
             isOneToOne: false
-            referencedRelation: \"vw_formulations_with_ingredients\"
-            referencedColumns: [\"formulation_id\"]
+            referencedRelation: "vw_formulations_with_ingredients"
+            referencedColumns: ["formulation_id"]
           },
         ]
       }
@@ -3793,7 +3793,7 @@ export type Database = {
           expires_at: string
           id: string
           invited_by_email: string
-          role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role: Database["public"]["Enums"]["app_role"]
           status: string
         }[]
       }
@@ -3804,7 +3804,7 @@ export type Database = {
           email_confirmed_at: string
           id: string
           last_sign_in_at: string
-          role: Database[\"public\"][\"Enums\"][\"app_role\"]
+          role: Database["public"]["Enums"]["app_role"]
           role_assigned_at: string
           role_updated_at: string
           user_created_at: string
@@ -3899,13 +3899,13 @@ export type Database = {
       }
       get_user_role: {
         Args: never
-        Returns: Database[\"public\"][\"Enums\"][\"app_role\"]
+        Returns: Database["public"]["Enums"]["app_role"]
       }
       is_admin: { Args: never; Returns: boolean }
       is_editor: { Args: never; Returns: boolean }
     }
     Enums: {
-      app_role: \"viewer\" | \"editor\" | \"admin\"
+      app_role: "viewer" | "editor" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3913,33 +3913,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, \"__InternalSupabase\">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, \"public\">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema[\"Tables\"] & DefaultSchema[\"Views\"])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Views\"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Views\"])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema[\"Tables\"] &
-        DefaultSchema[\"Views\"])
-    ? (DefaultSchema[\"Tables\"] &
-        DefaultSchema[\"Views\"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -3948,23 +3948,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema[\"Tables\"]
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema[\"Tables\"]
-    ? DefaultSchema[\"Tables\"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -3973,23 +3973,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema[\"Tables\"]
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema[\"Tables\"]
-    ? DefaultSchema[\"Tables\"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -3998,43 +3998,42 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema[\"Enums\"]
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions[\"schema\"]][\"Enums\"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions[\"schema\"]][\"Enums\"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema[\"Enums\"]
-    ? DefaultSchema[\"Enums\"][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema[\"CompositeTypes\"]
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions[\"schema\"]][\"CompositeTypes\"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions[\"schema\"]][\"CompositeTypes\"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema[\"CompositeTypes\"]
-    ? DefaultSchema[\"CompositeTypes\"][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
   public: {
     Enums: {
-      app_role: [\"viewer\", \"editor\", \"admin\"],
+      app_role: ["viewer", "editor", "admin"],
     },
   },
 } as const
-"}

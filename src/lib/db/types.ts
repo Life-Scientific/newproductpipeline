@@ -14,7 +14,6 @@ export type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formula
 export type Country = Database["public"]["Tables"]["countries"]["Row"];
 export type IngredientUsage = Database["public"]["Views"]["vw_ingredient_usage"]["Row"];
 export type ActivePortfolio = Database["public"]["Views"]["vw_active_portfolio"]["Row"];
-export type PortfolioGaps = Database["public"]["Views"]["vw_portfolio_gaps"]["Row"];
 
 // Enriched BusinessCase type with formulation_id and country_id
 export type EnrichedBusinessCase = BusinessCase & {

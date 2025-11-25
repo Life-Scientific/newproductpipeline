@@ -121,7 +121,7 @@ export function renderPercentage(
  */
 export function renderStatusBadge(
   status: string | null | undefined,
-  type: "formulation" | "registration" | "country" | "supply" = "formulation"
+  type: "formulation" | "registration" | "country" | "priority" | "margin" = "formulation"
 ): React.ReactNode {
   if (!status) return <span className="text-sm text-muted-foreground">—</span>;
   
@@ -258,7 +258,7 @@ export function createTextColumn<T>(
       if (options?.render) {
         return options.render(value, row.original);
       }
-      return <span className={`text-sm ${options?.className || ""}`}>{value || "—"}</span>;
+      return <span className={`text-sm ${options?.className || ""}`}>{value != null ? String(value) : "—"}</span>;
     },
     meta: {
       minWidth: options?.minWidth,

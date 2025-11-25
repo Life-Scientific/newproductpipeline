@@ -18,7 +18,7 @@ export type {
   Country,
   IngredientUsage,
   ActivePortfolio,
-  PortfolioGaps,
+
   EnrichedBusinessCase,
   FormulationWithNestedData,
 } from "./types";
@@ -60,7 +60,7 @@ export {
 
 export {
   getActivePortfolio,
-  getPortfolioGaps,
+  
   getPipelineTrackerData,
 } from "./portfolio";
 
@@ -79,7 +79,7 @@ import type {
   Country,
   IngredientUsage,
   ActivePortfolio,
-  PortfolioGaps,
+
   EnrichedBusinessCase,
   FormulationWithNestedData,
   BusinessCaseGroupData,
@@ -339,7 +339,7 @@ export const getFormulationsWithNestedData = unstable_cache(
 
       // Get EMD dates
       const emdDates = agg.countriesList
-        .map((c) => c.earliest_market_entry_date)
+        .map((c) => c.emd)
         .filter(Boolean)
         .sort();
       const earliestEmd = emdDates[0] || null;
@@ -661,8 +661,8 @@ async function enrichBusinessCases(
   // Enrich business cases
   return businessCases.map((bc) => ({
     ...bc,
-    formulation_id: businessCaseToFormulationId.get(bc.business_case_id) || null,
-    country_id: businessCaseToCountryId.get(bc.business_case_id) || null,
+    formulation_id: bc.business_case_id ? businessCaseToFormulationId.get(bc.business_case_id) ?? null : null,
+    country_id: bc.business_case_id ? businessCaseToCountryId.get(bc.business_case_id) ?? null : null,
   }));
 }
 
