@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
+import { hasPermission } from "./user-management";
+import { PERMISSIONS } from "@/lib/permissions";
 
 /**
  * Helper: Validate COGS breakdown for a single year
@@ -152,6 +154,12 @@ export async function lookupCOGSWithCarryForward(
  * Create a new COGS group (5 years of COGS data)
  */
 export async function createCOGSGroupAction(formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.COGS_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage COGS data" };
+  }
+
   const supabase = await createClient();
   const userName = await getCurrentUserName();
 
@@ -249,6 +257,12 @@ export async function createCOGSGroupAction(formData: FormData) {
  * Update an existing COGS group (versioning + cascade)
  */
 export async function updateCOGSGroupAction(groupId: string, formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.COGS_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to manage COGS data" };
+  }
+
   const supabase = await createClient();
   const userName = await getCurrentUserName();
 

@@ -5,16 +5,12 @@ import { FormulationsListWithActions } from "./FormulationsListWithActions";
 import { FormulationsExcelView } from "./FormulationsExcelView";
 import { Card, CardContent } from "@/components/ui/card";
 import type { FormulationWithNestedData } from "@/lib/db/queries";
-import type { Database } from "@/lib/supabase/database.types";
-
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 
 interface FormulationsPageContentProps {
-  formulations: Formulation[];
   formulationsWithNested: FormulationWithNestedData[];
 }
 
-export function FormulationsPageContent({ formulations, formulationsWithNested }: FormulationsPageContentProps) {
+export function FormulationsPageContent({ formulationsWithNested }: FormulationsPageContentProps) {
   const searchParams = useSearchParams();
   const view = searchParams.get("view") === "excel" ? "excel" : "table";
 
@@ -32,7 +28,7 @@ export function FormulationsPageContent({ formulations, formulationsWithNested }
         <Card>
           <CardContent className="p-0">
             <div className="p-6">
-              <FormulationsListWithActions formulations={formulations} />
+              <FormulationsListWithActions formulations={formulationsWithNested} />
             </div>
           </CardContent>
         </Card>
@@ -40,4 +36,3 @@ export function FormulationsPageContent({ formulations, formulationsWithNested }
     </>
   );
 }
-

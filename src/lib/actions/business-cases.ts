@@ -7,8 +7,16 @@ import { checkExistingBusinessCase, validateUseGroupTargetEntryConsistency } fro
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { lookupCOGSWithCarryForward } from "./cogs";
 import { withUserContext } from "@/lib/supabase/user-context";
+import { hasPermission } from "./user-management";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export async function createBusinessCase(formData: FormData) {
+  // Permission check
+  const canCreate = await hasPermission(PERMISSIONS.BUSINESS_CASE_CREATE);
+  if (!canCreate) {
+    return { error: "Unauthorized: You don't have permission to create business cases" };
+  }
+
   const supabase = await createClient();
   const userName = await getCurrentUserName();
 
@@ -106,6 +114,12 @@ export async function createBusinessCase(formData: FormData) {
 }
 
 export async function updateBusinessCase(businessCaseId: string, formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.BUSINESS_CASE_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to edit business cases" };
+  }
+
   const formulationId = formData.get("formulation_id") as string | null;
   const countryId = formData.get("country_id") as string | null;
   const useGroupIds = formData.getAll("use_group_ids") as string[];
@@ -221,6 +235,12 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
 }
 
 export async function deleteBusinessCase(businessCaseId: string) {
+  // Permission check
+  const canDelete = await hasPermission(PERMISSIONS.BUSINESS_CASE_DELETE);
+  if (!canDelete) {
+    return { error: "Unauthorized: You don't have permission to delete business cases" };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase
@@ -244,6 +264,12 @@ export async function deleteBusinessCase(businessCaseId: string) {
  * Create a new business case group (10 years of data)
  */
 export async function createBusinessCaseGroupAction(formData: FormData) {
+  // Permission check
+  const canCreate = await hasPermission(PERMISSIONS.BUSINESS_CASE_CREATE);
+  if (!canCreate) {
+    return { error: "Unauthorized: You don't have permission to create business cases" };
+  }
+
   const supabase = await createClient();
   const userName = await getCurrentUserName();
 
@@ -436,6 +462,12 @@ export async function updateBusinessCaseGroupAction(
   oldGroupId: string,
   formData: FormData
 ) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.BUSINESS_CASE_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to edit business cases" };
+  }
+
   const supabase = await createClient();
   const userName = await getCurrentUserName();
 

@@ -9,8 +9,16 @@ import {
 } from "./formulation-ingredients";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import { withUserContext } from "@/lib/supabase/user-context";
+import { hasPermission } from "./user-management";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export async function createFormulation(formData: FormData) {
+  // Permission check
+  const canCreate = await hasPermission(PERMISSIONS.FORMULATION_CREATE);
+  if (!canCreate) {
+    return { error: "Unauthorized: You don't have permission to create formulations" };
+  }
+
   const supabase = await createClient();
   const userName = await getCurrentUserName();
 
@@ -150,6 +158,12 @@ export async function createFormulation(formData: FormData) {
 }
 
 export async function updateFormulation(formulationId: string, formData: FormData) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.FORMULATION_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to edit formulations" };
+  }
+
   const formulationName = formData.get("formulation_name") as string;
   const formulationCategory = formData.get("formulation_category") as string;
   const formulationType = formData.get("formulation_type") as string | null;
@@ -274,6 +288,12 @@ export async function updateFormulation(formulationId: string, formData: FormDat
 }
 
 export async function deleteFormulation(formulationId: string) {
+  // Permission check
+  const canDelete = await hasPermission(PERMISSIONS.FORMULATION_DELETE);
+  if (!canDelete) {
+    return { error: "Unauthorized: You don't have permission to delete formulations" };
+  }
+
   const supabase = await createClient();
 
   // Check if formulation has related data
@@ -309,6 +329,12 @@ export async function addFormulationCrop(
   cropId: string, // Now expects eppo_code_id
   notes?: string | null
 ) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.FORMULATION_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to modify formulations" };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase
@@ -333,6 +359,12 @@ export async function addFormulationCrop(
  * Validates that crop is not used in any child use group first
  */
 export async function removeFormulationCrop(formulationId: string, cropId: string) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.FORMULATION_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to modify formulations" };
+  }
+
   const supabase = await createClient();
 
   // Check if crop is used in any use group (database trigger will also enforce this)
@@ -405,6 +437,12 @@ export async function addFormulationTarget(
   targetId: string, // Now expects eppo_code_id
   notes?: string | null
 ) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.FORMULATION_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to modify formulations" };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase
@@ -429,6 +467,12 @@ export async function addFormulationTarget(
  * Validates that target is not used in any child use group first
  */
 export async function removeFormulationTarget(formulationId: string, targetId: string) {
+  // Permission check
+  const canEdit = await hasPermission(PERMISSIONS.FORMULATION_EDIT);
+  if (!canEdit) {
+    return { error: "Unauthorized: You don't have permission to modify formulations" };
+  }
+
   const supabase = await createClient();
 
   // Check if target is used in any use group (database trigger will also enforce this)

@@ -10,8 +10,8 @@ import { Pencil } from "lucide-react";
 import { FormulationForm } from "@/components/forms/FormulationForm";
 import { usePermissions } from "@/hooks/use-permissions";
 import type { Database } from "@/lib/supabase/database.types";
+import type { FormulationWithNestedData } from "@/lib/db/queries";
 
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type FormulationTable = Database["public"]["Tables"]["formulations"]["Row"];
 
 const statusColors: Record<string, string> = {
@@ -25,7 +25,7 @@ const FormulationActionsCell = memo(function FormulationActionsCell({
   formulation,
   canEdit 
 }: { 
-  formulation: Formulation;
+  formulation: FormulationWithNestedData;
   canEdit: boolean;
 }) {
   const [editOpen, setEditOpen] = useState(false);
@@ -132,8 +132,8 @@ const FormulationActionsCell = memo(function FormulationActionsCell({
 });
 
 // Memoize columns outside component to prevent recreation on every render
-const createColumns = (canEdit: boolean): ColumnDef<Formulation>[] => {
-  const cols: ColumnDef<Formulation>[] = [
+const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[] => {
+  const cols: ColumnDef<FormulationWithNestedData>[] = [
     {
       accessorKey: "formulation_code",
       header: "Code",
@@ -198,6 +198,69 @@ const createColumns = (canEdit: boolean): ColumnDef<Formulation>[] => {
         );
       },
     },
+    // Roll-up columns from sub-items
+    {
+      accessorKey: "countries_count",
+      header: "Countries",
+      cell: ({ row }) => {
+        const count = row.original.countries_count;
+        return (
+          <span className="font-medium text-center block">
+            {count || 0}
+          </span>
+        );
+      },
+      meta: {
+        align: "center",
+      },
+    },
+    {
+      accessorKey: "use_groups_count",
+      header: "Use Groups",
+      cell: ({ row }) => {
+        const count = row.original.use_groups_count;
+        return (
+          <span className="font-medium text-center block">
+            {count || 0}
+          </span>
+        );
+      },
+      meta: {
+        align: "center",
+      },
+    },
+    {
+      accessorKey: "total_revenue",
+      header: "Total Revenue",
+      cell: ({ row }) => {
+        const revenue = row.original.total_revenue;
+        if (!revenue) return <span className="text-muted-foreground">—</span>;
+        return (
+          <span className="font-medium">
+            €{(revenue / 1000).toFixed(0)}K
+          </span>
+        );
+      },
+      meta: {
+        align: "right",
+      },
+    },
+    {
+      accessorKey: "total_margin",
+      header: "Total Margin",
+      cell: ({ row }) => {
+        const margin = row.original.total_margin;
+        if (!margin) return <span className="text-muted-foreground">—</span>;
+        return (
+          <span className="font-medium">
+            €{(margin / 1000).toFixed(0)}K
+          </span>
+        );
+      },
+      meta: {
+        align: "right",
+      },
+    },
   ];
 
   // Only add actions column if user can edit
@@ -213,7 +276,7 @@ const createColumns = (canEdit: boolean): ColumnDef<Formulation>[] => {
 };
 
 interface FormulationsListWithActionsProps {
-  formulations: Formulation[];
+  formulations: FormulationWithNestedData[];
 }
 
 export function FormulationsListWithActions({ formulations }: FormulationsListWithActionsProps) {

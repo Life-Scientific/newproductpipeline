@@ -1,4 +1,4 @@
-import { getFormulations, getFormulationsWithNestedData } from "@/lib/db/queries";
+import { getFormulationsWithNestedData } from "@/lib/db/queries";
 import { FormulationsPageContent } from "@/components/formulations/FormulationsPageContent";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { FormulationFormButton } from "@/components/forms/FormulationFormButton";
@@ -9,7 +9,6 @@ import { Suspense } from "react";
 export const revalidate = 60;
 
 export default async function FormulationsPage() {
-  const formulations = await getFormulations();
   const formulationsWithNested = await getFormulationsWithNestedData();
 
   return (
@@ -31,10 +30,9 @@ export default async function FormulationsPage() {
         </div>
 
         <Suspense fallback={<div>Loading...</div>}>
-          <FormulationsPageContent formulations={formulations} formulationsWithNested={formulationsWithNested} />
+          <FormulationsPageContent formulationsWithNested={formulationsWithNested} />
         </Suspense>
       </AnimatedPage>
     </div>
   );
 }
-
