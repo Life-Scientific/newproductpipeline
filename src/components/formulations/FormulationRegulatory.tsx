@@ -149,7 +149,7 @@ export function FormulationRegulatory({
                   {useGroups.map((useGroup) => (
                     <TableRow key={useGroup.formulation_country_use_group_id}>
                       <TableCell className="font-medium">{useGroup.country_name || "—"}</TableCell>
-                      <TableCell>{useGroup.use_group_name || "—"}</TableCell>
+                      <TableCell className="font-medium">{useGroup.use_group_name || useGroup.use_group_variant || "—"}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{useGroup.use_group_variant || "—"}</Badge>
                       </TableCell>
@@ -188,7 +188,7 @@ export function FormulationRegulatory({
                 </TableBody>
               </Table>
             ) : (
-              <p className="text-sm text-muted-foreground">No use group data found.</p>
+              <p className="text-sm text-muted-foreground">No use groups found. Use groups are created when registering this formulation in a country for specific crops/pests.</p>
             )}
           </TabsContent>
         </Tabs>

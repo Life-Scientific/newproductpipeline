@@ -91,6 +91,7 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
     let totalRevenue = 0;
     let totalMargin = 0;
     const totalVolume = cases.reduce((sum, bc) => sum + (bc.volume || 0), 0);
+    const uniqueUseGroups = new Set(cases.map(bc => bc.use_group_name || bc.formulation_country_use_group_id).filter(Boolean));
     
     cases.forEach((bc) => {
       const countryId = (bc as any).country_id || null;
@@ -106,7 +107,7 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
     const avgMarginPercent = cases.length > 0
       ? cases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) / cases.length
       : 0;
-    return { totalRevenue, totalMargin, totalVolume, avgMarginPercent };
+    return { totalRevenue, totalMargin, totalVolume, avgMarginPercent, useGroupCount: uniqueUseGroups.size };
   };
 
   const toggleCountry = (country: string) => {
@@ -129,7 +130,7 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
           <CardDescription>Financial projections</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No business cases found.</p>
+          <p className="text-sm text-muted-foreground">No business cases found. Create projections for this formulation in specific markets.</p>
         </CardContent>
       </Card>
     );
@@ -168,6 +169,9 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
                           <div className="font-semibold text-sm">{country}</div>
                           <div className="text-xs text-muted-foreground">
                             {cases.length} business case{cases.length !== 1 ? "s" : ""}
+                            {summary.useGroupCount > 0 && (
+                              <span> • {summary.useGroupCount} use group{summary.useGroupCount !== 1 ? "s" : ""}</span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -212,8 +216,8 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
                                   <span className="text-sm">{bc.formulation_name || "—"}</span>
                                 </TableCell>
                                 <TableCell>
-                                  <span className="text-sm text-muted-foreground">
-                                    {bc.use_group_name || "—"}
+                                  <span className="text-sm font-medium">
+                                    {bc.use_group_name || bc.use_group_variant || "—"}
                                   </span>
                                 </TableCell>
                                 <TableCell className="text-right">

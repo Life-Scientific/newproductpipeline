@@ -41,7 +41,7 @@ export default async function BusinessCasesPage() {
             <div className="space-y-2">
               <h1 className="text-2xl sm:text-3xl font-bold">Product Portfolio Long Range Plan</h1>
               <p className="text-sm sm:text-base text-muted-foreground">
-                Financial projections and business case analysis
+                10-year revenue and margin projections. Each row represents a formulation registered in a country for a specific use.
               </p>
             </div>
           </div>

@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, ExternalLink, AlertTriangle } from "lucide-react";
+import { MoreHorizontal, ExternalLink, AlertTriangle, Beaker, Globe, FileText, ChevronRight } from "lucide-react";
 import type { EnrichedBusinessCase } from "@/lib/db/queries";
 import { cn } from "@/lib/utils";
 import { getStatusVariant } from "@/lib/design-system";
@@ -45,7 +45,8 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
         <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
           {businessCase.display_name || businessCase.business_case_name || "—"}
         </p>
-        <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+        <div className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+          {/* Visual hierarchy: Formulation → Country → Use Group */}
           {businessCase.formulation_id && (businessCase.formulation_code || businessCase.formulation_name) ? (
             <>
               <button
@@ -56,38 +57,55 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
                     `/formulations/${businessCase.formulation_id}`
                   )
                 }
-                className="hover:text-primary hover:underline text-left"
+                className="flex items-center gap-1 hover:text-primary hover:underline text-left"
               >
-                {businessCase.formulation_name && businessCase.formulation_code
-                  ? `${businessCase.formulation_name} (${businessCase.formulation_code})`
-                  : businessCase.formulation_name || businessCase.formulation_code}
+                <Beaker className="h-3 w-3" />
+                <span>
+                  {businessCase.formulation_name && businessCase.formulation_code
+                    ? `${businessCase.formulation_name} (${businessCase.formulation_code})`
+                    : businessCase.formulation_name || businessCase.formulation_code}
+                </span>
               </button>
-              <span>•</span>
+              <ChevronRight className="h-3 w-3 text-muted-foreground/50" />
             </>
           ) : null}
           {businessCase.country_name ? (
             businessCase.country_id ? (
-              <button
-                type="button"
-                onClick={(e) =>
-                  handleNestedClick(
-                    e,
-                    `/business-cases?country=${businessCase.country_id}`
-                  )
-                }
-                className="hover:text-primary hover:underline text-left"
-              >
-                {businessCase.country_name}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={(e) =>
+                    handleNestedClick(
+                      e,
+                      `/business-cases?country=${businessCase.country_id}`
+                    )
+                  }
+                  className="flex items-center gap-1 hover:text-primary hover:underline text-left"
+                >
+                  <Globe className="h-3 w-3" />
+                  <span>{businessCase.country_name}</span>
+                </button>
+                {businessCase.use_group_name && <ChevronRight className="h-3 w-3 text-muted-foreground/50" />}
+              </>
             ) : (
-              <span>{businessCase.country_name}</span>
+              <>
+                <div className="flex items-center gap-1">
+                  <Globe className="h-3 w-3" />
+                  <span>{businessCase.country_name}</span>
+                </div>
+                {businessCase.use_group_name && <ChevronRight className="h-3 w-3 text-muted-foreground/50" />}
+              </>
             )
-          ) : (
-            <span>—</span>
+          ) : null}
+          {businessCase.use_group_name && (
+            <div className="flex items-center gap-1">
+              <FileText className="h-3 w-3" />
+              <span>{businessCase.use_group_name}</span>
+            </div>
           )}
           {businessCase.fiscal_year && (
             <>
-              <span>•</span>
+              <span className="text-muted-foreground/50">•</span>
               <button
                 type="button"
                 onClick={(e) =>

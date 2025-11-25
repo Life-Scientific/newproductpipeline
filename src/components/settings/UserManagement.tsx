@@ -3,17 +3,31 @@
 import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, RefreshCw, Eye, Edit, Crown, Mail, X, Trash2 } from "lucide-react";
-import { getAllUsers, updateUserRole, getAllInvitations, resendInvitation, cancelInvitation, deleteUser, type UserManagementData, type InvitationData, type AppRole } from "@/lib/actions/user-management";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Loader2, RefreshCw, Mail, X, Trash2, Shield, UserCog } from "lucide-react";
+import {
+  getAllUsers,
+  getAllRoles,
+  updateUserRoles,
+  getAllInvitations,
+  resendInvitation,
+  cancelInvitation,
+  deleteUser,
+  type UserManagementData,
+  type InvitationData,
+} from "@/lib/actions/user-management";
+import { type Role } from "@/lib/permissions";
 import { useToast } from "@/components/ui/use-toast";
 import { InviteUserModal } from "./InviteUserModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,24 +38,31 @@ import { DeleteConfirmDialog } from "@/components/forms/DeleteConfirmDialog";
 export function UserManagement() {
   const { toast } = useToast();
   const [users, setUsers] = useState<UserManagementData[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [invitations, setInvitations] = useState<InvitationData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [resending, setResending] = useState<string | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  
+  // Role editing state
+  const [editingUser, setEditingUser] = useState<UserManagementData | null>(null);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
 
-  const loadUsers = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const [usersData, invitationsData] = await Promise.all([
+      const [usersData, rolesData, invitationsData] = await Promise.all([
         getAllUsers(),
+        getAllRoles(),
         getAllInvitations(),
       ]);
       setUsers(usersData);
+      setRoles(rolesData);
       setInvitations(invitationsData);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to load data";
@@ -57,27 +78,53 @@ export function UserManagement() {
   };
 
   useEffect(() => {
-    loadUsers();
+    loadData();
   }, []);
 
-  const handleRoleChange = async (userId: string, newRole: AppRole) => {
+  const openRoleEditDialog = (user: UserManagementData) => {
+    setEditingUser(user);
+    setSelectedRoleIds(user.roles.map(r => r.role_id));
+  };
+
+  const closeRoleEditDialog = () => {
+    setEditingUser(null);
+    setSelectedRoleIds([]);
+  };
+
+  const handleRoleToggle = (roleId: string) => {
+    setSelectedRoleIds(prev =>
+      prev.includes(roleId)
+        ? prev.filter(id => id !== roleId)
+        : [...prev, roleId]
+    );
+  };
+
+  const handleSaveRoles = async () => {
+    if (!editingUser) return;
+    
     try {
-      setUpdating(userId);
-      await updateUserRole(userId, newRole);
-      await loadUsers(); // Reload to get updated data
+      setSaving(true);
+      
+      if (selectedRoleIds.length === 0) {
+        throw new Error("At least one role must be selected");
+      }
+      
+      await updateUserRoles(editingUser.id, selectedRoleIds);
+      await loadData();
       toast({
         title: "Success",
-        description: "User role updated successfully",
+        description: "User roles updated successfully",
       });
+      closeRoleEditDialog();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to update user role";
+      const message = err instanceof Error ? err.message : "Failed to update user roles";
       toast({
         title: "Error",
         description: message,
         variant: "destructive",
       });
     } finally {
-      setUpdating(null);
+      setSaving(false);
     }
   };
 
@@ -85,7 +132,7 @@ export function UserManagement() {
     try {
       setResending(invitationId);
       await resendInvitation(invitationId);
-      await loadUsers();
+      await loadData();
       toast({
         title: "Success",
         description: "Invitation resent successfully",
@@ -105,7 +152,7 @@ export function UserManagement() {
   const handleCancelInvitation = async (invitationId: string) => {
     try {
       await cancelInvitation(invitationId);
-      await loadUsers();
+      await loadData();
       toast({
         title: "Success",
         description: "Invitation cancelled",
@@ -124,7 +171,7 @@ export function UserManagement() {
     if (!deletingUserId) return;
     try {
       await deleteUser(deletingUserId);
-      await loadUsers();
+      await loadData();
       toast({
         title: "Success",
         description: "User deleted successfully",
@@ -152,6 +199,20 @@ export function UserManagement() {
     });
   };
 
+  const getRoleBadgeVariant = (roleName: string): "default" | "secondary" | "outline" => {
+    switch (roleName) {
+      case "Admin":
+        return "default";
+      case "Editor":
+      case "Portfolio Manager":
+        return "default";
+      case "Country Manager":
+        return "secondary";
+      default:
+        return "outline";
+    }
+  };
+
   const userColumns = useMemo<ColumnDef<UserManagementData>[]>(() => [
     {
       accessorKey: "email",
@@ -161,24 +222,23 @@ export function UserManagement() {
       ),
     },
     {
-      accessorKey: "role",
-      header: "Role",
+      accessorKey: "role_names",
+      header: "Roles",
       cell: ({ row }) => {
-        const role = row.getValue("role") as AppRole;
+        const roleNames = row.original.role_names || ["Viewer"];
         return (
-          <Badge
-            variant={role === "admin" ? "default" : role === "editor" ? "default" : "secondary"}
-            className="flex items-center gap-1 w-fit"
-          >
-            {role === "admin" ? (
-              <Crown className="h-3 w-3" />
-            ) : role === "editor" ? (
-              <Edit className="h-3 w-3" />
-            ) : (
-              <Eye className="h-3 w-3" />
-            )}
-            {role}
-          </Badge>
+          <div className="flex flex-wrap gap-1">
+            {roleNames.map((role, idx) => (
+              <Badge
+                key={idx}
+                variant={getRoleBadgeVariant(role)}
+                className="flex items-center gap-1"
+              >
+                <Shield className="h-3 w-3" />
+                {role}
+              </Badge>
+            ))}
+          </div>
         );
       },
     },
@@ -188,9 +248,9 @@ export function UserManagement() {
       cell: ({ row }) => {
         const confirmed = row.getValue("email_confirmed_at");
         return confirmed ? (
-          <Badge variant="outline" className="text-green-600">Verified</Badge>
+          <Badge variant="outline" className="text-green-600 border-green-600/30">Verified</Badge>
         ) : (
-          <Badge variant="outline" className="text-yellow-600">Unverified</Badge>
+          <Badge variant="outline" className="text-yellow-600 border-yellow-600/30">Unverified</Badge>
         );
       },
     },
@@ -219,38 +279,15 @@ export function UserManagement() {
         const user = row.original;
         return (
           <div className="flex items-center justify-end gap-2">
-            <Select
-              value={user.role}
-              onValueChange={(value) => handleRoleChange(user.id, value as AppRole)}
-              disabled={updating === user.id}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openRoleEditDialog(user)}
+              className="h-8"
             >
-              <SelectTrigger className="w-[120px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="viewer">
-                  <div className="flex items-center gap-2">
-                    <Eye className="h-4 w-4" />
-                    Viewer
-                  </div>
-                </SelectItem>
-                <SelectItem value="editor">
-                  <div className="flex items-center gap-2">
-                    <Edit className="h-4 w-4" />
-                    Editor
-                  </div>
-                </SelectItem>
-                <SelectItem value="admin">
-                  <div className="flex items-center gap-2">
-                    <Crown className="h-4 w-4" />
-                    Admin
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            {updating === user.id && (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            )}
+              <UserCog className="h-4 w-4 mr-1" />
+              Edit Roles
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -259,7 +296,6 @@ export function UserManagement() {
                 setDeleteDialogOpen(true);
               }}
               className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-              disabled={updating === user.id}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -267,7 +303,7 @@ export function UserManagement() {
         );
       },
     },
-  ], [updating]);
+  ], []);
 
   const invitationColumns = useMemo<ColumnDef<InvitationData>[]>(() => [
     {
@@ -281,19 +317,13 @@ export function UserManagement() {
       accessorKey: "role",
       header: "Role",
       cell: ({ row }) => {
-        const role = row.getValue("role") as AppRole;
+        const role = row.getValue("role") as string;
         return (
           <Badge
-            variant={role === "admin" ? "default" : role === "editor" ? "default" : "secondary"}
+            variant={getRoleBadgeVariant(role)}
             className="flex items-center gap-1 w-fit"
           >
-            {role === "admin" ? (
-              <Crown className="h-3 w-3" />
-            ) : role === "editor" ? (
-              <Edit className="h-3 w-3" />
-            ) : (
-              <Eye className="h-3 w-3" />
-            )}
+            <Shield className="h-3 w-3" />
             {role}
           </Badge>
         );
@@ -404,14 +434,14 @@ export function UserManagement() {
             <div>
               <CardTitle>User Management</CardTitle>
               <CardDescription>
-                Manage user roles and permissions. Only editors and admins can access this page.
+                Manage users and their role assignments. Users can have multiple roles.
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={loadUsers}
+                onClick={loadData}
                 disabled={loading}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -462,11 +492,92 @@ export function UserManagement() {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Role Edit Dialog */}
+      <Dialog open={editingUser !== null} onOpenChange={(open) => !open && closeRoleEditDialog()}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit User Roles</DialogTitle>
+            <DialogDescription>
+              {editingUser?.email}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Select the roles for this user. Users can have multiple roles, and their permissions will be combined.
+            </p>
+            
+            <div className="space-y-3">
+              {roles.map((role) => (
+                <div
+                  key={role.role_id}
+                  className="flex items-start gap-3 p-3 rounded-md border hover:bg-muted/50"
+                >
+                  <Checkbox
+                    id={role.role_id}
+                    checked={selectedRoleIds.includes(role.role_id)}
+                    onCheckedChange={() => handleRoleToggle(role.role_id)}
+                  />
+                  <div className="space-y-1 flex-1">
+                    <Label
+                      htmlFor={role.role_id}
+                      className="text-sm font-medium cursor-pointer flex items-center gap-2"
+                    >
+                      {role.role_name}
+                      {role.is_system_role && (
+                        <Badge variant="outline" className="text-xs">System</Badge>
+                      )}
+                    </Label>
+                    {role.description && (
+                      <p className="text-xs text-muted-foreground">
+                        {role.description}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {role.permissions.length} permission{role.permissions.length !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {selectedRoleIds.length === 0 && (
+              <Alert>
+                <AlertDescription>
+                  At least one role must be selected.
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeRoleEditDialog} disabled={saving}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSaveRoles} 
+              disabled={saving || selectedRoleIds.length === 0}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Roles"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <InviteUserModal
         open={inviteModalOpen}
         onOpenChange={setInviteModalOpen}
-        onSuccess={loadUsers}
+        onSuccess={loadData}
       />
+      
       <DeleteConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}

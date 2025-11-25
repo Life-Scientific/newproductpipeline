@@ -8,6 +8,7 @@ import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { FormulationForm } from "@/components/forms/FormulationForm";
+import { usePermissions } from "@/hooks/use-permissions";
 import type { Database } from "@/lib/supabase/database.types";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
@@ -20,10 +21,21 @@ const statusColors: Record<string, string> = {
   Killed: "destructive",
 };
 
-const FormulationActionsCell = memo(function FormulationActionsCell({ formulation }: { formulation: Formulation }) {
+const FormulationActionsCell = memo(function FormulationActionsCell({ 
+  formulation,
+  canEdit 
+}: { 
+  formulation: Formulation;
+  canEdit: boolean;
+}) {
   const [editOpen, setEditOpen] = useState(false);
   const [formulationData, setFormulationData] = useState<FormulationTable | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Don't render if no edit permission
+  if (!canEdit) {
+    return null;
+  }
 
   const handleEdit = async () => {
     if (!formulation.formulation_id) return;
@@ -120,7 +132,8 @@ const FormulationActionsCell = memo(function FormulationActionsCell({ formulatio
 });
 
 // Memoize columns outside component to prevent recreation on every render
-const createColumns = (): ColumnDef<Formulation>[] => [
+const createColumns = (canEdit: boolean): ColumnDef<Formulation>[] => {
+  const cols: ColumnDef<Formulation>[] = [
     {
       accessorKey: "formulation_code",
       header: "Code",
@@ -177,27 +190,33 @@ const createColumns = (): ColumnDef<Formulation>[] => [
         );
       },
     },
-    {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }) => <FormulationActionsCell formulation={row.original} />,
-  },
-];
+  ];
 
-// Memoize columns array - only recreate if needed
-const columns = createColumns();
+  // Only add actions column if user can edit
+  if (canEdit) {
+    cols.push({
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => <FormulationActionsCell formulation={row.original} canEdit={canEdit} />,
+    });
+  }
+
+  return cols;
+};
 
 interface FormulationsListWithActionsProps {
   formulations: Formulation[];
 }
 
 export function FormulationsListWithActions({ formulations }: FormulationsListWithActionsProps) {
+  const { canEditFormulations, isLoading } = usePermissions();
+  
   // Memoize columns to prevent recreation
-  const memoizedColumns = useMemo(() => columns, []);
+  const columns = useMemo(() => createColumns(canEditFormulations), [canEditFormulations]);
 
   return (
     <EnhancedDataTable
-      columns={memoizedColumns}
+      columns={columns}
       data={formulations}
       searchKey="product_name"
       searchPlaceholder="Search formulations..."
@@ -207,4 +226,3 @@ export function FormulationsListWithActions({ formulations }: FormulationsListWi
     />
   );
 }
-

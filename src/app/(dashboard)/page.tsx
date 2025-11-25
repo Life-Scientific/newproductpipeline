@@ -219,7 +219,7 @@ export default async function Home() {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              No business cases found.
+              No business cases found. Create financial projections for formulations in specific markets.
             </p>
           )}
         </ContentCard>

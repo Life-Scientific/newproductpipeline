@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Mail, Eye, Edit, Crown } from "lucide-react";
-import { inviteUserByEmail, type AppRole } from "@/lib/actions/user-management";
+import { Loader2, Mail, Shield } from "lucide-react";
+import { inviteUserByEmail, getAllRoles } from "@/lib/actions/user-management";
+import { type Role } from "@/lib/permissions";
 
 interface InviteUserModalProps {
   open: boolean;
@@ -32,8 +33,35 @@ interface InviteUserModalProps {
 export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserModalProps) {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<AppRole>("viewer");
+  const [selectedRole, setSelectedRole] = useState("Viewer");
   const [loading, setLoading] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loadingRoles, setLoadingRoles] = useState(true);
+
+  useEffect(() => {
+    async function fetchRoles() {
+      try {
+        setLoadingRoles(true);
+        const rolesData = await getAllRoles();
+        setRoles(rolesData);
+        // Default to Viewer if available
+        const viewerRole = rolesData.find(r => r.role_name === "Viewer");
+        if (viewerRole) {
+          setSelectedRole(viewerRole.role_name);
+        } else if (rolesData.length > 0) {
+          setSelectedRole(rolesData[0].role_name);
+        }
+      } catch (error) {
+        console.error("Failed to load roles:", error);
+      } finally {
+        setLoadingRoles(false);
+      }
+    }
+    
+    if (open) {
+      fetchRoles();
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,14 +77,14 @@ export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserMod
 
     setLoading(true);
     try {
-      const result = await inviteUserByEmail(email.trim(), role);
+      const result = await inviteUserByEmail(email.trim(), selectedRole);
       if (result.success) {
         toast({
           title: "Success",
           description: `Invitation sent to ${email}`,
         });
         setEmail("");
-        setRole("viewer");
+        setSelectedRole("Viewer");
         onOpenChange(false);
         onSuccess?.();
       }
@@ -71,6 +99,8 @@ export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserMod
       setLoading(false);
     }
   };
+
+  const selectedRoleData = roles.find(r => r.role_name === selectedRole);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -97,36 +127,34 @@ export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserMod
             </div>
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
-              <Select value={role} onValueChange={(value) => setRole(value as AppRole)} disabled={loading}>
+              <Select 
+                value={selectedRole} 
+                onValueChange={setSelectedRole} 
+                disabled={loading || loadingRoles}
+              >
                 <SelectTrigger>
-                  <SelectValue />
+                  {loadingRoles ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <SelectValue />
+                  )}
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="viewer">
-                    <div className="flex items-center gap-2">
-                      <Eye className="h-4 w-4" />
-                      Viewer
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="editor">
-                    <div className="flex items-center gap-2">
-                      <Edit className="h-4 w-4" />
-                      Editor
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="admin">
-                    <div className="flex items-center gap-2">
-                      <Crown className="h-4 w-4" />
-                      Admin
-                    </div>
-                  </SelectItem>
+                  {roles.map((role) => (
+                    <SelectItem key={role.role_id} value={role.role_name}>
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        {role.role_name}
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              <p className="text-sm text-muted-foreground">
-                {role === "viewer" && "Read-only access to the application"}
-                {role === "editor" && "Can edit data and manage content"}
-                {role === "admin" && "Full access including user management"}
-              </p>
+              {selectedRoleData?.description && (
+                <p className="text-sm text-muted-foreground">
+                  {selectedRoleData.description}
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -138,7 +166,7 @@ export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserMod
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || loadingRoles}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -157,6 +185,3 @@ export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserMod
     </Dialog>
   );
 }
-
-
-

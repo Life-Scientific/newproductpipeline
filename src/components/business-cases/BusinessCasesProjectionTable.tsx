@@ -11,9 +11,10 @@ import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 interface BusinessCasesProjectionTableProps {
   businessCases: BusinessCaseGroupData[];
   exchangeRates: Map<string, number>; // country_id -> exchange_rate_to_eur
+  canEdit?: boolean; // Permission to edit business cases
 }
 
-export function BusinessCasesProjectionTable({ businessCases, exchangeRates }: BusinessCasesProjectionTableProps) {
+export function BusinessCasesProjectionTable({ businessCases, exchangeRates, canEdit = false }: BusinessCasesProjectionTableProps) {
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
 
   // Helper function to get effective start fiscal year from stored value
@@ -112,7 +113,8 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates }: B
   if (businessCases.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No business cases found.
+        <p className="text-sm">No business cases found.</p>
+        <p className="text-xs mt-1">Create projections for formulations registered in specific markets.</p>
       </div>
     );
   }
@@ -133,13 +135,16 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates }: B
                   {col.label}
                 </TableHead>
               ))}
-              <TableHead className="min-w-[80px]">Actions</TableHead>
+              {canEdit && <TableHead className="min-w-[80px]">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {businessCases.map((bc) => {
+            {businessCases.map((bc, bcIndex) => {
               const targetYear = parseFiscalYear(bc.target_market_entry);
               const uom = bc.uom || "L";
+              // Add subtle background for visual grouping by formulation
+              const isNewFormulation = bcIndex === 0 || businessCases[bcIndex - 1].formulation_id !== bc.formulation_id;
+              const rowGroupClass = isNewFormulation ? "border-t-2 border-border" : "";
 
               // Create 6 rows per business case group (one for each metric)
               // All currency values are converted to EUR
@@ -201,11 +206,13 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates }: B
                 const effectiveStartYear = getEffectiveStartFiscalYear(bc.effective_start_fiscal_year);
                 
                 return (
-                  <TableRow key={`${bc.business_case_group_id}-${metricIndex}`}>
+                  <TableRow key={`${bc.business_case_group_id}-${metricIndex}`} className={metricIndex === 0 ? rowGroupClass : ""}>
                     {metricIndex === 0 ? (
                       <>
                         <TableCell className="sticky left-0 bg-background z-10 font-medium" rowSpan={6}>
-                          {bc.formulation_name || bc.formulation_code || "—"}
+                          {bc.formulation_name && bc.formulation_code
+                            ? `${bc.formulation_name} (${bc.formulation_code})`
+                            : bc.formulation_name || bc.formulation_code || "—"}
                         </TableCell>
                         <TableCell className="sticky left-[150px] bg-background z-10" rowSpan={6}>
                           {bc.country_name || "—"}
@@ -231,7 +238,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates }: B
                         </TableCell>
                       );
                     })}
-                    {metricIndex === 0 ? (
+                    {canEdit && metricIndex === 0 ? (
                       <TableCell rowSpan={6} className="align-middle">
                         <Button
                           variant="ghost"
@@ -251,7 +258,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates }: B
         </Table>
       </div>
 
-      {editingGroupId && (
+      {canEdit && editingGroupId && (
         <BusinessCaseEditModal
           groupId={editingGroupId}
           open={!!editingGroupId}

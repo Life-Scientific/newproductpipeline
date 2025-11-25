@@ -4,9 +4,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { FormulationCountryUseGroupForm } from "./FormulationCountryUseGroupForm";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export function FormulationCountryUseGroupFormButton() {
   const [open, setOpen] = useState(false);
+  const { canCreateUseGroups, isLoading } = usePermissions();
+
+  // Don't render if user doesn't have permission
+  if (isLoading || !canCreateUseGroups) {
+    return null;
+  }
 
   return (
     <>
@@ -25,4 +32,3 @@ export function FormulationCountryUseGroupFormButton() {
     </>
   );
 }
-

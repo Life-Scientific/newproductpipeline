@@ -7,6 +7,7 @@ import { BusinessCaseFilters } from "@/components/business-cases/BusinessCaseFil
 import { BusinessCaseCreateModal } from "@/components/business-cases/BusinessCaseCreateModal";
 import { Button } from "@/components/ui/button";
 import { Plus, GitBranch } from "lucide-react";
+import { usePermissions } from "@/hooks/use-permissions";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
 
 interface BusinessCasesPageClientProps {
@@ -22,6 +23,9 @@ export function BusinessCasesPageClient({ initialBusinessCases, exchangeRates }:
     useGroupIds: [] as string[],
   });
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  
+  // Permission checks
+  const { canCreateBusinessCases, canEditBusinessCases, isLoading: permissionsLoading } = usePermissions();
 
   // Filter business cases based on selected filters
   const filteredBusinessCases = businessCases.filter((bc) => {
@@ -53,10 +57,12 @@ export function BusinessCasesPageClient({ initialBusinessCases, exchangeRates }:
                 </span>
               </CardDescription>
             </div>
-            <Button onClick={() => setCreateModalOpen(true)} size="lg" className="h-12 px-6">
-              <Plus className="mr-2 h-5 w-5" />
-              Create/Update Business Case
-            </Button>
+            {canCreateBusinessCases && !permissionsLoading && (
+              <Button onClick={() => setCreateModalOpen(true)} size="lg" className="h-12 px-6">
+                <Plus className="mr-2 h-5 w-5" />
+                Create/Update Business Case
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -64,20 +70,22 @@ export function BusinessCasesPageClient({ initialBusinessCases, exchangeRates }:
             <BusinessCasesProjectionTable 
               businessCases={filteredBusinessCases} 
               exchangeRates={exchangeRates}
+              canEdit={canEditBusinessCases}
             />
           </div>
         </CardContent>
       </Card>
 
-      <BusinessCaseCreateModal
-        open={createModalOpen}
-        onOpenChange={setCreateModalOpen}
-        onSuccess={() => {
-          // Refresh data - in a real app you'd refetch here
-          window.location.reload();
-        }}
-      />
+      {canCreateBusinessCases && (
+        <BusinessCaseCreateModal
+          open={createModalOpen}
+          onOpenChange={setCreateModalOpen}
+          onSuccess={() => {
+            // Refresh data - in a real app you'd refetch here
+            window.location.reload();
+          }}
+        />
+      )}
     </>
   );
 }
-

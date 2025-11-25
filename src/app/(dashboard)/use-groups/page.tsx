@@ -21,7 +21,7 @@ export default async function UseGroupsPage() {
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold">Use Groups</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Formulation use groups and registrations by country
+              Registration applications organized by crop/pest combination. Each use group represents a specific registration pathway for a formulation in a country.
             </p>
           </div>
           <FormulationCountryUseGroupFormButton />
@@ -87,7 +87,7 @@ export default async function UseGroupsPage() {
           <CardHeader className="pb-3">
             <CardTitle>Use Groups</CardTitle>
             <CardDescription>
-              View and manage formulation use groups across all countries
+              Each use group links a formulation to a country with specific crop/pest targets. Use groups are created when registering a formulation for particular uses.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">

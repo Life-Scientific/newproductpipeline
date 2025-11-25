@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import { type ColumnDef } from "@tanstack/react-table";
 import type { Database } from "@/lib/supabase/database.types";
-import { FileText, Globe, Package, Pencil } from "lucide-react";
+import { FileText, Globe, Package, Pencil, Beaker } from "lucide-react";
 import { UseGroupEditModal } from "@/components/use-groups/UseGroupEditModal";
 import { getStatusVariant } from "@/lib/design-system";
 
@@ -47,18 +47,37 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
       header: "Formulation",
       cell: ({ row }) => {
         const useGroup = row.original;
+        const formulationDisplay = useGroup.formulation_name && useGroup.formulation_code
+          ? `${useGroup.formulation_name} (${useGroup.formulation_code})`
+          : useGroup.formulation_code || "—";
+        const countryName = useGroup.country_name || "";
+        
         return useGroup.formulation_id ? (
-          <Link
-            href={`/formulations/${useGroup.formulation_id}`}
-            className="flex items-center gap-1 hover:text-primary hover:underline"
-          >
-            <Package className="h-3 w-3" />
-            <span className="text-sm font-medium">{useGroup.formulation_code || "—"}</span>
-          </Link>
+          <div className="flex flex-col gap-1">
+            <Link
+              href={`/formulations/${useGroup.formulation_id}`}
+              className="flex items-center gap-1 hover:text-primary hover:underline"
+            >
+              <Beaker className="h-3 w-3 text-muted-foreground" />
+              <span className="text-sm font-medium">{formulationDisplay}</span>
+            </Link>
+            {countryName && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground ml-4">
+                <Globe className="h-2.5 w-2.5" />
+                <span>{countryName}</span>
+              </div>
+            )}
+          </div>
         ) : (
-          <span className="text-sm text-muted-foreground">
-            {useGroup.formulation_code || "—"}
-          </span>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm text-muted-foreground">{formulationDisplay}</span>
+            {countryName && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground ml-4">
+                <Globe className="h-2.5 w-2.5" />
+                <span>{countryName}</span>
+              </div>
+            )}
+          </div>
         );
       },
     },
@@ -166,7 +185,7 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
         pageSize={25}
         showPageSizeSelector={true}
         tableId="use-groups"
-        emptyMessage="No use groups found"
+        emptyMessage="No use groups found. Use groups are created when you register a formulation in a country for specific crops/pests."
         enableColumnReordering={true}
         enableViewManagement={true}
       />
