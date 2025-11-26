@@ -140,9 +140,9 @@ export default function ChatPage() {
         "h-full bg-muted/50 border-r flex flex-col transition-all duration-200 overflow-hidden",
         sidebarOpen ? "w-72" : "w-0"
       )}>
-        {/* Sidebar Header */}
-        <div className="p-4 border-b">
-          <Button variant="outline" className="w-full gap-2 justify-start" onClick={newChat}>
+        {/* Sidebar Header - matches main header height */}
+        <div className="h-14 px-4 border-b flex items-center shrink-0">
+          <Button variant="outline" className="w-full gap-2 justify-start h-9" onClick={newChat}>
             <Plus className="h-4 w-4" />
             New conversation
           </Button>
