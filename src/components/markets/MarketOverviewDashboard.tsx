@@ -263,7 +263,7 @@ export function MarketOverviewDashboard({
             {marketMetrics.map((market) => (
               <Link
                 key={market.countryId}
-                href={`/markets/${market.countryId}`}
+                href={`/portfolio/markets/${market.countryId}`}
                 className="block"
               >
                 <Card className="hover:bg-muted/50 transition-colors cursor-pointer">

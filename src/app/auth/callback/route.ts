@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { WORKSPACE_BASE } from "@/lib/routes";
 
 // Allowed email domains for SSO login
 const ALLOWED_DOMAINS = ["lifescientific.com"];
@@ -8,11 +9,11 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   // if "next" is in param, use it as the redirect URL
-  let next = searchParams.get("next") ?? "/";
+  let next = searchParams.get("next") ?? WORKSPACE_BASE;
   
   if (!next.startsWith("/")) {
     // if "next" is not a relative URL, use the default
-    next = "/";
+    next = WORKSPACE_BASE;
   }
 
   if (code) {

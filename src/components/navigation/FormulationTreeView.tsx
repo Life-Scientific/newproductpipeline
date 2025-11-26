@@ -145,7 +145,7 @@ export function FormulationTreeView({
             <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <Link
-                href={`/formulations/${formulationId}`}
+                href={`/portfolio/formulations/${formulationId}`}
                 className="font-semibold text-base sm:text-lg text-primary hover:underline break-words"
               >
                 {formulationCode} - {formulationName}
@@ -281,7 +281,7 @@ export function FormulationTreeView({
                                           </Button>
                                         </CollapsibleTrigger>
                                         <Link
-                                          href={`/use-groups/${useGroupId}`}
+                                          href={`/portfolio/use-groups/${useGroupId}`}
                                           className="flex-1"
                                         >
                                           <Button
@@ -350,7 +350,7 @@ export function FormulationTreeView({
                                               {useGroupBusinessCases.map((bc) => (
                                                 <Link
                                                   key={bc.business_case_id}
-                                                  href={`/business-cases/${bc.business_case_id}`}
+                                                  href={`/portfolio/business-cases/${bc.business_case_id}`}
                                                   className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors border text-xs sm:text-sm"
                                                 >
                                                   <DollarSign className="h-3 w-3 text-muted-foreground flex-shrink-0" />

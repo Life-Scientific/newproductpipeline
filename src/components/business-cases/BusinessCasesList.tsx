@@ -150,7 +150,7 @@ const createColumns = (): ColumnDef<EnrichedBusinessCase>[] => [
       if (businessCaseId && formulationId) {
         return (
           <Link
-            href={`/business-cases/${businessCaseId}`}
+            href={`/portfolio/business-cases/${businessCaseId}`}
             className="font-medium text-primary hover:underline"
           >
             {name}

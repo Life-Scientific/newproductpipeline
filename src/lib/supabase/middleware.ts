@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { WORKSPACE_BASE, isLegacyRoute, toLegacyRedirect } from "@/lib/routes";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -41,19 +42,32 @@ export async function updateSession(request: NextRequest) {
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
   const isAcceptInvite = pathname.startsWith("/accept-invite");
   const isAuthCallback = pathname.startsWith("/auth/callback");
-  const isPublicPath = isAuthPage || isAcceptInvite || isAuthCallback;
+  const isLandingPage = pathname === "/";
+  const isApiRoute = pathname.startsWith("/api");
+  const isWorkspaceRoute = pathname.startsWith(WORKSPACE_BASE);
+  const isPublicPath = isAuthPage || isAcceptInvite || isAuthCallback || isLandingPage || isApiRoute;
 
-  // If no user and trying to access protected route, redirect to login
-  if (!user && !isPublicPath) {
+  // Check if this is a legacy route that needs redirecting
+  const legacyRoute = isLegacyRoute(pathname);
+  
+  // Redirect legacy routes to workspace (preserving the rest of the path)
+  if (legacyRoute && user) {
+    const url = request.nextUrl.clone();
+    url.pathname = toLegacyRedirect(pathname);
+    return NextResponse.redirect(url);
+  }
+
+  // If no user and trying to access protected workspace route, redirect to login
+  if (!user && (isWorkspaceRoute || legacyRoute)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // If user is logged in and on auth pages, redirect to dashboard
+  // If user is logged in and on auth pages, redirect to workspace home
   if (user && isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = WORKSPACE_BASE;
     return NextResponse.redirect(url);
   }
 

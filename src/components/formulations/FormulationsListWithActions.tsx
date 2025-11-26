@@ -142,7 +142,7 @@ const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[]
         const id = row.original.formulation_id;
         return (
           <Link
-            href={`/formulations/${id}`}
+            href={`/portfolio/formulations/${id}`}
             className="font-medium text-primary hover:underline"
           >
             {code || "—"}
@@ -159,7 +159,7 @@ const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[]
         const id = formulation.formulation_id;
         return (
           <Link
-            href={`/formulations/${id}`}
+            href={`/portfolio/formulations/${id}`}
             className="text-primary hover:underline"
           >
             {name || "—"}

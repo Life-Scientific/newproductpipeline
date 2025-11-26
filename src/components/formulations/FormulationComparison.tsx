@@ -369,7 +369,7 @@ export function FormulationComparison({ formulations }: FormulationComparisonPro
                 className="flex items-center gap-2 px-3 py-1.5"
               >
                 <Link
-                  href={`/formulations/${formulation.formulation_id}`}
+                  href={`/portfolio/formulations/${formulation.formulation_id}`}
                   className="hover:underline"
                 >
                   {formulation.formulation_code || formulation.product_name}
@@ -414,7 +414,7 @@ export function FormulationComparison({ formulations }: FormulationComparisonPro
                 <TableHead key={formulation.formulation_id} className="text-center min-w-[200px]">
                   <div className="space-y-1">
                     <Link
-                      href={`/formulations/${formulation.formulation_id}`}
+                      href={`/portfolio/formulations/${formulation.formulation_id}`}
                       className="font-medium hover:underline"
                     >
                       {formulation.formulation_code || formulation.product_name}

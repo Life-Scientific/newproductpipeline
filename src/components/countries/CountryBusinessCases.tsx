@@ -47,7 +47,7 @@ export function CountryBusinessCases({ businessCases, countryName }: CountryBusi
         const formId = row.original.formulation_id;
         return formId ? (
           <Link
-            href={`/formulations/${formId}`}
+            href={`/portfolio/formulations/${formId}`}
             className="font-medium text-primary hover:underline"
           >
             {code || "—"}

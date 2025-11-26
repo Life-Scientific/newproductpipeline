@@ -193,7 +193,7 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
             </DropdownMenuItem>
             {businessCase.formulation_id && (
               <DropdownMenuItem asChild>
-                <Link href={`/formulations/${businessCase.formulation_id}`}>
+                <Link href={`/portfolio/formulations/${businessCase.formulation_id}`}>
                   <ExternalLink className="mr-2 h-4 w-4" />
                   View Formulation
                 </Link>

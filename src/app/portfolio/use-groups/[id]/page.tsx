@@ -1,27 +1,26 @@
-import { getFormulationCountryById, getFormulationBusinessCases } from "@/lib/db/queries";
+import { getUseGroupById, getFormulationBusinessCases } from "@/lib/db/queries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { HierarchicalBreadcrumb } from "@/components/navigation/HierarchicalBreadcrumb";
-import { RevenueChart } from "@/components/charts/RevenueChart";
 import Link from "next/link";
 import {
-  Globe,
-  Package,
   FileText,
+  Package,
+  Globe,
   DollarSign,
   Calendar,
   CheckCircle2,
   XCircle,
-  AlertCircle,
+  Building2,
 } from "lucide-react";
 import type { Database } from "@/lib/supabase/database.types";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
-interface FormulationCountryDetailPageProps {
+interface UseGroupDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
@@ -36,27 +35,22 @@ function formatCurrency(value: number | null | undefined): string {
   return `€${value.toFixed(2)}`;
 }
 
-function formatNumber(value: number | null | undefined): string {
-  if (!value || value === 0) return "—";
-  return value.toLocaleString();
-}
-
-export default async function FormulationCountryDetailPage({
+export default async function UseGroupDetailPage({
   params,
-}: FormulationCountryDetailPageProps) {
+}: UseGroupDetailPageProps) {
   const { id } = await params;
-  const formulationCountry = await getFormulationCountryById(id);
+  const useGroup = await getUseGroupById(id);
 
-  if (!formulationCountry) {
+  if (!useGroup) {
     notFound();
   }
 
-  // Get business cases for this formulation-country
+  // Get business cases for this use group
   let businessCases: BusinessCase[] = [];
-  if (formulationCountry.formulation_id) {
-    const allBusinessCases = await getFormulationBusinessCases(formulationCountry.formulation_id);
+  if (useGroup.formulation_id) {
+    const allBusinessCases = await getFormulationBusinessCases(useGroup.formulation_id);
     businessCases = allBusinessCases.filter(
-      (bc) => bc.formulation_country_id === id
+      (bc) => bc.formulation_country_use_group_id === id
     );
   }
 
@@ -68,17 +62,17 @@ export default async function FormulationCountryDetailPage({
     : 0;
 
   const breadcrumbs = [
-    { label: "Formulations", href: "/formulations" },
-    ...(formulationCountry.formulation_id
+    { label: "Use Groups", href: "/use-groups" },
+    ...(useGroup.formulation_id
       ? [
           {
-            label: formulationCountry.formulation_code || "Formulation",
-            href: `/formulations/${formulationCountry.formulation_id}`,
+            label: useGroup.formulation_code || "Formulation",
+            href: `/formulations/${useGroup.formulation_id}`,
           },
         ]
       : []),
     {
-      label: `${formulationCountry.country_name || "Country"} - ${formulationCountry.formulation_code || ""}`,
+      label: useGroup.use_group_name || `Use Group ${useGroup.use_group_variant || ""}`,
     },
   ];
 
@@ -90,11 +84,10 @@ export default async function FormulationCountryDetailPage({
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold">
-              {formulationCountry.display_name || 
-               `${formulationCountry.formulation_code || ""} - ${formulationCountry.country_name || ""}`}
+              {useGroup.use_group_name || `Use Group ${useGroup.use_group_variant || ""}`}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Formulation registration and business case details for {formulationCountry.country_name}
+              Use group details and business case information
             </p>
           </div>
         </div>
@@ -151,23 +144,23 @@ export default async function FormulationCountryDetailPage({
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Globe className="h-4 w-4" />
+                <FileText className="h-4 w-4" />
                 Registration Status
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              {formulationCountry.country_status ? (
+              {useGroup.use_group_status ? (
                 <Badge
                   variant={
-                    formulationCountry.country_status === "Approved"
+                    useGroup.use_group_status === "Approved"
                       ? "default"
-                      : formulationCountry.country_status === "Submitted"
+                      : useGroup.use_group_status === "Submitted"
                       ? "secondary"
                       : "outline"
                   }
                   className="text-sm"
                 >
-                  {formulationCountry.country_status}
+                  {useGroup.use_group_status}
                 </Badge>
               ) : (
                 <p className="text-sm text-muted-foreground">Not Started</p>
@@ -177,164 +170,186 @@ export default async function FormulationCountryDetailPage({
         </div>
 
         <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
-          {/* Formulation & Country Info */}
+          {/* Use Group Information */}
           <Card>
             <CardHeader className="space-y-1.5">
-              <CardTitle>Formulation & Country</CardTitle>
-              <CardDescription>Product and market information</CardDescription>
+              <CardTitle>Use Group Information</CardTitle>
+              <CardDescription>Use group details and variant information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
-                {formulationCountry.formulation_id && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground">Use Group Name</p>
+                  <p className="text-sm font-medium">{useGroup.use_group_name || "—"}</p>
+                </div>
+
+                {useGroup.use_group_variant && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Variant</p>
+                    <Badge variant="secondary">{useGroup.use_group_variant}</Badge>
+                  </div>
+                )}
+
+                {useGroup.formulation_id && (
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">Formulation</p>
                     <Button variant="link" className="h-auto p-0" asChild>
-                      <Link href={`/formulations/${formulationCountry.formulation_id}`}>
+                      <Link href={`/portfolio/formulations/${useGroup.formulation_id}`}>
                         <Package className="mr-2 h-4 w-4" />
-                        {formulationCountry.formulation_code}
-                        {formulationCountry.product_name && ` - ${formulationCountry.product_name}`}
+                        {useGroup.formulation_code}
+                        {useGroup.formulation_name && ` - ${useGroup.formulation_name}`}
                       </Link>
                     </Button>
                   </div>
                 )}
 
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Country</p>
-                  <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm">{formulationCountry.country_name}</p>
-                    {formulationCountry.country_code && (
-                      <Badge variant="outline" className="text-xs">
-                        {formulationCountry.country_code}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                {formulationCountry.product_category && (
+                {useGroup.formulation_country_id && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Product Category</p>
-                    <p className="text-sm">{formulationCountry.product_category}</p>
+                    <p className="text-xs font-medium text-muted-foreground">Formulation-Country</p>
+                    <Button variant="link" className="h-auto p-0" asChild>
+                      <Link href={`/formulation-countries/${useGroup.formulation_country_id}`}>
+                        <Globe className="mr-2 h-4 w-4" />
+                        {useGroup.country_name}
+                        {useGroup.formulation_code && ` - ${useGroup.formulation_code}`}
+                      </Link>
+                    </Button>
                   </div>
                 )}
 
-                {formulationCountry.formulation_type && (
+                {useGroup.country_name && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Formulation Type</p>
-                    <p className="text-sm">{formulationCountry.formulation_type}</p>
+                    <p className="text-xs font-medium text-muted-foreground">Country</p>
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <p className="text-sm">{useGroup.country_name}</p>
+                      {useGroup.country_code && (
+                        <Badge variant="outline" className="text-xs">
+                          {useGroup.country_code}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {useGroup.reference_product_name && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Reference Product</p>
+                    <p className="text-sm">{useGroup.reference_product_name}</p>
+                    {useGroup.reference_manufacturer && (
+                      <p className="text-xs text-muted-foreground">
+                        {useGroup.reference_manufacturer}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {useGroup.use_group_crops && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Crops</p>
+                    <p className="text-sm">{useGroup.use_group_crops}</p>
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Registration Details */}
+          {/* Registration Timeline */}
           <Card>
             <CardHeader className="space-y-1.5">
-              <CardTitle>Registration Details</CardTitle>
-              <CardDescription>Regulatory and market entry information</CardDescription>
+              <CardTitle>Registration Timeline</CardTitle>
+              <CardDescription>Submission, approval, and market entry dates</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-muted-foreground">Registration Status</p>
-                  {formulationCountry.country_status ? (
+                  {useGroup.use_group_status ? (
                     <Badge
                       variant={
-                        formulationCountry.country_status === "Approved"
+                        useGroup.use_group_status === "Approved"
                           ? "default"
-                          : formulationCountry.country_status === "Submitted"
+                          : useGroup.use_group_status === "Submitted"
                           ? "secondary"
                           : "outline"
                       }
                     >
-                      {formulationCountry.country_status}
+                      {useGroup.use_group_status}
                     </Badge>
                   ) : (
                     <p className="text-sm">Not Started</p>
                   )}
                 </div>
 
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Has Approval</p>
-                  {formulationCountry.country_status ? (
-                    <Badge variant="default" className="flex items-center gap-1 w-fit">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Yes
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="flex items-center gap-1 w-fit">
-                      <XCircle className="h-3 w-3" />
-                      No
-                    </Badge>
-                  )}
-                </div>
-
-                {formulationCountry.likely_registration_pathway && (
-                  <div className="space-y-1 col-span-2">
-                    <p className="text-xs font-medium text-muted-foreground">Registration Pathway</p>
-                    <p className="text-sm">{formulationCountry.likely_registration_pathway}</p>
-                  </div>
-                )}
-
-                {formulationCountry.target_market_entry_fy && (
-                  <div className="space-y-1 col-span-2">
-                    <p className="text-xs font-medium text-muted-foreground">Target Market Entry</p>
-                    <p className="text-sm font-medium">{formulationCountry.target_market_entry_fy}</p>
-                  </div>
-                )}
-
-                {formulationCountry.earliest_market_entry_date && (
-                  <div className="space-y-1 col-span-2">
-                    <p className="text-xs font-medium text-muted-foreground">EMD</p>
+                {useGroup.earliest_actual_submission_date && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Earliest Submission Date</p>
                     <p className="text-sm flex items-center gap-2">
                       <Calendar className="h-3 w-3" />
-                      {new Date(formulationCountry.earliest_market_entry_date).toLocaleDateString()}
+                      {new Date(useGroup.earliest_actual_submission_date).toLocaleDateString()}
                     </p>
                   </div>
                 )}
 
-                {formulationCountry.is_novel !== null && (
+                {useGroup.earliest_actual_submission_date && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Is Novel</p>
-                    <Badge variant={formulationCountry.is_novel ? "default" : "outline"}>
-                      {formulationCountry.is_novel ? "Yes" : "No"}
-                    </Badge>
+                    <p className="text-xs font-medium text-muted-foreground">Actual Submission Date</p>
+                    <p className="text-sm flex items-center gap-2">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(useGroup.earliest_actual_submission_date).toLocaleDateString()}
+                    </p>
                   </div>
                 )}
 
-{/* Active Portfolio field removed from schema */}
+                {useGroup.earliest_actual_approval_date && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Earliest Approval Date</p>
+                    <p className="text-sm flex items-center gap-2">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(useGroup.earliest_actual_approval_date).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+
+                {useGroup.earliest_actual_approval_date && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Actual Approval Date</p>
+                    <p className="text-sm flex items-center gap-2">
+                      <CheckCircle2 className="h-3 w-3 text-green-600" />
+                      {new Date(useGroup.earliest_actual_approval_date).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+
+{/* earliest_market_entry_date field not available in use group view */}
+
+{/* actual_market_entry_date field not available in use group view */}
+
+                {useGroup.is_active !== null && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Is Active</p>
+                    <Badge variant={useGroup.is_active ? "default" : "outline"}>
+                      {useGroup.is_active ? "Yes" : "No"}
+                    </Badge>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
-
-        {/* Revenue Chart */}
-        {businessCases.length > 0 && (
-          <Card className="mt-6">
-            <CardHeader className="space-y-1.5">
-              <CardTitle>Revenue Projections</CardTitle>
-              <CardDescription>Financial projections by fiscal year for this formulation-country</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RevenueChart businessCases={businessCases} />
-            </CardContent>
-          </Card>
-        )}
 
         {/* Business Cases */}
         {businessCases.length > 0 && (
           <Card className="mt-6">
             <CardHeader className="space-y-1.5">
               <CardTitle>Business Cases</CardTitle>
-              <CardDescription>Financial projections for this formulation-country</CardDescription>
+              <CardDescription>Financial projections for this use group</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {businessCases.map((bc) => (
                   <Link
                     key={bc.business_case_id}
-                    href={`/business-cases/${bc.business_case_id}`}
+                    href={`/portfolio/business-cases/${bc.business_case_id}`}
                     className="block p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-start justify-between">
@@ -361,31 +376,6 @@ export default async function FormulationCountryDetailPage({
                   </Link>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Additional Info */}
-        {(formulationCountry.targets_treated || 
-          formulationCountry.crop_categories) && (
-          <Card className="mt-6">
-            <CardHeader className="space-y-1.5">
-              <CardTitle>Additional Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {formulationCountry.targets_treated && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Targets Treated</p>
-                  <p className="text-sm">{formulationCountry.targets_treated}</p>
-                </div>
-              )}
-              {formulationCountry.crop_categories && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Crop Categories</p>
-                  <p className="text-sm">{formulationCountry.crop_categories}</p>
-                </div>
-              )}
-{/* reference_product_name field removed from schema */}
             </CardContent>
           </Card>
         )}

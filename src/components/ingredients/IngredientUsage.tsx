@@ -157,7 +157,7 @@ export function IngredientUsage({ ingredients }: IngredientUsageProps) {
                 {criticalIngredients.slice(0, 5).map((ing) => (
                   <li key={ing.ingredient_id}>
                     <Link
-                      href={`/active-ingredients/${ing.ingredient_id}`}
+                      href={`/portfolio/active-ingredients/${ing.ingredient_id}`}
                       className="text-primary hover:underline font-medium"
                     >
                       {ing.ingredient_name}
@@ -183,7 +183,7 @@ export function IngredientUsage({ ingredients }: IngredientUsageProps) {
                 {highRiskIngredients.slice(0, 5).map((ing) => (
                   <li key={ing.ingredient_id}>
                     <Link
-                      href={`/active-ingredients/${ing.ingredient_id}`}
+                      href={`/portfolio/active-ingredients/${ing.ingredient_id}`}
                       className="text-primary hover:underline font-medium"
                     >
                       {ing.ingredient_name}

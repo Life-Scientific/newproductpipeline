@@ -27,7 +27,7 @@ const columns: ColumnDef<Formulation>[] = [
       
       return (
         <Link
-          href={`/formulations/${id}`}
+          href={`/portfolio/formulations/${id}`}
           className="block hover:opacity-80 transition-opacity"
         >
           <div className="font-semibold text-primary hover:underline">

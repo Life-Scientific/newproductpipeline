@@ -135,7 +135,7 @@ export default async function FormulationDetailPage({
             </p>
           </div>
           <Button asChild variant="outline">
-            <Link href={`/formulations/${id}/hierarchy`}>
+            <Link href={`/portfolio/formulations/${id}/hierarchy`}>
               <Network className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">View Tree</span>
               <span className="sm:hidden">Tree</span>
@@ -349,7 +349,7 @@ export default async function FormulationDetailPage({
                       return (
                         <Link
                           key={detail.formulation_country_id}
-                          href={`/formulations/${id}?country=${encodeURIComponent(detail.country_name || '')}`}
+                          href={`/portfolio/formulations/${id}?country=${encodeURIComponent(detail.country_name || '')}`}
                           className="block"
                         >
                           <div className="p-4 border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all cursor-pointer">

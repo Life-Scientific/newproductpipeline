@@ -212,7 +212,7 @@ export default async function BusinessCaseDetailPage({
                     </p>
                     {businessCase.formulation_id ? (
                       <Button variant="link" className="h-auto p-0" asChild>
-                        <Link href={`/formulations/${businessCase.formulation_id}`}>
+                        <Link href={`/portfolio/formulations/${businessCase.formulation_id}`}>
                           <Package className="mr-2 h-4 w-4" />
                           {businessCase.formulation_code}
                           {businessCase.formulation_name &&
@@ -257,7 +257,7 @@ export default async function BusinessCaseDetailPage({
                       Use Group
                     </p>
                     <Button variant="link" className="h-auto p-0" asChild>
-                      <Link href={`/use-groups/${businessCase.formulation_country_use_group_id}`}>
+                      <Link href={`/portfolio/use-groups/${businessCase.formulation_country_use_group_id}`}>
                         <FileText className="mr-2 h-4 w-4" />
                         {businessCase.use_group_name}
                         {businessCase.use_group_variant && (

@@ -202,7 +202,7 @@ export function MarketDetailDashboard({
             {metrics.formulationDetails.map((form) => (
               <Link
                 key={form.id}
-                href={`/formulations/${form.id}`}
+                href={`/portfolio/formulations/${form.id}`}
                 className="block"
               >
                 <Card className="hover:bg-muted/50 transition-colors cursor-pointer">

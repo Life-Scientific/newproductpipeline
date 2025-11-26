@@ -205,7 +205,7 @@ export function CountryList({ countries }: CountryListProps) {
           return (
             <Link
               key={country.country_id}
-              href={`/countries/${country.country_id}`}
+              href={`/portfolio/countries/${country.country_id}`}
               className="group"
             >
               <Card className="h-full transition-all hover:shadow-md hover:border-primary/30 group-hover:bg-muted/30">

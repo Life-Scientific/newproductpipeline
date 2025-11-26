@@ -276,7 +276,7 @@ export default async function ActiveIngredientDetailPage({
                               <TableCell className="font-medium">
                                 {formulation.formulation_id ? (
                                   <Link
-                                    href={`/formulations/${formulation.formulation_id}`}
+                                    href={`/portfolio/formulations/${formulation.formulation_id}`}
                                     className="text-primary hover:underline text-sm"
                                   >
                                     {formulation.formulation_code || "—"}

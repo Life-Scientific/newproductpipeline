@@ -231,7 +231,7 @@ export function PipelineTrackerDashboard({
         const activeIngredients = formulation.active_ingredients;
         return (
           <Link 
-            href={`/formulations/${formulation.formulation_id}`}
+            href={`/portfolio/formulations/${formulation.formulation_id}`}
             className="flex flex-col hover:underline group/cell"
             onClick={(e) => e.stopPropagation()}
           >
@@ -413,7 +413,7 @@ export function PipelineTrackerDashboard({
       id: "actions",
       header: "",
       cell: ({ row }) => (
-        <Link href={`/formulations/${row.original.formulation_id}`}>
+        <Link href={`/portfolio/formulations/${row.original.formulation_id}`}>
           <Button variant="ghost" size="icon" className="h-6 w-6">
             <ChevronRight className="h-3 w-3" />
           </Button>

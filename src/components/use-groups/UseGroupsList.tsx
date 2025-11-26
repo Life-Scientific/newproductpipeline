@@ -240,7 +240,7 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
                               asChild
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <Link href={`/formulations/${group.formulationId}`}>
+                              <Link href={`/portfolio/formulations/${group.formulationId}`}>
                                 View
                               </Link>
                             </Button>
@@ -270,7 +270,7 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
                                   className="flex items-center justify-between p-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors group"
                                 >
                                   <Link
-                                    href={`/use-groups/${ug.formulation_country_use_group_id}`}
+                                    href={`/portfolio/use-groups/${ug.formulation_country_use_group_id}`}
                                     className="flex items-center gap-2 flex-1 min-w-0"
                                   >
                                     <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -329,7 +329,7 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/use-groups/${ug.formulation_country_use_group_id}`}
+                      href={`/portfolio/use-groups/${ug.formulation_country_use_group_id}`}
                       className="font-medium text-sm hover:text-primary hover:underline truncate"
                     >
                       {ug.use_group_name || `Variant ${ug.use_group_variant}`}

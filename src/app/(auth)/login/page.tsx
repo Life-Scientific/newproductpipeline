@@ -12,6 +12,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Suspense } from "react";
 import { AuthLayout } from "@/components/auth/AuthLayout";
+import { WORKSPACE_BASE } from "@/lib/routes";
 
 // Microsoft logo SVG component
 function MicrosoftLogo({ className }: { className?: string }) {
@@ -59,7 +60,7 @@ function LoginContent() {
       setLoading(false);
     } else {
       // Use window.location for full page reload to ensure cookies are set
-      window.location.href = "/";
+      window.location.href = WORKSPACE_BASE;
     }
   };
 

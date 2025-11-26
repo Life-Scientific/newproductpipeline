@@ -208,7 +208,7 @@ export function PipelineTrackerTreeView({
                           </Button>
                         </CollapsibleTrigger>
                         <Link
-                          href={`/formulations/${formulation.formulation_id}`}
+                          href={`/portfolio/formulations/${formulation.formulation_id}`}
                           className="flex-1"
                         >
                           <Button
@@ -333,7 +333,7 @@ export function PipelineTrackerTreeView({
                                                       </Button>
                                                     </CollapsibleTrigger>
                                                     <Link
-                                                      href={`/use-groups/${useGroupId}`}
+                                                      href={`/portfolio/use-groups/${useGroupId}`}
                                                       className="flex-1"
                                                     >
                                                       <Button
@@ -366,7 +366,7 @@ export function PipelineTrackerTreeView({
                                                         useGroupBusinessCases.map((bc) => (
                                                           <Link
                                                             key={bc.business_case_id}
-                                                            href={`/business-cases/${bc.business_case_id}`}
+                                                            href={`/portfolio/business-cases/${bc.business_case_id}`}
                                                           >
                                                             <Button
                                                               variant="ghost"

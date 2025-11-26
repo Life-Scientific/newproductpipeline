@@ -118,7 +118,7 @@ export default async function Home() {
           ? `${change.old_status} → ${change.new_status}`
           : undefined,
         user: change.changed_by,
-        href: `/formulations/${formulation?.formulation_id}`,
+        href: `/portfolio/formulations/${formulation?.formulation_id}`,
       };
     }) || [];
 
@@ -141,37 +141,37 @@ export default async function Home() {
           title="Total Formulations"
           value={totalFormulations}
           subtitle={`${activeFormulations} selected, ${monitoringFormulations} monitoring`}
-          href="/formulations"
+          href="/portfolio/formulations"
         />
         <MetricCard
           title="Active Portfolio"
           value={activePortfolio?.length || 0}
           subtitle="Currently selling products"
-          href="/formulations?filter=active"
+          href="/portfolio/formulations?filter=active"
         />
         <MetricCard
           title="Total Business Cases"
           value={totalBusinessCases}
           subtitle={`$${(totalRevenue / 1000000).toFixed(1)}M projected revenue`}
-          href="/business-cases"
+          href="/portfolio/business-cases"
         />
         <MetricCard
           title="Average Margin %"
           value={`${avgMarginPercent.toFixed(1)}%`}
           subtitle="Across all business cases"
-          href="/business-cases?sort=margin"
+          href="/portfolio/business-cases?sort=margin"
         />
         <MetricCard
           title="Countries Covered"
           value={uniqueCountries}
           subtitle="Active business cases"
-          href="/business-cases?view=countries"
+          href="/portfolio/business-cases?view=countries"
         />
         <MetricCard
           title="Active Registrations"
           value={registrationCount}
           subtitle="In registration pipeline"
-          href="/registration"
+          href="/portfolio/registration"
         />
       </CardGrid>
 
@@ -190,7 +190,7 @@ export default async function Home() {
           variant="list"
           action={
             <Link
-              href="/business-cases"
+              href="/portfolio/business-cases"
               className="text-sm text-primary hover:underline"
             >
               View all →
@@ -209,7 +209,7 @@ export default async function Home() {
               {businessCases.length > 5 && (
                 <div className="pt-2 border-t">
                   <Link
-                    href="/business-cases"
+                    href="/portfolio/business-cases"
                     className="text-sm text-primary hover:underline block text-center font-medium"
                   >
                     View all {businessCases.length} business cases →
@@ -231,7 +231,7 @@ export default async function Home() {
         variant="table"
         action={
           <Link
-            href="/formulations"
+            href="/portfolio/formulations"
             className="text-sm text-primary hover:underline"
           >
             View all →

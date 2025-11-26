@@ -59,7 +59,7 @@ export function FormulationHierarchyView({
         <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
           <FileText className="h-4 w-4 text-primary" />
           <Link
-            href={`/formulations/${formulationId}`}
+            href={`/portfolio/formulations/${formulationId}`}
             className="font-semibold text-primary hover:underline"
           >
             {formulationCode} - {formulationName}
@@ -113,7 +113,7 @@ export function FormulationHierarchyView({
                           {countryUseGroups.map((useGroup) => (
                             <Link
                               key={useGroup.formulation_country_use_group_id}
-                              href={`/formulations/${formulationId}?country=${countryId}&use-group=${useGroup.formulation_country_use_group_id}`}
+                              href={`/portfolio/formulations/${formulationId}?country=${countryId}&use-group=${useGroup.formulation_country_use_group_id}`}
                               className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors"
                             >
                               <FileText className="h-3 w-3 text-muted-foreground" />

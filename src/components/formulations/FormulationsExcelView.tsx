@@ -100,7 +100,7 @@ const ALL_COLUMNS: ColumnDef[] = [
     accessor: (row) => row.formulation_code,
     minWidth: 140,
     render: (value, row) => (
-      <Link href={`/formulations/${row.formulation_id}`} className="text-primary hover:underline font-medium">
+      <Link href={`/portfolio/formulations/${row.formulation_id}`} className="text-primary hover:underline font-medium">
         {value || "—"}
       </Link>
     ),
@@ -125,7 +125,7 @@ const ALL_COLUMNS: ColumnDef[] = [
     editType: "text",
     minWidth: 220,
     render: (value, row) => (
-      <Link href={`/formulations/${row.formulation_id}`} className="text-primary hover:underline">
+      <Link href={`/portfolio/formulations/${row.formulation_id}`} className="text-primary hover:underline">
         {value || "—"}
       </Link>
     ),

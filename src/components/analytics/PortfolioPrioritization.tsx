@@ -213,7 +213,7 @@ export function PortfolioPrioritization({
                   </TableCell>
                   <TableCell className="font-medium">
                     <Link
-                      href={`/formulations/${row.formulation.formulation_id}`}
+                      href={`/portfolio/formulations/${row.formulation.formulation_id}`}
                       className="hover:underline"
                     >
                       {row.formulation.product_name}
@@ -263,7 +263,7 @@ export function PortfolioPrioritization({
                   </TableCell>
                   <TableCell>
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/formulations/${row.formulation.formulation_id}`}>View</Link>
+                      <Link href={`/portfolio/formulations/${row.formulation.formulation_id}`}>View</Link>
                     </Button>
                   </TableCell>
                 </TableRow>

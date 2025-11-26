@@ -72,6 +72,7 @@ import { useForesightInit, usePrefetchOnIntent } from "@/hooks/use-prefetch-on-i
 import type { WorkspaceMenuItem } from "@/lib/actions/workspaces";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { cn } from "@/lib/utils";
+import { routes, WORKSPACE_BASE } from "@/lib/routes";
 
 // Icon map for dynamic icon lookup - only includes icons actually used in menus
 const iconMap: Record<string, LucideIcon> = {
@@ -188,8 +189,8 @@ export function AppSidebar() {
   };
 
   const isActive = (url: string) => {
-    if (url === "/") {
-      return pathname === "/";
+    if (url === WORKSPACE_BASE) {
+      return pathname === WORKSPACE_BASE;
     }
     return pathname?.startsWith(url);
   };
@@ -478,7 +479,7 @@ export function AppSidebar() {
                 </DropdownMenuSub>
                 
                 <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/settings" className="flex items-center gap-2">
+                  <Link href={routes.settings()} className="flex items-center gap-2">
                     <Settings className="h-4 w-4" />
                     <span>Settings</span>
                   </Link>
