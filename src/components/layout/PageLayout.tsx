@@ -1,8 +1,8 @@
 "use client";
 
-import { AnimatedPage } from "@/components/layout/AnimatedPage";
+import { AnimatedPage, AnimatedPageStagger, AnimatedItem } from "@/components/layout/AnimatedPage";
 import { cn } from "@/lib/utils";
-import type { ReactNode } from "react";
+import { Children, type ReactNode } from "react";
 import { triggerEasterEgg } from "@/components/easter-eggs/KonamiCode";
 
 export interface PageLayoutProps {
@@ -12,6 +12,8 @@ export interface PageLayoutProps {
   variant?: "single" | "multi";
   children: ReactNode;
   className?: string;
+  /** Enable staggered entrance animation for children (default: true for multi variant) */
+  stagger?: boolean;
 }
 
 export function PageLayout({
@@ -21,11 +23,34 @@ export function PageLayout({
   variant = "multi",
   children,
   className,
+  stagger,
 }: PageLayoutProps) {
   const containerClass =
     variant === "single"
       ? "container mx-auto p-4 sm:p-6"
       : "container mx-auto p-4 sm:p-6";
+
+  // Default stagger to true for multi variant
+  const shouldStagger = stagger ?? variant === "multi";
+
+  // Wrap children in AnimatedItem for staggered animation
+  const staggeredChildren = shouldStagger ? (
+    <AnimatedPageStagger
+      className={variant === "multi" ? "flex flex-col" : ""}
+      style={variant === "multi" ? { gap: "24px" } as React.CSSProperties : undefined}
+    >
+      {Children.map(children, (child, index) => (
+        <AnimatedItem key={index}>{child}</AnimatedItem>
+      ))}
+    </AnimatedPageStagger>
+  ) : (
+    <div 
+      className={variant === "multi" ? "flex flex-col" : ""}
+      style={variant === "multi" ? { gap: "24px" } as React.CSSProperties : undefined}
+    >
+      {children}
+    </div>
+  );
 
   return (
     <div className={cn(containerClass, className)}>
@@ -55,14 +80,7 @@ export function PageLayout({
           </div>
           {action && <div className="flex-shrink-0">{action}</div>}
         </div>
-        <div 
-          className={variant === "multi" ? "flex flex-col" : ""}
-          style={variant === "multi" ? {
-            gap: "24px",
-          } as React.CSSProperties : undefined}
-        >
-          {children}
-        </div>
+        {staggeredChildren}
       </AnimatedPage>
     </div>
   );

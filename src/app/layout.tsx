@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProviderWrapper } from "@/components/providers/ThemeProviderWrapper";
 import { KonamiCode } from "@/components/easter-eggs/KonamiCode";
+import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,6 +70,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{ __html: themeScript }}
         />
+        <script async src="https://tally.so/widgets/embed.js"></script>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -77,6 +79,7 @@ export default function RootLayout({
           {children}
           <Toaster />
           <KonamiCode />
+          <FeedbackButton />
         </ThemeProviderWrapper>
       </body>
     </html>

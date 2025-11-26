@@ -1,7 +1,9 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AnimatedNumber, AnimatedPercentage } from "@/components/ui/animated-number";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import type { ReactNode } from "react";
 
 export interface MetricCardProps {
   title: string;
@@ -14,6 +16,8 @@ export interface MetricCardProps {
   };
   href?: string;
   className?: string;
+  /** Disable number animation (useful for non-numeric values) */
+  disableAnimation?: boolean;
 }
 
 export function MetricCard({
@@ -23,29 +27,43 @@ export function MetricCard({
   trend,
   href,
   className,
+  disableAnimation = false,
 }: MetricCardProps) {
+  // Determine if value is a number that can be animated
+  const numericValue = typeof value === "number" ? value : null;
+  const isPercentage = typeof value === "string" && value.endsWith("%");
+  const percentageValue = isPercentage ? parseFloat(value) : null;
+
   const content = (
-    <Card className={cn(className)}>
+    <Card interactive={!!href} className={cn(className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-1">
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-bold tabular-nums">
+          {!disableAnimation && numericValue !== null ? (
+            <AnimatedNumber value={numericValue} />
+          ) : !disableAnimation && percentageValue !== null ? (
+            <AnimatedPercentage value={percentageValue} decimals={1} />
+          ) : (
+            value
+          )}
+        </div>
         {subtitle && (
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         )}
         {trend && (
           <div
             className={cn(
-              "text-xs flex items-center gap-1",
+              "text-xs flex items-center gap-1 font-medium",
               trend.direction === "up" && "text-green-600 dark:text-green-400",
               trend.direction === "down" && "text-red-600 dark:text-red-400",
               trend.direction === "neutral" && "text-muted-foreground"
             )}
           >
-            <span>{trend.direction === "up" ? "↑" : trend.direction === "down" ? "↓" : "→"}</span>
+            <span className="text-base">{trend.direction === "up" ? "↑" : trend.direction === "down" ? "↓" : "→"}</span>
             <span>{trend.value}%</span>
-            <span className="text-muted-foreground">{trend.label}</span>
+            <span className="text-muted-foreground font-normal">{trend.label}</span>
           </div>
         )}
       </CardContent>
@@ -54,7 +72,7 @@ export function MetricCard({
 
   if (href) {
     return (
-      <Link href={href} className="block hover:opacity-80 transition-opacity">
+      <Link href={href} className="block group">
         {content}
       </Link>
     );

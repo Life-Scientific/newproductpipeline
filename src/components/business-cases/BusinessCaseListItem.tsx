@@ -42,7 +42,7 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
     : businessCase.business_case_id;
 
   return (
-    <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors gap-4 group">
+    <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 hover:border-primary/20 hover:shadow-sm transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] gap-4 group">
       <Link
         href={linkId ? `/business-cases/${linkId}` : "/business-cases"}
         className="flex-1 min-w-0 space-y-1 group/link"

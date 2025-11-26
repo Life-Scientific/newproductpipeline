@@ -156,7 +156,13 @@ export function IngredientUsage({ ingredients }: IngredientUsageProps) {
               <ul className="space-y-1 text-sm">
                 {criticalIngredients.slice(0, 5).map((ing) => (
                   <li key={ing.ingredient_id}>
-                    {ing.ingredient_name} ({ing.formulation_count} formulations)
+                    <Link
+                      href={`/active-ingredients/${ing.ingredient_id}`}
+                      className="text-primary hover:underline font-medium"
+                    >
+                      {ing.ingredient_name}
+                    </Link>{" "}
+                    ({ing.formulation_count} formulations)
                   </li>
                 ))}
                 {criticalIngredients.length > 5 && (
@@ -176,7 +182,13 @@ export function IngredientUsage({ ingredients }: IngredientUsageProps) {
               <ul className="space-y-1 text-sm">
                 {highRiskIngredients.slice(0, 5).map((ing) => (
                   <li key={ing.ingredient_id}>
-                    {ing.ingredient_name} ({ing.formulation_count} formulations)
+                    <Link
+                      href={`/active-ingredients/${ing.ingredient_id}`}
+                      className="text-primary hover:underline font-medium"
+                    >
+                      {ing.ingredient_name}
+                    </Link>{" "}
+                    ({ing.formulation_count} formulations)
                   </li>
                 ))}
                 {highRiskIngredients.length > 5 && (

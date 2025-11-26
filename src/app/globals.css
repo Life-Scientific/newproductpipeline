@@ -169,6 +169,34 @@
   }
 }
 
+/* Custom keyframe animations for polish effects */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes pulse-ring {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(var(--ring-rgb, 59, 130, 246), 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(var(--ring-rgb, 59, 130, 246), 0);
+  }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
 /* Dotted background pattern for default light theme ONLY - applied globally */
 html[data-theme="light"]:not(.dark) body {
   background-color: #fafafa !important;

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -29,6 +30,19 @@ export function useSidebarContext() {
     throw new Error("useSidebar must be used within a SidebarProvider");
   }
   return context;
+}
+
+// Hover indicator context for sliding highlight effect
+type HoverIndicatorState = {
+  hoveredRect: DOMRect | null;
+  containerRef: React.RefObject<HTMLUListElement | null>;
+  setHoveredRect: (rect: DOMRect | null) => void;
+};
+
+const HoverIndicatorContext = React.createContext<HoverIndicatorState | null>(null);
+
+function useHoverIndicator() {
+  return React.useContext(HoverIndicatorContext);
 }
 
 const sidebarVariants = cva(
@@ -376,7 +390,7 @@ const SidebarGroupAction = React.forwardRef<
       ref={asChild ? ref : (ref as React.Ref<HTMLButtonElement>)}
       data-sidebar="group-action"
       className={cn(
-        "absolute right-3 top-3.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+        "absolute right-3 top-3.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-[transform,background-color,color] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
         className
       )}
       {...props}
@@ -405,17 +419,69 @@ const SidebarMenu = React.forwardRef<
   React.ComponentProps<"ul">
 >(({ className, ...props }, ref) => {
   const { state } = useSidebarContext();
+  const containerRef = React.useRef<HTMLUListElement | null>(null);
+  const [hoveredRect, setHoveredRect] = React.useState<DOMRect | null>(null);
+
+  // Combine refs
+  const setRefs = React.useCallback(
+    (node: HTMLUListElement | null) => {
+      containerRef.current = node;
+      if (typeof ref === "function") {
+        ref(node);
+      } else if (ref) {
+        ref.current = node;
+      }
+    },
+    [ref]
+  );
+
+  const contextValue = React.useMemo(
+    () => ({ hoveredRect, containerRef, setHoveredRect }),
+    [hoveredRect]
+  );
+
   return (
-    <ul
-      ref={ref}
-      data-sidebar="menu"
-      className={cn(
-        "flex min-w-0 flex-col gap-0.5",
-        state === "collapsed" ? "w-auto items-center" : "w-full",
-        className
-      )}
-      {...props}
-    />
+    <HoverIndicatorContext.Provider value={contextValue}>
+      <ul
+        ref={setRefs}
+        data-sidebar="menu"
+        className={cn(
+          "relative flex min-w-0 flex-col gap-0.5",
+          state === "collapsed" ? "w-auto items-center" : "w-full",
+          className
+        )}
+        onMouseLeave={() => setHoveredRect(null)}
+        {...props}
+      >
+        {/* Sliding hover indicator */}
+        <AnimatePresence>
+          {hoveredRect && containerRef.current && (
+            <motion.div
+              className="pointer-events-none absolute left-0 right-0 z-0 rounded-lg bg-sidebar-accent"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: hoveredRect.top - containerRef.current.getBoundingClientRect().top,
+                height: hoveredRect.height,
+              }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{
+                type: "spring",
+                stiffness: 500,
+                damping: 35,
+                mass: 0.5,
+              }}
+              style={{
+                width: state === "collapsed" ? hoveredRect.width : "100%",
+                marginLeft: state === "collapsed" ? (containerRef.current.getBoundingClientRect().width - hoveredRect.width) / 2 : 0,
+              }}
+            />
+          )}
+        </AnimatePresence>
+        {props.children}
+      </ul>
+    </HoverIndicatorContext.Provider>
   );
 });
 SidebarMenu.displayName = "SidebarMenu";
@@ -423,12 +489,39 @@ SidebarMenu.displayName = "SidebarMenu";
 const SidebarMenuItem = React.forwardRef<
   HTMLLIElement,
   React.ComponentProps<"li">
->(({ className, ...props }, ref) => {
+>(({ className, onMouseEnter, ...props }, ref) => {
+  const itemRef = React.useRef<HTMLLIElement | null>(null);
+  const hoverContext = useHoverIndicator();
+
+  // Combine refs
+  const setRefs = React.useCallback(
+    (node: HTMLLIElement | null) => {
+      itemRef.current = node;
+      if (typeof ref === "function") {
+        ref(node);
+      } else if (ref) {
+        ref.current = node;
+      }
+    },
+    [ref]
+  );
+
+  const handleMouseEnter = React.useCallback(
+    (e: React.MouseEvent<HTMLLIElement>) => {
+      onMouseEnter?.(e);
+      if (itemRef.current && hoverContext) {
+        hoverContext.setHoveredRect(itemRef.current.getBoundingClientRect());
+      }
+    },
+    [onMouseEnter, hoverContext]
+  );
+
   return (
     <li
-      ref={ref}
+      ref={setRefs}
       data-sidebar="menu-item"
-      className={cn("group/menu-item relative", className)}
+      className={cn("group/menu-item relative z-10", className)}
+      onMouseEnter={handleMouseEnter}
       {...props}
     />
   );
@@ -436,13 +529,13 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem";
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button relative flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 text-left text-sm outline-none ring-sidebar-ring transition-all duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[active=true]:before:absolute data-[active=true]:before:left-0 data-[active=true]:before:top-1/2 data-[active=true]:before:-translate-y-1/2 data-[active=true]:before:h-5 data-[active=true]:before:w-0.5 data-[active=true]:before:rounded-full data-[active=true]:before:bg-primary data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]/sidebar-wrapper:!w-9 group-data-[collapsible=icon]/sidebar-wrapper:!px-0 group-data-[collapsible=icon]/sidebar-wrapper:justify-center [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+  "peer/menu-button relative flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 text-left text-sm outline-none ring-sidebar-ring transition-[color,transform] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:text-sidebar-accent-foreground focus-visible:ring-2 active:text-sidebar-accent-foreground active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[active=true]:before:absolute data-[active=true]:before:left-0 data-[active=true]:before:top-1/2 data-[active=true]:before:-translate-y-1/2 data-[active=true]:before:h-5 data-[active=true]:before:w-0.5 data-[active=true]:before:rounded-full data-[active=true]:before:bg-primary data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]/sidebar-wrapper:!w-9 group-data-[collapsible=icon]/sidebar-wrapper:!px-0 group-data-[collapsible=icon]/sidebar-wrapper:justify-center [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:transition-[color,transform] [&>svg]:duration-[250ms] [&>svg]:ease-[cubic-bezier(0.4,0,0.2,1)]",
   {
     variants: {
       variant: {
-        default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+        default: "hover:text-sidebar-accent-foreground",
         outline:
-          "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
+          "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
       size: {
         default: "h-9 text-sm",
@@ -530,7 +623,7 @@ const SidebarMenuAction = React.forwardRef<
       ref={asChild ? ref : (ref as React.Ref<HTMLButtonElement>)}
       data-sidebar="menu-action"
       className={cn(
-        "absolute right-2 top-1/2 flex aspect-square w-5 -translate-y-1/2 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0",
+        "absolute right-2 top-1/2 flex aspect-square w-5 -translate-y-1/2 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-[transform,background-color,color] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0",
         "peer-data-[size=sm]/menu-button:top-1/2",
         "peer-data-[size=default]/menu-button:top-1/2",
         "peer-data-[size=lg]/menu-button:top-1/2",
@@ -633,7 +726,7 @@ const SidebarMenuSubButton = React.forwardRef<
       data-size={size}
       data-active={isActive}
       className={cn(
-        "flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-sidebar-foreground outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-foreground/50",
+        "flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-sidebar-foreground outline-none ring-sidebar-ring transition-[background-color,color,width,height,padding] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[background-color,color] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-foreground/50 [&>svg]:transition-[color] [&>svg]:duration-[250ms] [&>svg]:ease-[cubic-bezier(0.4,0,0.2,1)]",
         size === "sm" && "text-xs",
         size === "md" && "text-sm",
         isActive &&

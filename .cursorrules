@@ -1,0 +1,398 @@
+# Life Scientific Portfolio Management - Cursor Rules
+
+You are working on a Next.js application for managing agrochemical formulation portfolios. This document describes the project conventions, patterns, and constraints you should follow.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **React**: 19 (with Server Components)
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS v4
+- **Components**: shadcn/ui (Radix primitives)
+- **Database**: Supabase (PostgreSQL)
+- **Linting**: Biome
+- **Animations**: Framer Motion
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── (auth)/             # Auth pages (login, signup, accept-invite)
+│   ├── (dashboard)/        # Protected dashboard pages
+│   ├── api/                # API routes
+│   └── globals.css         # Global styles and CSS variables
+├── components/             # React components
+│   ├── ui/                 # shadcn/ui base components
+│   ├── layout/             # Layout components (PageLayout, Sidebar, etc.)
+│   ├── forms/              # Form components for each entity
+│   ├── formulations/       # Formulation-specific components
+│   ├── business-cases/     # Business case components
+│   ├── charts/             # Recharts visualizations
+│   └── [feature]/          # Feature-grouped components
+├── lib/
+│   ├── actions/            # Server actions for mutations
+│   ├── db/                 # Database query functions
+│   ├── supabase/           # Supabase client configuration
+│   └── utils/              # Utility functions
+└── hooks/                  # Custom React hooks
+```
+
+## Page Structure Convention
+
+All dashboard pages follow this pattern:
+
+```tsx
+// src/app/(dashboard)/[feature]/page.tsx
+import { PageLayout } from "@/components/layout/PageLayout";
+import { getData } from "@/lib/db/queries";
+
+export default async function FeaturePage() {
+  const data = await getData();
+  
+  return (
+    <PageLayout
+      title="Page Title"
+      description="Page description"
+      variant="single" // or "multi" for multi-card layouts
+    >
+      {/* Page content */}
+    </PageLayout>
+  );
+}
+```
+
+### PageLayout Variants
+
+- `variant="single"` - Single card pages (lists, tables)
+- `variant="multi"` - Multi-section dashboards with CardGrid
+
+## Component Patterns
+
+### Layout Components
+
+Use these for consistent layouts:
+
+```tsx
+import { PageLayout } from "@/components/layout/PageLayout";
+import { CardGrid } from "@/components/layout/CardGrid";
+import { MetricCard } from "@/components/layout/MetricCard";
+import { ContentCard } from "@/components/layout/ContentCard";
+```
+
+### shadcn/ui Components
+
+Import from `@/components/ui/`:
+
+```tsx
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+```
+
+### Form Pattern
+
+Forms use server actions:
+
+```tsx
+// Component
+import { createItem } from "@/lib/actions/item-actions";
+
+<form action={createItem}>
+  <Input name="fieldName" />
+  <Button type="submit">Save</Button>
+</form>
+```
+
+## Styling Conventions
+
+### Spacing Scale (4px base)
+
+| Class | Value | Usage |
+|-------|-------|-------|
+| `space-y-1` | 4px | Tight spacing |
+| `space-y-2` | 8px | List items |
+| `space-y-3` | 12px | Card content |
+| `gap-4` | 16px | Grid gaps |
+| `gap-6` | 24px | Section gaps |
+
+### Standard Patterns
+
+```tsx
+// Container padding
+className="container mx-auto p-4 sm:p-6"
+
+// Page header
+className="space-y-2 mb-6"
+
+// Card grids
+className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4"
+
+// List items
+className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors gap-4"
+```
+
+### Typography
+
+```tsx
+// Page title
+className="text-2xl sm:text-3xl font-bold"
+
+// Section title
+className="text-xl sm:text-2xl font-bold"
+
+// Card title
+className="text-base sm:text-lg font-semibold"
+
+// Muted text
+className="text-sm text-muted-foreground"
+```
+
+### Responsive Design
+
+Always use mobile-first:
+
+```tsx
+// Padding
+className="p-4 sm:p-6"
+
+// Grid columns
+className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+
+// Text sizes
+className="text-sm sm:text-base"
+```
+
+## Database Patterns
+
+### Fetching Data
+
+Use query functions from `@/lib/db/queries`:
+
+```tsx
+import { getFormulations, getBusinessCases } from "@/lib/db/queries";
+
+// In a Server Component
+const data = await getFormulations();
+```
+
+### Database Views
+
+All main data comes from views prefixed with `vw_`:
+- `vw_formulation_detail`
+- `vw_business_case`
+- `vw_registration_pipeline`
+- `vw_active_portfolio`
+
+### Schema Migration Utilities
+
+When accessing fields that may have been renamed, use helpers:
+
+```tsx
+import { 
+  getFormulationName, 
+  getFormulationStatus,
+  getCountryStatus 
+} from "@/lib/utils/schema-migration";
+
+// Instead of: formulation.formulation_name
+const name = getFormulationName(formulation);
+```
+
+### Server Actions
+
+Mutations use server actions in `@/lib/actions/`:
+
+```tsx
+"use server";
+
+import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
+
+export async function updateFormulation(formData: FormData) {
+  const supabase = await createClient();
+  
+  const { error } = await supabase
+    .from("formulations")
+    .update({ /* data */ })
+    .eq("formulation_id", id);
+    
+  if (error) throw error;
+  revalidatePath("/formulations");
+}
+```
+
+## TypeScript Conventions
+
+### Type Imports
+
+```tsx
+import type { Database } from "@/lib/supabase/database.types";
+
+type Formulation = Database["public"]["Views"]["vw_formulation_detail"]["Row"];
+```
+
+### Null Handling
+
+Convert null to undefined for optional props:
+
+```tsx
+<Component selectedItem={item || undefined} />
+```
+
+## Import Conventions
+
+### Path Aliases
+
+Always use `@/` for imports:
+
+```tsx
+// Good
+import { Button } from "@/components/ui/button";
+
+// Bad
+import { Button } from "../../../components/ui/button";
+```
+
+### Import Order (handled by Biome)
+
+1. External packages
+2. Internal `@/` imports
+3. Relative imports
+4. Type imports
+
+## Animation Patterns
+
+Use Framer Motion for page transitions:
+
+```tsx
+import { AnimatedPage } from "@/components/layout/AnimatedPage";
+
+<AnimatedPage>
+  {/* Page content */}
+</AnimatedPage>
+```
+
+## Key Constraints
+
+### DO NOT
+
+1. **Never modify `supabase/migrations/`** - Database changes require coordination
+2. **Never hardcode database credentials** - Use environment variables
+3. **Never commit `.env.local`** - It's in .gitignore
+4. **Avoid `any` types** - Use proper types or `unknown`
+5. **Don't use `useState` for form data** - Use form actions
+
+### ALWAYS
+
+1. Use Server Components by default (no "use client" unless needed)
+2. Use the design system spacing (4px base)
+3. Follow existing patterns in similar components
+4. Test changes in the browser before committing
+5. Run `pnpm lint` before committing
+
+## Common Component Examples
+
+### Metric Card
+
+```tsx
+<MetricCard
+  title="Total Formulations"
+  value={42}
+  subtitle="Active products"
+  href="/formulations"
+/>
+```
+
+### Content Card with List
+
+```tsx
+<ContentCard
+  title="Recent Items"
+  description="Latest updates"
+  variant="list"
+>
+  <div className="space-y-2">
+    {items.map((item) => (
+      <ListItem key={item.id} item={item} />
+    ))}
+  </div>
+</ContentCard>
+```
+
+### Data Table
+
+```tsx
+import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
+
+<EnhancedDataTable
+  columns={columns}
+  data={data}
+  searchColumn="name"
+  searchPlaceholder="Search..."
+/>
+```
+
+## File Naming
+
+- Components: `PascalCase.tsx` (e.g., `FormulationCard.tsx`)
+- Pages: `page.tsx` in folder with route name
+- Actions: `kebab-case-actions.ts` (e.g., `formulation-actions.ts`)
+- Utilities: `kebab-case.ts` (e.g., `schema-migration.ts`)
+
+## Entity Names
+
+The app manages these main entities:
+
+| Entity | Table | Description |
+|--------|-------|-------------|
+| Formulation | `formulations` | Product formulations |
+| Business Case | `business_cases` | Financial projections |
+| Country | `countries` | Markets/regions |
+| Use Group | `formulation_country_use_groups` | Crop/target combinations |
+| Ingredient | `ingredients` | Active ingredients |
+| EPPO Code | `eppo_codes` | Standardized pest/crop codes |
+
+## Environment Variables
+
+Required in `.env.local`:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
+Optional:
+```
+ANTHROPIC_API_KEY=...  # For AI chat feature
+```
+
+## Getting Help
+
+1. Check `docs/DESIGN_SYSTEM.md` for UI patterns
+2. Check `docs/SCHEMA_MIGRATION.md` for database field mappings
+3. Look at similar existing components for patterns
+4. Ask for clarification if requirements are unclear
+
+## Quick Reference: Common Changes
+
+### Change page title
+Edit the `title` prop in `PageLayout`
+
+### Change sidebar menu
+Edit `src/components/layout/AppSidebar.tsx`
+
+### Add a new page
+1. Create folder in `src/app/(dashboard)/[page-name]/`
+2. Add `page.tsx` with PageLayout
+3. Add menu item in sidebar (requires database migration for menu_items table)
+
+### Change component styling
+Use Tailwind classes, follow spacing conventions
+
+### Add form field
+1. Add to form component in `src/components/forms/`
+2. Update server action in `src/lib/actions/`
+3. Ensure database column exists
+

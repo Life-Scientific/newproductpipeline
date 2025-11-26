@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import {
   User,
   LogOut,
@@ -29,6 +29,7 @@ import {
   PanelLeft,
   Palette,
   Check,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -67,6 +68,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSupabase } from "@/hooks/use-supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useTheme, DARK_THEME_SLUGS } from "@/contexts/ThemeContext";
+import { useForesightInit, usePrefetchOnIntent } from "@/hooks/use-prefetch-on-intent";
 import type { WorkspaceMenuItem } from "@/lib/actions/workspaces";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { cn } from "@/lib/utils";
@@ -92,6 +94,7 @@ const iconMap: Record<string, LucideIcon> = {
   Beaker,
   Ban,
   Settings,
+  Sparkles,
 };
 
 // Theme color previews for visual selection
@@ -112,6 +115,41 @@ function getIconComponent(iconName: string | null): LucideIcon {
   return iconMap[iconName] || LayoutDashboard;
 }
 
+// NavItem component with predictive prefetching
+function NavItem({
+  item,
+  isActive,
+}: {
+  item: WorkspaceMenuItem;
+  isActive: boolean;
+}) {
+  const IconComponent = getIconComponent(item.icon);
+  const prefetchRef = usePrefetchOnIntent(item.url);
+  const linkRef = useRef<HTMLAnchorElement>(null);
+
+  // Combine refs - attach prefetch tracking to the link element
+  const setRefs = useCallback(
+    (node: HTMLAnchorElement | null) => {
+      linkRef.current = node;
+      if (node) {
+        prefetchRef(node);
+      }
+    },
+    [prefetchRef]
+  );
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+        <Link ref={setRefs} href={item.url}>
+          <IconComponent className="size-4" />
+          <span>{item.title}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -121,6 +159,9 @@ export function AppSidebar() {
   const { currentWorkspace, workspaceWithMenu, isLoading: workspaceLoading } = useWorkspace();
   const { currentTheme, availableThemes, setTheme } = useTheme();
   const [user, setUser] = useState<any>(null);
+
+  // Initialize ForesightJS for predictive prefetching
+  useForesightInit();
 
   useEffect(() => {
     // Get initial user state
@@ -291,24 +332,13 @@ export function AppSidebar() {
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {group.items.map((item) => {
-                    const IconComponent = getIconComponent(item.icon);
-                    const active = isActive(item.url);
-                    return (
-                      <SidebarMenuItem key={item.menu_item_id}>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={active}
-                          tooltip={item.title}
-                        >
-                          <Link href={item.url}>
-                            <IconComponent className="size-4" />
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
+                  {group.items.map((item) => (
+                    <NavItem
+                      key={item.menu_item_id}
+                      item={item}
+                      isActive={isActive(item.url)}
+                    />
+                  ))}
                 </SidebarMenu>
               </SidebarGroupContent>
               {groupIndex < menuGroups.length - 1 && isCollapsed && (
