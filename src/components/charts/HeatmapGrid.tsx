@@ -4,7 +4,7 @@ import React from "react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useTheme } from "@/contexts/ThemeContext";
+import { useTheme, DARK_THEME_SLUGS } from "@/contexts/ThemeContext";
 import { getHeatmapColorScale, getHeatmapTextColor } from "@/lib/utils/chart-theme";
 
 export interface HeatmapDataPoint {
@@ -41,7 +41,8 @@ export function HeatmapGrid({
   onClick,
   className,
 }: HeatmapGridProps) {
-  const { isDark } = useTheme();
+  const { currentTheme } = useTheme();
+  const isDark = currentTheme ? DARK_THEME_SLUGS.includes(currentTheme.slug) : false;
   
   // Use provided color scale or theme-aware default
   const getColor = colorScale || getHeatmapColorScale(isDark);
