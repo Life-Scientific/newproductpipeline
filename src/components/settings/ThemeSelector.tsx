@@ -170,7 +170,7 @@ function ThemePreview({ theme, isActive, onClick }: ThemePreviewProps) {
 export function ThemeSelector() {
   const { currentTheme, setTheme, isLoading, availableThemes } = useTheme();
 
-  if (isLoading) {
+  if (isLoading || !availableThemes) {
     return (
       <div className="flex items-center justify-center py-8">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

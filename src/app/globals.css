@@ -169,22 +169,32 @@
   }
 }
 
-/* Dotted background pattern for auth pages in default light theme */
-html[data-theme="light"] .auth-background {
-  background-color: #f8f8f8;
-  background-image: radial-gradient(circle, #d0d0d0 1px, transparent 1px);
-  background-size: 20px 20px;
+/* Dotted background pattern for default light theme ONLY - applied globally */
+html[data-theme="light"]:not(.dark) body {
+  background-color: #fafafa !important;
+  background-image: radial-gradient(circle, #d4d4d4 0.75px, transparent 0.75px) !important;
+  background-size: 20px 20px !important;
+  background-attachment: fixed !important;
 }
 
-/* Non-light themes: plain background */
-html:not([data-theme="light"]) .auth-background,
-html.dark .auth-background {
-  background-color: var(--background);
+/* Main content area gets semi-transparent white overlay so dots are subtle */
+html[data-theme="light"]:not(.dark) [data-sidebar="inset"] {
+  background-color: rgba(255, 255, 255, 0.85) !important;
 }
 
 /* Ensure CardGrid gaps are applied */
 .grid[style*="gap"] {
   gap: var(--grid-gap, 24px) !important;
+}
+
+/* Sidebar Transitions */
+[data-sidebar="inset"] {
+  transition: margin-left 200ms ease-out;
+}
+
+/* Hide text in collapsed sidebar menu items */
+[data-state="collapsed"] [data-sidebar="menu-button"] span:not(:first-child) {
+  display: none;
 }
 
 /* Business Case Table Styles */

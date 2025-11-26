@@ -37,9 +37,9 @@ function ArtworkPanel() {
 
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="flex min-h-screen auth-background">
+    <div className="flex min-h-screen bg-white">
       {/* Left side - Form */}
-      <div className="flex w-full flex-col items-center justify-center px-4 py-12 sm:px-6 lg:w-1/2 lg:px-20 xl:px-24">
+      <div className="flex w-full flex-col items-center justify-center px-4 py-12 sm:px-6 lg:w-1/2 lg:px-20 xl:px-24 bg-white">
         <div className="w-full max-w-sm">
           {/* Logo - centered */}
           <div className="mb-10 flex justify-center">

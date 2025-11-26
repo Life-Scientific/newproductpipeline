@@ -233,6 +233,11 @@ export function TenYearProjectionChart({
   // Get chart colors from theme - compute hex values from CSS variables
   const [revenueColor, setRevenueColor] = useState("#3b82f6");
   const [marginColor, setMarginColor] = useState("#10b981");
+  const [axisColor, setAxisColor] = useState("#71717a");
+  const [borderColor, setBorderColor] = useState("#e4e4e7");
+  const [bgColor, setBgColor] = useState("#ffffff");
+  const [popoverColor, setPopoverColor] = useState("#ffffff");
+  const [mutedColor, setMutedColor] = useState("#f4f4f5");
   
   // Update colors when theme changes
   useEffect(() => {
@@ -240,19 +245,15 @@ export function TenYearProjectionChart({
     
     const computedStyle = getComputedStyle(document.documentElement);
     
-    // Try to get theme chart colors, fall back to defaults
-    const chart1 = computedStyle.getPropertyValue("--chart-1").trim();
-    const chart2 = computedStyle.getPropertyValue("--chart-2").trim();
-    
-    // Convert oklch to hex using canvas
-    const oklchToHex = (oklchStr: string, fallback: string): string => {
-      if (!oklchStr || oklchStr === "") return fallback;
+    // Convert oklch/color to hex using canvas
+    const colorToHex = (colorStr: string, fallback: string): string => {
+      if (!colorStr || colorStr === "") return fallback;
       try {
         const canvas = document.createElement("canvas");
         canvas.width = canvas.height = 1;
         const ctx = canvas.getContext("2d");
         if (!ctx) return fallback;
-        ctx.fillStyle = oklchStr;
+        ctx.fillStyle = colorStr;
         ctx.fillRect(0, 0, 1, 1);
         const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
         return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
@@ -261,8 +262,22 @@ export function TenYearProjectionChart({
       }
     };
     
-    setRevenueColor(oklchToHex(chart1, "#3b82f6"));
-    setMarginColor(oklchToHex(chart2, "#10b981"));
+    // Get all theme colors
+    const chart1 = computedStyle.getPropertyValue("--chart-1").trim();
+    const chart2 = computedStyle.getPropertyValue("--chart-2").trim();
+    const mutedFg = computedStyle.getPropertyValue("--muted-foreground").trim();
+    const border = computedStyle.getPropertyValue("--border").trim();
+    const bg = computedStyle.getPropertyValue("--background").trim();
+    const popover = computedStyle.getPropertyValue("--popover").trim();
+    const muted = computedStyle.getPropertyValue("--muted").trim();
+    
+    setRevenueColor(colorToHex(chart1, "#3b82f6"));
+    setMarginColor(colorToHex(chart2, "#10b981"));
+    setAxisColor(colorToHex(mutedFg, "#71717a"));
+    setBorderColor(colorToHex(border, "#e4e4e7"));
+    setBgColor(colorToHex(bg, "#ffffff"));
+    setPopoverColor(colorToHex(popover, "#ffffff"));
+    setMutedColor(colorToHex(muted, "#f4f4f5"));
   }, [currentTheme]);
 
   // Get unique filter options
@@ -881,16 +896,16 @@ export function TenYearProjectionChart({
                 </defs>
                 <CartesianGrid 
                   strokeDasharray="3 3" 
-                  stroke="hsl(var(--border))" 
+                  stroke={borderColor} 
                   opacity={0.4}
                   vertical={true}
                   horizontal={true}
                 />
                 <XAxis 
                   dataKey="fiscalYear" 
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11, fontWeight: 500 }}
-                  axisLine={{ stroke: "hsl(var(--border))", strokeWidth: 1 }}
-                  tickLine={{ stroke: "hsl(var(--border))" }}
+                  tick={{ fill: axisColor, fontSize: 11, fontWeight: 500 }}
+                  axisLine={{ stroke: borderColor, strokeWidth: 1 }}
+                  tickLine={{ stroke: borderColor }}
                   interval={chartData.length > 20 ? Math.floor(chartData.length / 10) : 0}
                   angle={-45}
                   textAnchor="end"
@@ -902,16 +917,16 @@ export function TenYearProjectionChart({
                     value: "Amount (M€)", 
                     angle: -90, 
                     position: "insideLeft",
-                    style: { fill: "hsl(var(--muted-foreground))", fontSize: 12, fontWeight: 500 }
+                    style: { fill: axisColor, fontSize: 12, fontWeight: 500 }
                   }}
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12, fontWeight: 500 }}
-                  axisLine={{ stroke: "hsl(var(--border))", strokeWidth: 1 }}
-                  tickLine={{ stroke: "hsl(var(--border))" }}
+                  tick={{ fill: axisColor, fontSize: 12, fontWeight: 500 }}
+                  axisLine={{ stroke: borderColor, strokeWidth: 1 }}
+                  tickLine={{ stroke: borderColor }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "hsl(var(--popover))",
-                    border: "1px solid hsl(var(--border))",
+                    backgroundColor: popoverColor,
+                    border: `1px solid ${borderColor}`,
                     borderRadius: "8px",
                     padding: "12px 16px",
                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
@@ -958,7 +973,7 @@ export function TenYearProjectionChart({
                     }
                     return null;
                   }}
-                  cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "5 5", opacity: 0.3 }}
+                  cursor={{ stroke: axisColor, strokeWidth: 1, strokeDasharray: "5 5", opacity: 0.3 }}
                 />
                 <Legend 
                   wrapperStyle={{ paddingTop: "24px" }}
@@ -974,8 +989,8 @@ export function TenYearProjectionChart({
                   strokeWidth={2.5}
                   fill={`url(#colorRevenue-${chartId})`}
                   name="Revenue (EUR)"
-                  dot={{ r: 3, fill: revenueColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
-                  activeDot={{ r: 5, fill: revenueColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                  dot={{ r: 3, fill: revenueColor, strokeWidth: 2, stroke: bgColor }}
+                  activeDot={{ r: 5, fill: revenueColor, strokeWidth: 2, stroke: bgColor }}
                   isAnimationActive={true}
                   animationDuration={800}
                   animationEasing="ease-out"
@@ -988,8 +1003,8 @@ export function TenYearProjectionChart({
                   strokeWidth={2.5}
                   fill={`url(#colorMargin-${chartId})`}
                   name="Margin (EUR)"
-                  dot={{ r: 3, fill: marginColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
-                  activeDot={{ r: 5, fill: marginColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
+                  dot={{ r: 3, fill: marginColor, strokeWidth: 2, stroke: bgColor }}
+                  activeDot={{ r: 5, fill: marginColor, strokeWidth: 2, stroke: bgColor }}
                   isAnimationActive={true}
                   animationDuration={800}
                   animationEasing="ease-out"
@@ -1009,16 +1024,16 @@ export function TenYearProjectionChart({
               >
                 <CartesianGrid 
                   strokeDasharray="3 3" 
-                  stroke="hsl(var(--border))" 
+                  stroke={borderColor} 
                   opacity={0.4}
                   vertical={true}
                   horizontal={true}
                 />
                 <XAxis 
                   dataKey="fiscalYear"
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11, fontWeight: 500 }}
-                  axisLine={{ stroke: "hsl(var(--border))", strokeWidth: 1 }}
-                  tickLine={{ stroke: "hsl(var(--border))" }}
+                  tick={{ fill: axisColor, fontSize: 11, fontWeight: 500 }}
+                  axisLine={{ stroke: borderColor, strokeWidth: 1 }}
+                  tickLine={{ stroke: borderColor }}
                   interval={chartData.length > 20 ? Math.floor(chartData.length / 10) : 0}
                   angle={-45}
                   textAnchor="end"
@@ -1030,16 +1045,16 @@ export function TenYearProjectionChart({
                     value: "Amount (M€)", 
                     angle: -90, 
                     position: "insideLeft",
-                    style: { fill: "hsl(var(--muted-foreground))", fontSize: 12, fontWeight: 500 }
+                    style: { fill: axisColor, fontSize: 12, fontWeight: 500 }
                   }}
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12, fontWeight: 500 }}
-                  axisLine={{ stroke: "hsl(var(--border))", strokeWidth: 1 }}
-                  tickLine={{ stroke: "hsl(var(--border))" }}
+                  tick={{ fill: axisColor, fontSize: 12, fontWeight: 500 }}
+                  axisLine={{ stroke: borderColor, strokeWidth: 1 }}
+                  tickLine={{ stroke: borderColor }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "hsl(var(--popover))",
-                    border: "1px solid hsl(var(--border))",
+                    backgroundColor: popoverColor,
+                    border: `1px solid ${borderColor}`,
                     borderRadius: "8px",
                     padding: "12px 16px",
                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
@@ -1085,7 +1100,7 @@ export function TenYearProjectionChart({
                     }
                     return null;
                   }}
-                  cursor={{ fill: "hsl(var(--muted))", opacity: 0.1 }}
+                  cursor={{ fill: mutedColor, opacity: 0.1 }}
                 />
                 <Legend 
                   wrapperStyle={{ paddingTop: "24px" }}
