@@ -64,8 +64,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // If user is logged in and on auth pages, redirect to workspace home
-  if (user && isAuthPage) {
+  // If user is logged in and on auth pages or landing page, redirect to workspace home
+  if (user && (isAuthPage || isLandingPage)) {
     const url = request.nextUrl.clone();
     url.pathname = WORKSPACE_BASE;
     return NextResponse.redirect(url);

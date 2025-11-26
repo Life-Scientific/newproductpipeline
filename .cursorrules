@@ -396,3 +396,5 @@ Use Tailwind classes, follow spacing conventions
 2. Update server action in `src/lib/actions/`
 3. Ensure database column exists
 
+
+
