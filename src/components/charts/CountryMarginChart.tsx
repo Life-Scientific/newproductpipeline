@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
+import { chartTheme, chartColors, getAxisProps, getTooltipProps, getLegendFormatter } from "@/lib/utils/chart-theme";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -85,29 +86,42 @@ export function CountryMarginChart({
             onClick={handleClick}
             style={{ cursor: "pointer" }}
           >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" label={{ value: "Margin %", position: "insideBottom" }} />
-            <YAxis dataKey="country" type="category" width={120} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+            <XAxis 
+              type="number" 
+              {...getAxisProps("Margin %")}
+            />
+            <YAxis 
+              dataKey="country" 
+              type="category" 
+              width={120}
+              tick={chartTheme.tick}
+              axisLine={chartTheme.axis}
+            />
             <Tooltip
               formatter={(value: number, name: string) => {
-                if (name === "marginPercent") {
+                if (name === "marginPercent" || name === "Margin %") {
                   return `${value.toFixed(1)}%`;
                 }
                 return `$${value.toFixed(2)}M`;
               }}
               labelFormatter={(label) => `Country: ${label}`}
+              {...getTooltipProps()}
+              cursor={{ fill: "var(--color-muted)", opacity: 0.1 }}
             />
-            <Legend />
-            <Bar dataKey="marginPercent" fill="#82ca9d" name="Margin %" />
+            <Legend 
+              wrapperStyle={chartTheme.legend.wrapperStyle}
+              formatter={getLegendFormatter()}
+            />
+            <Bar 
+              dataKey="marginPercent" 
+              fill={chartColors.success} 
+              name="Margin %"
+              radius={[0, 4, 4, 0]}
+            />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   );
 }
-
-
-
-
-
-

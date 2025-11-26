@@ -106,3 +106,4 @@ When a base code has blacklisted variants, the `base_code_registry` table:
 
 4. **Direct Table Access**: To query blacklisted formulations, you must query the `formulations` table directly with explicit filters, not through views.
 
+

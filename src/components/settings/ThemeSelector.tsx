@@ -1,58 +1,66 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useTheme } from "@/contexts/ThemeContext";
-import { getPresetThemes, setUserTheme as updateUserTheme, type Theme, type ThemeWithColors } from "@/lib/actions/themes";
+import { useTheme, DARK_THEME_SLUGS } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
-import { Check, Loader2, Moon, Sun, Monitor } from "lucide-react";
+import { Check, Loader2, Moon, Sun } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ThemePreviewProps {
-  theme: Theme;
+  theme: {
+    theme_id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+  };
   isActive: boolean;
   onClick: () => void;
 }
 
 function ThemePreview({ theme, isActive, onClick }: ThemePreviewProps) {
   // Determine preview colors based on theme slug
-  // In a real app, we might fetch these, but for the selector we can hardcode approximations 
-  // to avoid fetching all colors for all themes at once
   const getPreviewColors = (slug: string) => {
     switch (slug) {
       case "prof-blue":
         return {
           bg: "#fdfdfe",
-          primary: "#4a6ee0", // Strong Blue
+          primary: "#4a6ee0",
           sidebar: "#f8f9fc",
           card: "#ffffff"
         };
       case "nature-green":
         return {
           bg: "#fcfdfc",
-          primary: "#2e7d32", // Forest Green
+          primary: "#2e7d32",
           sidebar: "#f6f9f6",
           card: "#ffffff"
         };
       case "high-contrast":
         return {
           bg: "#ffffff",
-          primary: "#4b0082", // Indigo
+          primary: "#4b0082",
           sidebar: "#000000",
           card: "#ffffff"
         };
       case "dark-exec":
         return {
           bg: "#1a1a1a",
-          primary: "#d4af37", // Gold
+          primary: "#d4af37",
           sidebar: "#111111",
           card: "#2b2b2b"
         };
       case "joshs-theme":
         return {
-          bg: "#0a0f0a", // Very dark with green tint
-          primary: "#00ff41", // Bright matrix green
-          sidebar: "#050805", // Nearly black
-          card: "#0f150f" // Dark with green tint
+          bg: "#0a0f0a",
+          primary: "#00ff41",
+          sidebar: "#050805",
+          card: "#0f150f"
+        };
+      case "bloomberg":
+        return {
+          bg: "#000000",
+          primary: "#ff9500",
+          sidebar: "#080808",
+          card: "#121212"
         };
       case "dark":
         return {
@@ -73,7 +81,7 @@ function ThemePreview({ theme, isActive, onClick }: ThemePreviewProps) {
   };
 
   const colors = getPreviewColors(theme.slug);
-  const isDark = theme.slug.includes("dark") || theme.slug === "high-contrast" || theme.slug === "joshs-theme";
+  const isDark = DARK_THEME_SLUGS.includes(theme.slug);
 
   return (
     <div 
@@ -160,39 +168,9 @@ function ThemePreview({ theme, isActive, onClick }: ThemePreviewProps) {
 }
 
 export function ThemeSelector() {
-  const { currentTheme, setUserTheme, isLoading } = useTheme();
-  const [themes, setThemes] = useState<Theme[]>([]);
-  const [isLoadingThemes, setIsLoadingThemes] = useState(true);
-  const [applyingThemeId, setApplyingThemeId] = useState<string | null>(null);
+  const { currentTheme, setTheme, isLoading, availableThemes } = useTheme();
 
-  useEffect(() => {
-    async function loadThemes() {
-      try {
-        const data = await getPresetThemes();
-        setThemes(data);
-      } catch (error) {
-        console.error("Failed to load themes:", error);
-      } finally {
-        setIsLoadingThemes(false);
-      }
-    }
-    loadThemes();
-  }, []);
-
-  const handleThemeChange = async (themeId: string) => {
-    if (themeId === currentTheme?.theme_id || applyingThemeId) return;
-    
-    setApplyingThemeId(themeId);
-    try {
-      await setUserTheme(themeId);
-    } catch (error) {
-      console.error("Failed to change theme:", error);
-    } finally {
-      setApplyingThemeId(null);
-    }
-  };
-
-  if (isLoadingThemes) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -201,8 +179,8 @@ export function ThemeSelector() {
     );
   }
 
-  const systemThemes = themes.filter(t => ['light', 'dark'].includes(t.slug));
-  const customThemes = themes.filter(t => !['light', 'dark'].includes(t.slug));
+  const systemThemes = availableThemes.filter(t => ['light', 'dark'].includes(t.slug));
+  const customThemes = availableThemes.filter(t => !['light', 'dark'].includes(t.slug));
 
   return (
     <div className="space-y-8">
@@ -214,8 +192,8 @@ export function ThemeSelector() {
             <ThemePreview
               key={theme.theme_id}
               theme={theme}
-              isActive={currentTheme?.theme_id === theme.theme_id}
-              onClick={() => handleThemeChange(theme.theme_id)}
+              isActive={currentTheme?.slug === theme.slug}
+              onClick={() => setTheme(theme.slug)}
             />
           ))}
         </div>
@@ -232,19 +210,12 @@ export function ThemeSelector() {
             <ThemePreview
               key={theme.theme_id}
               theme={theme}
-              isActive={currentTheme?.theme_id === theme.theme_id}
-              onClick={() => handleThemeChange(theme.theme_id)}
+              isActive={currentTheme?.slug === theme.slug}
+              onClick={() => setTheme(theme.slug)}
             />
           ))}
         </div>
       </div>
-      
-      {applyingThemeId && (
-        <div className="fixed bottom-4 right-4 bg-primary text-primary-foreground px-4 py-2 rounded-md shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm font-medium">Applying theme...</span>
-        </div>
-      )}
     </div>
   );
 }

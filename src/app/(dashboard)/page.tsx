@@ -11,7 +11,7 @@ import { MetricCard } from "@/components/layout/MetricCard";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { TimelineCard } from "@/components/relationships/TimelineCard";
 import { BusinessCaseListItem } from "@/components/business-cases/BusinessCaseListItem";
-import { TenYearProjectionChart } from "@/components/charts/TenYearProjectionChart";
+import { TenYearProjectionChartLazy } from "@/components/charts/TenYearProjectionChartLazy";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import Link from "next/link";
@@ -125,11 +125,11 @@ export default async function Home() {
   return (
     <PageLayout
       title="Dashboard"
-      description="LS Portfolio overview"
+      description="Navigator overview"
       variant="multi"
     >
-      {/* 10-Year Projection Chart */}
-      <TenYearProjectionChart 
+      {/* 10-Year Projection Chart - Lazy loaded to reduce initial bundle */}
+      <TenYearProjectionChartLazy 
         businessCases={businessCases} 
         formulations={formulations}
         exchangeRates={exchangeRateMap}

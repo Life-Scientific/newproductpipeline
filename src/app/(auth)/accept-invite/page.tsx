@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { markInvitationAsAccepted } from "@/lib/actions/user-management";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 
 function AcceptInviteContent() {
   const router = useRouter();
@@ -148,12 +149,11 @@ function AcceptInviteContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <AuthLayout>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="w-full max-w-md"
       >
         <Card>
           <CardHeader>
@@ -236,14 +236,14 @@ function AcceptInviteContent() {
           </CardContent>
         </Card>
       </motion.div>
-    </div>
+    </AuthLayout>
   );
 }
 
 function LoadingFallback() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <AuthLayout>
+      <Card>
         <CardHeader>
           <CardTitle>Accept Invitation</CardTitle>
           <CardDescription>Loading...</CardDescription>
@@ -255,7 +255,7 @@ function LoadingFallback() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </AuthLayout>
   );
 }
 

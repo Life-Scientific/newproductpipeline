@@ -1,9 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import type { Workspace, WorkspaceWithMenuItems } from "@/lib/actions/workspaces";
-import { getWorkspaceBySlug, getUserDefaultWorkspace, getWorkspaceWithMenuItems } from "@/lib/actions/workspaces";
+import { getWorkspaceWithMenuBySlug } from "@/lib/actions/workspaces";
 
 interface WorkspaceContextType {
   currentWorkspace: Workspace | null;
@@ -19,74 +18,66 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
   const [workspaceWithMenu, setWorkspaceWithMenu] = useState<WorkspaceWithMenuItems | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
 
+  /**
+   * Load workspace with menu items in a single optimized query.
+   * Tries: provided slug -> localStorage -> "portfolio" fallback
+   */
   const loadWorkspace = async (workspaceSlug?: string) => {
     setIsLoading(true);
     try {
-      let workspace: Workspace | null = null;
+      // Determine which slug to try
+      const slugToTry = workspaceSlug 
+        || (typeof window !== "undefined" ? localStorage.getItem("current_workspace") : null)
+        || "portfolio";
       
-      if (workspaceSlug) {
-        workspace = await getWorkspaceBySlug(workspaceSlug);
+      // Single optimized query for workspace + menu items
+      let workspaceData = await getWorkspaceWithMenuBySlug(slugToTry);
+      
+      // If the slug wasn't "portfolio" and we got nothing, try portfolio as fallback
+      if (!workspaceData && slugToTry !== "portfolio") {
+        workspaceData = await getWorkspaceWithMenuBySlug("portfolio");
+      }
+      
+      if (workspaceData) {
+        setCurrentWorkspace(workspaceData);
+        setWorkspaceWithMenu(workspaceData);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("current_workspace", workspaceData.slug);
+        }
       } else {
-        // Try to get from localStorage first (only in browser)
-        if (typeof window !== "undefined") {
-          const storedSlug = localStorage.getItem("current_workspace");
-          if (storedSlug) {
-            workspace = await getWorkspaceBySlug(storedSlug);
-          }
-        }
-        
-        // If not found or no stored workspace, get user default
-        if (!workspace) {
-          workspace = await getUserDefaultWorkspace();
-        }
-      }
-      
-      if (!workspace) {
-        // Fallback to portfolio
-        workspace = await getWorkspaceBySlug("portfolio");
-      }
-      
-      if (workspace) {
-        setCurrentWorkspace(workspace);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("current_workspace", workspace.slug);
-        }
-        
-        // Load menu items
-        const workspaceWithMenuData = await getWorkspaceWithMenuItems(workspace.workspace_id);
-        setWorkspaceWithMenu(workspaceWithMenuData);
+        console.error("Could not load any workspace - all fallbacks failed");
       }
     } catch (error) {
       console.error("Failed to load workspace:", error);
-      // Fallback to portfolio on error
-      const fallback = await getWorkspaceBySlug("portfolio");
-      if (fallback) {
-        setCurrentWorkspace(fallback);
-        const fallbackWithMenu = await getWorkspaceWithMenuItems(fallback.workspace_id);
-        setWorkspaceWithMenu(fallbackWithMenu);
+      // Last resort fallback
+      try {
+        const fallback = await getWorkspaceWithMenuBySlug("portfolio");
+        if (fallback) {
+          setCurrentWorkspace(fallback);
+          setWorkspaceWithMenu(fallback);
+        }
+      } catch (e) {
+        console.error("Absolute fallback also failed:", e);
       }
     } finally {
       setIsLoading(false);
     }
   };
 
+  /**
+   * Switch to a different workspace - single optimized query
+   */
   const switchWorkspace = async (slug: string) => {
     setIsLoading(true);
     try {
-      const workspace = await getWorkspaceBySlug(slug);
-      if (workspace) {
-        setCurrentWorkspace(workspace);
+      const workspaceData = await getWorkspaceWithMenuBySlug(slug);
+      if (workspaceData) {
+        setCurrentWorkspace(workspaceData);
+        setWorkspaceWithMenu(workspaceData);
         if (typeof window !== "undefined") {
-          localStorage.setItem("current_workspace", workspace.slug);
+          localStorage.setItem("current_workspace", workspaceData.slug);
         }
-        
-        const workspaceWithMenuData = await getWorkspaceWithMenuItems(workspace.workspace_id);
-        setWorkspaceWithMenu(workspaceWithMenuData);
-        
-        // Optionally redirect to workspace root or keep current page
-        // For now, we'll keep the current page
       }
     } catch (error) {
       console.error("Failed to switch workspace:", error);

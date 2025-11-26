@@ -4,7 +4,9 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, ChevronDown, ChevronsDown } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Edit, ChevronDown, ChevronsDown, Calendar } from "lucide-react";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
 import { BusinessCaseEditModal } from "./BusinessCaseEditModal";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
@@ -20,11 +22,18 @@ interface BusinessCasesProjectionTableProps {
 const DEFAULT_PAGE_SIZE = 25;
 const LOAD_MORE_INCREMENT = 25;
 
+// Default year range is 10 years from current fiscal year
+const DEFAULT_YEAR_RANGE = 10;
+
 export function BusinessCasesProjectionTable({ businessCases, exchangeRates, canEdit = false }: BusinessCasesProjectionTableProps) {
   const router = useRouter();
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(DEFAULT_PAGE_SIZE);
   const [loadingGroupId, setLoadingGroupId] = useState<string | null>(null);
+  
+  // Year range selection state
+  const [startYear, setStartYear] = useState<number>(CURRENT_FISCAL_YEAR);
+  const [endYear, setEndYear] = useState<number>(CURRENT_FISCAL_YEAR + DEFAULT_YEAR_RANGE - 1);
 
   // Helper function to get effective start fiscal year from stored value
   const getEffectiveStartFiscalYear = (effectiveStartFiscalYear: string | null): number => {
@@ -40,8 +49,8 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
     return parseInt(match[1], 10);
   };
 
-  // Calculate dynamic fiscal year columns
-  const fiscalYearColumns = useMemo(() => {
+  // Calculate the available range of fiscal years from data
+  const availableYearRange = useMemo(() => {
     const currentFY = CURRENT_FISCAL_YEAR;
     const minFY = currentFY;
 
@@ -52,8 +61,13 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
 
     const maxFY = Math.max(maxEffectiveStartYear + 10, currentFY + 10);
 
+    return { minFY, maxFY };
+  }, [businessCases]);
+
+  // Calculate dynamic fiscal year columns based on selected range
+  const fiscalYearColumns = useMemo(() => {
     const columns: Array<{ key: string; label: string; fiscalYear: number }> = [];
-    for (let fy = minFY; fy <= maxFY; fy++) {
+    for (let fy = startYear; fy <= endYear; fy++) {
       columns.push({
         key: `FY${fy}`,
         label: `FY${fy}`,
@@ -62,7 +76,16 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
     }
 
     return columns;
-  }, [businessCases]);
+  }, [startYear, endYear]);
+
+  // Generate year options for dropdowns
+  const yearOptions = useMemo(() => {
+    const options: number[] = [];
+    for (let fy = availableYearRange.minFY; fy <= availableYearRange.maxFY; fy++) {
+      options.push(fy);
+    }
+    return options;
+  }, [availableYearRange]);
 
   // Paginated business cases
   const displayedBusinessCases = useMemo(() => {
@@ -160,8 +183,68 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
     );
   }
 
+  // Handle year range changes
+  const handleStartYearChange = (value: string) => {
+    const newStartYear = parseInt(value, 10);
+    setStartYear(newStartYear);
+    // Ensure end year is not before start year
+    if (endYear < newStartYear) {
+      setEndYear(newStartYear);
+    }
+  };
+
+  const handleEndYearChange = (value: string) => {
+    const newEndYear = parseInt(value, 10);
+    setEndYear(newEndYear);
+    // Ensure start year is not after end year
+    if (startYear > newEndYear) {
+      setStartYear(newEndYear);
+    }
+  };
+
   return (
     <>
+      {/* Year Range Selector */}
+      <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-muted/30 rounded-lg border">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Year Range</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="start-year" className="text-sm text-muted-foreground">From</Label>
+          <Select value={startYear.toString()} onValueChange={handleStartYearChange}>
+            <SelectTrigger id="start-year" className="w-24 h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {yearOptions.filter(y => y <= endYear).map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  FY{year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="end-year" className="text-sm text-muted-foreground">To</Label>
+          <Select value={endYear.toString()} onValueChange={handleEndYearChange}>
+            <SelectTrigger id="end-year" className="w-24 h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {yearOptions.filter(y => y >= startYear).map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  FY{year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <span className="text-xs text-muted-foreground">
+          ({endYear - startYear + 1} years)
+        </span>
+      </div>
+
       {/* Summary bar */}
       <div className="flex items-center justify-between mb-4 text-sm text-muted-foreground">
         <span>

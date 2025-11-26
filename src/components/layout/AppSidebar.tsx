@@ -2,13 +2,31 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   User,
   LogOut,
   ChevronUp,
   Settings,
-  Sparkles,
+  LayoutDashboard,
+  GitBranch,
+  FlaskConical,
+  Globe,
+  FileText,
+  TrendingUp,
+  DollarSign,
+  BarChart3,
+  GitCompare,
+  Database,
+  Calculator,
+  Target,
+  Map as MapIcon,
+  Shield,
+  PieChart,
+  MapPin,
+  Beaker,
+  Ban,
+  type LucideIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,15 +53,36 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSupabase } from "@/hooks/use-supabase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import type { WorkspaceMenuItem } from "@/lib/actions/workspaces";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
-import * as Icons from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+
+// Icon map for dynamic icon lookup - only includes icons actually used in menus
+const iconMap: Record<string, LucideIcon> = {
+  LayoutDashboard,
+  GitBranch,
+  FlaskConical,
+  Globe,
+  FileText,
+  TrendingUp,
+  DollarSign,
+  BarChart3,
+  GitCompare,
+  Database,
+  Calculator,
+  Target,
+  Map: MapIcon,
+  Shield,
+  PieChart,
+  MapPin,
+  Beaker,
+  Ban,
+  Settings,
+};
 
 // Helper function to get icon component from string name
 function getIconComponent(iconName: string | null): LucideIcon {
-  if (!iconName) return Icons.LayoutDashboard;
-  const IconComponent = (Icons as Record<string, any>)[iconName];
-  return IconComponent || Icons.LayoutDashboard;
+  if (!iconName) return LayoutDashboard;
+  return iconMap[iconName] || LayoutDashboard;
 }
 
 export function AppSidebar() {
@@ -52,9 +91,6 @@ export function AppSidebar() {
   const supabase = useSupabase();
   const { currentWorkspace, workspaceWithMenu, isLoading: workspaceLoading } = useWorkspace();
   const [user, setUser] = useState<any>(null);
-  const [clickCount, setClickCount] = useState(0);
-  const [showEasterEgg, setShowEasterEgg] = useState(false);
-  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Get initial user state
@@ -87,56 +123,12 @@ export function AppSidebar() {
     return pathname?.startsWith(url);
   };
 
-  const handleAvatarClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation(); // Prevent dropdown from opening
-    
-    setClickCount((prev) => {
-      const newCount = prev + 1;
-      
-      // Reset timeout on each click
-      if (clickTimeoutRef.current) {
-        clearTimeout(clickTimeoutRef.current);
-      }
-      
-      // If 5 clicks, trigger easter egg
-      if (newCount >= 5) {
-        setShowEasterEgg(true);
-        setTimeout(() => setShowEasterEgg(false), 3000);
-        return 0;
-      }
-      
-      // Reset count after 2 seconds of inactivity
-      clickTimeoutRef.current = setTimeout(() => {
-        setClickCount(0);
-      }, 2000);
-      
-      return newCount;
-    });
-  };
-
-  const handleAvatarMouseDown = (e: React.MouseEvent) => {
-    // Only prevent if we're tracking clicks (not on first click)
-    if (clickCount > 0) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (clickTimeoutRef.current) {
-        clearTimeout(clickTimeoutRef.current);
-      }
-    };
-  }, []);
-
   // Get menu items from database (respects is_active flag)
   const menuGroups = useMemo(() => {
     if (!workspaceWithMenu || !workspaceWithMenu.menu_items) return [];
     
     // Group items by group_name
-    const grouped = new Map<string, typeof workspaceWithMenu.menu_items>();
+    const grouped = new Map<string, WorkspaceMenuItem[]>();
     
     workspaceWithMenu.menu_items.forEach((item) => {
       if (!grouped.has(item.group_name)) {
@@ -151,7 +143,7 @@ export function AppSidebar() {
     });
     
     // Return groups in the desired order
-    const orderedGroups: Array<{ groupName: string; items: typeof workspaceWithMenu.menu_items }> = [];
+    const orderedGroups: Array<{ groupName: string; items: WorkspaceMenuItem[] }> = [];
     const groupOrder = [
       "Overview",
       "Market & Strategy",
@@ -181,25 +173,7 @@ export function AppSidebar() {
   }, [workspaceWithMenu]);
 
   return (
-    <>
-      {showEasterEgg && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-sm animate-in fade-in-0">
-          <div className="text-center space-y-4 animate-in zoom-in-95 duration-300">
-            <div className="flex justify-center">
-              <Sparkles className="h-16 w-16 text-primary animate-pulse" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                🎉 You found it! 🎉
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Great job exploring the interface!
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-      <Sidebar collapsible="icon" className="border-r">
+    <Sidebar collapsible="icon" className="border-r">
         <SidebarHeader className="border-b p-0">
           <div className="flex items-start gap-1 px-1.5 py-2 min-w-0">
             <WorkspaceSwitcher />
@@ -248,46 +222,78 @@ export function AppSidebar() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-2 h-auto p-2.5 hover:bg-sidebar-accent"
+                className="w-full justify-start gap-3 h-auto py-3 px-3 hover:bg-sidebar-accent/80 transition-all duration-200 rounded-lg group"
               >
-                <Avatar 
-                  className="h-8 w-8 shrink-0 cursor-pointer transition-transform hover:scale-110 active:scale-95 relative z-10"
-                  onMouseDown={handleAvatarMouseDown}
-                  onClick={handleAvatarClick}
-                  title="Click me 5 times!"
-                >
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold pointer-events-none">
-                    {user.email?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-1 flex-col items-start text-left text-sm">
-                  <span className="truncate font-medium">
+                {/* Avatar with online indicator */}
+                <div className="relative shrink-0">
+                  <Avatar className="h-9 w-9 transition-all duration-200 group-hover:ring-2 group-hover:ring-primary/20">
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-sm font-semibold shadow-sm">
+                      {user.email?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
+                    </AvatarFallback>
+                  </Avatar>
+                  {/* Online status indicator */}
+                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-success ring-2 ring-sidebar" />
+                </div>
+                
+                {/* User info */}
+                <div className="flex flex-1 flex-col items-start text-left min-w-0">
+                  <span className="truncate font-semibold text-sm text-sidebar-foreground max-w-full">
                     {user.email?.split("@")[0] || "User"}
                   </span>
-                  <span className="truncate text-xs text-sidebar-foreground/60">
-                    {user.email}
+                  <span className="truncate text-xs text-sidebar-foreground/50 max-w-full">
+                    {currentWorkspace?.name || "Loading..."}
                   </span>
                 </div>
-                <ChevronUp className="ml-auto h-4 w-4 text-sidebar-foreground/50 shrink-0" />
+                
+                {/* Chevron with animation */}
+                <ChevronUp className="ml-auto h-4 w-4 text-sidebar-foreground/40 shrink-0 transition-transform duration-200 group-hover:text-sidebar-foreground/70 group-data-[state=open]:rotate-180" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" side="right">
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {user.email}
-                  </p>
+            <DropdownMenuContent 
+              className="w-64 p-2" 
+              align="end" 
+              side="right"
+              sideOffset={8}
+            >
+              {/* Header section */}
+              <div className="px-2 py-3 mb-2 rounded-md bg-muted/50">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-sm font-semibold">
+                      {user.email?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col min-w-0">
+                    <p className="text-sm font-semibold truncate">
+                      {user.email?.split("@")[0] || "User"}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {user.email}
+                    </p>
+                  </div>
                 </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/settings" className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
+                {currentWorkspace && (
+                  <div className="mt-2 pt-2 border-t border-border/50">
+                    <p className="text-xs text-muted-foreground">
+                      Workspace: <span className="font-medium text-foreground">{currentWorkspace.name}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <DropdownMenuItem asChild className="cursor-pointer rounded-md">
+                <Link href="/settings" className="flex items-center gap-2 py-2">
+                  <Settings className="h-4 w-4 text-muted-foreground" />
                   <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+              
+              <DropdownMenuSeparator className="my-2" />
+              
+              <DropdownMenuItem 
+                onClick={handleSignOut} 
+                className="cursor-pointer rounded-md text-destructive focus:text-destructive focus:bg-destructive/10"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
@@ -304,7 +310,6 @@ export function AppSidebar() {
         )}
       </SidebarFooter>
     </Sidebar>
-    </>
   );
 }
 

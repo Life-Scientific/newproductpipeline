@@ -154,3 +154,4 @@ GRANT EXECUTE ON FUNCTION public.handle_new_user() TO supabase_auth_admin;
 -- Portfolio Manager, Country Manager, or custom roles).
 -- ============================================================================
 
+

@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
+import { chartTheme, chartColors, getAxisProps, getTooltipProps, getLegendFormatter } from "@/lib/utils/chart-theme";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -63,19 +64,37 @@ export function CountryCoverageChart({
       <CardContent className="p-4 sm:p-6">
         <ResponsiveContainer width="100%" height={300} className="min-h-[300px]">
           <BarChart data={chartData} layout="vertical" onClick={handleClick} style={{ cursor: "pointer" }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" label={{ value: "Revenue (M$)", position: "insideBottom" }} />
-            <YAxis dataKey="country" type="category" width={100} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+            <XAxis 
+              type="number" 
+              {...getAxisProps("Revenue (M$)")}
+            />
+            <YAxis 
+              dataKey="country" 
+              type="category" 
+              width={100}
+              tick={chartTheme.tick}
+              axisLine={chartTheme.axis}
+            />
             <Tooltip
               formatter={(value: number) => `$${value.toFixed(2)}M`}
               labelFormatter={(label) => `Country: ${label}`}
+              {...getTooltipProps()}
+              cursor={{ fill: "var(--color-muted)", opacity: 0.1 }}
             />
-            <Legend />
-            <Bar dataKey="revenue" fill="#8884d8" name="Revenue" />
+            <Legend 
+              wrapperStyle={chartTheme.legend.wrapperStyle}
+              formatter={getLegendFormatter()}
+            />
+            <Bar 
+              dataKey="revenue" 
+              fill={chartColors.primary} 
+              name="Revenue"
+              radius={[0, 4, 4, 0]}
+            />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   );
 }
-

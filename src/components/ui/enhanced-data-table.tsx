@@ -6,13 +6,15 @@
  * - Debounced view saves
  * - Optimized sticky column calculations (only when needed)
  * - Reduced re-renders with React.memo
- * - Efficient drag and drop
+ * - Lazy-loaded drag and drop (only when enabled)
  * - Conditional rendering of expensive features
  */
 
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -28,30 +30,26 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  horizontalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
   ChevronDown,
   ChevronsLeft,
   ChevronsRight,
-  GripVertical,
   Save,
   X,
 } from "lucide-react";
+
+// Dynamically import DnD table to reduce initial bundle size
+// Only loaded when enableColumnReordering is true
+const DndTable = dynamic(
+  () => import("./data-table-dnd").then((mod) => ({ default: mod.DndTable })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-32 flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">Loading table...</p>
+      </div>
+    ),
+  }
+);
 
 import { Button } from "@/components/ui/button";
 import {
@@ -100,69 +98,9 @@ export interface EnhancedDataTableProps<TData, TValue> {
   tableId?: string;
   enableColumnReordering?: boolean;
   enableViewManagement?: boolean;
+  /** Enable URL-based pagination persistence (page number in URL params) */
+  enableUrlPagination?: boolean;
 }
-
-/**
- * Memoized sortable header cell component
- */
-const SortableHeaderCell = React.memo(function SortableHeaderCell({
-  header,
-  columnId,
-  stickyStyle,
-}: {
-  header: any;
-  columnId: string;
-  stickyStyle?: React.CSSProperties;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ 
-    id: columnId,
-    transition: {
-      duration: 200,
-      easing: 'ease-in-out',
-    },
-  });
-
-  const style = React.useMemo(
-    () => ({
-      transform: CSS.Transform.toString(transform),
-      transition: isDragging ? 'none' : transition,
-      opacity: isDragging ? 0.6 : 1,
-      backgroundColor: isDragging ? 'hsl(var(--muted))' : undefined,
-      boxShadow: isDragging ? '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' : undefined,
-      borderRadius: isDragging ? '4px' : undefined,
-      ...stickyStyle,
-    }),
-    [transform, transition, isDragging, stickyStyle]
-  );
-
-  return (
-    <TableHead 
-      ref={setNodeRef} 
-      style={style} 
-      className={`relative h-10 ${isDragging ? 'z-50' : ''}`}
-    >
-      <div className="flex items-center gap-2 h-full">
-        {flexRender(header.column.columnDef.header, header.getContext())}
-        <button
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing opacity-50 hover:opacity-100 transition-opacity touch-none flex-shrink-0"
-          type="button"
-          aria-label="Drag to reorder column"
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
-      </div>
-    </TableHead>
-  );
-});
 
 /**
  * Memoized table cell component
@@ -247,7 +185,27 @@ export function EnhancedDataTable<TData, TValue>({
   tableId,
   enableColumnReordering = true,
   enableViewManagement = true,
+  enableUrlPagination = false,
 }: EnhancedDataTableProps<TData, TValue>) {
+  // URL-based pagination hooks
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  // Get initial page from URL if URL pagination is enabled
+  const getInitialPageIndex = React.useCallback(() => {
+    if (enableUrlPagination) {
+      const pageParam = searchParams.get("page");
+      if (pageParam) {
+        const parsed = parseInt(pageParam, 10);
+        if (!isNaN(parsed) && parsed >= 1) {
+          return parsed - 1; // URL is 1-indexed, state is 0-indexed
+        }
+      }
+    }
+    return 0;
+  }, [enableUrlPagination, searchParams]);
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -257,7 +215,7 @@ export function EnhancedDataTable<TData, TValue>({
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [pagination, setPagination] = React.useState({
-    pageIndex: 0,
+    pageIndex: getInitialPageIndex(),
     pageSize,
   });
   const [saveViewDialogOpen, setSaveViewDialogOpen] = React.useState(false);
@@ -268,6 +226,38 @@ export function EnhancedDataTable<TData, TValue>({
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Sync URL with pagination state when URL pagination is enabled
+  const hasInitializedFromUrl = React.useRef(false);
+  React.useEffect(() => {
+    if (!enableUrlPagination || !isMounted) return;
+    
+    // On initial mount, sync from URL to state
+    if (!hasInitializedFromUrl.current) {
+      hasInitializedFromUrl.current = true;
+      const initialPage = getInitialPageIndex();
+      if (initialPage !== pagination.pageIndex) {
+        setPagination(prev => ({ ...prev, pageIndex: initialPage }));
+      }
+      return;
+    }
+    
+    // After initialization, sync from state to URL
+    const currentPageParam = searchParams.get("page");
+    const currentUrlPage = currentPageParam ? parseInt(currentPageParam, 10) : 1;
+    const newPage = pagination.pageIndex + 1; // Convert to 1-indexed
+    
+    if (currentUrlPage !== newPage) {
+      const params = new URLSearchParams(searchParams.toString());
+      if (newPage === 1) {
+        params.delete("page"); // Don't show page=1 in URL
+      } else {
+        params.set("page", newPage.toString());
+      }
+      const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+      router.replace(newUrl, { scroll: false });
+    }
+  }, [enableUrlPagination, isMounted, pagination.pageIndex, searchParams, pathname, router, getInitialPageIndex]);
 
   // Memoize columns to prevent unnecessary re-renders
   const memoizedColumns = React.useMemo(() => columns, [columns]);
@@ -370,29 +360,10 @@ export function EnhancedDataTable<TData, TValue>({
     [visibleColumns]
   );
 
-  // Drag and drop sensors - must be called at top level (Rules of Hooks)
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // Require 8px movement before drag starts
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  // Handle column reordering
-  const handleDragEnd = React.useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (over && active.id !== over.id) {
-        setColumnOrder((items) => {
-          const oldIndex = items.indexOf(active.id as string);
-          const newIndex = items.indexOf(over.id as string);
-          return arrayMove(items, oldIndex, newIndex);
-        });
-      }
+  // Handle column reordering - passed to DndTable component
+  const handleColumnOrderChange = React.useCallback(
+    (newOrder: string[]) => {
+      setColumnOrder(newOrder);
     },
     []
   );
@@ -664,107 +635,18 @@ export function EnhancedDataTable<TData, TValue>({
       {/* Table */}
       <div className="rounded-md border overflow-x-auto relative">
         {enableColumnReordering && isMounted ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-            autoScroll={{
-              threshold: {
-                x: 0.2,
-                y: 0.2,
-              },
-              acceleration: 10,
-              interval: 5,
-            }}
-          >
-            <Table className="min-w-full">
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    <SortableContext
-                      items={reorderableColumns.map((col) => col.id || "")}
-                      strategy={horizontalListSortingStrategy}
-                    >
-                      {headerGroup.headers.map((header) => {
-                        const columnId = header.column.id || ((header.column.columnDef as any).accessorKey as string);
-                        const meta = header.column.columnDef.meta as {
-                          align?: string;
-                          minWidth?: string;
-                          sticky?: "left" | "right";
-                        } | undefined;
-                        const stickyStyle = headerStylesMap.get(columnId);
-
-                        return enableColumnReordering && header.column.getCanHide() ? (
-                          <SortableHeaderCell
-                            key={header.id}
-                            header={header}
-                            columnId={columnId}
-                            stickyStyle={stickyStyle}
-                          />
-                        ) : (
-                          <TableHead
-                            key={header.id}
-                            className="h-10"
-                            style={{
-                              minWidth: meta?.minWidth,
-                              ...stickyStyle,
-                            }}
-                          >
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(header.column.columnDef.header, header.getContext())}
-                          </TableHead>
-                        );
-                      })}
-                    </SortableContext>
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center py-6">
-                      <p className="text-sm text-muted-foreground">Loading...</p>
-                    </TableCell>
-                  </TableRow>
-                ) : rowModel.rows?.length ? (
-                  rowModel.rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                      className="h-12"
-                    >
-                      {row.getVisibleCells().map((cell) => {
-                        const columnId = cell.column.id || ((cell.column.columnDef as any).accessorKey as string);
-                        const meta = cell.column.columnDef.meta as {
-                          align?: string;
-                          sticky?: "left" | "right";
-                          minWidth?: string;
-                        } | undefined;
-                        const stickyStyle = columnStylesMap.get(columnId);
-
-                        return (
-                          <MemoizedTableCell
-                            key={cell.id}
-                            cell={cell}
-                            stickyStyle={stickyStyle}
-                            align={meta?.align}
-                            minWidth={meta?.minWidth}
-                          />
-                        );
-                      })}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center py-6">
-                      <p className="text-sm text-muted-foreground">{emptyMessage}</p>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </DndContext>
+          /* DnD-enabled table - lazy loaded to reduce bundle size */
+          <DndTable
+            table={table}
+            columns={columns}
+            reorderableColumns={reorderableColumns}
+            headerStylesMap={headerStylesMap}
+            columnStylesMap={columnStylesMap}
+            rowModel={rowModel}
+            isLoading={isLoading}
+            emptyMessage={emptyMessage}
+            onColumnOrderChange={handleColumnOrderChange}
+          />
         ) : (
           // Simplified table without drag-and-drop when reordering is disabled
           <Table className="min-w-full">

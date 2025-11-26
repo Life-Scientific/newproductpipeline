@@ -4,6 +4,8 @@ import React from "react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/contexts/ThemeContext";
+import { getHeatmapColorScale, getHeatmapTextColor } from "@/lib/utils/chart-theme";
 
 export interface HeatmapDataPoint {
   x: string;
@@ -39,14 +41,10 @@ export function HeatmapGrid({
   onClick,
   className,
 }: HeatmapGridProps) {
-  // Default color scale (green intensity) if none provided
-  const defaultColorScale = (value: number) => {
-    // Normalize value 0-100 for opacity
-    const opacity = Math.max(0.1, Math.min(1, value / 100));
-    return `rgba(16, 185, 129, ${opacity})`; // emerald-500
-  };
-
-  const getColor = colorScale || defaultColorScale;
+  const { isDark } = useTheme();
+  
+  // Use provided color scale or theme-aware default
+  const getColor = colorScale || getHeatmapColorScale(isDark);
 
   // Create a lookup map for data points
   const dataMap = new Map<string, HeatmapDataPoint>();
@@ -72,7 +70,7 @@ export function HeatmapGrid({
           }}
         >
           {/* Header Row */}
-          <div className="sticky left-0 top-0 z-10 bg-background/95 p-2 font-medium text-sm text-muted-foreground">
+          <div className="sticky left-0 top-0 z-10 bg-background p-2 font-medium text-sm text-muted-foreground">
             {/* Empty corner */}
           </div>
           {xLabels.map((xLabel) => (
@@ -85,7 +83,7 @@ export function HeatmapGrid({
           {yLabels.map((yLabel) => (
             <React.Fragment key={yLabel}>
               {/* Y-Axis Label */}
-              <div className="sticky left-0 z-10 bg-background/95 p-2 text-xs font-medium flex items-center">
+              <div className="sticky left-0 z-10 bg-background p-2 text-xs font-medium flex items-center">
                 {yLabel}
               </div>
               
@@ -94,6 +92,7 @@ export function HeatmapGrid({
                 const point = dataMap.get(`${xLabel}:${yLabel}`);
                 const hasData = !!point;
                 const backgroundColor = hasData ? getColor(point.value) : "transparent";
+                const textColor = hasData ? getHeatmapTextColor(point.value, isDark) : undefined;
                 
                 return (
                   <TooltipProvider key={`${xLabel}-${yLabel}`}>
@@ -102,18 +101,16 @@ export function HeatmapGrid({
                         <div
                           className={cn(
                             "h-12 rounded-sm flex items-center justify-center text-xs transition-all border border-transparent hover:border-primary/50",
-                            hasData ? "cursor-pointer" : "bg-muted/10"
+                            hasData ? "cursor-pointer" : "bg-muted/20"
                           )}
                           style={{ backgroundColor }}
                           onClick={() => hasData && onClick?.(point)}
                         >
                           {hasData && (
-                            <span className={cn(
-                              "font-medium truncate px-1",
-                              // Dynamic text color based on background brightness approximation could be better
-                              // For now assuming darker backgrounds for higher values needs light text
-                              point.value > 50 ? "text-white" : "text-foreground"
-                            )}>
+                            <span 
+                              className="font-medium truncate px-1"
+                              style={{ color: textColor }}
+                            >
                               {point.label || valueFormatter(point.value)}
                             </span>
                           )}

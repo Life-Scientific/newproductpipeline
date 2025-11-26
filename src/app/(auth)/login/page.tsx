@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Suspense } from "react";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 
 // Microsoft logo SVG component
 function MicrosoftLogo({ className }: { className?: string }) {
@@ -82,18 +83,17 @@ function LoginContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <AuthLayout>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="w-full max-w-md"
       >
         <Card>
           <CardHeader>
             <CardTitle>Sign In</CardTitle>
             <CardDescription>
-              Enter your credentials to access LS Portfolio
+              Enter your credentials to access Navigator
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -163,20 +163,20 @@ function LoginContent() {
           </CardFooter>
         </Card>
       </motion.div>
-    </div>
+    </AuthLayout>
   );
 }
 
 function LoadingFallback() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <AuthLayout>
+      <Card>
         <CardHeader>
           <CardTitle>Sign In</CardTitle>
           <CardDescription>Loading...</CardDescription>
         </CardHeader>
       </Card>
-    </div>
+    </AuthLayout>
   );
 }
 

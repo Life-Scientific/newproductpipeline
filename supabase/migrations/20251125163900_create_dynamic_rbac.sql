@@ -811,3 +811,4 @@ GRANT SELECT ON public.permissions TO supabase_auth_admin;
 -- - user_role: primary role name (for backward compatibility)
 -- ============================================================================
 
+

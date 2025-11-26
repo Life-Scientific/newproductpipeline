@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useMemo, useEffect, useId } from "react";
+import { useState, useMemo, useEffect, useId, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
   XAxis,
@@ -23,10 +21,12 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import type { Database } from "@/lib/supabase/database.types";
+import { useTheme } from "@/contexts/ThemeContext";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"] & {
   country_id?: string | null;
@@ -206,12 +206,16 @@ function FilterMultiSelectClient({ label, options, selected, onSelectionChange, 
   );
 }
 
+// Default year range
+const DEFAULT_YEAR_RANGE = 10;
+
 export function TenYearProjectionChart({
   businessCases,
   formulations,
   exchangeRates: initialExchangeRates,
 }: TenYearProjectionChartProps) {
   const router = useRouter();
+  const { currentTheme } = useTheme();
   const [filters, setFilters] = useState<FilterType>({
     countries: [],
     formulations: [],
@@ -222,10 +226,44 @@ export function TenYearProjectionChart({
   const [exchangeRates] = useState<Map<string, number>>(initialExchangeRates || new Map());
   const chartId = useId().replace(/:/g, "-");
   
-  // Get chart colors - use hex colors that work reliably in SVG
-  // CSS variables with oklch don't work directly in SVG fill/stroke attributes
-  const revenueColor = "#3b82f6"; // Blue
-  const marginColor = "#10b981"; // Green
+  // Year range selection state
+  const [startYear, setStartYear] = useState<number | null>(null);
+  const [endYear, setEndYear] = useState<number | null>(null);
+  
+  // Get chart colors from theme - compute hex values from CSS variables
+  const [revenueColor, setRevenueColor] = useState("#3b82f6");
+  const [marginColor, setMarginColor] = useState("#10b981");
+  
+  // Update colors when theme changes
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    const computedStyle = getComputedStyle(document.documentElement);
+    
+    // Try to get theme chart colors, fall back to defaults
+    const chart1 = computedStyle.getPropertyValue("--chart-1").trim();
+    const chart2 = computedStyle.getPropertyValue("--chart-2").trim();
+    
+    // Convert oklch to hex using canvas
+    const oklchToHex = (oklchStr: string, fallback: string): string => {
+      if (!oklchStr || oklchStr === "") return fallback;
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = 1;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return fallback;
+        ctx.fillStyle = oklchStr;
+        ctx.fillRect(0, 0, 1, 1);
+        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+        return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+      } catch {
+        return fallback;
+      }
+    };
+    
+    setRevenueColor(oklchToHex(chart1, "#3b82f6"));
+    setMarginColor(oklchToHex(chart2, "#10b981"));
+  }, [currentTheme]);
 
   // Get unique filter options
   // Map formulation codes to "Name (Code)" display format
@@ -242,17 +280,27 @@ export function TenYearProjectionChart({
     return map;
   }, [businessCases]);
 
+  // Create a formulation code -> status lookup map once
+  const formulationStatusMap = useMemo(() => {
+    const map = new Map<string, string>();
+    formulations.forEach((f) => {
+      if (f.formulation_code && f.status) {
+        map.set(f.formulation_code, f.status);
+      }
+    });
+    return map;
+  }, [formulations]);
+
   const filterOptions = useMemo(() => {
     const countries = new Set<string>();
     const formulationDisplays = new Set<string>();
     const useGroups = new Set<string>();
-    const statuses = new Set<string>();
+    const statusCounts = new Map<string, number>();
 
     // Count maps for each filter type
     const countryCounts = new Map<string, number>();
     const formulationCounts = new Map<string, number>();
     const useGroupCounts = new Map<string, number>();
-    const statusCounts = new Map<string, number>();
 
     businessCases.forEach((bc) => {
       if (bc.country_name) {
@@ -260,10 +308,15 @@ export function TenYearProjectionChart({
         countryCounts.set(bc.country_name, (countryCounts.get(bc.country_name) || 0) + 1);
       }
       if (bc.formulation_code) {
-        // Use display format: "Name (Code)"
         const display = formulationDisplayMap.get(bc.formulation_code) || bc.formulation_code;
         formulationDisplays.add(display);
         formulationCounts.set(display, (formulationCounts.get(display) || 0) + 1);
+        
+        // Count by status more efficiently
+        const status = formulationStatusMap.get(bc.formulation_code);
+        if (status) {
+          statusCounts.set(status, (statusCounts.get(status) || 0) + 1);
+        }
       }
       if (bc.use_group_name) {
         useGroups.add(bc.use_group_name);
@@ -271,38 +324,31 @@ export function TenYearProjectionChart({
       }
     });
 
-    formulations.forEach((f) => {
-      if (f.status) {
-        statuses.add(f.status);
-        // Count business cases for this status
-        const bcCount = businessCases.filter(bc => {
-          const formulation = formulations.find(form => form.formulation_code === bc.formulation_code);
-          return formulation?.status === f.status;
-        }).length;
-        statusCounts.set(f.status, bcCount);
-      }
-    });
-
     return {
       countries: Array.from(countries).sort(),
       formulations: Array.from(formulationDisplays).sort(),
       useGroups: Array.from(useGroups).sort(),
-      statuses: Array.from(statuses).sort(),
+      statuses: Array.from(statusCounts.keys()).sort(),
       countryCounts,
       formulationCounts,
       useGroupCounts,
       statusCounts,
     };
-  }, [businessCases, formulations, formulationDisplayMap]);
+  }, [businessCases, formulationDisplayMap, formulationStatusMap]);
 
   // Filter business cases based on active filters
   const filteredBusinessCases = useMemo(() => {
+    // Early return if no filters active
+    if (!filters.countries.length && !filters.formulations.length && 
+        !filters.useGroups.length && !filters.statuses.length) {
+      return businessCases;
+    }
+    
     return businessCases.filter((bc) => {
       if (filters.countries.length > 0 && !filters.countries.includes(bc.country_name || "")) {
         return false;
       }
       if (filters.formulations.length > 0) {
-        // Formulation filter uses display format "Name (Code)", so check if BC's display matches
         const bcDisplay = formulationDisplayMap.get(bc.formulation_code || "") || bc.formulation_code || "";
         if (!filters.formulations.includes(bcDisplay)) {
           return false;
@@ -312,19 +358,18 @@ export function TenYearProjectionChart({
         return false;
       }
       if (filters.statuses.length > 0) {
-        const formulation = formulations.find((f) => f.formulation_code === bc.formulation_code);
-        if (!formulation || !filters.statuses.includes(formulation.status || "")) {
+        const status = formulationStatusMap.get(bc.formulation_code || "");
+        if (!status || !filters.statuses.includes(status)) {
           return false;
         }
       }
       return true;
     });
-  }, [businessCases, formulations, filters, formulationDisplayMap]);
+  }, [businessCases, filters, formulationDisplayMap, formulationStatusMap]);
 
 
-  // Generate chart data - show only years with actual data
-  const chartData = useMemo(() => {
-    // Find the actual range of fiscal years in the data
+  // Calculate available year range from data
+  const availableYearRange = useMemo(() => {
     let earliestYear = Infinity;
     let latestYear = -Infinity;
     
@@ -341,13 +386,49 @@ export function TenYearProjectionChart({
     // If no valid data, use current fiscal year as default
     if (earliestYear === Infinity || latestYear === -Infinity) {
       earliestYear = CURRENT_FISCAL_YEAR;
-      latestYear = CURRENT_FISCAL_YEAR + 9;
+      latestYear = CURRENT_FISCAL_YEAR + DEFAULT_YEAR_RANGE - 1;
     }
 
-    // Generate fiscal years only for the data range (no extra empty years)
+    return { minYear: earliestYear, maxYear: latestYear };
+  }, [filteredBusinessCases]);
+
+  // Generate year options for dropdowns - show all available years
+  const yearOptions = useMemo(() => {
+    const options: number[] = [];
+    for (let fy = availableYearRange.minYear; fy <= availableYearRange.maxYear; fy++) {
+      options.push(fy);
+    }
+    return options;
+  }, [availableYearRange]);
+
+  // Effective year range (selected or default to 10-year range starting from data min)
+  const effectiveStartYear = startYear ?? availableYearRange.minYear;
+  const effectiveEndYear = endYear ?? Math.min(availableYearRange.minYear + 9, availableYearRange.maxYear);
+  
+  // Start year options: all years up to end year (allow selecting full range)
+  const validStartYearOptions = useMemo(() => {
+    return yearOptions.filter(y => y <= effectiveEndYear);
+  }, [yearOptions, effectiveEndYear]);
+
+  // End year options: all years from start year onwards (allow selecting full range)
+  const validEndYearOptions = useMemo(() => {
+    return yearOptions.filter(y => y >= effectiveStartYear);
+  }, [yearOptions, effectiveStartYear]);
+  
+  // Calculate if current selection exceeds 10 years
+  const yearCount = effectiveEndYear - effectiveStartYear + 1;
+  const exceedsLimit = yearCount > 10;
+
+  // Generate chart data - show only years in selected range
+  const chartData = useMemo(() => {
+    // Use selected year range or default to data range
+    const displayStartYear = effectiveStartYear;
+    const displayEndYear = effectiveEndYear;
+
+    // Generate fiscal years for the selected range
     const fiscalYears: string[] = [];
     
-    for (let fyNum = earliestYear; fyNum <= latestYear; fyNum++) {
+    for (let fyNum = displayStartYear; fyNum <= displayEndYear; fyNum++) {
       const fyStr = `FY${String(fyNum).padStart(2, "0")}`;
       fiscalYears.push(fyStr);
     }
@@ -423,7 +504,7 @@ export function TenYearProjectionChart({
       marginEUR: year.marginEUR / 1000000,
       cogs: year.cogs / 1000000,
     }));
-  }, [filteredBusinessCases, exchangeRates]);
+  }, [filteredBusinessCases, exchangeRates, effectiveStartYear, effectiveEndYear]);
 
   const handleRemoveFilter = (type: keyof FilterType, value: string) => {
     setFilters((prev) => ({
@@ -440,6 +521,30 @@ export function TenYearProjectionChart({
       statuses: [],
     });
   };
+
+  // Handle year range changes
+  const handleStartYearChange = useCallback((value: string) => {
+    const newStartYear = parseInt(value, 10);
+    setStartYear(newStartYear);
+    // Ensure end year is not before start year
+    if (endYear !== null && endYear < newStartYear) {
+      setEndYear(newStartYear);
+    }
+  }, [endYear]);
+
+  const handleEndYearChange = useCallback((value: string) => {
+    const newEndYear = parseInt(value, 10);
+    setEndYear(newEndYear);
+    // Ensure start year is not after end year  
+    if (startYear !== null && startYear > newEndYear) {
+      setStartYear(newEndYear);
+    }
+  }, [startYear]);
+
+  const handleResetYearRange = useCallback(() => {
+    setStartYear(null);
+    setEndYear(null);
+  }, []);
 
   const handleDrillDown = (fiscalYear: string) => {
     const params = new URLSearchParams();
@@ -477,65 +582,89 @@ export function TenYearProjectionChart({
       transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
     >
       <Card className="w-full overflow-hidden">
-        <CardHeader className="space-y-1.5">
-          <div className="flex items-start justify-between gap-4">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <motion.div 
-              className="flex-1 space-y-1"
+              className="space-y-0.5"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
               <CardTitle className="text-xl font-semibold">Revenue Projection</CardTitle>
               <CardDescription className="text-sm">
-                Projected revenue and margin by fiscal year
-                {hasActiveFilters && (
-                  <motion.span 
-                    className="ml-1 font-medium text-foreground"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    ({filteredBusinessCases.length} business cases, {uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''})
-                  </motion.span>
-                )}
-                {!hasActiveFilters && (
-                  <motion.span 
-                    className="ml-1 text-muted-foreground"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    ({uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''} represented)
-                  </motion.span>
-                )}
+                {hasActiveFilters 
+                  ? <motion.span key="filtered" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{filteredBusinessCases.length} business cases, {uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''}</motion.span>
+                  : <span>{uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''} represented</span>
+                }
               </CardDescription>
             </motion.div>
             <motion.div 
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 flex-wrap"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <Button
-                variant={chartType === "line" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setChartType("line")}
-                className="transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                Line
-              </Button>
-              <Button
-                variant={chartType === "bar" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setChartType("bar")}
-                className="transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                Bar
-              </Button>
+            {/* Compact Year Range */}
+            <div className="flex items-center gap-1.5 text-sm">
+              <Select value={effectiveStartYear.toString()} onValueChange={handleStartYearChange}>
+                <SelectTrigger className="w-[72px] h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {validStartYearOptions.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      FY{year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-muted-foreground">–</span>
+              <Select value={effectiveEndYear.toString()} onValueChange={handleEndYearChange}>
+                <SelectTrigger className="w-[72px] h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {validEndYearOptions.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      FY{year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className={cn(
+                "text-xs tabular-nums",
+                exceedsLimit ? "text-amber-500" : "text-muted-foreground"
+              )}>
+                ({yearCount}yr)
+              </span>
+            </div>
+              
+              <div className="h-6 w-px bg-border hidden sm:block" />
+              
+              {/* Chart Type Toggle */}
+              <div className="flex items-center gap-1">
+                <Button
+                  variant={chartType === "line" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setChartType("line")}
+                  className="h-8 px-3 transition-all duration-200 hover:scale-105 active:scale-95"
+                >
+                  Line
+                </Button>
+                <Button
+                  variant={chartType === "bar" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setChartType("bar")}
+                  className="h-8 px-3 transition-all duration-200 hover:scale-105 active:scale-95"
+                >
+                  Bar
+                </Button>
+              </div>
             </motion.div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
+
         {/* Filters */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -617,18 +746,17 @@ export function TenYearProjectionChart({
                     initial={{ opacity: 0, scale: 0.8, x: -10 }}
                     animate={{ opacity: 1, scale: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2, delay: index * 0.05 }}
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
                   >
                     <Badge 
                       variant="secondary" 
-                      className="gap-1.5 pr-1 py-1.5 px-2.5 text-xs font-medium transition-all duration-200 hover:scale-105"
+                      className="gap-1.5 pr-1 py-1 px-2 text-xs hover:scale-105 transition-transform"
                     >
                       <span className="text-muted-foreground">Country:</span>
-                      <span className="text-foreground">{country}</span>
+                      <span>{country}</span>
                       <button
                         onClick={() => handleRemoveFilter("countries", country)}
-                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5 transition-all duration-200 hover:scale-110 active:scale-95"
-                        aria-label={`Remove ${country} filter`}
+                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -641,18 +769,17 @@ export function TenYearProjectionChart({
                     initial={{ opacity: 0, scale: 0.8, x: -10 }}
                     animate={{ opacity: 1, scale: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2, delay: (filters.countries.length + index) * 0.05 }}
+                    transition={{ duration: 0.2, delay: (filters.countries.length + index) * 0.03 }}
                   >
                     <Badge 
                       variant="secondary" 
-                      className="gap-1.5 pr-1 py-1.5 px-2.5 text-xs font-medium transition-all duration-200 hover:scale-105"
+                      className="gap-1.5 pr-1 py-1 px-2 text-xs hover:scale-105 transition-transform"
                     >
                       <span className="text-muted-foreground">Formulation:</span>
-                      <span className="text-foreground">{formulation}</span>
+                      <span className="max-w-[150px] truncate">{formulation}</span>
                       <button
                         onClick={() => handleRemoveFilter("formulations", formulation)}
-                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5 transition-all duration-200 hover:scale-110 active:scale-95"
-                        aria-label={`Remove ${formulation} filter`}
+                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -665,18 +792,17 @@ export function TenYearProjectionChart({
                     initial={{ opacity: 0, scale: 0.8, x: -10 }}
                     animate={{ opacity: 1, scale: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2, delay: (filters.countries.length + filters.formulations.length + index) * 0.05 }}
+                    transition={{ duration: 0.2, delay: (filters.countries.length + filters.formulations.length + index) * 0.03 }}
                   >
                     <Badge 
                       variant="secondary" 
-                      className="gap-1.5 pr-1 py-1.5 px-2.5 text-xs font-medium transition-all duration-200 hover:scale-105"
+                      className="gap-1.5 pr-1 py-1 px-2 text-xs hover:scale-105 transition-transform"
                     >
                       <span className="text-muted-foreground">Use Group:</span>
-                      <span className="text-foreground">{useGroup}</span>
+                      <span>{useGroup}</span>
                       <button
                         onClick={() => handleRemoveFilter("useGroups", useGroup)}
-                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5 transition-all duration-200 hover:scale-110 active:scale-95"
-                        aria-label={`Remove ${useGroup} filter`}
+                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -689,18 +815,17 @@ export function TenYearProjectionChart({
                     initial={{ opacity: 0, scale: 0.8, x: -10 }}
                     animate={{ opacity: 1, scale: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2, delay: (filters.countries.length + filters.formulations.length + filters.useGroups.length + index) * 0.05 }}
+                    transition={{ duration: 0.2, delay: (filters.countries.length + filters.formulations.length + filters.useGroups.length + index) * 0.03 }}
                   >
                     <Badge 
                       variant="secondary" 
-                      className="gap-1.5 pr-1 py-1.5 px-2.5 text-xs font-medium transition-all duration-200 hover:scale-105"
+                      className="gap-1.5 pr-1 py-1 px-2 text-xs hover:scale-105 transition-transform"
                     >
                       <span className="text-muted-foreground">Status:</span>
-                      <span className="text-foreground">{status}</span>
+                      <span>{status}</span>
                       <button
                         onClick={() => handleRemoveFilter("statuses", status)}
-                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5 transition-all duration-200 hover:scale-110 active:scale-95"
-                        aria-label={`Remove ${status} filter`}
+                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -714,30 +839,19 @@ export function TenYearProjectionChart({
 
         {/* Chart */}
         <motion.div 
-          className="w-full h-[400px] sm:h-[500px] lg:h-[600px] relative"
+          className="w-full h-[400px] sm:h-[500px] relative"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
-          {/* Background grid pattern */}
-          <div 
-            className="absolute inset-0 opacity-30 pointer-events-none"
-            style={{
-              backgroundImage: `
-                linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
-                linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)
-              `,
-              backgroundSize: '40px 40px',
-            }}
-          />
           <AnimatePresence mode="wait">
             <motion.div
               key={chartType}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="w-full h-full relative z-10"
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="w-full h-full"
             >
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%" minHeight={400}>
@@ -863,8 +977,7 @@ export function TenYearProjectionChart({
                   dot={{ r: 3, fill: revenueColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
                   activeDot={{ r: 5, fill: revenueColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
                   isAnimationActive={true}
-                  animationBegin={0}
-                  animationDuration={1500}
+                  animationDuration={800}
                   animationEasing="ease-out"
                 />
                 {/* Margin Area with gradient fill and line (EUR) */}
@@ -878,8 +991,7 @@ export function TenYearProjectionChart({
                   dot={{ r: 3, fill: marginColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
                   activeDot={{ r: 5, fill: marginColor, strokeWidth: 2, stroke: "hsl(var(--background))" }}
                   isAnimationActive={true}
-                  animationBegin={200}
-                  animationDuration={1500}
+                  animationDuration={800}
                   animationEasing="ease-out"
                 />
               </AreaChart>
@@ -984,20 +1096,18 @@ export function TenYearProjectionChart({
                   dataKey="revenueEUR" 
                   fill={revenueColor} 
                   name="Revenue (EUR)" 
-                  radius={[6, 6, 0, 0]}
+                  radius={[4, 4, 0, 0]}
                   isAnimationActive={true}
-                  animationBegin={0}
-                  animationDuration={2000}
+                  animationDuration={800}
                   animationEasing="ease-out"
                 />
                 <Bar 
                   dataKey="marginEUR" 
                   fill={marginColor} 
                   name="Margin (EUR)" 
-                  radius={[6, 6, 0, 0]}
+                  radius={[4, 4, 0, 0]}
                   isAnimationActive={true}
-                  animationBegin={200}
-                  animationDuration={2000}
+                  animationDuration={800}
                   animationEasing="ease-out"
                 />
                     </BarChart>
@@ -1017,88 +1127,69 @@ export function TenYearProjectionChart({
 
         {/* Summary Stats */}
         <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t"
+          className="grid grid-cols-3 gap-4 pt-4 border-t"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <motion.div 
-            className="space-y-1"
+            className="space-y-0.5"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Revenue</p>
             <motion.p 
-              className="text-2xl sm:text-3xl font-bold text-foreground"
+              className="text-xl sm:text-2xl font-bold"
               key={chartData.reduce((sum, year) => sum + year.revenueEUR, 0)}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              initial={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              €
-              {(
-                chartData.reduce((sum, year) => sum + year.revenueEUR, 0) * 1000000
-              ).toLocaleString(undefined, {
+              €{(chartData.reduce((sum, year) => sum + year.revenueEUR, 0) * 1000000).toLocaleString(undefined, {
                 maximumFractionDigits: 1,
                 notation: "compact",
                 compactDisplay: "short",
               })}
             </motion.p>
-            <p className="text-xs text-muted-foreground">EUR</p>
           </motion.div>
           <motion.div 
-            className="space-y-1"
+            className="space-y-0.5"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Margin</p>
             <motion.p 
-              className="text-2xl sm:text-3xl font-bold text-foreground"
+              className="text-xl sm:text-2xl font-bold"
               key={chartData.reduce((sum, year) => sum + year.marginEUR, 0)}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              initial={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              €
-              {(
-                chartData.reduce((sum, year) => sum + year.marginEUR, 0) * 1000000
-              ).toLocaleString(undefined, {
+              €{(chartData.reduce((sum, year) => sum + year.marginEUR, 0) * 1000000).toLocaleString(undefined, {
                 maximumFractionDigits: 1,
                 notation: "compact",
                 compactDisplay: "short",
               })}
             </motion.p>
-            <p className="text-xs text-muted-foreground">EUR</p>
           </motion.div>
           <motion.div 
-            className="space-y-1"
+            className="space-y-0.5"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Avg Margin</p>
             <motion.p 
-              className="text-2xl sm:text-3xl font-bold text-foreground"
-              key={chartData.length > 0 && chartData.reduce((sum, year) => sum + year.revenueEUR, 0) > 0
-                ? (
-                    (chartData.reduce((sum, year) => sum + year.marginEUR, 0) /
-                      chartData.reduce((sum, year) => sum + year.revenueEUR, 0)) *
-                    100
-                  ).toFixed(1)
-                : "0.0"}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              className="text-xl sm:text-2xl font-bold"
+              key={chartData.length > 0 ? chartData.reduce((sum, year) => sum + year.revenueEUR, 0) : 0}
+              initial={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
               {chartData.length > 0 && chartData.reduce((sum, year) => sum + year.revenueEUR, 0) > 0
-                ? (
-                    (chartData.reduce((sum, year) => sum + year.marginEUR, 0) /
-                      chartData.reduce((sum, year) => sum + year.revenueEUR, 0)) *
-                    100
-                  ).toFixed(1)
-                : "0.0"}
-              <span className="text-lg ml-1">%</span>
+                ? ((chartData.reduce((sum, year) => sum + year.marginEUR, 0) /
+                    chartData.reduce((sum, year) => sum + year.revenueEUR, 0)) * 100).toFixed(1)
+                : "0.0"}%
             </motion.p>
-            <p className="text-xs text-muted-foreground">Across all years</p>
           </motion.div>
         </motion.div>
       </CardContent>

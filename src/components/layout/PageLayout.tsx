@@ -1,6 +1,9 @@
+"use client";
+
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
+import { triggerEasterEgg } from "@/components/easter-eggs/KonamiCode";
 
 export interface PageLayoutProps {
   title: string;
@@ -38,7 +41,14 @@ export function PageLayout({
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold">{title}</h1>
             {description && (
-              <p className="text-sm sm:text-base text-muted-foreground">
+              <p 
+                className={cn(
+                  "text-sm sm:text-base text-muted-foreground",
+                  description.includes("Navigator") && "cursor-pointer hover:text-muted-foreground/80 transition-colors select-none"
+                )}
+                onClick={description.includes("Navigator") ? triggerEasterEgg : undefined}
+                title={description.includes("Navigator") ? "👀" : undefined}
+              >
                 {description}
               </p>
             )}

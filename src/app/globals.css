@@ -164,8 +164,22 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background-color: var(--background);
   }
+}
+
+/* Dotted background pattern for auth pages in default light theme */
+html[data-theme="light"] .auth-background {
+  background-color: #f8f8f8;
+  background-image: radial-gradient(circle, #d0d0d0 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Non-light themes: plain background */
+html:not([data-theme="light"]) .auth-background,
+html.dark .auth-background {
+  background-color: var(--background);
 }
 
 /* Ensure CardGrid gaps are applied */

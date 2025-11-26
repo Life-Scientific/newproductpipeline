@@ -2388,6 +2388,33 @@ export type Database = {
           },
         ]
       }
+      permissions: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          display_name: string
+          permission_id: string
+          permission_key: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          display_name: string
+          permission_id?: string
+          permission_key: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          display_name?: string
+          permission_id?: string
+          permission_key?: string
+        }
+        Relationships: []
+      }
       reference_product_eppo_crops: {
         Row: {
           created_at: string | null
@@ -2624,6 +2651,66 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          created_at: string | null
+          permission_id: string
+          role_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          permission_id: string
+          role_id: string
+        }
+        Update: {
+          created_at?: string | null
+          permission_id?: string
+          role_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["permission_id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["role_id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          is_system_role: boolean | null
+          role_id: string
+          role_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          is_system_role?: boolean | null
+          role_id?: string
+          role_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          is_system_role?: boolean | null
+          role_id?: string
+          role_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       submissions: {
         Row: {
           actual_approval_date: string | null
@@ -2819,27 +2906,32 @@ export type Database = {
       }
       user_roles: {
         Row: {
-          created_at: string | null
-          id: number
-          role: Database["public"]["Enums"]["app_role"]
-          updated_at: string | null
+          assigned_at: string | null
+          assigned_by: string | null
+          role_id: string
           user_id: string
         }
         Insert: {
-          created_at?: string | null
-          id?: number
-          role?: Database["public"]["Enums"]["app_role"]
-          updated_at?: string | null
+          assigned_at?: string | null
+          assigned_by?: string | null
+          role_id: string
           user_id: string
         }
         Update: {
-          created_at?: string | null
-          id?: number
-          role?: Database["public"]["Enums"]["app_role"]
-          updated_at?: string | null
+          assigned_at?: string | null
+          assigned_by?: string | null
+          role_id?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["role_id"]
+          },
+        ]
       }
       user_workspace_preferences: {
         Row: {
@@ -3201,6 +3293,44 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_chart_data_by_year: {
+        Row: {
+          avg_margin_percent: number | null
+          business_case_group_count: number | null
+          country_id: string | null
+          country_name: string | null
+          currency_code: string | null
+          exchange_rate_to_eur: number | null
+          fiscal_year: string | null
+          formulation_count: number | null
+          total_cogs: number | null
+          total_margin: number | null
+          total_margin_eur: number | null
+          total_revenue: number | null
+          total_revenue_eur: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formulation_country_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["country_id"]
+          },
+        ]
+      }
+      vw_chart_data_totals_by_year: {
+        Row: {
+          avg_margin_percent: number | null
+          business_case_group_count: number | null
+          country_count: number | null
+          fiscal_year: string | null
+          formulation_count: number | null
+          total_margin_eur: number | null
+          total_revenue_eur: number | null
+        }
+        Relationships: []
+      }
       vw_cogs: {
         Row: {
           cogs_group_id: string | null
@@ -3299,6 +3429,23 @@ export type Database = {
             referencedColumns: ["formulation_id"]
           },
         ]
+      }
+      vw_dashboard_summary: {
+        Row: {
+          avg_margin_percent: number | null
+          formulations_with_business_cases: number | null
+          killed_formulations: number | null
+          monitoring_formulations: number | null
+          not_evaluated_formulations: number | null
+          selected_formulations: number | null
+          total_business_cases: number | null
+          total_formulations: number | null
+          total_margin: number | null
+          total_revenue: number | null
+          unique_business_case_groups: number | null
+          unique_countries: number | null
+        }
+        Relationships: []
       }
       vw_formulation_country_detail: {
         Row: {
@@ -3797,6 +3944,27 @@ export type Database = {
           status: string
         }[]
       }
+      get_all_permissions: {
+        Args: never
+        Returns: {
+          category: string
+          description: string
+          display_name: string
+          permission_id: string
+          permission_key: string
+        }[]
+      }
+      get_all_roles: {
+        Args: never
+        Returns: {
+          created_at: string
+          description: string
+          is_system_role: boolean
+          permissions: Json
+          role_id: string
+          role_name: string
+        }[]
+      }
       get_all_users_with_roles: {
         Args: never
         Returns: {
@@ -3804,8 +3972,8 @@ export type Database = {
           email_confirmed_at: string
           id: string
           last_sign_in_at: string
-          roles: Json
           role_names: string[]
+          roles: Json
           user_created_at: string
         }[]
       }
@@ -3896,10 +4064,11 @@ export type Database = {
           is_critical: boolean
         }[]
       }
-      get_user_role: {
-        Args: never
-        Returns: string
-      }
+      get_user_permissions: { Args: never; Returns: string[] }
+      get_user_role: { Args: never; Returns: string }
+      get_user_roles: { Args: never; Returns: string[] }
+      has_any_permission: { Args: { p_keys: string[] }; Returns: boolean }
+      has_permission: { Args: { p_key: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_editor: { Args: never; Returns: boolean }
     }

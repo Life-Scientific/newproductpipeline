@@ -126,6 +126,129 @@ export const getFormulations = unstable_cache(
   { tags: ["formulations"] }
 );
 
+// =============================================================================
+// Dashboard Optimization Queries
+// These use pre-aggregated views to minimize data transfer
+// =============================================================================
+
+/**
+ * Dashboard summary metrics - pre-aggregated single row result.
+ * Use this instead of fetching all formulations and business cases separately.
+ */
+export interface DashboardSummary {
+  total_formulations: number;
+  selected_formulations: number;
+  monitoring_formulations: number;
+  development_formulations: number;
+  dropped_formulations: number;
+  total_business_cases: number;
+  unique_business_case_groups: number;
+  total_revenue: number;
+  total_margin: number;
+  avg_margin_percent: number;
+  unique_countries: number;
+  formulations_with_business_cases: number;
+  active_portfolio_count: number;
+}
+
+export const getDashboardSummary = unstable_cache(
+  async (): Promise<DashboardSummary | null> => {
+    const supabase = createCachedClient();
+    
+    const { data, error } = await supabase
+      .from("vw_dashboard_summary")
+      .select("*")
+      .single();
+    
+    if (error) {
+      console.error("Failed to fetch dashboard summary:", error.message);
+      return null;
+    }
+    
+    return data as DashboardSummary;
+  },
+  ["dashboard-summary"],
+  { tags: ["formulations", "business-cases"], revalidate: 60 }
+);
+
+/**
+ * Chart data aggregated by fiscal year and country.
+ * Pre-includes EUR conversions using latest exchange rates.
+ */
+export interface ChartDataByYear {
+  fiscal_year: string;
+  country_id: string | null;
+  country_name: string | null;
+  currency_code: string | null;
+  exchange_rate_to_eur: number | null;
+  total_revenue: number;
+  total_margin: number;
+  total_cogs: number;
+  avg_margin_percent: number;
+  business_case_group_count: number;
+  formulation_count: number;
+  total_revenue_eur: number;
+  total_margin_eur: number;
+}
+
+export const getChartDataByYear = unstable_cache(
+  async (): Promise<ChartDataByYear[]> => {
+    const supabase = createCachedClient();
+    
+    const { data, error } = await supabase
+      .from("vw_chart_data_by_year")
+      .select("*")
+      .order("fiscal_year", { ascending: true });
+    
+    if (error) {
+      console.error("Failed to fetch chart data by year:", error.message);
+      return [];
+    }
+    
+    return (data || []) as ChartDataByYear[];
+  },
+  ["chart-data-by-year"],
+  { tags: ["business-cases"], revalidate: 60 }
+);
+
+/**
+ * Simple yearly totals for basic charts.
+ * Smallest possible result set for year-over-year views.
+ */
+export interface ChartYearlyTotals {
+  fiscal_year: string;
+  total_revenue_eur: number;
+  total_margin_eur: number;
+  avg_margin_percent: number;
+  business_case_group_count: number;
+  formulation_count: number;
+  country_count: number;
+}
+
+export const getChartYearlyTotals = unstable_cache(
+  async (): Promise<ChartYearlyTotals[]> => {
+    const supabase = createCachedClient();
+    
+    const { data, error } = await supabase
+      .from("vw_chart_data_totals_by_year")
+      .select("*")
+      .order("fiscal_year", { ascending: true });
+    
+    if (error) {
+      console.error("Failed to fetch chart yearly totals:", error.message);
+      return [];
+    }
+    
+    return (data || []) as ChartYearlyTotals[];
+  },
+  ["chart-yearly-totals"],
+  { tags: ["business-cases"], revalidate: 60 }
+);
+
+// =============================================================================
+// End Dashboard Optimization Queries
+// =============================================================================
+
 export async function getBlacklistedFormulations() {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -1136,16 +1259,18 @@ export const getBusinessCasesForProjectionTable = unstable_cache(
     
     const { data: useGroupData } = await supabase
       .from("formulation_country_use_group")
-      .select("formulation_country_use_group_id, target_market_entry_fy")
+      .select("formulation_country_use_group_id, target_market_entry_fy, use_group_status")
       .in("formulation_country_use_group_id", useGroupIds);
 
-    // Create map for lookup: business_case_id -> target_market_entry_fy
+    // Create map for lookup: business_case_id -> target_market_entry_fy and use_group_status
     const businessCaseToTargetEntry = new Map<string, string | null>();
+    const businessCaseToUseGroupStatus = new Map<string, string | null>();
     junctionData?.forEach((j) => {
       if (j.business_case_id && j.formulation_country_use_group_id) {
         const useGroup = useGroupData?.find(ug => ug.formulation_country_use_group_id === j.formulation_country_use_group_id);
         if (useGroup) {
           businessCaseToTargetEntry.set(j.business_case_id, useGroup.target_market_entry_fy || null);
+          businessCaseToUseGroupStatus.set(j.business_case_id, useGroup.use_group_status || null);
         }
       }
     });
@@ -1163,6 +1288,7 @@ export const getBusinessCasesForProjectionTable = unstable_cache(
       if (!groups.has(groupId)) {
         // Get target_market_entry_fy for this business case (original from use group)
         const targetMarketEntry = businessCaseToTargetEntry.get(bc.business_case_id || "") || null;
+        const useGroupStatus = businessCaseToUseGroupStatus.get(bc.business_case_id || "") || null;
         
         // Use stored effective_start_fiscal_year from database (preserves creation context)
         const effectiveStartFiscalYear = bc.effective_start_fiscal_year || null;
@@ -1181,6 +1307,7 @@ export const getBusinessCasesForProjectionTable = unstable_cache(
           use_group_id: "", // Will populate below
           use_group_name: bc.use_group_name || null,
           use_group_variant: bc.use_group_variant || null,
+          use_group_status: useGroupStatus, // Store use group status (Active/Inactive)
           target_market_entry: targetMarketEntry, // Store original target_market_entry
           effective_start_fiscal_year: effectiveStartFiscalYear, // Store effective start (preserves creation context)
           years_data: {},

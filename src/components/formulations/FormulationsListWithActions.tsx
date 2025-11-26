@@ -294,6 +294,7 @@ export function FormulationsListWithActions({ formulations }: FormulationsListWi
       pageSize={25}
       showPageSizeSelector={true}
       tableId="formulations"
+      enableUrlPagination={true}
     />
   );
 }

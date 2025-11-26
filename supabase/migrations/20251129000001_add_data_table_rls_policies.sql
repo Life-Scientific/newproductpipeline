@@ -506,3 +506,4 @@ WITH CHECK (user_id = auth.uid());
 -- Users will only be able to access data they have permission for.
 -- ============================================================================
 
+

@@ -53,6 +53,7 @@ export interface BusinessCaseGroupData {
   use_group_id: string;
   use_group_name: string | null;
   use_group_variant: string | null;
+  use_group_status: string | null; // Status of the linked use group (Active/Inactive)
   target_market_entry: string | null; // Original target market entry fiscal year from use group (e.g., "FY20")
   effective_start_fiscal_year: string | null; // Effective start fiscal year at creation time (e.g., "FY26" if created in FY26)
   years_data: Record<string, {

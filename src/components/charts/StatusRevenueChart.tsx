@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
+import { chartTheme, chartColors, getAxisProps, getLegendFormatter } from "@/lib/utils/chart-theme";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
@@ -81,44 +82,35 @@ export function StatusRevenueChart({
       <CardContent className="p-4 sm:p-6">
         <ResponsiveContainer width="100%" height={300} className="min-h-[300px]">
           <BarChart data={chartData} onClick={handleClick} style={{ cursor: "pointer" }}>
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
             <XAxis 
               dataKey="status" 
               angle={-45} 
               textAnchor="end" 
               height={80}
+              tick={chartTheme.tick}
+              axisLine={chartTheme.axis}
               tickFormatter={(value) => {
                 const data = chartData.find(d => d.status === value);
                 return data ? `${value} (${data.count})` : value;
               }}
             />
-            <YAxis label={{ value: "Amount (M$)", angle: -90, position: "insideLeft" }} />
+            <YAxis 
+              {...getAxisProps("Amount (M$)", true)}
+            />
             <Tooltip
-              formatter={(value: number, name: string, props: any) => {
-                if (name === "marginPercent") {
-                  return `${value.toFixed(1)}%`;
-                }
-                if (name === "count") {
-                  return `${value} business cases`;
-                }
-                return `$${value.toFixed(2)}M`;
-              }}
-              labelFormatter={(label) => {
-                const data = chartData.find(d => d.status === label);
-                return `Status: ${label}${data ? ` (${data.count} cases)` : ''}`;
-              }}
               content={({ active, payload, label }) => {
                 if (active && payload && payload.length) {
                   const data = chartData.find(d => d.status === label);
                   return (
                     <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
-                      <p className="font-semibold text-sm mb-2">
+                      <p className="font-semibold text-sm mb-2 text-foreground">
                         Status: {label}
                         {data && <span className="ml-2 text-muted-foreground font-normal">({data.count} business cases)</span>}
                       </p>
                       {payload.map((entry: any, index: number) => {
                         if (entry.dataKey === 'count') return null;
-                        const color = entry.color || (entry.dataKey === 'revenue' ? '#8884d8' : '#82ca9d');
+                        const color = entry.color;
                         const name = entry.name;
                         return (
                           <div key={index} className="flex items-center gap-2 text-sm">
@@ -127,7 +119,7 @@ export function StatusRevenueChart({
                               style={{ backgroundColor: color }}
                             />
                             <span className="text-muted-foreground">{name}:</span>
-                            <span className="font-medium">
+                            <span className="font-medium text-foreground">
                               {name === "Margin %" 
                                 ? `${Number(entry.value).toFixed(1)}%`
                                 : `$${Number(entry.value).toFixed(2)}M`}
@@ -140,19 +132,27 @@ export function StatusRevenueChart({
                 }
                 return null;
               }}
+              cursor={{ fill: "var(--color-muted)", opacity: 0.1 }}
             />
-            <Legend />
-            <Bar dataKey="revenue" fill="#8884d8" name="Revenue (M$)" />
-            <Bar dataKey="margin" fill="#82ca9d" name="Margin (M$)" />
+            <Legend 
+              wrapperStyle={chartTheme.legend.wrapperStyle}
+              formatter={getLegendFormatter()}
+            />
+            <Bar 
+              dataKey="revenue" 
+              fill={chartColors.primary} 
+              name="Revenue (M$)"
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar 
+              dataKey="margin" 
+              fill={chartColors.success} 
+              name="Margin (M$)"
+              radius={[4, 4, 0, 0]}
+            />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   );
 }
-
-
-
-
-
-

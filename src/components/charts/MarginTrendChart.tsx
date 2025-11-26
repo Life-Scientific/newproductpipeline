@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
+import { chartTheme, chartColors, getAxisProps, getTooltipProps, getLegendFormatter } from "@/lib/utils/chart-theme";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -71,20 +72,31 @@ export function MarginTrendChart({ businessCases, onDrillDown }: MarginTrendChar
       <CardContent className="p-4 sm:p-6">
         <ResponsiveContainer width="100%" height={300} className="min-h-[300px]">
           <LineChart data={chartData} onClick={handleClick} style={{ cursor: "pointer" }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="yearOffset" />
-            <YAxis label={{ value: "Margin %", angle: -90, position: "insideLeft" }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+            <XAxis 
+              dataKey="yearOffset" 
+              {...getAxisProps()}
+            />
+            <YAxis 
+              {...getAxisProps("Margin %", true)}
+            />
             <Tooltip
               formatter={(value: number) => `${value.toFixed(1)}%`}
               labelFormatter={(label) => label}
+              {...getTooltipProps()}
             />
-            <Legend />
+            <Legend 
+              wrapperStyle={chartTheme.legend.wrapperStyle}
+              formatter={getLegendFormatter()}
+            />
             <Line
               type="monotone"
               dataKey="marginPercent"
-              stroke="#8884d8"
+              stroke={chartColors.primary}
               strokeWidth={2}
               name="Margin %"
+              dot={{ fill: chartColors.primary, strokeWidth: 2, r: 3 }}
+              activeDot={{ r: 5, strokeWidth: 2 }}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -92,4 +104,3 @@ export function MarginTrendChart({ businessCases, onDrillDown }: MarginTrendChar
     </Card>
   );
 }
-

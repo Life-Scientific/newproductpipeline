@@ -1,5 +1,20 @@
-import * as Icons from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import {
+  LayoutDashboard,
+  Target,
+  MapPin,
+  GitBranch,
+  FlaskConical,
+  Beaker,
+  Globe,
+  FileText,
+  TrendingUp,
+  DollarSign,
+  BarChart3,
+  GitCompare,
+  Database,
+  Ban,
+  type LucideIcon,
+} from "lucide-react";
 
 // Type for menu item from config
 export interface MenuItem {
@@ -10,40 +25,33 @@ export interface MenuItem {
   order: number;
 }
 
-// Helper function to get icon component from string name
-function getIconComponent(iconName: string | null): LucideIcon {
-  if (!iconName) return Icons.LayoutDashboard;
-  const IconComponent = (Icons as Record<string, any>)[iconName];
-  return IconComponent || Icons.LayoutDashboard;
-}
-
 // Menu configuration for the Portfolio workspace
 const portfolioMenuItems: MenuItem[] = [
   // Overview
-  { title: "Financial Dashboard", path: "/", icon: getIconComponent("LayoutDashboard"), group: "Overview", order: 1 },
-  { title: "Strategy Dashboard", path: "/portfolio-strategy", icon: getIconComponent("Target"), group: "Overview", order: 2 },
-  { title: "Markets Overview", path: "/markets", icon: getIconComponent("MapPin"), group: "Overview", order: 3 },
+  { title: "Financial Dashboard", path: "/", icon: LayoutDashboard, group: "Overview", order: 1 },
+  { title: "Strategy Dashboard", path: "/portfolio-strategy", icon: Target, group: "Overview", order: 2 },
+  { title: "Markets Overview", path: "/markets", icon: MapPin, group: "Overview", order: 3 },
   
   // Market & Strategy
-  { title: "Pipeline Tracker", path: "/pipeline-tracker", icon: getIconComponent("GitBranch"), group: "Market & Strategy", order: 1 },
+  { title: "Pipeline Tracker", path: "/pipeline-tracker", icon: GitBranch, group: "Market & Strategy", order: 1 },
   
   // Core Data
-  { title: "Formulations", path: "/formulations", icon: getIconComponent("FlaskConical"), group: "Core Data", order: 1 },
-  { title: "Active Ingredients", path: "/active-ingredients", icon: getIconComponent("Beaker"), group: "Core Data", order: 2 },
-  { title: "Countries", path: "/countries", icon: getIconComponent("Globe"), group: "Core Data", order: 3 },
-  { title: "Use Groups", path: "/use-groups", icon: getIconComponent("FileText"), group: "Core Data", order: 4 },
+  { title: "Formulations", path: "/formulations", icon: FlaskConical, group: "Core Data", order: 1 },
+  { title: "Active Ingredients", path: "/active-ingredients", icon: Beaker, group: "Core Data", order: 2 },
+  { title: "Countries", path: "/countries", icon: Globe, group: "Core Data", order: 3 },
+  { title: "Use Groups", path: "/use-groups", icon: FileText, group: "Core Data", order: 4 },
   
   // Financials
-  { title: "Business Cases", path: "/business-cases", icon: getIconComponent("TrendingUp"), group: "Financials", order: 1 },
-  { title: "COGS", path: "/cogs", icon: getIconComponent("DollarSign"), group: "Financials", order: 2 },
+  { title: "Business Cases", path: "/business-cases", icon: TrendingUp, group: "Financials", order: 1 },
+  { title: "COGS", path: "/cogs", icon: DollarSign, group: "Financials", order: 2 },
   
   // Analysis
-  { title: "Analytics", path: "/analytics", icon: getIconComponent("BarChart3"), group: "Analysis", order: 1 },
-  { title: "Compare", path: "/formulations/compare", icon: getIconComponent("GitCompare"), group: "Analysis", order: 2 },
+  { title: "Analytics", path: "/analytics", icon: BarChart3, group: "Analysis", order: 1 },
+  { title: "Compare", path: "/formulations/compare", icon: GitCompare, group: "Analysis", order: 2 },
   
   // System
-  { title: "Reference Data", path: "/reference", icon: getIconComponent("Database"), group: "System", order: 1 },
-  { title: "Blacklisted Codes", path: "/formulations/blacklisted", icon: getIconComponent("Ban"), group: "System", order: 2 },
+  { title: "Reference Data", path: "/reference", icon: Database, group: "System", order: 1 },
+  { title: "Blacklisted Codes", path: "/formulations/blacklisted", icon: Ban, group: "System", order: 2 },
 ];
 
 /**

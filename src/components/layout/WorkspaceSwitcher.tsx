@@ -1,8 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronDown, LayoutDashboard } from "lucide-react";
-import * as Icons from "lucide-react";
+import {
+  ChevronDown,
+  LayoutDashboard,
+  GitBranch,
+  FlaskConical,
+  Globe,
+  FileText,
+  TrendingUp,
+  DollarSign,
+  BarChart3,
+  GitCompare,
+  Database,
+  Calculator,
+  Target,
+  Map,
+  Shield,
+  PieChart,
+  MapPin,
+  Beaker,
+  Ban,
+  type LucideIcon,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,11 +36,32 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaces, type Workspace } from "@/lib/actions/workspaces";
 import { cn } from "@/lib/utils";
 
+// Icon map for dynamic icon lookup - only includes icons actually used in workspaces
+const iconMap: Record<string, LucideIcon> = {
+  LayoutDashboard,
+  GitBranch,
+  FlaskConical,
+  Globe,
+  FileText,
+  TrendingUp,
+  DollarSign,
+  BarChart3,
+  GitCompare,
+  Database,
+  Calculator,
+  Target,
+  Map,
+  Shield,
+  PieChart,
+  MapPin,
+  Beaker,
+  Ban,
+};
+
 // Helper function to get icon component from string name
-function getIconComponent(iconName: string | null) {
+function getIconComponent(iconName: string | null): LucideIcon {
   if (!iconName) return LayoutDashboard;
-  const IconComponent = (Icons as unknown as Record<string, React.ComponentType<any>>)[iconName];
-  return IconComponent || LayoutDashboard;
+  return iconMap[iconName] || LayoutDashboard;
 }
 
 export function WorkspaceSwitcher() {

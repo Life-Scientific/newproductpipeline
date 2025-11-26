@@ -21,6 +21,7 @@ export function BusinessCasesPageClient({ initialBusinessCases, exchangeRates }:
     countryIds: [] as string[],
     formulationIds: [] as string[],
     useGroupIds: [] as string[],
+    statuses: [] as string[],
   });
   const [createModalOpen, setCreateModalOpen] = useState(false);
   
@@ -42,6 +43,12 @@ export function BusinessCasesPageClient({ initialBusinessCases, exchangeRates }:
       if (filters.useGroupIds.length > 0) {
         const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
         if (!filters.useGroupIds.includes(useGroupKey)) {
+          return false;
+        }
+      }
+      // Status filter
+      if (filters.statuses.length > 0) {
+        if (!bc.use_group_status || !filters.statuses.includes(bc.use_group_status)) {
           return false;
         }
       }

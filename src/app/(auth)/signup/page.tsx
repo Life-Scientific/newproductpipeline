@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -51,18 +52,17 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <AuthLayout>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="w-full max-w-md"
       >
         <Card>
           <CardHeader>
             <CardTitle>Sign Up</CardTitle>
             <CardDescription>
-              Create an account to access LS Portfolio
+              Create an account to access Navigator
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSignup}>
@@ -118,7 +118,7 @@ export default function SignupPage() {
           </form>
         </Card>
       </motion.div>
-    </div>
+    </AuthLayout>
   );
 }
 

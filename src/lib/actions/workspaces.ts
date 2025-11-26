@@ -65,6 +65,52 @@ export async function getWorkspaceBySlug(slug: string): Promise<Workspace | null
   return data;
 }
 
+/**
+ * Get workspace with menu items in a single query using Supabase's nested select.
+ * This is optimized for performance - reduces multiple DB round-trips to just one.
+ */
+export async function getWorkspaceWithMenuBySlug(slug: string): Promise<WorkspaceWithMenuItems | null> {
+  const supabase = await createClient();
+  
+  // Single query with nested select for menu items
+  const { data, error } = await supabase
+    .from("workspaces")
+    .select(`
+      *,
+      workspace_menu_items (*)
+    `)
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .single();
+  
+  if (error) {
+    if (error.code === "PGRST116") {
+      return null; // Not found
+    }
+    console.warn("Failed to fetch workspace with menu:", error.message);
+    return null;
+  }
+  
+  if (!data) return null;
+  
+  // Filter active menu items and sort by group_name then display_order
+  const menuItems = ((data.workspace_menu_items as WorkspaceMenuItem[]) || [])
+    .filter((item) => item.is_active)
+    .sort((a, b) => {
+      // Sort by group_name first, then by display_order
+      const groupCompare = a.group_name.localeCompare(b.group_name);
+      if (groupCompare !== 0) return groupCompare;
+      return a.display_order - b.display_order;
+    });
+  
+  // Return workspace with filtered and sorted menu items
+  const { workspace_menu_items, ...workspace } = data;
+  return {
+    ...workspace,
+    menu_items: menuItems,
+  } as WorkspaceWithMenuItems;
+}
+
 export async function getWorkspaceWithMenuItems(workspaceId: string): Promise<WorkspaceWithMenuItems | null> {
   const supabase = await createClient();
   
@@ -76,6 +122,7 @@ export async function getWorkspaceWithMenuItems(workspaceId: string): Promise<Wo
     .single();
   
   if (workspaceError || !workspace) {
+    console.warn("Failed to fetch workspace:", workspaceError?.message);
     return null;
   }
   
@@ -88,7 +135,12 @@ export async function getWorkspaceWithMenuItems(workspaceId: string): Promise<Wo
     .order("display_order");
   
   if (menuError) {
-    throw new Error(`Failed to fetch menu items: ${menuError.message}`);
+    // Log error but don't throw - return workspace with empty menu items
+    console.warn("Failed to fetch menu items:", menuError.message);
+    return {
+      ...workspace,
+      menu_items: [],
+    };
   }
   
   return {
