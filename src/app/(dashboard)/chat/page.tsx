@@ -102,13 +102,20 @@ export default function ChatPage() {
     await sendMessage({ content: question });
   };
 
-  // Get text content from message parts
+  // Get text content from message
   const getMessageContent = (message: typeof messages[0]): string => {
-    if (!message.parts) return "";
-    return message.parts
-      .filter((part): part is { type: "text"; text: string } => part.type === "text")
-      .map((part) => part.text)
-      .join("");
+    // Try parts first (newer API), fallback to content (older API)
+    if (message.parts && message.parts.length > 0) {
+      return message.parts
+        .filter((part): part is { type: "text"; text: string } => part.type === "text")
+        .map((part) => part.text)
+        .join("");
+    }
+    // Fallback to content property
+    if (typeof (message as { content?: string }).content === "string") {
+      return (message as { content: string }).content;
+    }
+    return "";
   };
 
   return (
