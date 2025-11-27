@@ -951,6 +951,8 @@ export async function getBusinessCasesForChart() {
         margin_percent,
         country_name,
         country_id,
+        formulation_country_id,
+        formulation_country_use_group_id,
         formulation_id,
         formulation_code,
         formulation_name,
@@ -972,8 +974,161 @@ export async function getBusinessCasesForChart() {
     }
   }
   
+  // Fetch country_status separately from formulation_country table
+  // Need to handle both direct links and use group links
+  const formulationCountryIds = [
+    ...new Set(
+      allData
+        .map((bc) => bc.formulation_country_id)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+
+  // Also get formulation_country_ids from use groups
+  const useGroupIds = [
+    ...new Set(
+      allData
+        .map((bc) => bc.formulation_country_use_group_id)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+  
+  console.log(`[getBusinessCasesForChart] Total business cases: ${allData.length}`);
+  console.log(`[getBusinessCasesForChart] Direct formulation_country_ids: ${formulationCountryIds.length}`);
+  console.log(`[getBusinessCasesForChart] Use group IDs to resolve: ${useGroupIds.length}`);
+
+  // Resolve use groups to formulation_country_ids
+  let useGroupFormulationCountryIds: string[] = [];
+  const useGroupToFormulationCountryMap = new Map<string, string>();
+  if (useGroupIds.length > 0) {
+    const batchSize = 5000;
+    for (let i = 0; i < useGroupIds.length; i += batchSize) {
+      const batch = useGroupIds.slice(i, i + batchSize);
+      const { data: ugData } = await supabase
+        .from("formulation_country_use_group")
+        .select("formulation_country_use_group_id, formulation_country_id")
+        .in("formulation_country_use_group_id", batch);
+      
+      if (ugData) {
+        ugData.forEach((ug) => {
+          if (ug.formulation_country_id && ug.formulation_country_use_group_id) {
+            useGroupToFormulationCountryMap.set(ug.formulation_country_use_group_id, ug.formulation_country_id);
+            useGroupFormulationCountryIds.push(ug.formulation_country_id);
+          }
+        });
+      }
+    }
+  }
+
+  // Combine all formulation_country_ids (direct + via use groups)
+  const allFormulationCountryIds = [
+    ...new Set([...formulationCountryIds, ...useGroupFormulationCountryIds]),
+  ];
+
+  // Fetch country_status for all formulation_country_ids
+  // Load all from vw_formulation_country_detail and filter in memory
+  // (The .in() query with many IDs was causing "Bad Request" errors)
+  let countryStatusMap = new Map<string, string | null>();
+  let countryStatusFetchFailed = false;
+  
+  console.log(`[getBusinessCasesForChart] Attempting to fetch country_status for ${allFormulationCountryIds.length} formulation_country_ids`);
+  
+  // Create a Set for faster lookup
+  const fcIdSet = new Set(allFormulationCountryIds);
+  
+  if (allFormulationCountryIds.length > 0) {
+    try {
+      // Fetch all country statuses from the view (it's a relatively small dataset)
+      // Use pagination to handle large results
+      const pageSize = 1000;
+      let page = 0;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const { data: fcData, error: fcError } = await supabase
+          .from("vw_formulation_country_detail")
+          .select("formulation_country_id, country_status")
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+        
+        if (fcError) {
+          console.error(`[getBusinessCasesForChart] Failed to fetch country_status from view (page ${page}):`, fcError.message, fcError.code, fcError.details);
+          countryStatusFetchFailed = true;
+          break;
+        }
+        
+        if (fcData && fcData.length > 0) {
+          fcData.forEach((fc) => {
+            // Only add if this ID is in our set of needed IDs
+            if (fc.formulation_country_id && fcIdSet.has(fc.formulation_country_id)) {
+              countryStatusMap.set(fc.formulation_country_id, fc.country_status);
+            }
+          });
+          
+          if (fcData.length < pageSize) {
+            hasMore = false;
+          } else {
+            page++;
+          }
+        } else {
+          hasMore = false;
+        }
+      }
+      
+      console.log(`[getBusinessCasesForChart] Fetched ${countryStatusMap.size} country_status records (from ${page + 1} pages)`);
+    } catch (err) {
+      console.error(`[getBusinessCasesForChart] Exception fetching country_status:`, err);
+      countryStatusFetchFailed = true;
+    }
+  }
+  
+  if (countryStatusFetchFailed) {
+    console.warn(`[getBusinessCasesForChart] Country status fetch failed - continuing with null country_status values`);
+  } else {
+    console.log(`[getBusinessCasesForChart] Successfully loaded ${countryStatusMap.size} country_status mappings`);
+  }
+
+  // Enrich business cases with country_status and formulation_country_id
+  // Resolve formulation_country_id for each business case (direct or via use group)
+  const enrichedData = allData.map((bc) => {
+    let fcId: string | null = null;
+    
+    // First try direct link
+    if (bc.formulation_country_id) {
+      fcId = bc.formulation_country_id;
+    }
+    // Otherwise try via use group
+    else if (bc.formulation_country_use_group_id) {
+      fcId = useGroupToFormulationCountryMap.get(bc.formulation_country_use_group_id) || null;
+    }
+    
+    // Get country_status from map, handling undefined properly
+    let countryStatus: string | null = null;
+    if (fcId) {
+      const statusFromMap = countryStatusMap.get(fcId);
+      // Map.get() returns undefined if key doesn't exist, but status could also be null in DB
+      // If undefined, the formulation_country_id wasn't found in our query (shouldn't happen)
+      // If null, the status is actually null in the DB (should default to "Not yet evaluated" per schema)
+      countryStatus = statusFromMap !== undefined ? statusFromMap : null;
+    }
+    
+    return {
+      ...bc,
+      formulation_country_id: fcId || bc.formulation_country_id || null,
+      country_status: countryStatus,
+    };
+  });
+  
+  // Debug: Log enrichment statistics
+  const statusCounts = new Map<string, number>();
+  enrichedData.forEach((bc) => {
+    const status = bc.country_status || "null/undefined";
+    statusCounts.set(status, (statusCounts.get(status) || 0) + 1);
+  });
+  console.log("Country status enrichment stats:", Object.fromEntries(statusCounts));
+  console.log(`Total enriched: ${enrichedData.length}, Map size: ${countryStatusMap.size}, Unique FC IDs: ${allFormulationCountryIds.length}`);
+  
   // Filter orphans only
-  return allData.filter(bc => bc.formulation_code && bc.country_name);
+  return enrichedData.filter(bc => bc.formulation_code && bc.country_name);
 }
 
 export async function getBusinessCaseById(businessCaseId: string) {

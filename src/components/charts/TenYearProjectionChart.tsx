@@ -29,9 +29,26 @@ import type { Database } from "@/lib/supabase/database.types";
 import { useTheme } from "@/contexts/ThemeContext";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 
+// MECE (Mutually Exclusive, Collectively Exhaustive) status constants
+const ALL_COUNTRY_STATUSES = [
+  "Not yet evaluated",
+  "Not selected for entry",
+  "Selected for entry",
+  "On hold",
+  "Withdrawn",
+] as const;
+
+const ALL_FORMULATION_STATUSES = [
+  "Not Yet Evaluated",
+  "Selected",
+  "Being Monitored",
+  "Killed",
+] as const;
+
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"] & {
   country_id?: string | null;
   country_status?: string | null;
+  formulation_country_id?: string | null;
 };
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 
@@ -350,7 +367,7 @@ export function TenYearProjectionChart({
     const formulationCounts = new Map<string, Set<string>>(); // formulation_display -> Set<business_case_group_id>
     const useGroupCounts = new Map<string, Set<string>>(); // use_group_name -> Set<business_case_group_id>
     const formulationStatusGroupCounts = new Map<string, Set<string>>(); // status -> Set<business_case_group_id>
-    const countryStatusGroupCounts = new Map<string, Set<string>>(); // status -> Set<business_case_group_id>
+    const countryStatusGroupCounts = new Map<string, Set<string>>(); // status -> Set<formulation_country_id>
 
     // Determine which countries/formulations to show based on cascading filters
     let filteredBCs = businessCases;
@@ -409,12 +426,32 @@ export function TenYearProjectionChart({
         }
         useGroupCounts.get(bc.use_group_name)!.add(groupId);
       }
-      // Count by country status (unique groups, treat null as "Selected for entry")
-      const countryStatus = bc.country_status || "Selected for entry";
-      if (!countryStatusGroupCounts.has(countryStatus)) {
-        countryStatusGroupCounts.set(countryStatus, new Set());
+      // Count by country status (unique formulation-country combinations)
+      // Country status is at the formulation-country level, not business case group level
+      // We need formulation_country_id to count, but it should be set by the query for all cases
+      if (bc.formulation_country_id) {
+        // Use the actual country_status value, or "Not yet evaluated" if null/undefined
+        // Note: Database default is "Not yet evaluated", so null means it wasn't fetched
+        const countryStatus = bc.country_status !== null && bc.country_status !== undefined && bc.country_status !== ""
+          ? bc.country_status 
+          : "Not yet evaluated";
+        if (!countryStatusGroupCounts.has(countryStatus)) {
+          countryStatusGroupCounts.set(countryStatus, new Set());
+        }
+        countryStatusGroupCounts.get(countryStatus)!.add(bc.formulation_country_id);
+      } else {
+        // If no formulation_country_id, try to get country_status directly
+        // This shouldn't happen if query is correct, but handle gracefully
+        if (bc.country_status !== null && bc.country_status !== undefined && bc.country_status !== "") {
+          const countryStatus = bc.country_status;
+          if (!countryStatusGroupCounts.has(countryStatus)) {
+            countryStatusGroupCounts.set(countryStatus, new Set());
+          }
+          // Use a composite key since we don't have formulation_country_id
+          const fallbackKey = `${bc.formulation_id || 'unknown'}-${bc.country_id || 'unknown'}`;
+          countryStatusGroupCounts.get(countryStatus)!.add(fallbackKey);
+        }
       }
-      countryStatusGroupCounts.get(countryStatus)!.add(groupId);
     });
 
     // Convert Sets to counts
@@ -441,6 +478,20 @@ export function TenYearProjectionChart({
     const countryStatusCountsFinal = new Map<string, number>();
     countryStatusGroupCounts.forEach((groups, status) => {
       countryStatusCountsFinal.set(status, groups.size);
+    });
+
+    // Ensure all country statuses appear in filter (MECE - even with 0 count)
+    ALL_COUNTRY_STATUSES.forEach((status) => {
+      if (!countryStatusCountsFinal.has(status)) {
+        countryStatusCountsFinal.set(status, 0);
+      }
+    });
+
+    // Ensure all formulation statuses appear in filter (MECE - even with 0 count)
+    ALL_FORMULATION_STATUSES.forEach((status) => {
+      if (!formulationStatusCountsFinal.has(status)) {
+        formulationStatusCountsFinal.set(status, 0);
+      }
     });
 
     return {
@@ -483,9 +534,11 @@ export function TenYearProjectionChart({
         }
       }
       // Country Status filter - only include if status is in selected list
-      // Default is "Selected for entry", so null/undefined should be treated as "Selected for entry"
       if (filters.countryStatuses.length > 0) {
-        const countryStatus = bc.country_status || "Selected for entry";
+        // Treat null/undefined as "Not yet evaluated" for filtering
+        const countryStatus = bc.country_status !== null && bc.country_status !== undefined 
+          ? bc.country_status 
+          : "Not yet evaluated";
         // Only include if the country status is in the selected list
         if (!filters.countryStatuses.includes(countryStatus)) {
           return false;
