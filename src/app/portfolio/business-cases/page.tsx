@@ -3,8 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { BusinessCasesPageClient } from "./BusinessCasesPageClient";
 
-// Cache business cases data for 60 seconds
-export const revalidate = 60;
+// Use dynamic rendering to ensure fresh data after mutations
+export const dynamic = "force-dynamic";
 
 export default async function BusinessCasesPage() {
   const [businessCases, allExchangeRates] = await Promise.all([
