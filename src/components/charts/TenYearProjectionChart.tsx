@@ -82,6 +82,7 @@ function FilterMultiSelectClient({ label, options, selected, onSelectionChange, 
   const [searchValue, setSearchValue] = useState("");
   const allSelected = selected.length === options.length && options.length > 0;
   const someSelected = selected.length > 0 && selected.length < options.length;
+  const selectAllId = useId();
 
   useEffect(() => {
     setMounted(true);
@@ -115,10 +116,10 @@ function FilterMultiSelectClient({ label, options, selected, onSelectionChange, 
     return (
       <Button
         variant="outline"
-        className="w-full justify-between"
+        className="justify-between h-9 px-3"
         disabled
       >
-        <span className="truncate">{label}</span>
+        <span className="text-sm">{label}</span>
         <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </Button>
     );
@@ -131,33 +132,33 @@ function FilterMultiSelectClient({ label, options, selected, onSelectionChange, 
           variant="outline"
           disabled={disabled}
           className={cn(
-            "w-full justify-between transition-colors",
+            "justify-between h-9 px-3",
             selected.length > 0 && "bg-accent border-primary/20",
             disabled && "opacity-50 cursor-not-allowed"
           )}
         >
-          <span className="truncate text-sm">
+          <span className="text-sm whitespace-nowrap">
             {selected.length === 0
               ? label
               : `${label} (${selected.length})`}
           </span>
           <ChevronDown className={cn(
-            "ml-2 h-4 w-4 shrink-0 transition-transform",
-            open && "rotate-180",
-            "opacity-50"
+            "ml-2 h-4 w-4 shrink-0",
+            open && "rotate-180"
           )} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+      <PopoverContent className="w-[320px] p-0" align="start">
         <div className="p-3 border-b space-y-2">
           <div className="flex items-center space-x-2 px-2 py-1.5">
             <Checkbox
+              id={selectAllId}
               checked={allSelected}
               onCheckedChange={handleToggleAll}
             />
             <label
+              htmlFor={selectAllId}
               className="text-sm font-medium cursor-pointer flex-1"
-              onClick={handleToggleAll}
             >
               {someSelected ? `Selected ${selected.length} of ${options.length}` : "Select all"}
             </label>
@@ -193,29 +194,30 @@ function FilterMultiSelectClient({ label, options, selected, onSelectionChange, 
             </div>
           ) : (
             <div className="space-y-0.5">
-              {filteredOptions.map((option) => {
+              {filteredOptions.map((option, index) => {
                 const isSelected = selected.includes(option);
+                const optionId = `${selectAllId}-option-${index}`;
                 return (
-                  <label
+                  <div
                     key={option}
-                    onClick={() => handleToggle(option)}
                     className={cn(
                       "w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors cursor-pointer",
                       isSelected && "bg-accent/50"
                     )}
+                    onClick={() => handleToggle(option)}
                   >
                     <Checkbox 
+                      id={optionId}
                       checked={isSelected} 
                       onCheckedChange={() => handleToggle(option)}
-                      onClick={(e) => e.stopPropagation()}
                     />
-                    <span className="flex-1 truncate">{option}</span>
+                    <label htmlFor={optionId} className="flex-1 cursor-pointer">{option}</label>
                     {counts && counts.has(option) && (
                       <span className="text-xs text-muted-foreground ml-auto">
                         ({counts.get(option)})
                       </span>
                     )}
-                  </label>
+                  </div>
                 );
               })}
             </div>
@@ -882,75 +884,77 @@ export function TenYearProjectionChart({
             )}
           </div>
           
-          {/* Filter Multi-Selects - Grouped into Scope and Status Filters */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Scope Filters Group */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Scope</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {filterOptions.countries.length > 0 && (
-                  <FilterMultiSelectClient
-                    label="Country"
-                    options={filterOptions.countries}
-                    selected={filters.countries}
-                    onSelectionChange={(selected) => {
-                      setFilters((prev) => ({ ...prev, countries: selected }));
-                    }}
-                    counts={filterOptions.countryCounts}
-                  />
-                )}
-                {filterOptions.formulations.length > 0 && (
-                  <FilterMultiSelectClient
-                    label="Formulation"
-                    options={filterOptions.formulations}
-                    selected={filters.formulations}
-                    onSelectionChange={(selected) => {
-                      setFilters((prev) => ({ ...prev, formulations: selected }));
-                    }}
-                    counts={filterOptions.formulationCounts}
-                  />
-                )}
-                {filterOptions.useGroups.length > 0 && (
-                  <FilterMultiSelectClient
-                    label="Use Group"
-                    options={filterOptions.useGroups}
-                    selected={filters.useGroups}
-                    onSelectionChange={(selected) => {
-                      setFilters((prev) => ({ ...prev, useGroups: selected }));
-                    }}
-                    counts={filterOptions.useGroupCounts}
-                    disabled={filters.formulations.length === 0 || filters.countries.length === 0}
-                  />
-                )}
+          {/* Filter Multi-Selects - Scrollable on mobile */}
+          <div className="overflow-x-auto -mx-4 px-4 pb-2">
+            <div className="flex gap-6 min-w-max">
+              {/* Scope Filters Group */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Scope</h4>
+                <div className="flex gap-2">
+                  {filterOptions.countries.length > 0 && (
+                    <FilterMultiSelectClient
+                      label="Country"
+                      options={filterOptions.countries}
+                      selected={filters.countries}
+                      onSelectionChange={(selected) => {
+                        setFilters((prev) => ({ ...prev, countries: selected }));
+                      }}
+                      counts={filterOptions.countryCounts}
+                    />
+                  )}
+                  {filterOptions.formulations.length > 0 && (
+                    <FilterMultiSelectClient
+                      label="Formulation"
+                      options={filterOptions.formulations}
+                      selected={filters.formulations}
+                      onSelectionChange={(selected) => {
+                        setFilters((prev) => ({ ...prev, formulations: selected }));
+                      }}
+                      counts={filterOptions.formulationCounts}
+                    />
+                  )}
+                  {filterOptions.useGroups.length > 0 && (
+                    <FilterMultiSelectClient
+                      label="Use Group"
+                      options={filterOptions.useGroups}
+                      selected={filters.useGroups}
+                      onSelectionChange={(selected) => {
+                        setFilters((prev) => ({ ...prev, useGroups: selected }));
+                      }}
+                      counts={filterOptions.useGroupCounts}
+                      disabled={filters.formulations.length === 0 || filters.countries.length === 0}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-            
-            {/* Status Filters Group */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status Filters</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {filterOptions.formulationStatuses.length > 0 && (
-                  <FilterMultiSelectClient
-                    label="Formulation Status"
-                    options={filterOptions.formulationStatuses}
-                    selected={filters.formulationStatuses}
-                    onSelectionChange={(selected) => {
-                      setFilters((prev) => ({ ...prev, formulationStatuses: selected }));
-                    }}
-                    counts={filterOptions.formulationStatusCounts}
-                  />
-                )}
-                {filterOptions.countryStatuses.length > 0 && (
-                  <FilterMultiSelectClient
-                    label="Formulation-Country Status"
-                    options={filterOptions.countryStatuses}
-                    selected={filters.countryStatuses}
-                    onSelectionChange={(selected) => {
-                      setFilters((prev) => ({ ...prev, countryStatuses: selected }));
-                    }}
-                    counts={filterOptions.countryStatusCounts}
-                  />
-                )}
+              
+              {/* Status Filters Group */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status Filters</h4>
+                <div className="flex gap-2">
+                  {filterOptions.formulationStatuses.length > 0 && (
+                    <FilterMultiSelectClient
+                      label="Formulation Status"
+                      options={filterOptions.formulationStatuses}
+                      selected={filters.formulationStatuses}
+                      onSelectionChange={(selected) => {
+                        setFilters((prev) => ({ ...prev, formulationStatuses: selected }));
+                      }}
+                      counts={filterOptions.formulationStatusCounts}
+                    />
+                  )}
+                  {filterOptions.countryStatuses.length > 0 && (
+                    <FilterMultiSelectClient
+                      label="Formulation-Country Status"
+                      options={filterOptions.countryStatuses}
+                      selected={filters.countryStatuses}
+                      onSelectionChange={(selected) => {
+                        setFilters((prev) => ({ ...prev, countryStatuses: selected }));
+                      }}
+                      counts={filterOptions.countryStatusCounts}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1378,77 +1382,102 @@ export function TenYearProjectionChart({
         </motion.div>
 
         {/* Year-by-Year Metrics Table */}
-        {chartData.length > 0 && (
-          <motion.div 
-            className="pt-4 border-t"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Metric</th>
-                    {chartData.map((year) => (
-                      <th 
-                        key={year.fiscalYear}
-                        className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide min-w-[80px]"
-                      >
-                        {year.fiscalYear}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b hover:bg-muted/50 transition-colors">
-                    <td className="py-3 px-4 text-sm font-medium">Total Revenue (EUR)</td>
-                    {chartData.map((year) => (
-                      <td 
-                        key={`revenue-${year.fiscalYear}`}
-                        className="text-center py-3 px-4 text-sm tabular-nums"
-                      >
-                        €{(year.revenueEUR * 1000000).toLocaleString(undefined, {
+        {chartData.length > 0 && (() => {
+          // Calculate totals for summary column
+          const totalRevenue = chartData.reduce((sum, y) => sum + y.revenueEUR, 0);
+          const totalMargin = chartData.reduce((sum, y) => sum + y.marginEUR, 0);
+          const avgMarginPercent = totalRevenue > 0 ? (totalMargin / totalRevenue) * 100 : 0;
+          
+          return (
+            <motion.div 
+              className="pt-4 border-t -mx-4 px-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <div className="overflow-x-auto pb-2">
+                <table className="border-collapse min-w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap sticky left-0 bg-background z-10 min-w-[120px]">Metric</th>
+                      {chartData.map((year) => (
+                        <th 
+                          key={year.fiscalYear}
+                          className="text-center py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap min-w-[80px]"
+                        >
+                          {year.fiscalYear}
+                        </th>
+                      ))}
+                      <th className="text-center py-3 px-3 text-xs font-semibold text-foreground uppercase tracking-wide bg-muted/50 whitespace-nowrap min-w-[90px]">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b hover:bg-muted/50 transition-colors">
+                      <td className="py-3 px-3 text-sm font-medium sticky left-0 bg-background z-10 whitespace-nowrap">Revenue (EUR)</td>
+                      {chartData.map((year) => (
+                        <td 
+                          key={`revenue-${year.fiscalYear}`}
+                          className="text-center py-3 px-3 text-sm tabular-nums whitespace-nowrap"
+                        >
+                          €{(year.revenueEUR * 1000000).toLocaleString(undefined, {
+                            maximumFractionDigits: 1,
+                            notation: "compact",
+                            compactDisplay: "short",
+                          })}
+                        </td>
+                      ))}
+                      <td className="text-center py-3 px-3 text-sm tabular-nums font-semibold bg-muted/50 whitespace-nowrap">
+                        €{(totalRevenue * 1000000).toLocaleString(undefined, {
                           maximumFractionDigits: 1,
                           notation: "compact",
                           compactDisplay: "short",
                         })}
                       </td>
-                    ))}
-                  </tr>
-                  <tr className="border-b hover:bg-muted/50 transition-colors">
-                    <td className="py-3 px-4 text-sm font-medium">Total Margin (EUR)</td>
-                    {chartData.map((year) => (
-                      <td 
-                        key={`margin-${year.fiscalYear}`}
-                        className="text-center py-3 px-4 text-sm tabular-nums"
-                      >
-                        €{(year.marginEUR * 1000000).toLocaleString(undefined, {
+                    </tr>
+                    <tr className="border-b hover:bg-muted/50 transition-colors">
+                      <td className="py-3 px-3 text-sm font-medium sticky left-0 bg-background z-10 whitespace-nowrap">Margin (EUR)</td>
+                      {chartData.map((year) => (
+                        <td 
+                          key={`margin-${year.fiscalYear}`}
+                          className="text-center py-3 px-3 text-sm tabular-nums whitespace-nowrap"
+                        >
+                          €{(year.marginEUR * 1000000).toLocaleString(undefined, {
+                            maximumFractionDigits: 1,
+                            notation: "compact",
+                            compactDisplay: "short",
+                          })}
+                        </td>
+                      ))}
+                      <td className="text-center py-3 px-3 text-sm tabular-nums font-semibold bg-muted/50 whitespace-nowrap">
+                        €{(totalMargin * 1000000).toLocaleString(undefined, {
                           maximumFractionDigits: 1,
                           notation: "compact",
                           compactDisplay: "short",
                         })}
                       </td>
-                    ))}
-                  </tr>
-                  <tr className="border-b hover:bg-muted/50 transition-colors">
-                    <td className="py-3 px-4 text-sm font-medium">Avg Margin %</td>
-                    {chartData.map((year) => (
-                      <td 
-                        key={`margin-pct-${year.fiscalYear}`}
-                        className="text-center py-3 px-4 text-sm tabular-nums"
-                      >
-                        {year.revenueEUR > 0 
-                          ? ((year.marginEUR / year.revenueEUR) * 100).toFixed(1)
-                          : "0.0"}%
+                    </tr>
+                    <tr className="border-b hover:bg-muted/50 transition-colors">
+                      <td className="py-3 px-3 text-sm font-medium sticky left-0 bg-background z-10 whitespace-nowrap">Margin %</td>
+                      {chartData.map((year) => (
+                        <td 
+                          key={`margin-pct-${year.fiscalYear}`}
+                          className="text-center py-3 px-3 text-sm tabular-nums whitespace-nowrap"
+                        >
+                          {year.revenueEUR > 0 
+                            ? ((year.marginEUR / year.revenueEUR) * 100).toFixed(1)
+                            : "0.0"}%
+                        </td>
+                      ))}
+                      <td className="text-center py-3 px-3 text-sm tabular-nums font-semibold bg-muted/50 whitespace-nowrap">
+                        {avgMarginPercent.toFixed(1)}%
                       </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-        )}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          );
+        })()}
 
         {/* Disclaimer */}
         <motion.div 
