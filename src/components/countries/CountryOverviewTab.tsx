@@ -19,7 +19,7 @@ interface CountryOverviewTabProps {
     country_id: string;
     country_name: string;
     country_code: string;
-    is_active: boolean;
+    is_active: boolean | null;
   };
   formulations: FormulationCountryDetail[];
   businessCases: BusinessCase[];
