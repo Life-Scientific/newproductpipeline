@@ -104,7 +104,6 @@ export function BusinessCaseModal({
     country_id: "",
     use_group_ids: [] as string[],
     business_case_name: "",
-    assumptions: "",
     change_reason: "",
   });
   
@@ -206,7 +205,6 @@ export function BusinessCaseModal({
           country_id: "",
           use_group_ids: [],
           business_case_name: "",
-          assumptions: "",
           change_reason: "",
         });
         
@@ -625,9 +623,6 @@ export function BusinessCaseModal({
           }
         });
         
-        if (formData.assumptions) {
-          formDataToSubmit.append("assumptions", formData.assumptions);
-        }
         if (formData.change_reason) {
           formDataToSubmit.append("change_reason", formData.change_reason);
         }
@@ -658,9 +653,6 @@ export function BusinessCaseModal({
         });
         if (formData.business_case_name) {
           formDataToSubmit.append("business_case_name", formData.business_case_name);
-        }
-        if (formData.assumptions) {
-          formDataToSubmit.append("assumptions", formData.assumptions);
         }
         if (formData.change_reason) {
           formDataToSubmit.append("change_reason", formData.change_reason);
@@ -1013,43 +1005,6 @@ export function BusinessCaseModal({
               {changedCells.size > 0 && (
                 <div className="text-xs text-amber-600 dark:text-amber-400">
                   {changedCells.size} {changedCells.size === 1 ? "cell" : "cells"} modified from current version
-                </div>
-              )}
-
-              {/* Assumptions/Notes field */}
-              <div className="space-y-2">
-                <Label htmlFor="assumptions" className="text-sm font-medium">
-                  Notes / Assumptions
-                </Label>
-                <Textarea
-                  id="assumptions"
-                  placeholder="Enter any notes or assumptions for this business case..."
-                  value={formData.assumptions}
-                  onChange={(e) => setFormData({ ...formData, assumptions: e.target.value })}
-                  rows={2}
-                  className="resize-none"
-                />
-              </div>
-
-              {/* Change reason field - required when updating existing */}
-              {(existingGroupId || isEditMode) && (
-                <div className="space-y-2">
-                  <Label htmlFor="change_reason" className="text-sm font-medium">
-                    Reason for Update
-                    <span className="text-destructive ml-1">*</span>
-                  </Label>
-                  <Textarea
-                    id="change_reason"
-                    placeholder="Why are you making this change? e.g., 'Updated based on Q3 sales data', 'Revised volumes per distributor feedback'"
-                    value={formData.change_reason}
-                    onChange={(e) => setFormData({ ...formData, change_reason: e.target.value })}
-                    rows={2}
-                    className={`resize-none ${!formData.change_reason.trim() ? "border-destructive/50 focus-visible:ring-destructive/30" : ""}`}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Required for audit tracking. Explain why this update is being made.
-                  </p>
                 </div>
               )}
 
@@ -1407,6 +1362,22 @@ export function BusinessCaseModal({
                   })}
                 </div>
               </div>
+
+              {/* Change reason - compact, at bottom when updating */}
+              {(existingGroupId || isEditMode) && (
+                <div className="flex items-center gap-3 pt-2 border-t">
+                  <Label htmlFor="change_reason" className="text-sm text-muted-foreground whitespace-nowrap">
+                    Update reason<span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="change_reason"
+                    placeholder="e.g., 'Revised per Q3 data', 'Distributor feedback'"
+                    value={formData.change_reason}
+                    onChange={(e) => setFormData({ ...formData, change_reason: e.target.value })}
+                    className={`flex-1 h-9 ${!formData.change_reason.trim() ? "border-destructive/50" : ""}`}
+                  />
+                </div>
+              )}
 
               <DialogFooter>
                 {!isEditMode && (
