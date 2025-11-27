@@ -12,6 +12,12 @@ export default function LandingPage() {
   const [lastClickTime, setLastClickTime] = useState(0);
   const [showFlash, setShowFlash] = useState(false);
 
+  // Preload the 80s logo on mount so it's ready for instant swap
+  useEffect(() => {
+    const img = new window.Image();
+    img.src = "/Logo_80.png";
+  }, []);
+
   // Reset click count if too much time passes between clicks
   useEffect(() => {
     if (clickCount > 0 && clickCount < 3) {
@@ -199,18 +205,35 @@ export default function LandingPage() {
                     : "group-hover:bg-[#6B8E23]/5 group-hover:shadow-[0_0_20px_rgba(107,142,35,0.15)]"
                 }`}
               />
-              <Image
-                src={isEightiesMode ? "/Logo_80.png" : "/logo.png"}
-                alt="Life Scientific"
-                width={isEightiesMode ? 400 : 280}
-                height={isEightiesMode ? 160 : 100}
-                className={`relative transition-all duration-300 cursor-pointer ${
-                  isEightiesMode
-                    ? "h-32 w-auto drop-shadow-[0_0_20px_rgba(255,0,255,0.5)] group-hover:drop-shadow-[0_0_30px_rgba(255,0,255,0.8)]"
-                    : "h-20 sm:h-24 w-auto group-hover:scale-105 group-hover:-translate-y-1 group-active:scale-95"
-                }`}
-                priority
-              />
+              {/* Both logos rendered, toggle visibility for instant swap */}
+              <div className="relative">
+                {/* Normal logo */}
+                <Image
+                  src="/logo.png"
+                  alt="Life Scientific"
+                  width={280}
+                  height={100}
+                  className={`relative transition-all duration-300 cursor-pointer h-20 sm:h-24 w-auto ${
+                    isEightiesMode
+                      ? "opacity-0 scale-95"
+                      : "opacity-100 group-hover:scale-105 group-hover:-translate-y-1 group-active:scale-95"
+                  }`}
+                  priority
+                />
+                {/* 80s logo - absolute positioned on top */}
+                <Image
+                  src="/Logo_80.png"
+                  alt="Life Scientific - Retro"
+                  width={400}
+                  height={160}
+                  className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-300 cursor-pointer h-32 w-auto ${
+                    isEightiesMode
+                      ? "opacity-100 drop-shadow-[0_0_20px_rgba(255,0,255,0.5)] group-hover:drop-shadow-[0_0_30px_rgba(255,0,255,0.8)]"
+                      : "opacity-0 scale-95"
+                  }`}
+                  priority
+                />
+              </div>
               {/* Click indicator dots */}
               {clickCount > 0 && clickCount < 3 && (
                 <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
