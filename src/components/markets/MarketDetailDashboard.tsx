@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, TrendingUp, Package, FileCheck, DollarSign, Plus } from "lucide-react";
-import { BusinessCaseCreateModal } from "@/components/business-cases/BusinessCaseCreateModal";
+import { BusinessCaseModal } from "@/components/business-cases/BusinessCaseModal";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import Link from "next/link";
 import { RevenueTrendChart } from "@/components/charts/RevenueTrendChart";
@@ -298,7 +298,7 @@ export function MarketDetailDashboard({
       )}
       </div>
 
-      <BusinessCaseCreateModal
+      <BusinessCaseModal
         open={createModalOpen}
         onOpenChange={setCreateModalOpen}
         onSuccess={() => {

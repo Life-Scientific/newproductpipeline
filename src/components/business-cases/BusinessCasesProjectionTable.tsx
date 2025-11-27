@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit, ChevronDown, ChevronsDown, Calendar } from "lucide-react";
+import { Edit, ChevronDown, ChevronRight, ChevronsDown, Calendar, User, Clock, History } from "lucide-react";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
-import { BusinessCaseEditModal } from "./BusinessCaseEditModal";
+import { BusinessCaseModal } from "./BusinessCaseModal";
+import { BusinessCaseVersionHistory } from "./BusinessCaseVersionHistory";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { getBusinessCaseGroupAction } from "@/lib/actions/business-cases";
+import { formatDistanceToNow } from "date-fns";
 
 interface BusinessCasesProjectionTableProps {
   businessCases: BusinessCaseGroupData[];
@@ -26,10 +26,9 @@ const LOAD_MORE_INCREMENT = 25;
 const DEFAULT_YEAR_RANGE = 10;
 
 export function BusinessCasesProjectionTable({ businessCases, exchangeRates, canEdit = false }: BusinessCasesProjectionTableProps) {
-  const router = useRouter();
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(DEFAULT_PAGE_SIZE);
-  const [loadingGroupId, setLoadingGroupId] = useState<string | null>(null);
+  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   
   // Year range selection state
   const [startYear, setStartYear] = useState<number>(CURRENT_FISCAL_YEAR);
@@ -147,31 +146,6 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
   // Load all handler
   const handleLoadAll = () => {
     setDisplayCount(businessCases.length);
-  };
-
-  // Handle row click to navigate to business case detail
-  const handleRowClick = async (groupId: string, e: React.MouseEvent) => {
-    // Don't navigate if clicking on edit button or other interactive elements
-    const target = e.target as HTMLElement;
-    if (target.closest('button') || target.closest('a')) {
-      return;
-    }
-
-    setLoadingGroupId(groupId);
-    try {
-      const result = await getBusinessCaseGroupAction(groupId);
-      if (result.data && result.data.length > 0) {
-        // Navigate to the first business case in the group (year 1)
-        const firstBusinessCase = result.data[0];
-        if (firstBusinessCase.business_case_id) {
-          router.push(`/business-cases/${firstBusinessCase.business_case_id}`);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching business case group:', error);
-    } finally {
-      setLoadingGroupId(null);
-    }
   };
 
   if (businessCases.length === 0) {
@@ -354,36 +328,64 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                 },
               ];
 
-              return metricRows.map((metric, metricIndex) => {
+              const isExpanded = expandedGroupId === bc.business_case_group_id;
+              
+              const rows = metricRows.map((metric, metricIndex) => {
                 const effectiveStartYear = getEffectiveStartFiscalYear(bc.effective_start_fiscal_year);
-                
-                const isLoading = loadingGroupId === bc.business_case_group_id;
                 
                 return (
                   <TableRow 
                     key={`${bc.business_case_group_id}-${metricIndex}`} 
                     className={cn(
                       metricIndex === 0 ? rowGroupClass : "",
-                      "hover:bg-muted/30 transition-colors",
-                      metricIndex === 0 && "cursor-pointer",
-                      isLoading && "opacity-50"
+                      "hover:bg-muted/30 transition-colors"
                     )}
-                    onClick={metricIndex === 0 ? (e) => handleRowClick(bc.business_case_group_id, e) : undefined}
                   >
                     {metricIndex === 0 ? (
                       <>
-                        <TableCell className="sticky left-0 bg-background z-20 font-medium text-sm" rowSpan={6}>
-                          <div className="max-w-[140px] truncate" title={bc.formulation_name || bc.formulation_code || ""}>
-                            {bc.formulation_name || bc.formulation_code || "—"}
+                        <TableCell className="sticky left-0 bg-background z-20 font-medium text-sm" rowSpan={isExpanded ? 7 : 6}>
+                          <div className="flex items-start gap-1.5">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedGroupId(expandedGroupId === bc.business_case_group_id ? null : bc.business_case_group_id);
+                              }}
+                              className="mt-0.5 p-0.5 hover:bg-muted rounded transition-colors flex-shrink-0"
+                            >
+                              {expandedGroupId === bc.business_case_group_id ? (
+                                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                              ) : (
+                                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                              )}
+                            </button>
+                            <div className="min-w-0">
+                              <div className="max-w-[130px] truncate" title={bc.formulation_name || bc.formulation_code || ""}>
+                                {bc.formulation_name || bc.formulation_code || "—"}
+                              </div>
+                              {bc.formulation_code && bc.formulation_name && (
+                                <div className="text-xs text-muted-foreground">{bc.formulation_code}</div>
+                              )}
+                              {/* Subtle last updated info */}
+                              {bc.updated_at && (
+                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60 mt-0.5">
+                                  <Clock className="h-2.5 w-2.5" />
+                                  <span>{formatDistanceToNow(new Date(bc.updated_at), { addSuffix: true })}</span>
+                                  {bc.created_by && (
+                                    <>
+                                      <span>·</span>
+                                      <User className="h-2.5 w-2.5" />
+                                      <span className="truncate max-w-[60px]">{bc.created_by}</span>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          {bc.formulation_code && bc.formulation_name && (
-                            <div className="text-xs text-muted-foreground">{bc.formulation_code}</div>
-                          )}
                         </TableCell>
-                        <TableCell className="sticky left-[150px] bg-background z-20 text-sm" rowSpan={6}>
+                        <TableCell className="sticky left-[150px] bg-background z-20 text-sm" rowSpan={isExpanded ? 7 : 6}>
                           {bc.country_name || "—"}
                         </TableCell>
-                        <TableCell className="sticky left-[270px] bg-background z-20 text-sm" rowSpan={6}>
+                        <TableCell className="sticky left-[270px] bg-background z-20 text-sm" rowSpan={isExpanded ? 7 : 6}>
                           <div className="flex items-center gap-1.5">
                             <div className="max-w-[130px] truncate" title={bc.use_group_name || bc.use_group_variant || ""}>
                               {bc.use_group_name || bc.use_group_variant || "—"}
@@ -399,7 +401,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="sticky left-[420px] bg-background z-20 text-sm" rowSpan={6}>
+                        <TableCell className="sticky left-[420px] bg-background z-20 text-sm" rowSpan={isExpanded ? 7 : 6}>
                           {bc.effective_start_fiscal_year || "—"}
                         </TableCell>
                       </>
@@ -420,11 +422,14 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                       );
                     })}
                     {canEdit && metricIndex === 0 ? (
-                      <TableCell rowSpan={6} className="align-middle">
+                      <TableCell rowSpan={isExpanded ? 7 : 6} className="align-middle">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setEditingGroupId(bc.business_case_group_id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingGroupId(bc.business_case_group_id);
+                          }}
                           className="h-8"
                         >
                           <Edit className="h-3.5 w-3.5 mr-1" />
@@ -435,6 +440,34 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   </TableRow>
                 );
               });
+              
+              // Add expanded history row if this business case is expanded
+              if (isExpanded) {
+                const totalColumns = 5 + fiscalYearColumns.length + (canEdit ? 1 : 0);
+                rows.push(
+                  <TableRow key={`${bc.business_case_group_id}-history`} className="bg-muted/20">
+                    <TableCell 
+                      colSpan={totalColumns}
+                      className="p-4"
+                    >
+                      <div className="max-w-4xl">
+                        <div className="flex items-center gap-2 mb-3 text-sm font-medium text-muted-foreground">
+                          <History className="h-4 w-4" />
+                          Version History
+                        </div>
+                        <BusinessCaseVersionHistory 
+                          useGroupId={bc.use_group_id}
+                          currentGroupId={bc.business_case_group_id}
+                          formulationName={bc.formulation_name}
+                          countryName={bc.country_name}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              }
+              
+              return rows;
             })}
           </TableBody>
         </Table>
@@ -469,11 +502,14 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
       )}
 
       {canEdit && editingGroupId && (
-        <BusinessCaseEditModal
+        <BusinessCaseModal
           groupId={editingGroupId}
           open={!!editingGroupId}
           onOpenChange={(open) => {
             if (!open) setEditingGroupId(null);
+          }}
+          onSuccess={() => {
+            setEditingGroupId(null);
           }}
         />
       )}

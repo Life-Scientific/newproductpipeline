@@ -147,7 +147,7 @@ export async function createFormulation(formData: FormData) {
     .eq("formulation_id", data.formulation_id)
     .single();
 
-  revalidateTag("formulations", "page");
+  revalidateTag("formulations");
   return {
     data: updatedFormulation || data,
     success: true,
@@ -278,7 +278,7 @@ export async function updateFormulation(formulationId: string, formData: FormDat
     .single();
 
   // If status changed, the trigger will log it automatically with correct user context
-  revalidateTag("formulations", "page");
+  revalidateTag("formulations");
   revalidatePath(`/formulations/${formulationId}`);
   return {
     data: updatedFormulation || data,
@@ -315,7 +315,7 @@ export async function deleteFormulation(formulationId: string) {
     return { error: error.message };
   }
 
-  revalidateTag("formulations", "page");
+  revalidateTag("formulations");
   return { success: true };
 }
 

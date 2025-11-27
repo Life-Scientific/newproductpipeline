@@ -3,7 +3,7 @@
 import { GitBranch, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
-import { BusinessCaseCreateModal } from "@/components/business-cases/BusinessCaseCreateModal";
+import { BusinessCaseModal } from "@/components/business-cases/BusinessCaseModal";
 import { BusinessCaseFilters } from "@/components/business-cases/BusinessCaseFilters";
 import { BusinessCasesProjectionTable } from "@/components/business-cases/BusinessCasesProjectionTable";
 import { Button } from "@/components/ui/button";
@@ -106,7 +106,7 @@ function BusinessCasesContent({
                 className="h-12 px-6"
               >
                 <Plus className="mr-2 h-5 w-5" />
-                Create/Update Business Case
+                New Business Case
               </Button>
             )}
           </div>
@@ -123,12 +123,11 @@ function BusinessCasesContent({
       </Card>
 
       {canCreateBusinessCases && (
-        <BusinessCaseCreateModal
+        <BusinessCaseModal
           open={createModalOpen}
           onOpenChange={setCreateModalOpen}
           onSuccess={() => {
             // Use router.refresh() to get fresh data from the server
-            // This works now because we don't store data in state
             router.refresh();
           }}
         />

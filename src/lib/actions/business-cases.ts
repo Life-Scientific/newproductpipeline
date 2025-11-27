@@ -9,6 +9,7 @@ import { lookupCOGSWithCarryForward } from "./cogs";
 import { withUserContext } from "@/lib/supabase/user-context";
 import { hasPermission } from "./user-management";
 import { PERMISSIONS } from "@/lib/permissions";
+import { computeBusinessCaseDiff } from "@/lib/utils/business-case-diff";
 
 export async function createBusinessCase(formData: FormData) {
   // Permission check
@@ -105,8 +106,8 @@ export async function createBusinessCase(formData: FormData) {
     return { error: `Failed to link use groups: ${junctionError.message}` };
   }
 
-  revalidateTag("business-cases", "page");
-  revalidateTag("formulations", "page");
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -226,8 +227,8 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
     }
   }
 
-  revalidateTag("business-cases", "page");
-  revalidateTag("formulations", "page");
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -252,8 +253,8 @@ export async function deleteBusinessCase(businessCaseId: string) {
     return { error: error.message };
   }
 
-  revalidateTag("business-cases", "page");
-  revalidateTag("formulations", "page");
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -309,6 +310,9 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
   const effectiveStartYear = targetYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : targetYear;
   const effectiveStartFiscalYear = `FY${String(effectiveStartYear).padStart(2, "0")}`;
 
+  // Get change reason from form data
+  const changeReason = formData.get("change_reason") as string | null;
+
   // Check if business case already exists for this combination
   // For now, check the first use group - in the future we might want to check all
   const existingGroupId = await checkExistingBusinessCase(
@@ -319,20 +323,26 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
 
   // If existing business case found, preserve its effective_start_fiscal_year
   let finalEffectiveStartFiscalYear = effectiveStartFiscalYear;
+  let previousGroupId: string | null = null;
+  let existingYearData: Array<{ year_offset: number; volume: number | null; nsp: number | null; cogs_per_unit: number | null }> = [];
   
   if (existingGroupId) {
-    // Get the existing business case's effective_start_fiscal_year to preserve it
-    const { data: existingCase } = await supabase
+    previousGroupId = existingGroupId;
+    
+    // Get the existing business case data for diff computation
+    const { data: existingCases } = await supabase
       .from("business_case")
-      .select("effective_start_fiscal_year")
+      .select("year_offset, volume, nsp, cogs_per_unit, effective_start_fiscal_year")
       .eq("business_case_group_id", existingGroupId)
       .eq("status", "active")
-      .limit(1)
-      .single();
+      .order("year_offset", { ascending: true });
     
-    if (existingCase?.effective_start_fiscal_year) {
+    if (existingCases && existingCases.length > 0) {
+      existingYearData = existingCases;
       // Preserve the original effective start fiscal year
-      finalEffectiveStartFiscalYear = existingCase.effective_start_fiscal_year;
+      if (existingCases[0]?.effective_start_fiscal_year) {
+        finalEffectiveStartFiscalYear = existingCases[0].effective_start_fiscal_year;
+      }
     }
     
     // Mark old business cases as superseded (archived)
@@ -411,6 +421,18 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     });
   }
 
+  // Compute change summary if this is an update to existing business case
+  let changeSummary: string | null = null;
+  if (previousGroupId && existingYearData.length > 0) {
+    const newYearDataForDiff = yearData.map((y) => ({
+      year_offset: y.year_offset,
+      volume: y.volume,
+      nsp: y.nsp,
+      cogs_per_unit: y.cogs_per_unit,
+    }));
+    changeSummary = computeBusinessCaseDiff(existingYearData, newYearDataForDiff, finalEffectiveStartYear);
+  }
+
   // Create 10 business case rows
   // Set effective_start_fiscal_year to preserve fiscal year context at creation time
   // This ensures data entered in FY26 always maps to FY26-FY35, even if viewed in FY27+
@@ -424,6 +446,10 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     effective_start_fiscal_year: finalEffectiveStartFiscalYear, // Preserves creation context
     status: "active" as const,
     created_by: userName,
+    // Audit fields
+    previous_group_id: previousGroupId,
+    change_reason: changeReason || null,
+    change_summary: changeSummary,
   }));
 
   const { data: businessCases, error: bcError } = await supabase
@@ -465,8 +491,8 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     }
   }
 
-  revalidateTag("business-cases", "page");
-  revalidateTag("formulations", "page");
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -490,6 +516,9 @@ export async function updateBusinessCaseGroupAction(
 
   const supabase = await createClient();
   const userName = await getCurrentUserName();
+  
+  // Get change reason from form data
+  const changeReason = formData.get("change_reason") as string | null;
 
   // Extract year data (10 years)
   const yearData: Array<{
@@ -531,6 +560,14 @@ export async function updateBusinessCaseGroupAction(
   const firstCase = existingCases[0];
   const businessCaseName = (formData.get("business_case_name") as string | null) ?? firstCase.business_case_name;
   const effectiveStartFiscalYear = firstCase.effective_start_fiscal_year;
+  
+  // Prepare existing data for diff computation
+  const existingYearData = existingCases.map((c) => ({
+    year_offset: c.year_offset,
+    volume: c.volume,
+    nsp: c.nsp,
+    cogs_per_unit: c.cogs_per_unit,
+  }));
 
   // Get use group IDs from the junction table
   const { data: useGroupLinks } = await supabase
@@ -557,40 +594,57 @@ export async function updateBusinessCaseGroupAction(
   // Generate new group ID for the new version
   const newGroupId = crypto.randomUUID();
 
+  // Parse effective start year for diff computation
+  const effectiveMatch = effectiveStartFiscalYear?.match(/FY(\d{2})/);
+  const effectiveStartYear = effectiveMatch ? parseInt(effectiveMatch[1], 10) : CURRENT_FISCAL_YEAR;
+
   // Create new business case records (new version)
-  const newBusinessCaseInserts = await Promise.all(
-    yearData.map(async (year) => {
-      // Calculate fiscal year for COGS lookup
-      const match = effectiveStartFiscalYear?.match(/FY(\d{2})/);
-      const startYear = match ? parseInt(match[1], 10) : CURRENT_FISCAL_YEAR;
-      const fiscalYearNum = startYear + (year.year_offset - 1);
-      const fiscalYear = `FY${String(fiscalYearNum).padStart(2, "0")}`;
+  const newBusinessCaseInsertsPromises = yearData.map(async (year) => {
+    // Calculate fiscal year for COGS lookup
+    const fiscalYearNum = effectiveStartYear + (year.year_offset - 1);
+    const fiscalYear = `FY${String(fiscalYearNum).padStart(2, "0")}`;
 
-      // Check for COGS override from form data
-      const cogsOverrideKey = `year_${year.year_offset}_cogs`;
-      const cogsOverride = formData.get(cogsOverrideKey) ? Number(formData.get(cogsOverrideKey)) : null;
+    // Check for COGS override from form data
+    const cogsOverrideKey = `year_${year.year_offset}_cogs`;
+    const cogsOverride = formData.get(cogsOverrideKey) ? Number(formData.get(cogsOverrideKey)) : null;
 
-      // Use override if provided and valid, otherwise lookup COGS
-      let cogsValue: number | null = null;
-      if (cogsOverride !== null && cogsOverride > 0) {
-        cogsValue = cogsOverride;
-      } else if (formulationId) {
-        cogsValue = await lookupCOGSWithCarryForward(formulationId, formulationCountryId || null, fiscalYear);
-      }
+    // Use override if provided and valid, otherwise lookup COGS
+    let cogsValue: number | null = null;
+    if (cogsOverride !== null && cogsOverride > 0) {
+      cogsValue = cogsOverride;
+    } else if (formulationId) {
+      cogsValue = await lookupCOGSWithCarryForward(formulationId, formulationCountryId || null, fiscalYear);
+    }
 
-      return {
-        business_case_group_id: newGroupId,
-        business_case_name: businessCaseName,
-        year_offset: year.year_offset,
-        volume: year.volume,
-        nsp: year.nsp,
-        cogs_per_unit: cogsValue,
-        effective_start_fiscal_year: effectiveStartFiscalYear,
-        status: "active" as const,
-        created_by: userName,
-      };
-    })
-  );
+    return {
+      year_offset: year.year_offset,
+      volume: year.volume,
+      nsp: year.nsp,
+      cogs_per_unit: cogsValue,
+    };
+  });
+
+  const newYearDataWithCogs = await Promise.all(newBusinessCaseInsertsPromises);
+
+  // Compute change summary
+  const changeSummary = computeBusinessCaseDiff(existingYearData, newYearDataWithCogs, effectiveStartYear);
+
+  // Build the final insert objects
+  const newBusinessCaseInserts = newYearDataWithCogs.map((year) => ({
+    business_case_group_id: newGroupId,
+    business_case_name: businessCaseName,
+    year_offset: year.year_offset,
+    volume: year.volume,
+    nsp: year.nsp,
+    cogs_per_unit: year.cogs_per_unit,
+    effective_start_fiscal_year: effectiveStartFiscalYear,
+    status: "active" as const,
+    created_by: userName,
+    // Audit fields
+    previous_group_id: oldGroupId,
+    change_reason: changeReason || null,
+    change_summary: changeSummary,
+  }));
 
   // Start transaction: mark old as inactive, create new
   const result = await withUserContext(async (supabase) => {
@@ -659,8 +713,8 @@ export async function updateBusinessCaseGroupAction(
     return { error: result.error };
   }
 
-  revalidateTag("business-cases", "page");
-  revalidateTag("formulations", "page");
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
