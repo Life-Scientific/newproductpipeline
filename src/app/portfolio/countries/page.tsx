@@ -1,10 +1,13 @@
-import { getCountriesWithStats } from "@/lib/db/queries";
+import { getCountriesWithStats, getBusinessCases } from "@/lib/db/queries";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { CountryList } from "@/components/countries/CountryList";
 import type { CountryWithStats } from "@/lib/db/countries";
 
 export default async function CountriesPage() {
-  const countries = await getCountriesWithStats() as CountryWithStats[];
+  const [countries, businessCases] = await Promise.all([
+    getCountriesWithStats() as Promise<CountryWithStats[]>,
+    getBusinessCases(),
+  ]);
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -18,7 +21,7 @@ export default async function CountriesPage() {
           </div>
         </div>
 
-        <CountryList countries={countries} />
+        <CountryList countries={countries} businessCases={businessCases} />
       </AnimatedPage>
     </div>
   );

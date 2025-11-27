@@ -15,7 +15,6 @@ interface BusinessCaseFiltersProps {
     countryIds: string[];
     formulationIds: string[];
     useGroupIds: string[];
-    statuses: string[];
   }) => void;
 }
 
@@ -23,7 +22,6 @@ export function BusinessCaseFilters({ businessCases, onFilterChange }: BusinessC
   const [selectedCountryIds, setSelectedCountryIds] = useState<string[]>([]);
   const [selectedFormulationIds, setSelectedFormulationIds] = useState<string[]>([]);
   const [selectedUseGroupIds, setSelectedUseGroupIds] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   
   // Track if we're doing auto-selection to prevent loops
   const isAutoSelecting = useRef(false);
@@ -33,7 +31,6 @@ export function BusinessCaseFilters({ businessCases, onFilterChange }: BusinessC
     const countries = new Map<string, string>();
     const formulations = new Map<string, string>();
     const useGroups = new Map<string, string>();
-    const statuses = new Set<string>();
 
     businessCases.forEach((bc) => {
       if (bc.country_id && bc.country_name) {
@@ -52,10 +49,6 @@ export function BusinessCaseFilters({ businessCases, onFilterChange }: BusinessC
       if (useGroupKey) {
         useGroups.set(useGroupKey, useGroupDisplay);
       }
-      // Collect unique statuses
-      if (bc.use_group_status) {
-        statuses.add(bc.use_group_status);
-      }
     });
 
     return {
@@ -67,9 +60,6 @@ export function BusinessCaseFilters({ businessCases, onFilterChange }: BusinessC
         .sort((a, b) => a.label.localeCompare(b.label)),
       useGroups: Array.from(useGroups.entries())
         .map(([value, label]) => ({ value, label }))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-      statuses: Array.from(statuses)
-        .map((status) => ({ value: status, label: status }))
         .sort((a, b) => a.label.localeCompare(b.label)),
     };
   }, [businessCases]);
@@ -130,10 +120,9 @@ export function BusinessCaseFilters({ businessCases, onFilterChange }: BusinessC
   const notifyFilterChange = useCallback((
     countryIds: string[],
     formulationIds: string[],
-    useGroupIds: string[],
-    statuses: string[]
+    useGroupIds: string[]
   ) => {
-    onFilterChange({ countryIds, formulationIds, useGroupIds, statuses });
+    onFilterChange({ countryIds, formulationIds, useGroupIds });
   }, [onFilterChange]);
 
   // Handle country selection change with cascading updates
@@ -179,9 +168,9 @@ export function BusinessCaseFilters({ businessCases, onFilterChange }: BusinessC
     }
     setSelectedUseGroupIds(newUseGroupIds);
     
-    notifyFilterChange(newCountryIds, newFormulationIds, newUseGroupIds, selectedStatuses);
+    notifyFilterChange(newCountryIds, newFormulationIds, newUseGroupIds);
     isAutoSelecting.current = false;
-  }, [businessCases, selectedFormulationIds, selectedUseGroupIds, selectedStatuses, notifyFilterChange]);
+  }, [businessCases, selectedFormulationIds, selectedUseGroupIds, notifyFilterChange]);
 
   // Handle formulation selection change with cascading updates
   const handleFormulationChange = useCallback((newFormulationIds: string[]) => {
@@ -206,32 +195,25 @@ export function BusinessCaseFilters({ businessCases, onFilterChange }: BusinessC
     }
     setSelectedUseGroupIds(newUseGroupIds);
     
-    notifyFilterChange(selectedCountryIds, newFormulationIds, newUseGroupIds, selectedStatuses);
+    notifyFilterChange(selectedCountryIds, newFormulationIds, newUseGroupIds);
     isAutoSelecting.current = false;
-  }, [businessCases, selectedCountryIds, selectedUseGroupIds, selectedStatuses, notifyFilterChange]);
+  }, [businessCases, selectedCountryIds, selectedUseGroupIds, notifyFilterChange]);
 
   // Handle use group selection change
   const handleUseGroupChange = useCallback((newUseGroupIds: string[]) => {
     setSelectedUseGroupIds(newUseGroupIds);
-    notifyFilterChange(selectedCountryIds, selectedFormulationIds, newUseGroupIds, selectedStatuses);
-  }, [selectedCountryIds, selectedFormulationIds, selectedStatuses, notifyFilterChange]);
-
-  // Handle status selection change
-  const handleStatusChange = useCallback((newStatuses: string[]) => {
-    setSelectedStatuses(newStatuses);
-    notifyFilterChange(selectedCountryIds, selectedFormulationIds, selectedUseGroupIds, newStatuses);
-  }, [selectedCountryIds, selectedFormulationIds, selectedUseGroupIds, notifyFilterChange]);
+    notifyFilterChange(selectedCountryIds, selectedFormulationIds, newUseGroupIds);
+  }, [selectedCountryIds, selectedFormulationIds, notifyFilterChange]);
 
   // Clear all filters
   const handleClearFilters = useCallback(() => {
     setSelectedCountryIds([]);
     setSelectedFormulationIds([]);
     setSelectedUseGroupIds([]);
-    setSelectedStatuses([]);
-    notifyFilterChange([], [], [], []);
+    notifyFilterChange([], [], []);
   }, [notifyFilterChange]);
 
-  const hasActiveFilters = selectedCountryIds.length > 0 || selectedFormulationIds.length > 0 || selectedUseGroupIds.length > 0 || selectedStatuses.length > 0;
+  const hasActiveFilters = selectedCountryIds.length > 0 || selectedFormulationIds.length > 0 || selectedUseGroupIds.length > 0;
 
   // Count filtered business cases
   const filteredCount = useMemo(() => {
@@ -243,10 +225,9 @@ export function BusinessCaseFilters({ businessCases, onFilterChange }: BusinessC
         const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
         matchesUseGroup = selectedUseGroupIds.includes(useGroupKey);
       }
-      const matchesStatus = selectedStatuses.length === 0 || (bc.use_group_status && selectedStatuses.includes(bc.use_group_status));
-      return matchesCountry && matchesFormulation && matchesUseGroup && matchesStatus;
+      return matchesCountry && matchesFormulation && matchesUseGroup;
     }).length;
-  }, [businessCases, selectedCountryIds, selectedFormulationIds, selectedUseGroupIds, selectedStatuses]);
+  }, [businessCases, selectedCountryIds, selectedFormulationIds, selectedUseGroupIds]);
 
   return (
     <div className="space-y-4 p-4 border rounded-lg bg-card mb-6">
@@ -268,7 +249,7 @@ export function BusinessCaseFilters({ businessCases, onFilterChange }: BusinessC
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Country Filter */}
         <div className="space-y-1.5">
           <Label className="text-xs font-medium flex items-center justify-between">
@@ -322,24 +303,6 @@ export function BusinessCaseFilters({ businessCases, onFilterChange }: BusinessC
             emptyText="No use groups found"
           />
         </div>
-
-        {/* Status Filter */}
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium flex items-center justify-between">
-            <span>Status</span>
-            <span className="text-muted-foreground font-normal">
-              {allFilterOptions.statuses.length}
-            </span>
-          </Label>
-          <MultiSelect
-            options={allFilterOptions.statuses}
-            selected={selectedStatuses}
-            onChange={handleStatusChange}
-            placeholder="All statuses"
-            searchPlaceholder="Search statuses..."
-            emptyText="No statuses found"
-          />
-        </div>
       </div>
 
       {/* Active filter badges */}
@@ -361,12 +324,6 @@ export function BusinessCaseFilters({ businessCases, onFilterChange }: BusinessC
             <Badge variant="outline" className="text-xs gap-1">
               <CheckCircle2 className="h-3 w-3" />
               {selectedUseGroupIds.length} {selectedUseGroupIds.length === 1 ? "use group" : "use groups"}
-            </Badge>
-          )}
-          {selectedStatuses.length > 0 && (
-            <Badge variant="outline" className="text-xs gap-1">
-              <CheckCircle2 className="h-3 w-3" />
-              {selectedStatuses.length} {selectedStatuses.length === 1 ? "status" : "statuses"}
             </Badge>
           )}
         </div>

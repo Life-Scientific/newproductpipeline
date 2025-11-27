@@ -10,7 +10,7 @@ export default async function FormulationCountriesPage() {
       <AnimatedPage>
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl font-bold">Formulation Countries</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Formulation-Countries</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               View all formulation-country registrations and their status
             </p>

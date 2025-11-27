@@ -276,21 +276,22 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
         )}
       </div>
 
-      <div className="overflow-x-auto border rounded-lg">
-        <Table>
+      <div className="border rounded-lg overflow-hidden">
+        <div className="overflow-x-scroll overflow-y-auto max-h-[calc(100vh-400px)] [&>div]:overflow-visible">
+          <Table className="w-max">
           <TableHeader>
-            <TableRow className="bg-muted/50">
-              <TableHead className="sticky left-0 bg-muted/50 z-10 min-w-[150px]">Formulation</TableHead>
-              <TableHead className="sticky left-[150px] bg-muted/50 z-10 min-w-[120px]">Country</TableHead>
-              <TableHead className="sticky left-[270px] bg-muted/50 z-10 min-w-[150px]">Use Group</TableHead>
-              <TableHead className="sticky left-[420px] bg-muted/50 z-10 min-w-[100px]">TME</TableHead>
-              <TableHead className="min-w-[180px]">Metric</TableHead>
+            <TableRow className="bg-muted">
+              <TableHead className="sticky left-0 top-0 bg-muted z-30 min-w-[150px]">Formulation</TableHead>
+              <TableHead className="sticky left-[150px] top-0 bg-muted z-30 min-w-[120px]">Country</TableHead>
+              <TableHead className="sticky left-[270px] top-0 bg-muted z-30 min-w-[150px]">Use Group</TableHead>
+              <TableHead className="sticky left-[420px] top-0 bg-muted z-30 min-w-[100px]">Eff. FY Start</TableHead>
+              <TableHead className="sticky left-[520px] top-0 bg-muted z-30 min-w-[120px]">Metric</TableHead>
               {fiscalYearColumns.map((col) => (
-                <TableHead key={col.key} className="min-w-[90px] text-center text-xs">
+                <TableHead key={col.key} className="sticky top-0 bg-muted z-10 min-w-[90px] text-center text-xs">
                   {col.label}
                 </TableHead>
               ))}
-              {canEdit && <TableHead className="min-w-[80px]">Actions</TableHead>}
+              {canEdit && <TableHead className="sticky top-0 bg-muted z-10 min-w-[80px]">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -309,7 +310,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   },
                 },
                 {
-                  label: `NSP (€/unit)`,
+                  label: `NSP (EUR/${uom})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.nsp;
@@ -318,7 +319,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   },
                 },
                 {
-                  label: `COGS (€/unit)`,
+                  label: `COGS (EUR/${uom})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.cogs_per_unit;
@@ -327,7 +328,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   },
                 },
                 {
-                  label: `Revenue (€)`,
+                  label: `Revenue (EUR)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.total_revenue;
@@ -336,7 +337,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   },
                 },
                 {
-                  label: `Margin (€)`,
+                  label: `Margin (EUR)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.total_margin;
@@ -371,7 +372,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   >
                     {metricIndex === 0 ? (
                       <>
-                        <TableCell className="sticky left-0 bg-background z-10 font-medium text-sm" rowSpan={6}>
+                        <TableCell className="sticky left-0 bg-background z-20 font-medium text-sm" rowSpan={6}>
                           <div className="max-w-[140px] truncate" title={bc.formulation_name || bc.formulation_code || ""}>
                             {bc.formulation_name || bc.formulation_code || "—"}
                           </div>
@@ -379,20 +380,31 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                             <div className="text-xs text-muted-foreground">{bc.formulation_code}</div>
                           )}
                         </TableCell>
-                        <TableCell className="sticky left-[150px] bg-background z-10 text-sm" rowSpan={6}>
+                        <TableCell className="sticky left-[150px] bg-background z-20 text-sm" rowSpan={6}>
                           {bc.country_name || "—"}
                         </TableCell>
-                        <TableCell className="sticky left-[270px] bg-background z-10 text-sm" rowSpan={6}>
-                          <div className="max-w-[140px] truncate" title={bc.use_group_name || bc.use_group_variant || ""}>
-                            {bc.use_group_name || bc.use_group_variant || "—"}
+                        <TableCell className="sticky left-[270px] bg-background z-20 text-sm" rowSpan={6}>
+                          <div className="flex items-center gap-1.5">
+                            <div className="max-w-[130px] truncate" title={bc.use_group_name || bc.use_group_variant || ""}>
+                              {bc.use_group_name || bc.use_group_variant || "—"}
+                            </div>
+                            {bc.use_group_status && (
+                              <span 
+                                className={cn(
+                                  "h-2 w-2 rounded-full flex-shrink-0",
+                                  bc.use_group_status === "Active" ? "bg-green-500" : "bg-amber-500"
+                                )}
+                                title={bc.use_group_status}
+                              />
+                            )}
                           </div>
                         </TableCell>
-                        <TableCell className="sticky left-[420px] bg-background z-10 text-sm" rowSpan={6}>
-                          {bc.target_market_entry || "—"}
+                        <TableCell className="sticky left-[420px] bg-background z-20 text-sm" rowSpan={6}>
+                          {bc.effective_start_fiscal_year || "—"}
                         </TableCell>
                       </>
                     ) : null}
-                    <TableCell className="font-medium text-sm">{metric.label}</TableCell>
+                    <TableCell className="sticky left-[520px] bg-background z-20 font-medium text-sm">{metric.label}</TableCell>
                     {fiscalYearColumns.map((col) => {
                       const isBeforeEffectiveStart = col.fiscalYear < effectiveStartYear;
                       return (
@@ -426,6 +438,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
             })}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Bottom load more */}

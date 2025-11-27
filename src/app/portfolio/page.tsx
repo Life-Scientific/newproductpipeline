@@ -7,7 +7,6 @@ import {
 import { FormulationsList } from "@/components/formulations/FormulationsList";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { CardGrid } from "@/components/layout/CardGrid";
-import { MetricCard } from "@/components/layout/MetricCard";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { TimelineCard } from "@/components/relationships/TimelineCard";
 import { BusinessCaseListItem } from "@/components/business-cases/BusinessCaseListItem";
@@ -15,6 +14,10 @@ import { TenYearProjectionChartLazy } from "@/components/charts/TenYearProjectio
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
+import { getFormulationStatus, getCountryStatus, getUseGroupStatus } from "@/lib/utils/schema-migration";
+import { getStatusVariant } from "@/lib/design-system";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 
 // Cache dashboard data for 60 seconds
@@ -69,8 +72,42 @@ export default async function Home() {
   const activeFormulations = formulations.filter((f) => f.status === "Selected").length;
   const monitoringFormulations = formulations.filter((f) => f.status === "Monitoring").length;
 
-  // Get recent status changes
+  // Fetch formulation countries and use groups for status counts
   const supabase = await createClient();
+  
+  const [
+    { data: formulationCountries },
+    { data: useGroups },
+  ] = await Promise.all([
+    supabase.from("formulation_country").select("country_status").eq("is_active", true),
+    supabase.from("formulation_country_use_group").select("use_group_status, is_active"),
+  ]);
+
+  // Calculate formulation status counts
+  const formulationStatusCounts = formulations.reduce((acc, f) => {
+    const status = getFormulationStatus(f) || "Unknown";
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Calculate country status counts
+  const countryStatusCounts = (formulationCountries || []).reduce((acc, fc) => {
+    const status = getCountryStatus(fc) || "Unknown";
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Calculate use group status counts (use is_active if use_group_status is null)
+  const useGroupStatusCounts = (useGroups || []).reduce((acc, ug) => {
+    const status = getUseGroupStatus(ug) || (ug.is_active ? "Active" : "Inactive");
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const totalFormulationCountries = formulationCountries?.length || 0;
+  const totalUseGroups = useGroups?.length || 0;
+
+  // Get recent status changes
   const { data: recentStatusChanges } = await supabase
     .from("formulation_status_history")
     .select(`
@@ -137,44 +174,130 @@ export default async function Home() {
         exchangeRates={exchangeRateMap}
       />
 
-      {/* Key Metrics */}
-      <CardGrid columns={{ mobile: 1, tablet: 2, desktop: 4 }} gap="md">
-        <MetricCard
-          title="Total Formulations"
-          value={totalFormulations}
-          subtitle={`${activeFormulations} selected, ${monitoringFormulations} monitoring`}
-          href="/portfolio/formulations"
-        />
-        <MetricCard
-          title="Active Portfolio"
-          value={activePortfolio?.length || 0}
-          subtitle="Currently selling products"
-          href="/portfolio/formulations?filter=active"
-        />
-        <MetricCard
-          title="Total Business Cases"
-          value={totalBusinessCaseGroups}
-          subtitle={`$${(totalRevenue / 1000000).toFixed(1)}M projected revenue`}
-          href="/portfolio/business-cases"
-        />
-        <MetricCard
-          title="Average Margin %"
-          value={`${avgMarginPercent.toFixed(1)}%`}
-          subtitle="Across all business cases"
-          href="/portfolio/business-cases?sort=margin"
-        />
-        <MetricCard
-          title="Countries Covered"
-          value={uniqueCountries}
-          subtitle="Active business cases"
-          href="/portfolio/business-cases?view=countries"
-        />
-        <MetricCard
-          title="Active Registrations"
-          value={registrationCount}
-          subtitle="In registration pipeline"
-          href="/portfolio/registration"
-        />
+      {/* Status Overview Cards */}
+      <CardGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }} gap="md">
+        {/* Formulations Card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Formulations
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="text-2xl font-bold tabular-nums">{totalFormulations}</div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Selected</span>
+                <Badge variant={getStatusVariant("Selected", "formulation")}>
+                  {formulationStatusCounts["Selected"] || 0}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Being Monitored</span>
+                <Badge variant={getStatusVariant("Monitoring", "formulation")}>
+                  {formulationStatusCounts["Monitoring"] || formulationStatusCounts["Being Monitored"] || 0}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Not Yet Evaluated</span>
+                <Badge variant={getStatusVariant("Not Yet Considered", "formulation")}>
+                  {formulationStatusCounts["Not Yet Evaluated"] || formulationStatusCounts["Not Yet Considered"] || 0}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Killed</span>
+                <Badge variant={getStatusVariant("Killed", "formulation")}>
+                  {formulationStatusCounts["Killed"] || 0}
+                </Badge>
+              </div>
+            </div>
+            <div className="pt-2 border-t">
+              <Link href="/portfolio/formulations" className="text-sm text-primary hover:underline block text-center">
+                View all →
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Formulation-Countries Card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Formulation-Countries
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="text-2xl font-bold tabular-nums">{totalFormulationCountries}</div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Selected for entry</span>
+                <Badge variant={getStatusVariant("Selected for entry", "country")}>
+                  {countryStatusCounts["Selected for entry"] || 0}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Not yet evaluated</span>
+                <Badge variant={getStatusVariant("Not yet evaluated", "country")}>
+                  {countryStatusCounts["Not yet evaluated"] || 0}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Not selected</span>
+                <Badge variant={getStatusVariant("Not selected for entry", "country")}>
+                  {countryStatusCounts["Not selected for entry"] || 0}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">On hold</span>
+                <Badge variant={getStatusVariant("On hold", "country")}>
+                  {countryStatusCounts["On hold"] || 0}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Withdrawn</span>
+                <Badge variant={getStatusVariant("Withdrawn", "country")}>
+                  {countryStatusCounts["Withdrawn"] || 0}
+                </Badge>
+              </div>
+            </div>
+            <div className="pt-2 border-t">
+              <Link href="/portfolio/formulation-countries" className="text-sm text-primary hover:underline block text-center">
+                View all →
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Use Groups Card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Use Groups
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="text-2xl font-bold tabular-nums">{totalUseGroups}</div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Active</span>
+                <Badge variant={getStatusVariant("Active", "registration")}>
+                  {useGroupStatusCounts["Active"] || 0}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Inactive</span>
+                <Badge variant="muted">
+                  {useGroupStatusCounts["Inactive"] || 0}
+                </Badge>
+              </div>
+            </div>
+            <div className="pt-2 border-t">
+              <Link href="/portfolio/use-groups" className="text-sm text-primary hover:underline block text-center">
+                View all →
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </CardGrid>
 
       <CardGrid columns={{ mobile: 1, tablet: 2, desktop: 2 }} gap="md">

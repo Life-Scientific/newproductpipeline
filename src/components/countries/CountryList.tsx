@@ -1,13 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatCurrencyCompact } from "@/lib/utils/currency";
 import type { CountryWithStats } from "@/lib/db/countries";
+import type { Database } from "@/lib/supabase/database.types";
+import { FiscalYearSelector } from "@/components/countries/FiscalYearSelector";
 import { 
   Globe, 
   TrendingUp, 
@@ -16,39 +20,91 @@ import {
   ChevronRight,
   Package,
   DollarSign,
-  Banknote,
 } from "lucide-react";
+
+type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
 interface CountryListProps {
   countries: CountryWithStats[];
+  businessCases: BusinessCase[];
 }
 
 type SortField = "name" | "formulations" | "revenue" | "margin";
 type SortDirection = "asc" | "desc";
 
-function formatCurrency(value: number | null | undefined): string {
-  if (!value || value === 0) return "—";
-  if (value >= 1000000) {
-    return `€${(value / 1000000).toFixed(2)}M`;
-  }
-  if (value >= 1000) {
-    return `€${(value / 1000).toFixed(0)}K`;
-  }
-  return `€${value.toFixed(2)}`;
+/**
+ * Parse effective_start_fiscal_year string (e.g., "FY26") to numeric year (e.g., 26)
+ */
+function parseEffectiveStartFY(effectiveStartFY: string | null): number | null {
+  if (!effectiveStartFY) return null;
+  const match = effectiveStartFY.match(/FY(\d{2})/);
+  if (!match) return null;
+  return parseInt(match[1], 10);
 }
 
-export function CountryList({ countries }: CountryListProps) {
+/**
+ * Check if a business case matches the selected fiscal year
+ * Formula: effective_start_fiscal_year + year_offset - 1 = selected_FY
+ */
+function matchesFiscalYear(bc: BusinessCase, selectedFY: number): boolean {
+  const effectiveStart = parseEffectiveStartFY(bc.effective_start_fiscal_year);
+  if (effectiveStart === null || bc.year_offset === null) return false;
+  return effectiveStart + bc.year_offset - 1 === selectedFY;
+}
+
+export function CountryList({ countries, businessCases }: CountryListProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>("revenue");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  
+  // Get selected FY from URL params, default to FY30
+  const selectedFY = parseInt(searchParams.get("fy") || "30", 10);
+
+  // Update URL when FY changes
+  const handleFYChange = (fy: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("fy", fy.toString());
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
+
+  // Filter business cases by selected FY and calculate revenue/margin per country
+  const countryFinancialsByFY = useMemo(() => {
+    const filteredBCs = businessCases.filter((bc) => matchesFiscalYear(bc, selectedFY));
+    const financials = new Map<string, { revenue: number; margin: number }>();
+    
+    filteredBCs.forEach((bc) => {
+      if (!bc.country_name) return;
+      const existing = financials.get(bc.country_name) || { revenue: 0, margin: 0 };
+      financials.set(bc.country_name, {
+        revenue: existing.revenue + (bc.total_revenue || 0),
+        margin: existing.margin + (bc.total_margin || 0),
+      });
+    });
+    
+    return financials;
+  }, [businessCases, selectedFY]);
+
+  // Merge FY-filtered financials with country data
+  const countriesWithFYFilteredStats = useMemo(() => {
+    return countries.map((country) => {
+      const financials = countryFinancialsByFY.get(country.country_name) || { revenue: 0, margin: 0 };
+      return {
+        ...country,
+        total_revenue: financials.revenue,
+        total_margin: financials.margin,
+      };
+    });
+  }, [countries, countryFinancialsByFY]);
 
   const filteredAndSortedCountries = useMemo(() => {
-    let filtered = countries;
+    let filtered = countriesWithFYFilteredStats;
 
     // Filter by search term
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = countries.filter(
+      filtered = countriesWithFYFilteredStats.filter(
         (c) =>
           c.country_name.toLowerCase().includes(term) ||
           c.country_code.toLowerCase().includes(term)
@@ -74,7 +130,7 @@ export function CountryList({ countries }: CountryListProps) {
       }
       return sortDirection === "asc" ? comparison : -comparison;
     });
-  }, [countries, searchTerm, sortField, sortDirection]);
+  }, [countriesWithFYFilteredStats, searchTerm, sortField, sortDirection]);
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
@@ -85,16 +141,32 @@ export function CountryList({ countries }: CountryListProps) {
     }
   };
 
-  // Calculate totals for header
+  // Calculate totals for header (using FY-filtered stats)
   const totals = useMemo(() => ({
     countries: countries.length,
     formulations: countries.reduce((sum, c) => sum + (c.formulations_count || 0), 0),
-    revenue: countries.reduce((sum, c) => sum + (c.total_revenue || 0), 0),
-    margin: countries.reduce((sum, c) => sum + (c.total_margin || 0), 0),
-  }), [countries]);
+    revenue: countriesWithFYFilteredStats.reduce((sum, c) => sum + (c.total_revenue || 0), 0),
+    margin: countriesWithFYFilteredStats.reduce((sum, c) => sum + (c.total_margin || 0), 0),
+  }), [countries, countriesWithFYFilteredStats]);
 
   return (
     <div className="space-y-6">
+      {/* Fiscal Year Selector - Prominent placement */}
+      <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
+        <div className="flex items-center gap-4">
+          <span className="text-base font-semibold">
+            Showing financial data for:
+          </span>
+          <FiscalYearSelector
+            selectedFY={selectedFY}
+            onFYChange={handleFYChange}
+            minFY={26}
+            maxFY={35}
+            className="[&_button]:text-base [&_button]:font-bold [&_button]:h-10 [&_button]:w-28 [&_button]:bg-primary/10 [&_button]:border-primary/30"
+          />
+        </div>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -112,7 +184,7 @@ export function CountryList({ countries }: CountryListProps) {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Package className="h-4 w-4" />
-              Total Registrations
+              Formulation Countries
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -123,18 +195,18 @@ export function CountryList({ countries }: CountryListProps) {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
-              Total Revenue
+              FY{selectedFY} Revenue
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totals.revenue)}</div>
+            <div className="text-2xl font-bold">{formatCurrencyCompact(totals.revenue)}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              Total Margin
+              FY{selectedFY} Margin
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -142,7 +214,7 @@ export function CountryList({ countries }: CountryListProps) {
               "text-2xl font-bold",
               totals.margin < 0 && "text-destructive"
             )}>
-              {formatCurrency(totals.margin)}
+              {formatCurrencyCompact(totals.margin)}
             </div>
           </CardContent>
         </Card>
@@ -218,10 +290,6 @@ export function CountryList({ countries }: CountryListProps) {
                           {country.country_code}
                         </Badge>
                       </CardTitle>
-                      <CardDescription className="mt-1">
-                        {country.currency_code}
-                        {country.has_tariffs && " • Has Tariffs"}
-                      </CardDescription>
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
@@ -230,27 +298,24 @@ export function CountryList({ countries }: CountryListProps) {
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">Formulations</p>
                     <p className="font-semibold">{country.formulations_count || 0}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {country.approved_count || 0} approved
-                    </p>
                   </div>
 
                   <div className="pt-3 border-t">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-muted-foreground">Revenue</p>
+                        <p className="text-xs text-muted-foreground">FY{selectedFY} Revenue</p>
                         <p className="font-semibold">
-                          {formatCurrency(country.total_revenue)}
+                          {formatCurrencyCompact(country.total_revenue)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs text-muted-foreground">Margin</p>
+                        <p className="text-xs text-muted-foreground">FY{selectedFY} Margin</p>
                         <div className="flex items-center gap-2">
                           <p className={cn(
                             "font-semibold",
                             country.total_margin < 0 && "text-destructive"
                           )}>
-                            {formatCurrency(country.total_margin)}
+                            {formatCurrencyCompact(country.total_margin)}
                           </p>
                           {country.total_revenue > 0 && (
                             <Badge

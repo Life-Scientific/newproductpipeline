@@ -317,12 +317,28 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     useGroupIds[0]
   );
 
-  // If existing business case found, we'll create a new version (mark old as inactive)
+  // If existing business case found, preserve its effective_start_fiscal_year
+  let finalEffectiveStartFiscalYear = effectiveStartFiscalYear;
+  
   if (existingGroupId) {
-    // Mark old business cases as inactive
+    // Get the existing business case's effective_start_fiscal_year to preserve it
+    const { data: existingCase } = await supabase
+      .from("business_case")
+      .select("effective_start_fiscal_year")
+      .eq("business_case_group_id", existingGroupId)
+      .eq("status", "active")
+      .limit(1)
+      .single();
+    
+    if (existingCase?.effective_start_fiscal_year) {
+      // Preserve the original effective start fiscal year
+      finalEffectiveStartFiscalYear = existingCase.effective_start_fiscal_year;
+    }
+    
+    // Mark old business cases as superseded (archived)
     const { error: deactivateError } = await supabase
       .from("business_case")
-      .update({ status: "inactive", updated_at: new Date().toISOString() })
+      .update({ status: "superseded", updated_at: new Date().toISOString() })
       .eq("business_case_group_id", existingGroupId)
       .eq("status", "active");
 
@@ -353,6 +369,10 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     cogs_per_unit: number | null;
   }> = [];
   
+  // Parse the final effective start year for fiscal year calculations
+  const finalStartYearMatch = finalEffectiveStartFiscalYear.match(/FY(\d{2})/);
+  const finalEffectiveStartYear = finalStartYearMatch ? parseInt(finalStartYearMatch[1], 10) : effectiveStartYear;
+  
   for (let yearOffset = 1; yearOffset <= 10; yearOffset++) {
     const volumeKey = `year_${yearOffset}_volume`;
     const nspKey = `year_${yearOffset}_nsp`;
@@ -366,8 +386,8 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
       return { error: `Year ${yearOffset}: Volume and NSP are required and must be greater than 0` };
     }
 
-    // Calculate fiscal year for this business case year
-    const fiscalYearNum = effectiveStartYear + (yearOffset - 1);
+    // Calculate fiscal year for this business case year (use preserved effective start year)
+    const fiscalYearNum = finalEffectiveStartYear + (yearOffset - 1);
     const fiscalYear = `FY${String(fiscalYearNum).padStart(2, "0")}`;
 
     // Use manual override if provided, otherwise lookup COGS with carry-forward logic
@@ -401,7 +421,7 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     volume: year.volume,
     nsp: year.nsp,
     cogs_per_unit: year.cogs_per_unit, // COGS value from lookup with carry-forward
-    effective_start_fiscal_year: effectiveStartFiscalYear, // Preserves creation context
+    effective_start_fiscal_year: finalEffectiveStartFiscalYear, // Preserves creation context
     status: "active" as const,
     created_by: userName,
   }));
@@ -574,10 +594,10 @@ export async function updateBusinessCaseGroupAction(
 
   // Start transaction: mark old as inactive, create new
   const result = await withUserContext(async (supabase) => {
-    // Mark old business cases as inactive
+    // Mark old business cases as superseded (archived)
     const { error: deactivateError } = await supabase
       .from("business_case")
-      .update({ status: "inactive", updated_at: new Date().toISOString() })
+      .update({ status: "superseded", updated_at: new Date().toISOString() })
       .eq("business_case_group_id", oldGroupId)
       .eq("status", "active");
 
@@ -592,7 +612,7 @@ export async function updateBusinessCaseGroupAction(
       .select();
 
     if (insertError || !newCases || newCases.length !== 10) {
-      // Rollback: reactivate old records
+      // Rollback: reactivate old records (change back from superseded)
       await supabase
         .from("business_case")
         .update({ status: "active" })
