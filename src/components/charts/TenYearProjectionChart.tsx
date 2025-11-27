@@ -27,9 +27,28 @@ import { cn } from "@/lib/utils";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import type { Database } from "@/lib/supabase/database.types";
 import { useTheme } from "@/contexts/ThemeContext";
+import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
+
+// MECE (Mutually Exclusive, Collectively Exhaustive) status constants
+const ALL_COUNTRY_STATUSES = [
+  "Not yet evaluated",
+  "Not selected for entry",
+  "Selected for entry",
+  "On hold",
+  "Withdrawn",
+] as const;
+
+const ALL_FORMULATION_STATUSES = [
+  "Not Yet Evaluated",
+  "Selected",
+  "Being Monitored",
+  "Killed",
+] as const;
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"] & {
   country_id?: string | null;
+  country_status?: string | null;
+  formulation_country_id?: string | null;
 };
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 
@@ -43,7 +62,8 @@ type FilterType = {
   countries: string[];
   formulations: string[];
   useGroups: string[];
-  statuses: string[];
+  formulationStatuses: string[];
+  countryStatuses: string[];
 };
 
 interface FilterMultiSelectProps {
@@ -216,11 +236,13 @@ export function TenYearProjectionChart({
 }: TenYearProjectionChartProps) {
   const router = useRouter();
   const { currentTheme } = useTheme();
+  // Initialize with default filter states
   const [filters, setFilters] = useState<FilterType>({
     countries: [],
     formulations: [],
     useGroups: [],
-    statuses: [],
+    formulationStatuses: ["Selected"],
+    countryStatuses: ["Selected for entry"],
   });
   const [chartType, setChartType] = useState<"line" | "bar">("line");
   const [exchangeRates] = useState<Map<string, number>>(initialExchangeRates || new Map());
@@ -306,36 +328,169 @@ export function TenYearProjectionChart({
     return map;
   }, [formulations]);
 
+  // Get available countries and formulations for cascading filters
+  const availableCountriesForFormulations = useMemo(() => {
+    const countryMap = new Map<string, Set<string>>(); // formulation_code -> Set<country_name>
+    businessCases.forEach((bc) => {
+      if (bc.formulation_code && bc.country_name) {
+        if (!countryMap.has(bc.formulation_code)) {
+          countryMap.set(bc.formulation_code, new Set());
+        }
+        countryMap.get(bc.formulation_code)!.add(bc.country_name);
+      }
+    });
+    return countryMap;
+  }, [businessCases]);
+
+  const availableFormulationsForCountries = useMemo(() => {
+    const formulationMap = new Map<string, Set<string>>(); // country_name -> Set<formulation_code>
+    businessCases.forEach((bc) => {
+      if (bc.country_name && bc.formulation_code) {
+        if (!formulationMap.has(bc.country_name)) {
+          formulationMap.set(bc.country_name, new Set());
+        }
+        formulationMap.get(bc.country_name)!.add(bc.formulation_code);
+      }
+    });
+    return formulationMap;
+  }, [businessCases]);
+
   const filterOptions = useMemo(() => {
     const countries = new Set<string>();
     const formulationDisplays = new Set<string>();
     const useGroups = new Set<string>();
-    const statusCounts = new Map<string, number>();
+    const formulationStatusCounts = new Map<string, number>();
+    const countryStatusCounts = new Map<string, number>();
 
-    // Count maps for each filter type
-    const countryCounts = new Map<string, number>();
-    const formulationCounts = new Map<string, number>();
-    const useGroupCounts = new Map<string, number>();
+    // Count maps for each filter type - tracking unique groups
+    const countryCounts = new Map<string, Set<string>>(); // country_name -> Set<business_case_group_id>
+    const formulationCounts = new Map<string, Set<string>>(); // formulation_display -> Set<business_case_group_id>
+    const useGroupCounts = new Map<string, Set<string>>(); // use_group_name -> Set<business_case_group_id>
+    const formulationStatusGroupCounts = new Map<string, Set<string>>(); // status -> Set<business_case_group_id>
+    const countryStatusGroupCounts = new Map<string, Set<string>>(); // status -> Set<formulation_country_id>
 
-    businessCases.forEach((bc) => {
+    // Determine which countries/formulations to show based on cascading filters
+    let filteredBCs = businessCases;
+
+    // If formulations are selected, only show countries for those formulations
+    if (filters.formulations.length > 0) {
+      const selectedFormulationCodes = filters.formulations.map(display => {
+        // Extract code from "Name (Code)" format
+        const match = display.match(/\(([^)]+)\)$/);
+        return match ? match[1] : display;
+      });
+      filteredBCs = filteredBCs.filter(bc => 
+        bc.formulation_code && selectedFormulationCodes.includes(bc.formulation_code)
+      );
+    }
+
+    // If countries are selected, only show formulations for those countries
+    if (filters.countries.length > 0) {
+      filteredBCs = filteredBCs.filter(bc => 
+        bc.country_name && filters.countries.includes(bc.country_name)
+      );
+    }
+
+    filteredBCs.forEach((bc) => {
+      const groupId = bc.business_case_group_id;
+      if (!groupId) return; // Skip if no group ID
+
       if (bc.country_name) {
         countries.add(bc.country_name);
-        countryCounts.set(bc.country_name, (countryCounts.get(bc.country_name) || 0) + 1);
+        if (!countryCounts.has(bc.country_name)) {
+          countryCounts.set(bc.country_name, new Set());
+        }
+        countryCounts.get(bc.country_name)!.add(groupId);
       }
       if (bc.formulation_code) {
         const display = formulationDisplayMap.get(bc.formulation_code) || bc.formulation_code;
         formulationDisplays.add(display);
-        formulationCounts.set(display, (formulationCounts.get(display) || 0) + 1);
+        if (!formulationCounts.has(display)) {
+          formulationCounts.set(display, new Set());
+        }
+        formulationCounts.get(display)!.add(groupId);
         
-        // Count by status more efficiently
+        // Count by formulation status (unique groups)
         const status = formulationStatusMap.get(bc.formulation_code);
         if (status) {
-          statusCounts.set(status, (statusCounts.get(status) || 0) + 1);
+          if (!formulationStatusGroupCounts.has(status)) {
+            formulationStatusGroupCounts.set(status, new Set());
+          }
+          formulationStatusGroupCounts.get(status)!.add(groupId);
         }
       }
       if (bc.use_group_name) {
         useGroups.add(bc.use_group_name);
-        useGroupCounts.set(bc.use_group_name, (useGroupCounts.get(bc.use_group_name) || 0) + 1);
+        if (!useGroupCounts.has(bc.use_group_name)) {
+          useGroupCounts.set(bc.use_group_name, new Set());
+        }
+        useGroupCounts.get(bc.use_group_name)!.add(groupId);
+      }
+      // Count by country status (unique formulation-country combinations)
+      // Country status is at the formulation-country level, not business case group level
+      // We need formulation_country_id to count, but it should be set by the query for all cases
+      if (bc.formulation_country_id) {
+        // Use the actual country_status value, or "Not yet evaluated" if null/undefined
+        // Note: Database default is "Not yet evaluated", so null means it wasn't fetched
+        const countryStatus = bc.country_status !== null && bc.country_status !== undefined && bc.country_status !== ""
+          ? bc.country_status 
+          : "Not yet evaluated";
+        if (!countryStatusGroupCounts.has(countryStatus)) {
+          countryStatusGroupCounts.set(countryStatus, new Set());
+        }
+        countryStatusGroupCounts.get(countryStatus)!.add(bc.formulation_country_id);
+      } else {
+        // If no formulation_country_id, try to get country_status directly
+        // This shouldn't happen if query is correct, but handle gracefully
+        if (bc.country_status !== null && bc.country_status !== undefined && bc.country_status !== "") {
+          const countryStatus = bc.country_status;
+          if (!countryStatusGroupCounts.has(countryStatus)) {
+            countryStatusGroupCounts.set(countryStatus, new Set());
+          }
+          // Use a composite key since we don't have formulation_country_id
+          const fallbackKey = `${bc.formulation_id || 'unknown'}-${bc.country_id || 'unknown'}`;
+          countryStatusGroupCounts.get(countryStatus)!.add(fallbackKey);
+        }
+      }
+    });
+
+    // Convert Sets to counts
+    const countryCountsFinal = new Map<string, number>();
+    countryCounts.forEach((groups, country) => {
+      countryCountsFinal.set(country, groups.size);
+    });
+
+    const formulationCountsFinal = new Map<string, number>();
+    formulationCounts.forEach((groups, display) => {
+      formulationCountsFinal.set(display, groups.size);
+    });
+
+    const useGroupCountsFinal = new Map<string, number>();
+    useGroupCounts.forEach((groups, useGroup) => {
+      useGroupCountsFinal.set(useGroup, groups.size);
+    });
+
+    const formulationStatusCountsFinal = new Map<string, number>();
+    formulationStatusGroupCounts.forEach((groups, status) => {
+      formulationStatusCountsFinal.set(status, groups.size);
+    });
+
+    const countryStatusCountsFinal = new Map<string, number>();
+    countryStatusGroupCounts.forEach((groups, status) => {
+      countryStatusCountsFinal.set(status, groups.size);
+    });
+
+    // Ensure all country statuses appear in filter (MECE - even with 0 count)
+    ALL_COUNTRY_STATUSES.forEach((status) => {
+      if (!countryStatusCountsFinal.has(status)) {
+        countryStatusCountsFinal.set(status, 0);
+      }
+    });
+
+    // Ensure all formulation statuses appear in filter (MECE - even with 0 count)
+    ALL_FORMULATION_STATUSES.forEach((status) => {
+      if (!formulationStatusCountsFinal.has(status)) {
+        formulationStatusCountsFinal.set(status, 0);
       }
     });
 
@@ -343,38 +498,49 @@ export function TenYearProjectionChart({
       countries: Array.from(countries).sort(),
       formulations: Array.from(formulationDisplays).sort(),
       useGroups: Array.from(useGroups).sort(),
-      statuses: Array.from(statusCounts.keys()).sort(),
-      countryCounts,
-      formulationCounts,
-      useGroupCounts,
-      statusCounts,
+      formulationStatuses: Array.from(formulationStatusCountsFinal.keys()).sort(),
+      countryStatuses: Array.from(countryStatusCountsFinal.keys()).sort(),
+      countryCounts: countryCountsFinal,
+      formulationCounts: formulationCountsFinal,
+      useGroupCounts: useGroupCountsFinal,
+      formulationStatusCounts: formulationStatusCountsFinal,
+      countryStatusCounts: countryStatusCountsFinal,
     };
-  }, [businessCases, formulationDisplayMap, formulationStatusMap]);
+  }, [businessCases, formulationDisplayMap, formulationStatusMap, filters.formulations, filters.countries]);
 
   // Filter business cases based on active filters
   const filteredBusinessCases = useMemo(() => {
-    // Early return if no filters active
-    if (!filters.countries.length && !filters.formulations.length && 
-        !filters.useGroups.length && !filters.statuses.length) {
-      return businessCases;
-    }
-    
     return businessCases.filter((bc) => {
+      // Country filter
       if (filters.countries.length > 0 && !filters.countries.includes(bc.country_name || "")) {
         return false;
       }
+      // Formulation filter
       if (filters.formulations.length > 0) {
         const bcDisplay = formulationDisplayMap.get(bc.formulation_code || "") || bc.formulation_code || "";
         if (!filters.formulations.includes(bcDisplay)) {
           return false;
         }
       }
+      // Use Group filter
       if (filters.useGroups.length > 0 && !filters.useGroups.includes(bc.use_group_name || "")) {
         return false;
       }
-      if (filters.statuses.length > 0) {
+      // Formulation Status filter
+      if (filters.formulationStatuses.length > 0) {
         const status = formulationStatusMap.get(bc.formulation_code || "");
-        if (!status || !filters.statuses.includes(status)) {
+        if (!status || !filters.formulationStatuses.includes(status)) {
+          return false;
+        }
+      }
+      // Country Status filter - only include if status is in selected list
+      if (filters.countryStatuses.length > 0) {
+        // Treat null/undefined as "Not yet evaluated" for filtering
+        const countryStatus = bc.country_status !== null && bc.country_status !== undefined 
+          ? bc.country_status 
+          : "Not yet evaluated";
+        // Only include if the country status is in the selected list
+        if (!filters.countryStatuses.includes(countryStatus)) {
           return false;
         }
       }
@@ -522,10 +688,21 @@ export function TenYearProjectionChart({
   }, [filteredBusinessCases, exchangeRates, effectiveStartYear, effectiveEndYear]);
 
   const handleRemoveFilter = (type: keyof FilterType, value: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      [type]: prev[type].filter((v) => v !== value),
-    }));
+    setFilters((prev) => {
+      const newFilters = { ...prev };
+      if (type === "formulationStatuses") {
+        // Don't allow removing the last "Selected" if it's the only one
+        const filtered = prev.formulationStatuses.filter((v) => v !== value);
+        newFilters.formulationStatuses = filtered.length === 0 ? ["Selected"] : filtered;
+      } else if (type === "countryStatuses") {
+        // Don't allow removing the last "Selected for entry" if it's the only one
+        const filtered = prev.countryStatuses.filter((v) => v !== value);
+        newFilters.countryStatuses = filtered.length === 0 ? ["Selected for entry"] : filtered;
+      } else {
+        newFilters[type] = prev[type].filter((v) => v !== value);
+      }
+      return newFilters;
+    });
   };
 
   const handleClearAllFilters = () => {
@@ -533,7 +710,8 @@ export function TenYearProjectionChart({
       countries: [],
       formulations: [],
       useGroups: [],
-      statuses: [],
+      formulationStatuses: ["Selected"],
+      countryStatuses: ["Selected for entry"],
     });
   };
 
@@ -577,7 +755,10 @@ export function TenYearProjectionChart({
     filters.countries.length > 0 ||
     filters.formulations.length > 0 ||
     filters.useGroups.length > 0 ||
-    filters.statuses.length > 0;
+    (filters.formulationStatuses.length > 0 && filters.formulationStatuses.length !== 1) ||
+    (filters.countryStatuses.length > 0 && filters.countryStatuses.length !== 1) ||
+    (filters.formulationStatuses.length === 1 && filters.formulationStatuses[0] !== "Selected") ||
+    (filters.countryStatuses.length === 1 && filters.countryStatuses[0] !== "Selected for entry");
 
   // Calculate unique formulations in the filtered view
   const uniqueFormulations = useMemo(() => {
@@ -588,6 +769,11 @@ export function TenYearProjectionChart({
       }
     });
     return formulationSet.size;
+  }, [filteredBusinessCases]);
+
+  // Calculate unique business case groups (multi-year projections)
+  const uniqueBusinessCaseGroups = useMemo(() => {
+    return countUniqueBusinessCaseGroups(filteredBusinessCases);
   }, [filteredBusinessCases]);
 
   return (
@@ -605,10 +791,10 @@ export function TenYearProjectionChart({
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <CardTitle className="text-xl font-semibold">Revenue Projection</CardTitle>
+              <CardTitle className="text-xl font-semibold">Long-Range Revenue and Gross Margin Projection</CardTitle>
               <CardDescription className="text-sm">
                 {hasActiveFilters 
-                  ? <motion.span key="filtered" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{filteredBusinessCases.length} business cases, {uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''}</motion.span>
+                  ? <motion.span key="filtered" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{uniqueBusinessCaseGroups} business case group{uniqueBusinessCaseGroups !== 1 ? 's' : ''}, {uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''}</motion.span>
                   : <span>{uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''} represented</span>
                 }
               </CardDescription>
@@ -696,53 +882,77 @@ export function TenYearProjectionChart({
             )}
           </div>
           
-          {/* Filter Multi-Selects */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {filterOptions.countries.length > 0 && (
-              <FilterMultiSelectClient
-                label="Country"
-                options={filterOptions.countries}
-                selected={filters.countries}
-                onSelectionChange={(selected) => {
-                  setFilters((prev) => ({ ...prev, countries: selected }));
-                }}
-                counts={filterOptions.countryCounts}
-              />
-            )}
-            {filterOptions.formulations.length > 0 && (
-              <FilterMultiSelectClient
-                label="Formulation"
-                options={filterOptions.formulations}
-                selected={filters.formulations}
-                onSelectionChange={(selected) => {
-                  setFilters((prev) => ({ ...prev, formulations: selected }));
-                }}
-                counts={filterOptions.formulationCounts}
-              />
-            )}
-            {filterOptions.useGroups.length > 0 && (
-              <FilterMultiSelectClient
-                label="Use Group"
-                options={filterOptions.useGroups}
-                selected={filters.useGroups}
-                onSelectionChange={(selected) => {
-                  setFilters((prev) => ({ ...prev, useGroups: selected }));
-                }}
-                counts={filterOptions.useGroupCounts}
-                disabled={filters.formulations.length === 0 || filters.countries.length === 0}
-              />
-            )}
-            {filterOptions.statuses.length > 0 && (
-              <FilterMultiSelectClient
-                label="Status"
-                options={filterOptions.statuses}
-                selected={filters.statuses}
-                onSelectionChange={(selected) => {
-                  setFilters((prev) => ({ ...prev, statuses: selected }));
-                }}
-                counts={filterOptions.statusCounts}
-              />
-            )}
+          {/* Filter Multi-Selects - Grouped into Scope and Status Filters */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Scope Filters Group */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Scope</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {filterOptions.countries.length > 0 && (
+                  <FilterMultiSelectClient
+                    label="Country"
+                    options={filterOptions.countries}
+                    selected={filters.countries}
+                    onSelectionChange={(selected) => {
+                      setFilters((prev) => ({ ...prev, countries: selected }));
+                    }}
+                    counts={filterOptions.countryCounts}
+                  />
+                )}
+                {filterOptions.formulations.length > 0 && (
+                  <FilterMultiSelectClient
+                    label="Formulation"
+                    options={filterOptions.formulations}
+                    selected={filters.formulations}
+                    onSelectionChange={(selected) => {
+                      setFilters((prev) => ({ ...prev, formulations: selected }));
+                    }}
+                    counts={filterOptions.formulationCounts}
+                  />
+                )}
+                {filterOptions.useGroups.length > 0 && (
+                  <FilterMultiSelectClient
+                    label="Use Group"
+                    options={filterOptions.useGroups}
+                    selected={filters.useGroups}
+                    onSelectionChange={(selected) => {
+                      setFilters((prev) => ({ ...prev, useGroups: selected }));
+                    }}
+                    counts={filterOptions.useGroupCounts}
+                    disabled={filters.formulations.length === 0 || filters.countries.length === 0}
+                  />
+                )}
+              </div>
+            </div>
+            
+            {/* Status Filters Group */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status Filters</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {filterOptions.formulationStatuses.length > 0 && (
+                  <FilterMultiSelectClient
+                    label="Formulation Status"
+                    options={filterOptions.formulationStatuses}
+                    selected={filters.formulationStatuses}
+                    onSelectionChange={(selected) => {
+                      setFilters((prev) => ({ ...prev, formulationStatuses: selected }));
+                    }}
+                    counts={filterOptions.formulationStatusCounts}
+                  />
+                )}
+                {filterOptions.countryStatuses.length > 0 && (
+                  <FilterMultiSelectClient
+                    label="Country Status"
+                    options={filterOptions.countryStatuses}
+                    selected={filters.countryStatuses}
+                    onSelectionChange={(selected) => {
+                      setFilters((prev) => ({ ...prev, countryStatuses: selected }));
+                    }}
+                    counts={filterOptions.countryStatusCounts}
+                  />
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Active Filter Badges */}
@@ -824,9 +1034,9 @@ export function TenYearProjectionChart({
                     </Badge>
                   </motion.div>
                 ))}
-                {filters.statuses.map((status, index) => (
+                {filters.formulationStatuses.filter(s => s !== "Selected" || filters.formulationStatuses.length > 1).map((status, index) => (
                   <motion.div
-                    key={`status-${status}`}
+                    key={`formulation-status-${status}`}
                     initial={{ opacity: 0, scale: 0.8, x: -10 }}
                     animate={{ opacity: 1, scale: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.8 }}
@@ -836,10 +1046,33 @@ export function TenYearProjectionChart({
                       variant="secondary" 
                       className="gap-1.5 pr-1 py-1 px-2 text-xs hover:scale-105 transition-transform"
                     >
-                      <span className="text-muted-foreground">Status:</span>
+                      <span className="text-muted-foreground">Formulation Status:</span>
                       <span>{status}</span>
                       <button
-                        onClick={() => handleRemoveFilter("statuses", status)}
+                        onClick={() => handleRemoveFilter("formulationStatuses", status)}
+                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  </motion.div>
+                ))}
+                {filters.countryStatuses.filter(s => s !== "Selected for entry" || filters.countryStatuses.length > 1).map((status, index) => (
+                  <motion.div
+                    key={`country-status-${status}`}
+                    initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2, delay: (filters.countries.length + filters.formulations.length + filters.useGroups.length + filters.formulationStatuses.length + index) * 0.03 }}
+                  >
+                    <Badge 
+                      variant="secondary" 
+                      className="gap-1.5 pr-1 py-1 px-2 text-xs hover:scale-105 transition-transform"
+                    >
+                      <span className="text-muted-foreground">Country Status:</span>
+                      <span>{status}</span>
+                      <button
+                        onClick={() => handleRemoveFilter("countryStatuses", status)}
                         className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5"
                       >
                         <X className="h-3 w-3" />
@@ -976,9 +1209,11 @@ export function TenYearProjectionChart({
                   cursor={{ stroke: axisColor, strokeWidth: 1, strokeDasharray: "5 5", opacity: 0.3 }}
                 />
                 <Legend 
-                  wrapperStyle={{ paddingTop: "24px" }}
+                  wrapperStyle={{ paddingTop: "24px", paddingRight: "20px" }}
                   iconType="line"
                   iconSize={12}
+                  verticalAlign="top"
+                  align="right"
                   formatter={(value) => <span className="text-sm text-foreground">{value}</span>}
                 />
                 {/* Revenue Area with gradient fill and line (EUR) */}
@@ -1103,8 +1338,10 @@ export function TenYearProjectionChart({
                   cursor={{ fill: mutedColor, opacity: 0.1 }}
                 />
                 <Legend 
-                  wrapperStyle={{ paddingTop: "24px" }}
+                  wrapperStyle={{ paddingTop: "24px", paddingRight: "20px" }}
                   iconSize={12}
+                  verticalAlign="top"
+                  align="right"
                   formatter={(value) => <span className="text-sm text-foreground">{value}</span>}
                 />
                 <Bar 
@@ -1140,72 +1377,89 @@ export function TenYearProjectionChart({
           </AnimatePresence>
         </motion.div>
 
-        {/* Summary Stats */}
+        {/* Year-by-Year Metrics Table */}
+        {chartData.length > 0 && (
+          <motion.div 
+            className="pt-4 border-t"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Metric</th>
+                    {chartData.map((year) => (
+                      <th 
+                        key={year.fiscalYear}
+                        className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide min-w-[80px]"
+                      >
+                        {year.fiscalYear}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b hover:bg-muted/50 transition-colors">
+                    <td className="py-3 px-4 text-sm font-medium">Total Revenue (EUR)</td>
+                    {chartData.map((year) => (
+                      <td 
+                        key={`revenue-${year.fiscalYear}`}
+                        className="text-center py-3 px-4 text-sm tabular-nums"
+                      >
+                        €{(year.revenueEUR * 1000000).toLocaleString(undefined, {
+                          maximumFractionDigits: 1,
+                          notation: "compact",
+                          compactDisplay: "short",
+                        })}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr className="border-b hover:bg-muted/50 transition-colors">
+                    <td className="py-3 px-4 text-sm font-medium">Total Margin (EUR)</td>
+                    {chartData.map((year) => (
+                      <td 
+                        key={`margin-${year.fiscalYear}`}
+                        className="text-center py-3 px-4 text-sm tabular-nums"
+                      >
+                        €{(year.marginEUR * 1000000).toLocaleString(undefined, {
+                          maximumFractionDigits: 1,
+                          notation: "compact",
+                          compactDisplay: "short",
+                        })}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr className="border-b hover:bg-muted/50 transition-colors">
+                    <td className="py-3 px-4 text-sm font-medium">Avg Margin %</td>
+                    {chartData.map((year) => (
+                      <td 
+                        key={`margin-pct-${year.fiscalYear}`}
+                        className="text-center py-3 px-4 text-sm tabular-nums"
+                      >
+                        {year.revenueEUR > 0 
+                          ? ((year.marginEUR / year.revenueEUR) * 100).toFixed(1)
+                          : "0.0"}%
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Disclaimer */}
         <motion.div 
-          className="grid grid-cols-3 gap-4 pt-4 border-t"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          className="pt-4 border-t"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <motion.div 
-            className="space-y-0.5"
-            whileHover={{ scale: 1.02 }}
-            transition={{ duration: 0.2 }}
-          >
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Revenue</p>
-            <motion.p 
-              className="text-xl sm:text-2xl font-bold"
-              key={chartData.reduce((sum, year) => sum + year.revenueEUR, 0)}
-              initial={{ opacity: 0.5 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              €{(chartData.reduce((sum, year) => sum + year.revenueEUR, 0) * 1000000).toLocaleString(undefined, {
-                maximumFractionDigits: 1,
-                notation: "compact",
-                compactDisplay: "short",
-              })}
-            </motion.p>
-          </motion.div>
-          <motion.div 
-            className="space-y-0.5"
-            whileHover={{ scale: 1.02 }}
-            transition={{ duration: 0.2 }}
-          >
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Margin</p>
-            <motion.p 
-              className="text-xl sm:text-2xl font-bold"
-              key={chartData.reduce((sum, year) => sum + year.marginEUR, 0)}
-              initial={{ opacity: 0.5 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              €{(chartData.reduce((sum, year) => sum + year.marginEUR, 0) * 1000000).toLocaleString(undefined, {
-                maximumFractionDigits: 1,
-                notation: "compact",
-                compactDisplay: "short",
-              })}
-            </motion.p>
-          </motion.div>
-          <motion.div 
-            className="space-y-0.5"
-            whileHover={{ scale: 1.02 }}
-            transition={{ duration: 0.2 }}
-          >
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Avg Margin</p>
-            <motion.p 
-              className="text-xl sm:text-2xl font-bold"
-              key={chartData.length > 0 ? chartData.reduce((sum, year) => sum + year.revenueEUR, 0) : 0}
-              initial={{ opacity: 0.5 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              {chartData.length > 0 && chartData.reduce((sum, year) => sum + year.revenueEUR, 0) > 0
-                ? ((chartData.reduce((sum, year) => sum + year.marginEUR, 0) /
-                    chartData.reduce((sum, year) => sum + year.revenueEUR, 0)) * 100).toFixed(1)
-                : "0.0"}%
-            </motion.p>
-          </motion.div>
+          <p className="text-xs text-muted-foreground italic">
+            Some formulation-country combinations may be excluded from projections if marked as excluded (e.g., Article 33 entries pending financial validation, or products with expected market exits before the projection horizon).
+          </p>
         </motion.div>
       </CardContent>
     </Card>

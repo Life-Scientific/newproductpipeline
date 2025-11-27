@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import type { Database } from "@/lib/supabase/database.types";
 
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
@@ -102,7 +103,7 @@ export function FormulationTreeView({
     return `$${(value / 1000).toFixed(0)}K`;
   };
 
-  const totalBusinessCases = businessCases.length;
+  const totalBusinessCaseGroups = countUniqueBusinessCaseGroups(businessCases);
   const totalRevenue = businessCases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
 
   return (
@@ -124,7 +125,7 @@ export function FormulationTreeView({
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Business Cases</p>
-              <p className="text-lg font-semibold">{totalBusinessCases}</p>
+              <p className="text-lg font-semibold">{totalBusinessCaseGroups}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Total Revenue</p>
@@ -206,7 +207,7 @@ export function FormulationTreeView({
                               )}
                               {countryBusinessCases.length > 0 && (
                                 <Badge variant="default" className="text-xs">
-                                  {countryBusinessCases.length}BC
+                                  {countUniqueBusinessCaseGroups(countryBusinessCases)}BC
                                 </Badge>
                               )}
                             </div>
@@ -304,7 +305,7 @@ export function FormulationTreeView({
                                             )}
                                             {useGroupBusinessCases.length > 0 && (
                                               <Badge variant="default" className="text-xs ml-auto flex-shrink-0">
-                                                {useGroupBusinessCases.length}BC
+                                                {countUniqueBusinessCaseGroups(useGroupBusinessCases)}BC
                                               </Badge>
                                             )}
                                           </Button>

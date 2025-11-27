@@ -14,6 +14,7 @@ import { BusinessCaseListItem } from "@/components/business-cases/BusinessCaseLi
 import { TenYearProjectionChartLazy } from "@/components/charts/TenYearProjectionChartLazy";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
+import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import Link from "next/link";
 
 // Cache dashboard data for 60 seconds
@@ -85,7 +86,8 @@ export default async function Home() {
 
   // Calculate business case metrics
   // Note: getBusinessCases() already filters out orphaned business cases
-  const totalBusinessCases = businessCases.length;
+  // Count unique business case groups (multi-year projections) instead of individual year records
+  const totalBusinessCaseGroups = countUniqueBusinessCaseGroups(businessCases);
   const totalRevenue = businessCases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
   const avgMarginPercent =
     businessCases.length > 0
@@ -151,7 +153,7 @@ export default async function Home() {
         />
         <MetricCard
           title="Total Business Cases"
-          value={totalBusinessCases}
+          value={totalBusinessCaseGroups}
           subtitle={`$${(totalRevenue / 1000000).toFixed(1)}M projected revenue`}
           href="/portfolio/business-cases"
         />
@@ -199,23 +201,38 @@ export default async function Home() {
         >
           {businessCases.length > 0 ? (
             <div className="space-y-2">
-              {businessCases.slice(0, 5).map((bc, index) => (
-                <BusinessCaseListItem 
-                  key={bc.business_case_id || `bc-${index}`} 
-                  businessCase={bc} 
-                  exchangeRates={exchangeRateMap}
-                />
-              ))}
-              {businessCases.length > 5 && (
-                <div className="pt-2 border-t">
-                  <Link
-                    href="/portfolio/business-cases"
-                    className="text-sm text-primary hover:underline block text-center font-medium"
-                  >
-                    View all {businessCases.length} business cases →
-                  </Link>
-                </div>
-              )}
+              {(() => {
+                // Group business cases by business_case_group_id
+                const groupsMap = new Map<string, typeof businessCases[0]>();
+                businessCases.forEach((bc) => {
+                  if (bc.business_case_group_id && !groupsMap.has(bc.business_case_group_id)) {
+                    groupsMap.set(bc.business_case_group_id, bc);
+                  }
+                });
+                const uniqueGroups = Array.from(groupsMap.values()).slice(0, 5);
+                
+                return (
+                  <>
+                    {uniqueGroups.map((bc, index) => (
+                      <BusinessCaseListItem 
+                        key={bc.business_case_group_id || bc.business_case_id || `bc-${index}`} 
+                        businessCase={bc} 
+                        exchangeRates={exchangeRateMap}
+                      />
+                    ))}
+                    {totalBusinessCaseGroups > 5 && (
+                      <div className="pt-2 border-t">
+                        <Link
+                          href="/portfolio/business-cases"
+                          className="text-sm text-primary hover:underline block text-center font-medium"
+                        >
+                          View all {totalBusinessCaseGroups} business cases →
+                        </Link>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">

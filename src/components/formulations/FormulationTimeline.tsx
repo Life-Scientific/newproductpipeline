@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import type { Database } from "@/lib/supabase/database.types";
 import { TrendingUp, TrendingDown, Info } from "lucide-react";
 
@@ -86,6 +87,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
 
   // Aggregate business cases by fiscal year
   const fiscalYearMap = new Map<string, FiscalYearData>();
+  const groupsByFiscalYear = new Map<string, Set<string>>();
 
   filteredBusinessCases.forEach((bc) => {
     const fy = bc.fiscal_year || "Unknown";
@@ -111,6 +113,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
         useGroups: new Set(),
         businessCaseCount: 0,
       });
+      groupsByFiscalYear.set(fy, new Set());
     }
 
     const fyData = fiscalYearMap.get(fy)!;
@@ -118,7 +121,11 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
     fyData.margin += margin;
     fyData.volume += volume;
     fyData.cogs += cogs;
-    fyData.businessCaseCount += 1;
+    
+    // Track unique business case groups per fiscal year
+    if (bc.business_case_group_id) {
+      groupsByFiscalYear.get(fy)!.add(bc.business_case_group_id);
+    }
 
     // Track countries and use groups
     if (bc.country_name) {
@@ -137,6 +144,14 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
       } else {
         fyData.nsp += nsp * volume; // Accumulate weighted sum
       }
+    }
+  });
+
+  // Set business case group counts per fiscal year
+  groupsByFiscalYear.forEach((groups, fy) => {
+    const fyData = fiscalYearMap.get(fy);
+    if (fyData) {
+      fyData.businessCaseCount = groups.size;
     }
   });
 

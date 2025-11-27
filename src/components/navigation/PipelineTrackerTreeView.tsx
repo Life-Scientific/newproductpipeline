@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
+import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import type { Database } from "@/lib/supabase/database.types";
 import { getStatusVariant } from "@/lib/design-system";
 
@@ -166,7 +167,7 @@ export function PipelineTrackerTreeView({
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Business Cases</p>
-              <p className="text-lg font-semibold">{businessCases.length}</p>
+              <p className="text-lg font-semibold">{countUniqueBusinessCaseGroups(businessCases)}</p>
             </div>
           </div>
         </CardContent>
@@ -351,7 +352,7 @@ export function PipelineTrackerTreeView({
                                                             </Badge>
                                                           )}
                                                           <Badge variant="outline" className="text-xs">
-                                                            {useGroupBusinessCases.length} BC
+                                                            {countUniqueBusinessCaseGroups(useGroupBusinessCases)} BC
                                                           </Badge>
                                                         </div>
                                                       </Button>
