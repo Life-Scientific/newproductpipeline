@@ -428,3 +428,14 @@ html[data-theme="light"]:not(.dark) [data-sidebar="inset"] {
     @apply bg-muted/50 text-muted-foreground;
   }
 }
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}

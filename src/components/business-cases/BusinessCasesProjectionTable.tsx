@@ -310,7 +310,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   },
                 },
                 {
-                  label: `NSP (€/unit)`,
+                  label: `NSP (EUR/${uom})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.nsp;
@@ -319,7 +319,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   },
                 },
                 {
-                  label: `COGS (€/unit)`,
+                  label: `COGS (EUR/${uom})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.cogs_per_unit;
@@ -328,7 +328,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   },
                 },
                 {
-                  label: `Revenue (€)`,
+                  label: `Revenue (EUR)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.total_revenue;
@@ -337,7 +337,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   },
                 },
                 {
-                  label: `Margin (€)`,
+                  label: `Margin (EUR)`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.total_margin;

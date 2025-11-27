@@ -100,10 +100,10 @@ export function BusinessCaseEditModal({
       })()
     : [];
 
-  // Get UOM and currency from first year data
+  // Get UOM - always use EUR
   const uom = yearData[0]?.uom || "L";
-  const currency = yearData[0]?.currency_code || "USD";
-  const currencySymbol = getCurrencySymbol(currency);
+  const currency = "EUR";
+  const currencySymbol = "€";
   const formulationName = yearData[0]?.formulation_name || "";
   const countryName = yearData[0]?.country_name || "";
   const useGroupName = yearData[0]?.use_group_name || yearData[0]?.use_group_variant || "";
@@ -244,10 +244,7 @@ export function BusinessCaseEditModal({
       }
       description={
         <div className="flex flex-col gap-1">
-          <span>{countryName} | {useGroupName} | Target Market Entry: {targetMarketEntry}</span>
-          {effectiveStartFiscalYear && effectiveStartFiscalYear !== targetMarketEntry && (
-            <span className="text-xs text-muted-foreground">Effective Start: {effectiveStartFiscalYear}</span>
-          )}
+          <span>{countryName} | {useGroupName} | Effective Fiscal Year Start: {targetMarketEntry}</span>
           <span className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1 mt-1">
             <GitBranch className="h-3 w-3" />
             Saving will create a new version in the history. Previous versions are preserved.
@@ -301,40 +298,40 @@ export function BusinessCaseEditModal({
                           step="0.01"
                           value={year?.volume || ""}
                           onChange={(e) => handleCellChange(col.yearOffset, "volume", e.target.value)}
-                          className={`h-8 text-sm ${volumeChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                          className={`h-8 text-sm text-right tabular-nums ${volumeChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">NSP ({currency})</Label>
+                        <Label className="text-xs text-muted-foreground">NSP (EUR/{uom})</Label>
                         <Input
                           type="number"
                           step="0.01"
                           value={year?.nsp || ""}
                           onChange={(e) => handleCellChange(col.yearOffset, "nsp", e.target.value)}
-                          className={`h-8 text-sm ${nspChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                          className={`h-8 text-sm text-right tabular-nums ${nspChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">COGS ({currency})</Label>
+                        <Label className="text-xs text-muted-foreground">COGS (EUR/{uom})</Label>
                         <Input
                           type="number"
                           step="0.01"
                           value={year?.cogs_per_unit || ""}
                           onChange={(e) => handleCellChange(col.yearOffset, "cogs_per_unit", e.target.value)}
-                          className={`h-8 text-sm ${cogsChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                          className={`h-8 text-sm text-right tabular-nums ${cogsChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
                         />
                       </div>
                       <div className="pt-2 border-t space-y-1.5 text-xs">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Revenue</span>
-                          <span className="font-medium">
-                            {metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                          <span className="font-medium text-right tabular-nums">
+                            {metrics.revenue > 0 ? `€${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Margin</span>
-                          <span className="font-medium">
-                            {metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                          <span className="font-medium text-right tabular-nums">
+                            {metrics.margin > 0 ? `€${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -380,7 +377,7 @@ export function BusinessCaseEditModal({
                           step="0.01"
                           value={year?.volume || ""}
                           onChange={(e) => handleCellChange(col.yearOffset, "volume", e.target.value)}
-                          className={`h-8 text-sm ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                          className={`h-8 text-sm text-right tabular-nums ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
                         />
                       </TableCell>
                     );
@@ -389,7 +386,7 @@ export function BusinessCaseEditModal({
 
                 {/* NSP row */}
                 <TableRow>
-                  <TableCell className="font-medium sticky left-0 bg-background z-10">NSP ({currency}/unit)</TableCell>
+                  <TableCell className="font-medium sticky left-0 bg-background z-10">NSP (EUR/{uom})</TableCell>
                   {fiscalYearColumns.map((col) => {
                     const year = yearData.find((y) => y.year_offset === col.yearOffset);
                     const cellKey = `${col.yearOffset}_nsp`;
@@ -402,7 +399,7 @@ export function BusinessCaseEditModal({
                           step="0.01"
                           value={year?.nsp || ""}
                           onChange={(e) => handleCellChange(col.yearOffset, "nsp", e.target.value)}
-                          className={`h-8 text-sm ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                          className={`h-8 text-sm text-right tabular-nums ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
                         />
                       </TableCell>
                     );
@@ -411,7 +408,7 @@ export function BusinessCaseEditModal({
 
                 {/* COGS row (editable) */}
                 <TableRow>
-                  <TableCell className="font-medium sticky left-0 bg-background z-10">COGS ({currency}/unit)</TableCell>
+                  <TableCell className="font-medium sticky left-0 bg-background z-10">COGS (EUR/{uom})</TableCell>
                   {fiscalYearColumns.map((col) => {
                     const year = yearData.find((y) => y.year_offset === col.yearOffset);
                     const cellKey = `${col.yearOffset}_cogs_per_unit`;
@@ -424,7 +421,7 @@ export function BusinessCaseEditModal({
                           step="0.01"
                           value={year?.cogs_per_unit || ""}
                           onChange={(e) => handleCellChange(col.yearOffset, "cogs_per_unit", e.target.value)}
-                          className={`h-8 text-sm ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
+                          className={`h-8 text-sm text-right tabular-nums ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
                         />
                       </TableCell>
                     );
@@ -433,50 +430,50 @@ export function BusinessCaseEditModal({
 
                 {/* Revenue row (calculated, read-only) */}
                 <TableRow>
-                  <TableCell className="font-medium sticky left-0 bg-background z-10">Total Revenue ({currency})</TableCell>
-                  {fiscalYearColumns.map((col) => {
-                    const year = yearData.find((y) => y.year_offset === col.yearOffset);
-                    const metrics = year ? calculateMetrics(year) : { revenue: 0 };
-                    return (
-                      <TableCell key={col.yearOffset} className="p-1 text-center">
-                        <span className="text-sm">
-                          {metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
-                        </span>
-                      </TableCell>
-                    );
-                  })}
+                  <TableCell className="font-medium sticky left-0 bg-background z-10">Total Revenue (EUR)</TableCell>
+                    {fiscalYearColumns.map((col) => {
+                      const year = yearData.find((y) => y.year_offset === col.yearOffset);
+                      const metrics = year ? calculateMetrics(year) : { revenue: 0 };
+                      return (
+                        <TableCell key={col.yearOffset} className="p-1 text-right">
+                          <span className="text-sm tabular-nums">
+                            {metrics.revenue > 0 ? `€${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                          </span>
+                        </TableCell>
+                      );
+                    })}
                 </TableRow>
 
                 {/* Margin row (calculated, read-only) */}
                 <TableRow>
-                  <TableCell className="font-medium sticky left-0 bg-background z-10">Gross Margin ({currency})</TableCell>
-                  {fiscalYearColumns.map((col) => {
-                    const year = yearData.find((y) => y.year_offset === col.yearOffset);
-                    const metrics = year ? calculateMetrics(year) : { margin: 0 };
-                    return (
-                      <TableCell key={col.yearOffset} className="p-1 text-center">
-                        <span className="text-sm">
-                          {metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
-                        </span>
-                      </TableCell>
-                    );
-                  })}
+                  <TableCell className="font-medium sticky left-0 bg-background z-10">Gross Margin (EUR)</TableCell>
+                    {fiscalYearColumns.map((col) => {
+                      const year = yearData.find((y) => y.year_offset === col.yearOffset);
+                      const metrics = year ? calculateMetrics(year) : { margin: 0 };
+                      return (
+                        <TableCell key={col.yearOffset} className="p-1 text-right">
+                          <span className="text-sm tabular-nums">
+                            {metrics.margin > 0 ? `€${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                          </span>
+                        </TableCell>
+                      );
+                    })}
                 </TableRow>
 
                 {/* Margin % row (calculated, read-only) */}
                 <TableRow>
                   <TableCell className="font-medium sticky left-0 bg-background z-10">Margin %</TableCell>
-                  {fiscalYearColumns.map((col) => {
-                    const year = yearData.find((y) => y.year_offset === col.yearOffset);
-                    const metrics = year ? calculateMetrics(year) : { marginPercent: 0 };
-                    return (
-                      <TableCell key={col.yearOffset} className="p-1 text-center">
-                        <span className="text-sm">
-                          {metrics.marginPercent > 0 ? `${metrics.marginPercent.toFixed(1)}%` : "-"}
-                        </span>
-                      </TableCell>
-                    );
-                  })}
+                    {fiscalYearColumns.map((col) => {
+                      const year = yearData.find((y) => y.year_offset === col.yearOffset);
+                      const metrics = year ? calculateMetrics(year) : { marginPercent: 0 };
+                      return (
+                        <TableCell key={col.yearOffset} className="p-1 text-right">
+                          <span className="text-sm tabular-nums">
+                            {metrics.marginPercent > 0 ? `${metrics.marginPercent.toFixed(1)}%` : "-"}
+                          </span>
+                        </TableCell>
+                      );
+                    })}
                 </TableRow>
               </TableBody>
             </Table>

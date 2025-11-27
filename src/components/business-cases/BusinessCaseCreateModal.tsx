@@ -268,7 +268,7 @@ export function BusinessCaseCreateModal({
           .filter((entry): entry is string => entry !== null && entry !== undefined);
 
         if (targetEntries.length === 0) {
-          setTargetEntryError("Selected use groups do not have target market entry fiscal year set");
+          setTargetEntryError("Selected use groups do not have effective fiscal year start set");
           setTargetMarketEntry(null);
           return;
         }
@@ -277,7 +277,7 @@ export function BusinessCaseCreateModal({
         const uniqueEntries = Array.from(new Set(targetEntries));
         
         if (uniqueEntries.length > 1) {
-          setTargetEntryError(`All selected use groups must have the same target market entry fiscal year. Found values: ${uniqueEntries.join(", ")}`);
+          setTargetEntryError(`All selected use groups must have the same effective fiscal year start. Found values: ${uniqueEntries.join(", ")}`);
           setTargetMarketEntry(null);
         } else {
           setTargetMarketEntry(uniqueEntries[0]);
@@ -310,7 +310,7 @@ export function BusinessCaseCreateModal({
     if (!targetMarketEntry) {
       toast({
         title: "Validation Error",
-        description: "Selected use groups do not have target market entry fiscal year set",
+        description: "Selected use groups do not have effective fiscal year start set",
         variant: "destructive",
       });
       return;
@@ -468,12 +468,12 @@ export function BusinessCaseCreateModal({
     }));
   })();
 
-  // Get UOM and currency
+  // Get UOM - always use EUR for currency display
   const selectedFormulation = formulations.find((f) => f.formulation_id === formData.formulation_id);
   const selectedCountry = countries.find((c) => c.country_id === formData.country_id);
   const uom = selectedFormulation?.uom || "L";
-  const currency = selectedCountry?.currency_code || "USD";
-  const currencySymbol = getCurrencySymbol(currency);
+  const currency = "EUR";
+  const currencySymbol = "€";
 
   // Calculate metrics helper function (similar to edit modal)
   const calculateMetrics = (yearOffset: number) => {
@@ -622,6 +622,11 @@ export function BusinessCaseCreateModal({
                                   setFormulationSearch("");
                                   setFormulationPopoverOpen(false);
                                 }}
+                                onClick={() => {
+                                  setFormData({ ...formData, formulation_id: f.formulation_id || "", use_group_ids: [] });
+                                  setFormulationSearch("");
+                                  setFormulationPopoverOpen(false);
+                                }}
                                 className="cursor-pointer"
                               >
                                 <Check
@@ -715,7 +720,7 @@ export function BusinessCaseCreateModal({
                                 {ug.targetMarketEntry && (
                                   <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                                     <Calendar className="h-3 w-3" />
-                                    <span>Target Market Entry:</span>
+                                    <span>Effective Fiscal Year Start:</span>
                                     <Badge variant="secondary" className="text-xs font-medium">
                                       {ug.targetMarketEntry}
                                     </Badge>
@@ -724,7 +729,7 @@ export function BusinessCaseCreateModal({
                                 {!ug.targetMarketEntry && (
                                   <div className="mt-1.5 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
                                     <Calendar className="h-3 w-3" />
-                                    <span>No target market entry set</span>
+                                    <span>No effective fiscal year start set</span>
                                   </div>
                                 )}
                               </div>
@@ -743,10 +748,10 @@ export function BusinessCaseCreateModal({
                 )}
               </div>
 
-              {/* Target Market Entry Summary */}
+              {/* Effective Fiscal Year Start Summary */}
               {formData.use_group_ids.length > 0 && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Target Market Entry Summary</Label>
+                  <Label className="text-sm font-medium">Effective Fiscal Year Start Summary</Label>
                   <div className="flex flex-col gap-2">
                     {targetMarketEntry ? (
                       <div className="px-4 py-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md">
@@ -764,7 +769,7 @@ export function BusinessCaseCreateModal({
                       </div>
                     ) : (
                       <div className="px-4 py-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md text-sm text-amber-700 dark:text-amber-300">
-                        Selected use groups do not have target market entry fiscal year set
+                        Selected use groups do not have effective fiscal year start set
                       </div>
                     )}
                     {targetEntryError && (
@@ -804,10 +809,7 @@ export function BusinessCaseCreateModal({
             {/* Header with formulation details */}
             <div className="space-y-2">
               <div className="text-sm text-muted-foreground">
-                {selectedFormulation && "product_name" in selectedFormulation ? selectedFormulation.product_name : selectedFormulation?.formulation_code || "Formulation"} | {selectedCountry?.country_name || "Country"} | Target Market Entry: {targetMarketEntry}
-                {effectiveStartFiscalYear && effectiveStartFiscalYear !== targetMarketEntry && (
-                  <> | Effective Start: {effectiveStartFiscalYear}</>
-                )}
+                {selectedFormulation && "product_name" in selectedFormulation ? selectedFormulation.product_name : selectedFormulation?.formulation_code || "Formulation"} | {selectedCountry?.country_name || "Country"} | Effective Fiscal Year Start: {targetMarketEntry}
               </div>
             </div>
 
@@ -857,13 +859,13 @@ export function BusinessCaseCreateModal({
                                 },
                               })
                             }
-                            className="h-8 text-sm"
+                            className="h-8 text-sm text-right tabular-nums"
                             placeholder="0"
                           />
                         </div>
                         <div className="space-y-1">
                           <div className="flex items-center justify-between">
-                            <Label className="text-xs text-muted-foreground">NSP ({currency})</Label>
+                            <Label className="text-xs text-muted-foreground">NSP (EUR/{uom})</Label>
                             {hasShadow && shadow.nsp !== null && (
                               <span className="text-[10px] text-muted-foreground/70 italic">
                                 prev: {shadow.nsp.toFixed(2)}
@@ -885,13 +887,13 @@ export function BusinessCaseCreateModal({
                                 },
                               })
                             }
-                            className="h-8 text-sm"
+                            className="h-8 text-sm text-right tabular-nums"
                             placeholder="0"
                           />
                         </div>
                         <div className="space-y-1">
                           <div className="flex items-center justify-between">
-                            <Label className="text-xs text-muted-foreground">COGS ({currency})</Label>
+                            <Label className="text-xs text-muted-foreground">COGS (EUR/{uom})</Label>
                             {hasShadow && shadow.cogs !== null && (
                               <span className="text-[10px] text-muted-foreground/70 italic">
                                 prev: {shadow.cogs.toFixed(2)}
@@ -913,21 +915,21 @@ export function BusinessCaseCreateModal({
                                 },
                               })
                             }
-                            className="h-8 text-sm"
+                            className="h-8 text-sm text-right tabular-nums"
                             placeholder="Auto or enter value"
                           />
                         </div>
                         <div className="pt-2 border-t space-y-1.5 text-xs">
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Revenue</span>
-                            <span className="font-medium">
-                              {metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                            <span className="font-medium text-right tabular-nums">
+                              {metrics.revenue > 0 ? `€${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Margin</span>
-                            <span className="font-medium">
-                              {metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                            <span className="font-medium text-right tabular-nums">
+                              {metrics.margin > 0 ? `€${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -967,7 +969,7 @@ export function BusinessCaseCreateModal({
                       {fiscalYearColumns.map((col) => {
                         const shadow = shadowData[col.yearOffset];
                         return (
-                          <TableCell key={col.yearOffset} className="p-1 text-center text-xs text-muted-foreground/70 italic">
+                          <TableCell key={col.yearOffset} className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums">
                             {shadow?.volume?.toLocaleString() || "-"}
                           </TableCell>
                         );
@@ -995,7 +997,7 @@ export function BusinessCaseCreateModal({
                               },
                             })
                           }
-                          className="h-8 text-sm"
+                          className="h-8 text-sm text-right tabular-nums"
                           placeholder="0"
                         />
                       </TableCell>
@@ -1011,8 +1013,8 @@ export function BusinessCaseCreateModal({
                       {fiscalYearColumns.map((col) => {
                         const shadow = shadowData[col.yearOffset];
                         return (
-                          <TableCell key={col.yearOffset} className="p-1 text-center text-xs text-muted-foreground/70 italic">
-                            {shadow?.nsp?.toFixed(2) || "-"}
+                          <TableCell key={col.yearOffset} className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums">
+                            {shadow?.nsp?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "-"}
                           </TableCell>
                         );
                       })}
@@ -1021,7 +1023,7 @@ export function BusinessCaseCreateModal({
 
                   {/* NSP row */}
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">NSP ({currency}/unit)</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">NSP (EUR/{uom})</TableCell>
                     {fiscalYearColumns.map((col) => (
                       <TableCell key={col.yearOffset} className="p-1">
                         <Input
@@ -1039,7 +1041,7 @@ export function BusinessCaseCreateModal({
                               },
                             })
                           }
-                          className="h-8 text-sm"
+                          className="h-8 text-sm text-right tabular-nums"
                           placeholder="0"
                         />
                       </TableCell>
@@ -1055,8 +1057,8 @@ export function BusinessCaseCreateModal({
                       {fiscalYearColumns.map((col) => {
                         const shadow = shadowData[col.yearOffset];
                         return (
-                          <TableCell key={col.yearOffset} className="p-1 text-center text-xs text-muted-foreground/70 italic">
-                            {shadow?.cogs?.toFixed(2) || "-"}
+                          <TableCell key={col.yearOffset} className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums">
+                            {shadow?.cogs?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "-"}
                           </TableCell>
                         );
                       })}
@@ -1067,7 +1069,7 @@ export function BusinessCaseCreateModal({
                   <TableRow>
                     <TableCell className="font-medium sticky left-0 bg-background z-10">
                       <div className="flex flex-col">
-                        <span>COGS ({currency}/unit)</span>
+                        <span>COGS (EUR/{uom})</span>
                         <span className="text-xs text-muted-foreground font-normal">Optional override</span>
                       </div>
                     </TableCell>
@@ -1088,7 +1090,7 @@ export function BusinessCaseCreateModal({
                               },
                             })
                           }
-                          className="h-8 text-sm"
+                          className="h-8 text-sm text-right tabular-nums"
                           placeholder="Auto"
                         />
                       </TableCell>
@@ -1097,13 +1099,13 @@ export function BusinessCaseCreateModal({
 
                   {/* Revenue row (calculated, read-only) */}
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">Total Revenue ({currency})</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">Total Revenue (EUR)</TableCell>
                     {fiscalYearColumns.map((col) => {
                       const metrics = calculateMetrics(col.yearOffset);
                       return (
-                        <TableCell key={col.yearOffset} className="p-1 text-center">
-                          <span className="text-sm">
-                            {metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                        <TableCell key={col.yearOffset} className="p-1 text-right">
+                          <span className="text-sm tabular-nums">
+                            {metrics.revenue > 0 ? `€${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
                           </span>
                         </TableCell>
                       );
@@ -1112,13 +1114,13 @@ export function BusinessCaseCreateModal({
 
                   {/* Margin row (calculated, read-only) */}
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">Gross Margin ({currency})</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">Gross Margin (EUR)</TableCell>
                     {fiscalYearColumns.map((col) => {
                       const metrics = calculateMetrics(col.yearOffset);
                       return (
-                        <TableCell key={col.yearOffset} className="p-1 text-center">
-                          <span className="text-sm">
-                            {metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                        <TableCell key={col.yearOffset} className="p-1 text-right">
+                          <span className="text-sm tabular-nums">
+                            {metrics.margin > 0 ? `€${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
                           </span>
                         </TableCell>
                       );
@@ -1131,8 +1133,8 @@ export function BusinessCaseCreateModal({
                     {fiscalYearColumns.map((col) => {
                       const metrics = calculateMetrics(col.yearOffset);
                       return (
-                        <TableCell key={col.yearOffset} className="p-1 text-center">
-                          <span className="text-sm">
+                        <TableCell key={col.yearOffset} className="p-1 text-right">
+                          <span className="text-sm tabular-nums">
                             {metrics.marginPercent > 0 ? `${metrics.marginPercent.toFixed(1)}%` : "-"}
                           </span>
                         </TableCell>
