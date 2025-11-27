@@ -37,9 +37,10 @@ const portfolioMenuItems: MenuItem[] = [
   
   // Core Data
   { title: "Formulations", path: "/formulations", icon: FlaskConical, group: "Core Data", order: 1 },
-  { title: "Active Ingredients", path: "/active-ingredients", icon: Beaker, group: "Core Data", order: 2 },
-  { title: "Countries", path: "/countries", icon: Globe, group: "Core Data", order: 3 },
-  { title: "Use Groups", path: "/use-groups", icon: FileText, group: "Core Data", order: 4 },
+  { title: "Formulation-Countries", path: "/formulation-countries", icon: Globe, group: "Core Data", order: 2 },
+  { title: "Use Groups", path: "/use-groups", icon: FileText, group: "Core Data", order: 3 },
+  { title: "Countries", path: "/countries", icon: Globe, group: "Core Data", order: 4 },
+  { title: "Active Ingredients", path: "/active-ingredients", icon: Beaker, group: "Core Data", order: 5 },
   
   // Financials
   { title: "Business Cases", path: "/business-cases", icon: TrendingUp, group: "Financials", order: 1 },

@@ -942,7 +942,7 @@ export function TenYearProjectionChart({
                 )}
                 {filterOptions.countryStatuses.length > 0 && (
                   <FilterMultiSelectClient
-                    label="Country Status"
+                    label="Formulation-Country Status"
                     options={filterOptions.countryStatuses}
                     selected={filters.countryStatuses}
                     onSelectionChange={(selected) => {
@@ -1069,7 +1069,7 @@ export function TenYearProjectionChart({
                       variant="secondary" 
                       className="gap-1.5 pr-1 py-1 px-2 text-xs hover:scale-105 transition-transform"
                     >
-                      <span className="text-muted-foreground">Country Status:</span>
+                      <span className="text-muted-foreground">Formulation-Country Status:</span>
                       <span>{status}</span>
                       <button
                         onClick={() => handleRemoveFilter("countryStatuses", status)}

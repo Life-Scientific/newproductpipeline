@@ -219,11 +219,11 @@ export default async function Home() {
           </CardContent>
         </Card>
 
-        {/* Formulation Countries Card */}
+        {/* Formulation-Countries Card */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Formulation Countries
+              Formulation-Countries
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
