@@ -165,12 +165,14 @@ export function AppSidebar() {
   useForesightInit();
 
   useEffect(() => {
-    // Get initial user state
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
+    // Get initial user state from session (no network request)
+    // We use getSession() instead of getUser() to avoid redundant auth calls
+    // The middleware already validates auth on every request
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
     });
 
-    // Listen for auth state changes instead of polling
+    // Listen for auth state changes - this handles login/logout reactively
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {

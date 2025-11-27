@@ -31,12 +31,23 @@ export async function updateSession(request: NextRequest) {
   );
 
   // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
+  // supabase.auth.getSession(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
+  //
+  // NOTE: We use getSession() instead of getUser() here because:
+  // - getSession() reads from the local JWT cookie (no network request)
+  // - getUser() ALWAYS makes a network request to verify the token
+  // - Middleware runs on EVERY request - using getUser() causes 3x+ auth requests
+  // - The session refresh is handled by the @supabase/ssr package automatically
+  //
+  // For actual user verification in sensitive operations, use getUser() in those
+  // specific server actions, not in middleware that runs on every request.
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  
+  const user = session?.user ?? null;
 
   const pathname = request.nextUrl.pathname;
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");

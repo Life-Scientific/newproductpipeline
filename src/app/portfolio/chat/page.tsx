@@ -36,9 +36,9 @@ export default function ChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auth
+  // Auth - use getSession() to avoid redundant network calls
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id || null));
+    supabase.auth.getSession().then(({ data: { session } }) => setUserId(session?.user?.id || null));
   }, [supabase.auth]);
 
   // Load sessions

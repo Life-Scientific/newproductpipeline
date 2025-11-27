@@ -16,6 +16,44 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 3. Run the dev server: `pnpm dev`
 4. Open http://localhost:3000
 
+## Database Types
+
+The application uses TypeScript types generated from the Supabase database schema. These are stored in `src/lib/supabase/database.types.ts`.
+
+### Regenerating Types
+
+If you make database schema changes (new tables, columns, views), regenerate types:
+
+```bash
+# First, login to Supabase CLI (one-time)
+npx supabase login
+
+# Then generate types
+pnpm db:types -- --project-id=phizaaaxgbvgcaojiyow
+```
+
+Or set the project ID in your environment:
+
+```bash
+# Add to .env.local
+SUPABASE_PROJECT_ID=phizaaaxgbvgcaojiyow
+
+# Then just run
+pnpm db:types
+```
+
+### Pre-build Check
+
+The build process automatically checks that `database.types.ts` exists and is valid. If the file is missing or corrupted, the build will fail with instructions to fix it.
+
+```bash
+# Manually check types file
+pnpm db:types:check
+
+# Full build (includes check)
+pnpm build
+```
+
 ## Features Implemented
 
 ### Core Infrastructure

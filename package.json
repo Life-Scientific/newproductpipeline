@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/check-db-types.js && next build",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "db:types": "node scripts/generate-db-types.js",
+    "db:types:check": "node scripts/check-db-types.js"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.49",

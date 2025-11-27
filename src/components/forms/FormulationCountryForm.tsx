@@ -76,8 +76,8 @@ export function FormulationCountryForm({
     keyedin_project_ids: ("keyedin_project_ids" in (formulationCountry || {}) ? (formulationCountry as any).keyedin_project_ids : "") || "",
     is_novel: formulationCountry?.is_novel || false,
     is_eu_approved_formulation: formulationCountry?.is_eu_approved_formulation || false,
-    // is_in_active_portfolio: removed from schema
-    // country_status: handled above as string
+    include_in_financial_plan: ("include_in_financial_plan" in (formulationCountry || {}) ? (formulationCountry as any).include_in_financial_plan : true) ?? true,
+    last_date_available_for_sale: ("last_date_available_for_sale" in (formulationCountry || {}) ? (formulationCountry as any).last_date_available_for_sale : "") || "",
   });
 
   useEffect(() => {
@@ -309,8 +309,34 @@ export function FormulationCountryForm({
               />
               <Label htmlFor="is_eu_approved_formulation">EU Approved Formulation</Label>
             </div>
-            {/* In Active Portfolio field removed from schema */}
-            {/* Has Approval field removed - use country_status Select above instead */}
+          </div>
+
+          <div className="border-t pt-4 mt-4">
+            <h4 className="text-sm font-medium mb-3">Financial Plan Settings</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="include_in_financial_plan"
+                  checked={formData.include_in_financial_plan}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, include_in_financial_plan: checked })
+                  }
+                />
+                <Label htmlFor="include_in_financial_plan">Include in Financial Plan</Label>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last_date_available_for_sale">Last Date Available for Sale</Label>
+                <Input
+                  id="last_date_available_for_sale"
+                  type="date"
+                  value={formData.last_date_available_for_sale ? formData.last_date_available_for_sale.split("T")[0] : ""}
+                  onChange={(e) => setFormData({ ...formData, last_date_available_for_sale: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  If set, business cases will be excluded from financial plan after this date
+                </p>
+              </div>
+            </div>
           </div>
 
           <DialogFooter>

@@ -23,10 +23,13 @@ export async function createFormulationCountry(formData: FormData) {
   const countryReadiness = formData.get("country_readiness") as string | null;
   const countryReadinessNotes = formData.get("country_readiness_notes") as string | null;
   const earliestMarketEntryDate = formData.get("earliest_market_entry_date") as string | null;
+  const lastDateAvailableForSale = formData.get("last_date_available_for_sale") as string | null;
   
   const isNovel = formData.get("is_novel") === "true";
   const isEuApprovedFormulation = formData.get("is_eu_approved_formulation") === "true";
   const isActive = formData.get("is_active") !== "false"; // Default true
+  // Default to true if not specified
+  const includeInFinancialPlan = formData.get("include_in_financial_plan") !== "false";
 
   if (!formulationId || !countryId) {
     return { error: "Formulation and country are required" };
@@ -57,6 +60,8 @@ export async function createFormulationCountry(formData: FormData) {
       is_novel: isNovel,
       is_eu_approved_formulation: isEuApprovedFormulation,
       is_active: isActive,
+      include_in_financial_plan: includeInFinancialPlan,
+      last_date_available_for_sale: lastDateAvailableForSale || null,
     })
     .select()
     .single();
@@ -88,10 +93,12 @@ export async function updateFormulationCountry(
   const countryReadiness = formData.get("country_readiness") as string | null;
   const countryReadinessNotes = formData.get("country_readiness_notes") as string | null;
   const earliestMarketEntryDate = formData.get("earliest_market_entry_date") as string | null;
+  const lastDateAvailableForSale = formData.get("last_date_available_for_sale") as string | null;
   
   const isNovel = formData.get("is_novel") === "true";
   const isEuApprovedFormulation = formData.get("is_eu_approved_formulation") === "true";
   const isActive = formData.get("is_active") === "true";
+  const includeInFinancialPlan = formData.get("include_in_financial_plan") === "true";
 
   const updateData: any = {
     updated_at: new Date().toISOString(),
@@ -102,12 +109,14 @@ export async function updateFormulationCountry(
   if (countryReadiness !== null) updateData.country_readiness = countryReadiness;
   if (countryReadinessNotes !== null) updateData.country_readiness_notes = countryReadinessNotes;
   if (earliestMarketEntryDate !== null) updateData.earliest_market_entry_date = earliestMarketEntryDate || null;
+  if (lastDateAvailableForSale !== null) updateData.last_date_available_for_sale = lastDateAvailableForSale || null;
 
   // Booleans - update if present in form data (checked usually sends 'true', unchecked might send 'false' or nothing if not handled)
   // Assuming the caller handles boolean logic correctly
   if (formData.has("is_novel")) updateData.is_novel = isNovel;
   if (formData.has("is_eu_approved_formulation")) updateData.is_eu_approved_formulation = isEuApprovedFormulation;
   if (formData.has("is_active")) updateData.is_active = isActive;
+  if (formData.has("include_in_financial_plan")) updateData.include_in_financial_plan = includeInFinancialPlan;
 
   const { data, error } = await supabase
     .from("formulation_country")

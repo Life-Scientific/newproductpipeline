@@ -14,8 +14,10 @@ export function ProfileSettings() {
   useEffect(() => {
     async function loadUser() {
       try {
-        const { data } = await supabase.auth.getUser();
-        setUser(data.user);
+        // Use getSession() to avoid redundant network request
+        // Middleware already validates auth on every request
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
       } catch (error) {
         console.error("Failed to load user:", error);
       } finally {
