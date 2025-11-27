@@ -22,6 +22,7 @@ import { FormulationTimeline } from "@/components/formulations/FormulationTimeli
 import { HierarchicalBreadcrumb } from "@/components/navigation/HierarchicalBreadcrumb";
 import { FormulationTreeView } from "@/components/navigation/FormulationTreeView";
 import { getFormulationBusinessCasesForTree } from "@/lib/db/queries";
+import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import Link from "next/link";
 import { Network, Package, Globe, DollarSign, FileText, Shield, History } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -183,7 +184,7 @@ export default async function FormulationDetailPage({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              <div className="text-2xl font-bold">{businessCases.length}</div>
+              <div className="text-2xl font-bold">{countUniqueBusinessCaseGroups(businessCases)}</div>
               <p className="text-xs text-muted-foreground">
                 {formatCurrency(totalRevenue)} revenue
               </p>

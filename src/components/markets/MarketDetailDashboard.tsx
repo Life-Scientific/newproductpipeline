@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, TrendingUp, Package, FileCheck, DollarSign, Plus } from "lucide-react";
 import { BusinessCaseCreateModal } from "@/components/business-cases/BusinessCaseCreateModal";
+import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import Link from "next/link";
 import { RevenueTrendChart } from "@/components/charts/RevenueTrendChart";
 import { CountryMarginChart } from "@/components/charts/CountryMarginChart";
@@ -79,7 +80,7 @@ export function MarketDetailDashboard({
       totalMargin,
       marginPercent,
       formulationCount: uniqueFormulations.size,
-      businessCaseCount: businessCases.length,
+      businessCaseCount: countUniqueBusinessCaseGroups(businessCases),
       registrationCount: registrations.length,
       approvedCount,
       submittedCount,

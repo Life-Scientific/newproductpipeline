@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 import type { Database } from "@/lib/supabase/database.types";
+import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { cn } from "@/lib/utils";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
@@ -141,7 +142,7 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
       <CardHeader>
         <CardTitle>Business Cases</CardTitle>
         <CardDescription>
-          Financial projections and business case analysis ({businessCases.length} total)
+          Financial projections and business case analysis ({countUniqueBusinessCaseGroups(businessCases)} total)
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -168,7 +169,7 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
                         <div className="text-left">
                           <div className="font-semibold text-sm">{country}</div>
                           <div className="text-xs text-muted-foreground">
-                            {cases.length} business case{cases.length !== 1 ? "s" : ""}
+                            {countUniqueBusinessCaseGroups(cases)} business case group{countUniqueBusinessCaseGroups(cases) !== 1 ? "s" : ""}
                             {summary.useGroupCount > 0 && (
                               <span> • {summary.useGroupCount} use group{summary.useGroupCount !== 1 ? "s" : ""}</span>
                             )}

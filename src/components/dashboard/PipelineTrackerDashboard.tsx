@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getStatusVariant } from "@/lib/design-system";
+import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import type { Database } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 import { PipelineNetworkGraph } from "./PipelineNetworkGraph";
@@ -126,10 +127,12 @@ export function PipelineTrackerDashboard({
         totalUseGroups += cUseGroups.length;
 
         let countryRev = 0;
+        const allBcsForCountry: BusinessCase[] = [];
+        
         cUseGroups.forEach(ug => {
           const ugId = ug.formulation_country_use_group_id || "";
           const bcs = businessCasesByUseGroup.get(ugId) || [];
-          totalBusinessCases += bcs.length;
+          allBcsForCountry.push(...bcs);
           bcs.forEach(bc => {
             const rev = bc.total_revenue || 0;
             const margin = bc.total_margin || 0;
@@ -140,7 +143,7 @@ export function PipelineTrackerDashboard({
         });
 
         const directBcs = businessCasesByCountry.get(cId) || [];
-        totalBusinessCases += directBcs.length;
+        allBcsForCountry.push(...directBcs);
         directBcs.forEach(bc => {
           const rev = bc.total_revenue || 0;
           const margin = bc.total_margin || 0;
@@ -148,6 +151,9 @@ export function PipelineTrackerDashboard({
           totalMargin += margin;
           countryRev += rev;
         });
+        
+        // Count unique business case groups for this country
+        totalBusinessCases += countUniqueBusinessCaseGroups(allBcsForCountry);
 
         countryRevenue.push({
           name: c.country_name || c.country_code || "Unknown",

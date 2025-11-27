@@ -29,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getStatusVariant } from "@/lib/design-system";
+import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import type { Database } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 
@@ -421,7 +422,7 @@ export function PipelineNetworkGraph({
               name: ug.use_group_name,
               variant: ug.use_group_variant,
               hasBusinessCase: hasBC,
-              businessCaseCount: ugBusinessCases.length,
+              businessCaseCount: countUniqueBusinessCaseGroups(ugBusinessCases),
             },
             position: { x: 0, y: 0 },
           });
