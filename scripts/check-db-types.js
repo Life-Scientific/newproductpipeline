@@ -73,27 +73,18 @@ function checkTypesFile() {
 }
 
 function printFixInstructions() {
-  console.error('📋 To fix this, regenerate the types:');
+  console.error('📋 To fix this, regenerate types from the REMOTE database:');
   console.error('');
-  console.error('   Option 1: Using Supabase CLI (recommended)');
+  console.error('   Step 1: Login to Supabase CLI (one-time)');
   console.error('   ─────────────────────────────────────────');
-  console.error('   1. Login to Supabase CLI:');
   console.error('      npx supabase login');
   console.error('');
-  console.error('   2. Generate types (replace PROJECT_ID with your actual ID):');
-  console.error('      pnpm db:types -- --project-id=phizaaaxgbvgcaojiyow');
-  console.error('');
-  console.error('   Option 2: Set environment variable');
-  console.error('   ─────────────────────────────────');
-  console.error('   Add to .env.local:');
-  console.error('      SUPABASE_PROJECT_ID=phizaaaxgbvgcaojiyow');
-  console.error('');
-  console.error('   Then run:');
+  console.error('   Step 2: Generate types from remote');
+  console.error('   ───────────────────────────────────');
   console.error('      pnpm db:types');
   console.error('');
-  console.error('   Option 3: Manual generation');
-  console.error('   ──────────────────────────');
-  console.error('   npx supabase gen types typescript --project-id phizaaaxgbvgcaojiyow > src/lib/supabase/database.types.ts');
+  console.error('   This will fetch the schema from the remote Supabase project');
+  console.error('   (Life Scientific Main: phizaaaxgbvgcaojiyow)');
   console.error('');
 }
 
