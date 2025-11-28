@@ -1131,15 +1131,30 @@ export async function getBusinessCasesForChart() {
   return enrichedData.filter(bc => bc.formulation_code && bc.country_name);
 }
 
-export async function getBusinessCaseById(businessCaseId: string) {
+export async function getBusinessCaseById(id: string) {
   try {
     const supabase = await createClient();
     
-    const { data, error } = await supabase
+    // First try to find by business_case_id
+    let { data, error } = await supabase
       .from("vw_business_case")
       .select("*")
-      .eq("business_case_id", businessCaseId)
+      .eq("business_case_id", id)
       .single();
+
+    // If not found, try by business_case_group_id (get the first year's record)
+    if (error?.code === 'PGRST116' || !data) {
+      const groupResult = await supabase
+        .from("vw_business_case")
+        .select("*")
+        .eq("business_case_group_id", id)
+        .order("year_offset", { ascending: true })
+        .limit(1)
+        .single();
+      
+      data = groupResult.data;
+      error = groupResult.error;
+    }
 
     if (error) {
       console.error('Error fetching business case:', error);

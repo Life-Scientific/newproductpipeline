@@ -22,6 +22,7 @@ type FormulationCountryDetail =
 // Extended type with grouping info
 type FormulationCountryWithGroup = FormulationCountryDetail & {
   _isFirstInGroup?: boolean;
+  _isLastInGroup?: boolean;
   _groupSize?: number;
 };
 
@@ -242,15 +243,21 @@ function addGroupingInfo(data: FormulationCountryDetail[]): FormulationCountryWi
     groupCounts.set(code, (groupCounts.get(code) || 0) + 1);
   });
   
-  // Mark first in each group
+  // Mark first and last in each group
   const seenCodes = new Set<string>();
-  return sorted.map((row) => {
+  return sorted.map((row, index) => {
     const code = row.formulation_code || "";
     const isFirst = !seenCodes.has(code);
     seenCodes.add(code);
+    
+    // Check if this is the last row in its group
+    const nextRow = sorted[index + 1];
+    const isLast = !nextRow || nextRow.formulation_code !== code;
+    
     return {
       ...row,
       _isFirstInGroup: isFirst,
+      _isLastInGroup: isLast,
       _groupSize: isFirst ? groupCounts.get(code) : undefined,
     };
   });
@@ -294,6 +301,16 @@ export function FormulationCountriesList({
     likely_registration_pathway: false,
   };
 
+  // Row class function to remove borders between grouped rows
+  const getRowClassName = useCallback((row: FormulationCountryWithGroup, index: number) => {
+    // Remove bottom border if not the last in group
+    if (!row._isLastInGroup) {
+      return "border-b-0";
+    }
+    // Add thicker border for group separator
+    return "border-b-2 border-border/60";
+  }, []);
+
   return (
     <>
       <EnhancedDataTable
@@ -307,6 +324,7 @@ export function FormulationCountriesList({
         enableUrlPagination={true}
         filterConfigs={filterConfigs}
         defaultColumnVisibility={defaultHiddenColumns}
+        getRowClassName={getRowClassName}
       />
 
       {editingCountry && (

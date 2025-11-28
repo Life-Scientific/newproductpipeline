@@ -126,6 +126,8 @@ export interface EnhancedDataTableProps<TData, TValue> {
   showFilterCount?: boolean;
   /** Default column visibility state */
   defaultColumnVisibility?: Record<string, boolean>;
+  /** Custom row class name function */
+  getRowClassName?: (row: TData, index: number) => string;
 }
 
 /**
@@ -218,12 +220,14 @@ export function EnhancedDataTable<TData, TValue>({
   filterConfigs = [],
   showFilterCount = true,
   defaultColumnVisibility = {},
+  getRowClassName,
 }: EnhancedDataTableProps<TData, TValue>) {
   // URL-based pagination hooks
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const [isPendingFilter, startFilterTransition] = React.useTransition();
+  const [isPendingPagination, startPaginationTransition] = React.useTransition();
 
   // Parse filters from URL
   const activeFilters = React.useMemo(() => {
@@ -366,10 +370,22 @@ export function EnhancedDataTable<TData, TValue>({
   );
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const [pagination, setPagination] = React.useState({
-    pageIndex: getInitialPageIndex(),
-    pageSize,
+  
+  // Simple pagination initialization - reads URL on mount only
+  const [pagination, setPagination] = React.useState(() => {
+    if (enableUrlPagination && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const pageParam = params.get("page");
+      if (pageParam) {
+        const parsed = parseInt(pageParam, 10);
+        if (!Number.isNaN(parsed) && parsed >= 1) {
+          return { pageIndex: parsed - 1, pageSize };
+        }
+      }
+    }
+    return { pageIndex: 0, pageSize };
   });
+  
   const [saveViewDialogOpen, setSaveViewDialogOpen] = React.useState(false);
   const [viewName, setViewName] = React.useState("");
   const [isMounted, setIsMounted] = React.useState(false);
@@ -378,50 +394,21 @@ export function EnhancedDataTable<TData, TValue>({
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  // Sync URL with pagination state when URL pagination is enabled
-  const hasInitializedFromUrl = React.useRef(false);
+  
+  // Handle browser back/forward navigation
   React.useEffect(() => {
-    if (!enableUrlPagination || !isMounted) return;
-
-    // On initial mount, sync from URL to state
-    if (!hasInitializedFromUrl.current) {
-      hasInitializedFromUrl.current = true;
-      const initialPage = getInitialPageIndex();
-      if (initialPage !== pagination.pageIndex) {
-        setPagination((prev) => ({ ...prev, pageIndex: initialPage }));
-      }
-      return;
-    }
-
-    // After initialization, sync from state to URL
-    const currentPageParam = searchParams.get("page");
-    const currentUrlPage = currentPageParam
-      ? parseInt(currentPageParam, 10)
-      : 1;
-    const newPage = pagination.pageIndex + 1; // Convert to 1-indexed
-
-    if (currentUrlPage !== newPage) {
-      const params = new URLSearchParams(searchParams.toString());
-      if (newPage === 1) {
-        params.delete("page"); // Don't show page=1 in URL
-      } else {
-        params.set("page", newPage.toString());
-      }
-      const newUrl = params.toString()
-        ? `${pathname}?${params.toString()}`
-        : pathname;
-      router.replace(newUrl, { scroll: false });
-    }
-  }, [
-    enableUrlPagination,
-    isMounted,
-    pagination.pageIndex,
-    searchParams,
-    pathname,
-    router,
-    getInitialPageIndex,
-  ]);
+    if (!enableUrlPagination || typeof window === 'undefined') return;
+    
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const pageParam = params.get("page");
+      const newIndex = pageParam ? parseInt(pageParam, 10) - 1 : 0;
+      setPagination((prev) => ({ ...prev, pageIndex: Math.max(0, newIndex) }));
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [enableUrlPagination]);
 
   // Memoize columns to prevent unnecessary re-renders
   const memoizedColumns = React.useMemo(() => columns, [columns]);
@@ -913,6 +900,7 @@ export function EnhancedDataTable<TData, TValue>({
             isLoading={isLoading}
             emptyMessage={emptyMessage}
             onColumnOrderChange={handleColumnOrderChange}
+            getRowClassName={getRowClassName}
           />
         ) : (
           // Simplified table without drag-and-drop when reordering is disabled
@@ -965,11 +953,11 @@ export function EnhancedDataTable<TData, TValue>({
                   </TableCell>
                 </TableRow>
               ) : rowModel.rows?.length ? (
-                rowModel.rows.map((row) => (
+                rowModel.rows.map((row, index) => (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="h-12 hover:bg-muted/30 border-border/40"
+                    className={`h-12 hover:bg-muted/30 border-border/40 ${getRowClassName ? getRowClassName(row.original, index) : ""}`}
                   >
                     {row.getVisibleCells().map((cell) => {
                       const columnId =
@@ -1030,8 +1018,33 @@ export function EnhancedDataTable<TData, TValue>({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => {
+              // Prevent clicks during initial mount to avoid race conditions
+              if (mountTimeRef.current && Date.now() - mountTimeRef.current < 500) {
+                return;
+              }
+              
+              const newPageIndex = pagination.pageIndex - 1;
+              setPagination((prev) => ({ ...prev, pageIndex: newPageIndex }));
+              
+              // Update URL directly if URL pagination is enabled
+              if (enableUrlPagination) {
+                lastSyncedPageIndex.current = newPageIndex;
+                const newPage = newPageIndex + 1;
+                const currentSearch = typeof window !== 'undefined' ? window.location.search : '';
+                const params = new URLSearchParams(currentSearch);
+                if (newPage === 1) {
+                  params.delete("page");
+                } else {
+                  params.set("page", newPage.toString());
+                }
+                const newUrl = params.toString()
+                  ? `${pathname}?${params.toString()}`
+                  : pathname;
+                router.replace(newUrl, { scroll: false });
+              }
+            }}
+            disabled={pagination.pageIndex <= 0}
             className="h-8 w-8 p-0 hover:bg-muted/60"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -1050,8 +1063,32 @@ export function EnhancedDataTable<TData, TValue>({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() => {
+              // Prevent clicks during initial mount to avoid race conditions
+              if (mountTimeRef.current && Date.now() - mountTimeRef.current < 500) {
+                return;
+              }
+              
+              const newPageIndex = pagination.pageIndex + 1;
+              const pageCount = table.getPageCount();
+              if (newPageIndex < pageCount) {
+                setPagination((prev) => ({ ...prev, pageIndex: newPageIndex }));
+                
+                // Update URL directly if URL pagination is enabled
+                if (enableUrlPagination) {
+                  lastSyncedPageIndex.current = newPageIndex;
+                  const newPage = newPageIndex + 1;
+                  const currentSearch = typeof window !== 'undefined' ? window.location.search : '';
+                  const params = new URLSearchParams(currentSearch);
+                  params.set("page", newPage.toString());
+                  const newUrl = params.toString()
+                    ? `${pathname}?${params.toString()}`
+                    : pathname;
+                  router.replace(newUrl, { scroll: false });
+                }
+              }
+            }}
+            disabled={pagination.pageIndex >= table.getPageCount() - 1}
             className="h-8 w-8 p-0 hover:bg-muted/60"
           >
             <ChevronRight className="h-4 w-4" />
