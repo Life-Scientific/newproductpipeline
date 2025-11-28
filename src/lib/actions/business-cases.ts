@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import { checkExistingBusinessCase, validateUseGroupTargetEntryConsistency } from "@/lib/db/queries";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
@@ -106,8 +106,6 @@ export async function createBusinessCase(formData: FormData) {
     return { error: `Failed to link use groups: ${junctionError.message}` };
   }
 
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -227,8 +225,6 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
     }
   }
 
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -253,8 +249,6 @@ export async function deleteBusinessCase(businessCaseId: string) {
     return { error: error.message };
   }
 
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -491,8 +485,6 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     }
   }
 
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");
@@ -713,8 +705,6 @@ export async function updateBusinessCaseGroupAction(
     return { error: result.error };
   }
 
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
   revalidatePath("/business-cases");
   revalidatePath("/analytics");
   revalidatePath("/");

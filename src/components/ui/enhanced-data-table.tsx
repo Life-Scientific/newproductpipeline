@@ -224,22 +224,14 @@ export function EnhancedDataTable<TData, TValue>({
 }: EnhancedDataTableProps<TData, TValue>) {
   const pathname = usePathname();
 
-  // Local state for filters (initialized from URL, synced via history API)
+  // Local state for filters (initialized empty, synced from URL after mount to avoid hydration mismatch)
   const [activeFilters, setActiveFilters] = React.useState<Record<string, string[]>>(() => {
+    // Always initialize with empty filters to ensure server/client match
     const filters: Record<string, string[]> = {};
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      filterConfigs.forEach((config) => {
-        const paramKey = config.paramKey || String(config.columnKey);
-        const value = params.get(paramKey);
-        filters[paramKey] = value ? value.split(",").filter(Boolean) : [];
-      });
-    } else {
-      filterConfigs.forEach((config) => {
-        const paramKey = config.paramKey || String(config.columnKey);
-        filters[paramKey] = [];
-      });
-    }
+    filterConfigs.forEach((config) => {
+      const paramKey = config.paramKey || String(config.columnKey);
+      filters[paramKey] = [];
+    });
     return filters;
   });
 
@@ -378,18 +370,9 @@ export function EnhancedDataTable<TData, TValue>({
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   
-  // Simple pagination initialization - reads URL on mount only
+  // Pagination initialization - always start at page 0 to ensure server/client match
+  // URL params will be synced after mount in useEffect
   const [pagination, setPagination] = React.useState(() => {
-    if (enableUrlPagination && typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const pageParam = params.get("page");
-      if (pageParam) {
-        const parsed = parseInt(pageParam, 10);
-        if (!Number.isNaN(parsed) && parsed >= 1) {
-          return { pageIndex: parsed - 1, pageSize };
-        }
-      }
-    }
     return { pageIndex: 0, pageSize };
   });
   
@@ -401,6 +384,36 @@ export function EnhancedDataTable<TData, TValue>({
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
+  
+  // Sync URL params after mount to avoid hydration mismatch
+  // This ensures server and client render the same initial state, then syncs with URL
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const params = new URLSearchParams(window.location.search);
+    
+    // Sync pagination from URL
+    if (enableUrlPagination) {
+      const pageParam = params.get("page");
+      if (pageParam) {
+        const parsed = parseInt(pageParam, 10);
+        if (!Number.isNaN(parsed) && parsed >= 1) {
+          setPagination((prev) => ({ ...prev, pageIndex: parsed - 1 }));
+        }
+      }
+    }
+    
+    // Sync filters from URL
+    if (filterConfigs.length > 0) {
+      const newFilters: Record<string, string[]> = {};
+      filterConfigs.forEach((config) => {
+        const paramKey = config.paramKey || String(config.columnKey);
+        const value = params.get(paramKey);
+        newFilters[paramKey] = value ? value.split(",").filter(Boolean) : [];
+      });
+      setActiveFilters(newFilters);
+    }
+  }, [enableUrlPagination, filterConfigs]);
   
   // Handle browser back/forward navigation (syncs both pagination and filters)
   React.useEffect(() => {

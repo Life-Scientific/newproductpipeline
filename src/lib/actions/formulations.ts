@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import {
   createFormulationIngredients,
   updateFormulationIngredients,
@@ -147,7 +147,6 @@ export async function createFormulation(formData: FormData) {
     .eq("formulation_id", data.formulation_id)
     .single();
 
-  revalidateTag("formulations");
   return {
     data: updatedFormulation || data,
     success: true,
@@ -278,7 +277,6 @@ export async function updateFormulation(formulationId: string, formData: FormDat
     .single();
 
   // If status changed, the trigger will log it automatically with correct user context
-  revalidateTag("formulations");
   revalidatePath(`/formulations/${formulationId}`);
   return {
     data: updatedFormulation || data,
@@ -315,7 +313,6 @@ export async function deleteFormulation(formulationId: string) {
     return { error: error.message };
   }
 
-  revalidateTag("formulations");
   return { success: true };
 }
 
