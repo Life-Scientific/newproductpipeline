@@ -69,17 +69,20 @@ const SidebarProvider = React.forwardRef<
 >(({ defaultOpen = false, children, ...props }, ref) => {
   const [openMobile, setOpenMobile] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
+  const [isHydrated, setIsHydrated] = React.useState(false);
 
-  // Initialize from localStorage or default
-  const [open, setOpen] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(SIDEBAR_COOKIE_NAME);
-      if (stored !== null) {
-        return stored === "true";
-      }
+  // Always start with defaultOpen for SSR consistency
+  // Then sync with localStorage after hydration
+  const [open, setOpen] = React.useState(defaultOpen);
+
+  // Sync with localStorage after hydration to avoid mismatch
+  React.useEffect(() => {
+    const stored = localStorage.getItem(SIDEBAR_COOKIE_NAME);
+    if (stored !== null) {
+      setOpen(stored === "true");
     }
-    return defaultOpen;
-  });
+    setIsHydrated(true);
+  }, []);
 
   React.useEffect(() => {
     const checkMobile = () => {
@@ -90,10 +93,12 @@ const SidebarProvider = React.forwardRef<
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Persist state to localStorage
+  // Persist state to localStorage (only after hydration)
   React.useEffect(() => {
-    localStorage.setItem(SIDEBAR_COOKIE_NAME, String(open));
-  }, [open]);
+    if (isHydrated) {
+      localStorage.setItem(SIDEBAR_COOKIE_NAME, String(open));
+    }
+  }, [open, isHydrated]);
 
   // Keyboard shortcut (Cmd+B / Ctrl+B)
   React.useEffect(() => {

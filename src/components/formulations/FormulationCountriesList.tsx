@@ -19,6 +19,12 @@ import type { Database } from "@/lib/supabase/database.types";
 type FormulationCountryDetail =
   Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 
+// Extended type with grouping info
+type FormulationCountryWithGroup = FormulationCountryDetail & {
+  _isFirstInGroup?: boolean;
+  _groupSize?: number;
+};
+
 interface FormulationCountriesListProps {
   countries: FormulationCountryDetail[];
 }
@@ -49,29 +55,42 @@ const FormulationCountryActionCell = memo(
 const createColumns = (
   onEdit: (id: string) => void,
   canEdit: boolean,
-): ColumnDef<FormulationCountryDetail>[] => [
+): ColumnDef<FormulationCountryWithGroup>[] => [
   {
     accessorKey: "formulation_code",
-    header: "Formulation Code",
+    header: "Formulation",
     cell: ({ row }) => {
+      const isFirst = row.original._isFirstInGroup;
+      const groupSize = row.original._groupSize || 1;
       const code = row.getValue("formulation_code") as string;
+      const productName = row.original.product_name;
       const id = row.original.formulation_country_id;
+      
+      // Only show on first row of group
+      if (!isFirst) {
+        return <span className="text-muted-foreground/30">│</span>;
+      }
+      
       return (
-        <Link
-          href={`/formulation-countries/${id}`}
-          className="font-medium text-primary hover:underline"
-        >
-          {code || "—"}
-        </Link>
+        <div className="space-y-0.5">
+          <Link
+            href={`/formulation-countries/${id}`}
+            className="font-semibold text-primary hover:underline"
+          >
+            {code || "—"}
+          </Link>
+          {productName && (
+            <p className="text-xs text-muted-foreground truncate max-w-[180px]">
+              {productName}
+            </p>
+          )}
+          {groupSize > 1 && (
+            <p className="text-[10px] text-muted-foreground/60">
+              {groupSize} countries
+            </p>
+          )}
+        </div>
       );
-    },
-  },
-  {
-    accessorKey: "product_name",
-    header: "Product Name",
-    cell: ({ row }) => {
-      const productName = row.getValue("product_name") as string | null;
-      return <span className="text-sm">{productName || "—"}</span>;
     },
   },
   {
@@ -94,27 +113,26 @@ const createColumns = (
   },
   {
     accessorKey: "country_status",
-    header: "Country Status",
+    header: "Status",
     cell: ({ row }) => {
       const status = row.getValue("country_status") as string | null;
-      if (!status)
-        return <span className="text-sm text-muted-foreground">—</span>;
+      const readiness = row.original.readiness as string | null;
+      
       return (
-        <Badge variant={getStatusVariant(status, "country")}>{status}</Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "readiness",
-    header: "Readiness",
-    cell: ({ row }) => {
-      const readiness = row.getValue("readiness") as string | null;
-      if (!readiness)
-        return <span className="text-sm text-muted-foreground">—</span>;
-      return (
-        <Badge variant={getStatusVariant(readiness, "country")}>
-          {readiness}
-        </Badge>
+        <div className="flex flex-col gap-1">
+          {status ? (
+            <Badge variant={getStatusVariant(status, "country")} className="w-fit text-xs">
+              {status}
+            </Badge>
+          ) : (
+            <span className="text-xs text-muted-foreground">—</span>
+          )}
+          {readiness && (
+            <span className="text-[10px] text-muted-foreground truncate max-w-[140px]">
+              {readiness}
+            </span>
+          )}
+        </div>
       );
     },
   },
@@ -123,12 +141,22 @@ const createColumns = (
     header: "Target FY",
     cell: ({ row }) => {
       const fy = row.original.target_market_entry_fy as string | null;
-      return <span className="text-sm">{fy || "—"}</span>;
+      return <span className="text-sm font-medium">{fy || "—"}</span>;
+    },
+  },
+  {
+    accessorKey: "product_category",
+    header: "Category",
+    cell: ({ row }) => {
+      const category = row.original.product_category as string | null;
+      if (!category) return <span className="text-xs text-muted-foreground">—</span>;
+      return <span className="text-xs">{category}</span>;
     },
   },
   {
     accessorKey: "earliest_market_entry_date",
     header: "EMD",
+    enableHiding: true,
     cell: ({ row }) => {
       const emd = row.original.earliest_market_entry_date;
       if (!emd) return <span className="text-sm text-muted-foreground">—</span>;
@@ -143,6 +171,7 @@ const createColumns = (
   {
     accessorKey: "likely_registration_pathway",
     header: "Pathway",
+    enableHiding: true,
     cell: ({ row }) => {
       const pathway = row.original.likely_registration_pathway as string | null;
       if (!pathway)
@@ -154,8 +183,8 @@ const createColumns = (
     ? [
         {
           id: "actions",
-          header: "Actions",
-          cell: ({ row }: { row: { original: FormulationCountryDetail } }) => {
+          header: "",
+          cell: ({ row }: { row: { original: FormulationCountryWithGroup } }) => {
             return (
               <FormulationCountryActionCell
                 countryId={row.original.formulation_country_id || ""}
@@ -169,12 +198,12 @@ const createColumns = (
 ];
 
 // Filter configurations for the formulation-countries table
-const filterConfigs: FilterConfig<FormulationCountryDetail>[] = [
+const filterConfigs: FilterConfig<FormulationCountryWithGroup>[] = [
   {
     columnKey: "formulation_code",
     label: "Formulation",
     paramKey: "formulations",
-    getLabel: (value) => value, // Could enhance to show product name
+    getLabel: (value) => value,
   },
   {
     columnKey: "country_name",
@@ -187,16 +216,45 @@ const filterConfigs: FilterConfig<FormulationCountryDetail>[] = [
     paramKey: "statuses",
   },
   {
-    columnKey: "readiness",
-    label: "Readiness",
-    paramKey: "readiness",
-  },
-  {
-    columnKey: "likely_registration_pathway",
-    label: "Pathway",
-    paramKey: "pathways",
+    columnKey: "product_category",
+    label: "Category",
+    paramKey: "categories",
   },
 ];
+
+// Add grouping metadata to rows
+function addGroupingInfo(data: FormulationCountryDetail[]): FormulationCountryWithGroup[] {
+  // Sort by formulation_code first to ensure groups are together
+  const sorted = [...data].sort((a, b) => {
+    const codeA = a.formulation_code || "";
+    const codeB = b.formulation_code || "";
+    if (codeA !== codeB) return codeA.localeCompare(codeB);
+    // Then by country name within each formulation
+    const countryA = a.country_name || "";
+    const countryB = b.country_name || "";
+    return countryA.localeCompare(countryB);
+  });
+  
+  // Count group sizes
+  const groupCounts = new Map<string, number>();
+  sorted.forEach((row) => {
+    const code = row.formulation_code || "";
+    groupCounts.set(code, (groupCounts.get(code) || 0) + 1);
+  });
+  
+  // Mark first in each group
+  const seenCodes = new Set<string>();
+  return sorted.map((row) => {
+    const code = row.formulation_code || "";
+    const isFirst = !seenCodes.has(code);
+    seenCodes.add(code);
+    return {
+      ...row,
+      _isFirstInGroup: isFirst,
+      _groupSize: isFirst ? groupCounts.get(code) : undefined,
+    };
+  });
+}
 
 export function FormulationCountriesList({
   countries,
@@ -208,6 +266,9 @@ export function FormulationCountriesList({
   const editingCountry = countries.find(
     (c) => c.formulation_country_id === editingCountryId,
   );
+
+  // Add grouping info to data
+  const groupedData = useMemo(() => addGroupingInfo(countries), [countries]);
 
   // Memoize the edit handler
   const handleEdit = useCallback((id: string) => {
@@ -227,11 +288,17 @@ export function FormulationCountriesList({
   // Memoize columns array to prevent recreation
   const memoizedColumns = useMemo(() => columns, [columns]);
 
+  // Default hidden columns
+  const defaultHiddenColumns = {
+    earliest_market_entry_date: false,
+    likely_registration_pathway: false,
+  };
+
   return (
     <>
       <EnhancedDataTable
         columns={memoizedColumns}
-        data={countries}
+        data={groupedData}
         searchKey="country_name"
         searchPlaceholder="Search countries..."
         pageSize={25}
@@ -239,6 +306,7 @@ export function FormulationCountriesList({
         tableId="formulation-countries"
         enableUrlPagination={true}
         filterConfigs={filterConfigs}
+        defaultColumnVisibility={defaultHiddenColumns}
       />
 
       {editingCountry && (

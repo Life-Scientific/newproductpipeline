@@ -124,6 +124,8 @@ export interface EnhancedDataTableProps<TData, TValue> {
   filterConfigs?: FilterConfig<TData>[];
   /** Show filter count badge */
   showFilterCount?: boolean;
+  /** Default column visibility state */
+  defaultColumnVisibility?: Record<string, boolean>;
 }
 
 /**
@@ -215,6 +217,7 @@ export function EnhancedDataTable<TData, TValue>({
   enableUrlPagination = false,
   filterConfigs = [],
   showFilterCount = true,
+  defaultColumnVisibility = {},
 }: EnhancedDataTableProps<TData, TValue>) {
   // URL-based pagination hooks
   const searchParams = useSearchParams();
@@ -355,7 +358,7 @@ export function EnhancedDataTable<TData, TValue>({
     [],
   );
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+    React.useState<VisibilityState>(defaultColumnVisibility);
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() =>
     columns.map(
       (col) => (col.id as string) || ((col as any).accessorKey as string),

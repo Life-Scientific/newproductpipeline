@@ -39,6 +39,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     
     // Set data-theme attribute
     document.documentElement.setAttribute('data-theme', theme.slug);
+    
+    // Persist to localStorage for the inline script to use on next page load
+    // This prevents theme flash (FOUC) by letting the blocking script apply theme immediately
+    try {
+      localStorage.setItem('ls-portfolio-theme', theme.slug);
+      localStorage.setItem('ls-portfolio-theme-data', JSON.stringify(theme));
+    } catch (e) {
+      // localStorage might be unavailable (private browsing, etc.)
+      console.warn('Failed to persist theme to localStorage:', e);
+    }
   };
 
   const loadTheme = async () => {
