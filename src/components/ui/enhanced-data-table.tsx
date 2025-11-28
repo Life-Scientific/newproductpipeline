@@ -36,7 +36,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import * as React from "react";
 
 // Dynamically import DnD table to reduce initial bundle size
@@ -222,23 +222,26 @@ export function EnhancedDataTable<TData, TValue>({
   defaultColumnVisibility = {},
   getRowClassName,
 }: EnhancedDataTableProps<TData, TValue>) {
-  // URL-based pagination hooks
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
-  const [isPendingFilter, startFilterTransition] = React.useTransition();
-  const [isPendingPagination, startPaginationTransition] = React.useTransition();
 
-  // Parse filters from URL
-  const activeFilters = React.useMemo(() => {
+  // Local state for filters (initialized from URL, synced via history API)
+  const [activeFilters, setActiveFilters] = React.useState<Record<string, string[]>>(() => {
     const filters: Record<string, string[]> = {};
-    filterConfigs.forEach((config) => {
-      const paramKey = config.paramKey || String(config.columnKey);
-      const value = searchParams.get(paramKey);
-      filters[paramKey] = value ? value.split(",").filter(Boolean) : [];
-    });
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      filterConfigs.forEach((config) => {
+        const paramKey = config.paramKey || String(config.columnKey);
+        const value = params.get(paramKey);
+        filters[paramKey] = value ? value.split(",").filter(Boolean) : [];
+      });
+    } else {
+      filterConfigs.forEach((config) => {
+        const paramKey = config.paramKey || String(config.columnKey);
+        filters[paramKey] = [];
+      });
+    }
     return filters;
-  }, [searchParams, filterConfigs]);
+  });
 
   // Build filter options from data
   const filterOptions = React.useMemo(() => {
@@ -271,31 +274,49 @@ export function EnhancedDataTable<TData, TValue>({
     return options;
   }, [data, filterConfigs]);
 
-  // Update URL with new filter values
+  // Update filter values (updates local state and URL)
   const updateFilter = React.useCallback(
     (paramKey: string, values: string[]) => {
-      startFilterTransition(() => {
-        const params = new URLSearchParams(searchParams.toString());
+      // Update local state
+      setActiveFilters((prev) => ({ ...prev, [paramKey]: values }));
+      
+      // Reset to page 1 when filters change
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+      
+      // Update URL using history API (no server navigation)
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
         if (values.length > 0) {
           params.set(paramKey, values.join(","));
         } else {
           params.delete(paramKey);
         }
-        // Reset to page 1 when filters change
         params.delete("page");
         const newUrl = params.toString()
           ? `${pathname}?${params.toString()}`
           : pathname;
-        router.replace(newUrl, { scroll: false });
-      });
+        window.history.replaceState(null, '', newUrl);
+      }
     },
-    [searchParams, pathname, router],
+    [pathname],
   );
 
-  // Clear all filters
+  // Clear all filters (updates local state and URL)
   const clearAllFilters = React.useCallback(() => {
-    startFilterTransition(() => {
-      const params = new URLSearchParams(searchParams.toString());
+    // Clear local state
+    const clearedFilters: Record<string, string[]> = {};
+    filterConfigs.forEach((config) => {
+      const paramKey = config.paramKey || String(config.columnKey);
+      clearedFilters[paramKey] = [];
+    });
+    setActiveFilters(clearedFilters);
+    
+    // Reset to page 1
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    
+    // Update URL using history API (no server navigation)
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
       filterConfigs.forEach((config) => {
         const paramKey = config.paramKey || String(config.columnKey);
         params.delete(paramKey);
@@ -304,9 +325,9 @@ export function EnhancedDataTable<TData, TValue>({
       const newUrl = params.toString()
         ? `${pathname}?${params.toString()}`
         : pathname;
-      router.replace(newUrl, { scroll: false });
-    });
-  }, [searchParams, pathname, router, filterConfigs]);
+      window.history.replaceState(null, '', newUrl);
+    }
+  }, [pathname, filterConfigs]);
 
   // Filter data based on active filters
   const filteredData = React.useMemo(() => {
@@ -342,20 +363,6 @@ export function EnhancedDataTable<TData, TValue>({
       0,
     );
   }, [activeFilters]);
-
-  // Get initial page from URL if URL pagination is enabled
-  const getInitialPageIndex = React.useCallback(() => {
-    if (enableUrlPagination) {
-      const pageParam = searchParams.get("page");
-      if (pageParam) {
-        const parsed = parseInt(pageParam, 10);
-        if (!Number.isNaN(parsed) && parsed >= 1) {
-          return parsed - 1; // URL is 1-indexed, state is 0-indexed
-        }
-      }
-    }
-    return 0;
-  }, [enableUrlPagination, searchParams]);
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -395,20 +402,35 @@ export function EnhancedDataTable<TData, TValue>({
     setIsMounted(true);
   }, []);
   
-  // Handle browser back/forward navigation
+  // Handle browser back/forward navigation (syncs both pagination and filters)
   React.useEffect(() => {
-    if (!enableUrlPagination || typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return;
     
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
-      const pageParam = params.get("page");
-      const newIndex = pageParam ? parseInt(pageParam, 10) - 1 : 0;
-      setPagination((prev) => ({ ...prev, pageIndex: Math.max(0, newIndex) }));
+      
+      // Sync pagination
+      if (enableUrlPagination) {
+        const pageParam = params.get("page");
+        const newIndex = pageParam ? parseInt(pageParam, 10) - 1 : 0;
+        setPagination((prev) => ({ ...prev, pageIndex: Math.max(0, newIndex) }));
+      }
+      
+      // Sync filters
+      if (filterConfigs.length > 0) {
+        const newFilters: Record<string, string[]> = {};
+        filterConfigs.forEach((config) => {
+          const paramKey = config.paramKey || String(config.columnKey);
+          const value = params.get(paramKey);
+          newFilters[paramKey] = value ? value.split(",").filter(Boolean) : [];
+        });
+        setActiveFilters(newFilters);
+      }
     };
     
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [enableUrlPagination]);
+  }, [enableUrlPagination, filterConfigs]);
 
   // Memoize columns to prevent unnecessary re-renders
   const memoizedColumns = React.useMemo(() => columns, [columns]);
@@ -709,13 +731,8 @@ export function EnhancedDataTable<TData, TValue>({
     [table, searchKey],
   );
 
-  // Get row model - TanStack Table memoizes this internally, but we'll cache it
-  // Only recalculate when pagination, sorting, or filters change
-  const rowModel = React.useMemo(
-    () => table.getRowModel(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [table.getRowModel],
-  );
+  // Get row model directly from table (table handles internal memoization)
+  const rowModel = table.getRowModel();
 
   return (
     <div className="w-full space-y-3">
@@ -875,7 +892,6 @@ export function EnhancedDataTable<TData, TValue>({
                 <button
                   type="button"
                   onClick={clearAllFilters}
-                  disabled={isPendingFilter}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors ml-1"
                 >
                   Clear
@@ -1019,29 +1035,24 @@ export function EnhancedDataTable<TData, TValue>({
             variant="ghost"
             size="sm"
             onClick={() => {
-              // Prevent clicks during initial mount to avoid race conditions
-              if (mountTimeRef.current && Date.now() - mountTimeRef.current < 500) {
-                return;
-              }
-              
               const newPageIndex = pagination.pageIndex - 1;
-              setPagination((prev) => ({ ...prev, pageIndex: newPageIndex }));
-              
-              // Update URL directly if URL pagination is enabled
-              if (enableUrlPagination) {
-                lastSyncedPageIndex.current = newPageIndex;
-                const newPage = newPageIndex + 1;
-                const currentSearch = typeof window !== 'undefined' ? window.location.search : '';
-                const params = new URLSearchParams(currentSearch);
-                if (newPage === 1) {
-                  params.delete("page");
-                } else {
-                  params.set("page", newPage.toString());
+              if (newPageIndex >= 0) {
+                // Update React state directly
+                setPagination((prev) => ({ ...prev, pageIndex: newPageIndex }));
+                
+                // Update URL using history API (no server navigation)
+                if (enableUrlPagination && typeof window !== 'undefined') {
+                  const params = new URLSearchParams(window.location.search);
+                  if (newPageIndex === 0) {
+                    params.delete("page");
+                  } else {
+                    params.set("page", (newPageIndex + 1).toString());
+                  }
+                  const newUrl = params.toString()
+                    ? `${pathname}?${params.toString()}`
+                    : pathname;
+                  window.history.replaceState(null, '', newUrl);
                 }
-                const newUrl = params.toString()
-                  ? `${pathname}?${params.toString()}`
-                  : pathname;
-                router.replace(newUrl, { scroll: false });
               }
             }}
             disabled={pagination.pageIndex <= 0}
@@ -1064,27 +1075,20 @@ export function EnhancedDataTable<TData, TValue>({
             variant="ghost"
             size="sm"
             onClick={() => {
-              // Prevent clicks during initial mount to avoid race conditions
-              if (mountTimeRef.current && Date.now() - mountTimeRef.current < 500) {
-                return;
-              }
-              
               const newPageIndex = pagination.pageIndex + 1;
               const pageCount = table.getPageCount();
               if (newPageIndex < pageCount) {
+                // Update React state directly
                 setPagination((prev) => ({ ...prev, pageIndex: newPageIndex }));
                 
-                // Update URL directly if URL pagination is enabled
-                if (enableUrlPagination) {
-                  lastSyncedPageIndex.current = newPageIndex;
-                  const newPage = newPageIndex + 1;
-                  const currentSearch = typeof window !== 'undefined' ? window.location.search : '';
-                  const params = new URLSearchParams(currentSearch);
-                  params.set("page", newPage.toString());
+                // Update URL using history API (no server navigation)
+                if (enableUrlPagination && typeof window !== 'undefined') {
+                  const params = new URLSearchParams(window.location.search);
+                  params.set("page", (newPageIndex + 1).toString());
                   const newUrl = params.toString()
                     ? `${pathname}?${params.toString()}`
                     : pathname;
-                  router.replace(newUrl, { scroll: false });
+                  window.history.replaceState(null, '', newUrl);
                 }
               }
             }}

@@ -1402,8 +1402,8 @@ export function BusinessCaseModal({
                 <BusinessCaseVersionHistory
                   useGroupId={yearDataArray[0].formulation_country_use_group_id}
                   currentGroupId={groupId || ""}
-                  formulationName={formulationName}
-                  countryName={countryName}
+                  formulationName={formulationName ?? undefined}
+                  countryName={countryName ?? undefined}
                 />
               </TabsContent>
             )}
