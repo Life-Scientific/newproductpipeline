@@ -44,7 +44,7 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
   return (
     <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 hover:border-primary/20 hover:shadow-sm transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] gap-4 group">
       <Link
-        href={linkId ? `/business-cases/${linkId}` : "/business-cases"}
+        href={linkId ? `/portfolio/business-cases/${linkId}` : "/portfolio/business-cases"}
         className="flex-1 min-w-0 space-y-1 group/link"
       >
         <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
@@ -59,7 +59,7 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
                 onClick={(e) =>
                   handleNestedClick(
                     e,
-                    `/formulations/${businessCase.formulation_id}`
+                    `/portfolio/formulations/${businessCase.formulation_id}`
                   )
                 }
                 className="flex items-center gap-1 hover:text-primary hover:underline text-left"
@@ -82,7 +82,7 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
                   onClick={(e) =>
                     handleNestedClick(
                       e,
-                      `/business-cases?country=${businessCase.country_id}`
+                      `/portfolio/business-cases?country=${businessCase.country_id}`
                     )
                   }
                   className="flex items-center gap-1 hover:text-primary hover:underline text-left"
@@ -116,7 +116,7 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
                 onClick={(e) =>
                   handleNestedClick(
                     e,
-                    `/business-cases?fiscal_year=${encodeURIComponent(
+                    `/portfolio/business-cases?fiscal_year=${encodeURIComponent(
                       businessCase.fiscal_year!
                     )}`
                   )
@@ -186,7 +186,7 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link href={linkId ? `/business-cases/${linkId}` : "/business-cases"}>
+              <Link href={linkId ? `/portfolio/business-cases/${linkId}` : "/portfolio/business-cases"}>
                 <ExternalLink className="mr-2 h-4 w-4" />
                 View Details
               </Link>

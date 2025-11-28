@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { GitBranch, Clock, User, ChevronDown, ChevronUp, Eye, Archive } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { GitBranch, Clock, User, ChevronDown, ChevronUp, Eye, Archive, MessageSquare, FileText } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { getBusinessCaseVersionHistoryAction } from "@/lib/actions/business-cases";
 import type { BusinessCaseVersionHistoryEntry } from "@/lib/db/queries";
+import { hasChanges } from "@/lib/utils/business-case-diff";
 
 interface BusinessCaseVersionHistoryProps {
   useGroupId: string;
@@ -146,7 +148,37 @@ export function BusinessCaseVersionHistory({
                         Archived
                       </Badge>
                     )}
+                    {/* Change summary badge */}
+                    {hasChanges(version.change_summary) && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge variant="outline" className="text-xs cursor-help">
+                              <FileText className="h-3 w-3 mr-1" />
+                              Changes
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-md">
+                            <div className="space-y-1">
+                              <p className="font-medium text-xs">What Changed:</p>
+                              <p className="text-xs">{version.change_summary}</p>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </div>
+                  
+                  {/* Change reason - show if present */}
+                  {version.change_reason && (
+                    <div className="flex items-start gap-1 mt-1.5 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-md max-w-[400px]">
+                      <MessageSquare className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                      <span className="italic truncate" title={version.change_reason}>
+                        "{version.change_reason}"
+                      </span>
+                    </div>
+                  )}
+                  
                   <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <User className="h-3 w-3" />
@@ -205,9 +237,9 @@ export function BusinessCaseVersionHistory({
 
         <div className="mt-4 p-3 bg-muted/50 rounded-lg border">
           <p className="text-xs text-muted-foreground">
-            <strong>Version Control:</strong> Every change creates a new version.
+            <strong>Version Control:</strong> Every change creates a new version with automatic diff tracking.
+            Add a reason for your changes to help your team understand the context.
             Previous versions are preserved for audit tracking and can be referenced.
-            Only the active version is used for projections.
           </p>
         </div>
       </CardContent>

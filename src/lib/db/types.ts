@@ -64,6 +64,11 @@ export interface BusinessCaseGroupData {
     total_margin: number | null;
     margin_percent: number | null;
   }>;
+  // Audit info
+  updated_at: string | null;
+  created_by: string | null;
+  change_reason: string | null;
+  change_summary: string | null;
 }
 
 export interface BusinessCaseYearData {

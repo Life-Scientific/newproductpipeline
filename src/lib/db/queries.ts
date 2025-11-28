@@ -1131,15 +1131,30 @@ export async function getBusinessCasesForChart() {
   return enrichedData.filter(bc => bc.formulation_code && bc.country_name);
 }
 
-export async function getBusinessCaseById(businessCaseId: string) {
+export async function getBusinessCaseById(id: string) {
   try {
     const supabase = await createClient();
     
-    const { data, error } = await supabase
+    // First try to find by business_case_id
+    let { data, error } = await supabase
       .from("vw_business_case")
       .select("*")
-      .eq("business_case_id", businessCaseId)
+      .eq("business_case_id", id)
       .single();
+
+    // If not found, try by business_case_group_id (get the first year's record)
+    if (error?.code === 'PGRST116' || !data) {
+      const groupResult = await supabase
+        .from("vw_business_case")
+        .select("*")
+        .eq("business_case_group_id", id)
+        .order("year_offset", { ascending: true })
+        .limit(1)
+        .single();
+      
+      data = groupResult.data;
+      error = groupResult.error;
+    }
 
     if (error) {
       console.error('Error fetching business case:', error);
@@ -1466,6 +1481,11 @@ export const getBusinessCasesForProjectionTable = unstable_cache(
           target_market_entry: targetMarketEntry, // Store original target_market_entry
           effective_start_fiscal_year: effectiveStartFiscalYear, // Store effective start (preserves creation context)
           years_data: {},
+          // Audit info
+          updated_at: (bc as any).updated_at || (bc as any).created_at || null,
+          created_by: (bc as any).created_by || null,
+          change_reason: (bc as any).change_reason || null,
+          change_summary: (bc as any).change_summary || null,
         });
       }
 
@@ -1627,6 +1647,10 @@ export interface BusinessCaseVersionHistoryEntry {
     nsp: number | null;
     total_revenue: number | null;
   };
+  // Audit fields
+  change_reason: string | null;
+  change_summary: string | null;
+  previous_group_id: string | null;
 }
 
 /**
@@ -1653,7 +1677,7 @@ export async function getBusinessCaseVersionHistory(
   // Get all business cases (both active and inactive)
   const { data: businessCases, error: bcError } = await supabase
     .from("business_case")
-    .select("business_case_group_id, status, created_at, created_by, updated_at, year_offset, volume, nsp, total_revenue")
+    .select("business_case_group_id, status, created_at, created_by, updated_at, year_offset, volume, nsp, total_revenue, change_reason, change_summary, previous_group_id")
     .in("business_case_id", businessCaseIds)
     .order("created_at", { ascending: false });
 
@@ -1680,6 +1704,10 @@ export async function getBusinessCaseVersionHistory(
           nsp: null,
           total_revenue: null,
         },
+        // Audit fields (use year 1 data since these are same across all years in a group)
+        change_reason: (bc as any).change_reason || null,
+        change_summary: (bc as any).change_summary || null,
+        previous_group_id: (bc as any).previous_group_id || null,
       });
     }
     

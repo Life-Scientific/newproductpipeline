@@ -21,7 +21,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
   const [hovering, setHovering] = useState(false);
 
   return (
-    <div className="relative flex min-h-screen bg-[#f8f7f4] overflow-hidden">
+    <div className="relative flex min-h-screen bg-background overflow-hidden">
       {/* GL Background - covers right side and fades into left */}
       <div
         className="absolute inset-0 hidden lg:block"
@@ -33,17 +33,17 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         </Suspense>
       </div>
 
-      {/* Gradient overlay to fade GL into white on the left */}
+      {/* Gradient overlay to fade GL into background on the left - uses CSS color-mix for theme support */}
       <div
         className="absolute inset-0 hidden lg:block pointer-events-none"
         style={{
           background: `linear-gradient(to right, 
-            #ffffff 0%, 
-            #ffffff 35%, 
-            rgba(255,255,255,0.95) 40%,
-            rgba(255,255,255,0.8) 45%,
-            rgba(255,255,255,0.4) 55%,
-            rgba(255,255,255,0) 65%
+            var(--background) 0%, 
+            var(--background) 35%, 
+            color-mix(in oklch, var(--background) 95%, transparent) 40%,
+            color-mix(in oklch, var(--background) 80%, transparent) 45%,
+            color-mix(in oklch, var(--background) 40%, transparent) 55%,
+            transparent 65%
           )`,
         }}
       />
@@ -58,7 +58,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
               alt="LifeScientific Logo"
               width={180}
               height={54}
-              className="h-auto w-auto"
+              className="h-auto w-auto dark:invert"
               priority
             />
           </div>

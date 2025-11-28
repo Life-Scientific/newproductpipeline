@@ -62,6 +62,13 @@ function ThemePreview({ theme, isActive, onClick }: ThemePreviewProps) {
           sidebar: "#080808",
           card: "#121212"
         };
+      case "warm-sepia":
+        return {
+          bg: "#f5f3ec",
+          primary: "#9a7042",
+          sidebar: "#ece8df",
+          card: "#fdfcf9"
+        };
       case "dark":
         return {
           bg: "#09090b",

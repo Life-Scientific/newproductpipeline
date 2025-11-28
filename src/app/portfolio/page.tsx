@@ -325,9 +325,18 @@ export default async function Home() {
           {businessCases.length > 0 ? (
             <div className="space-y-2">
               {(() => {
-                // Group business cases by business_case_group_id
+                // Sort by updated_at descending to get most recent first
+                const sortedBusinessCases = [...businessCases].sort((a, b) => {
+                  const aTime = a.updated_at ? new Date(a.updated_at).getTime() : 
+                                (a.created_at ? new Date(a.created_at).getTime() : 0);
+                  const bTime = b.updated_at ? new Date(b.updated_at).getTime() : 
+                                (b.created_at ? new Date(b.created_at).getTime() : 0);
+                  return bTime - aTime; // Most recent first
+                });
+                
+                // Group business cases by business_case_group_id, keeping the most recent per group
                 const groupsMap = new Map<string, typeof businessCases[0]>();
-                businessCases.forEach((bc) => {
+                sortedBusinessCases.forEach((bc) => {
                   if (bc.business_case_group_id && !groupsMap.has(bc.business_case_group_id)) {
                     groupsMap.set(bc.business_case_group_id, bc);
                   }

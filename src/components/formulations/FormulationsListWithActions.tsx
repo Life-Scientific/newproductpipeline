@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useTransition, useMemo, memo } from "react";
-import { type ColumnDef } from "@tanstack/react-table";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
-import { Button } from "@/components/ui/button";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Pencil } from "lucide-react";
+import Link from "next/link";
+import { memo, useMemo, useState, useTransition } from "react";
 import { FormulationForm } from "@/components/forms/FormulationForm";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  EnhancedDataTable,
+  type FilterConfig,
+} from "@/components/ui/enhanced-data-table";
 import { usePermissions } from "@/hooks/use-permissions";
-import type { Database } from "@/lib/supabase/database.types";
 import type { FormulationWithNestedData } from "@/lib/db/queries";
+import type { Database } from "@/lib/supabase/database.types";
 
 type FormulationTable = Database["public"]["Tables"]["formulations"]["Row"];
 
@@ -21,15 +24,16 @@ const statusColors: Record<string, string> = {
   Killed: "destructive",
 };
 
-const FormulationActionsCell = memo(function FormulationActionsCell({ 
+const FormulationActionsCell = memo(function FormulationActionsCell({
   formulation,
-  canEdit 
-}: { 
+  canEdit,
+}: {
   formulation: FormulationWithNestedData;
   canEdit: boolean;
 }) {
   const [editOpen, setEditOpen] = useState(false);
-  const [formulationData, setFormulationData] = useState<FormulationTable | null>(null);
+  const [formulationData, setFormulationData] =
+    useState<FormulationTable | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Don't render if no edit permission
@@ -41,16 +45,36 @@ const FormulationActionsCell = memo(function FormulationActionsCell({
     if (!formulation.formulation_id) return;
     startTransition(async () => {
       try {
-        const res = await fetch(`/api/formulations/${formulation.formulation_id}`);
+        const res = await fetch(
+          `/api/formulations/${formulation.formulation_id}`,
+        );
         if (res.ok) {
           const data = await res.json();
           setFormulationData(data);
           setEditOpen(true);
         } else {
           // Fallback: create minimal formulation object from view data
-          const name = ("formulation_name" in formulation ? (formulation as any).formulation_name : ("product_name" in formulation ? formulation.product_name : null)) as string | null;
-          const category = ("formulation_category" in formulation ? (formulation as any).formulation_category : ("product_category" in formulation ? formulation.product_category : null)) as string | null;
-          const status = ("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) as string | null;
+          const name = (
+            "formulation_name" in formulation
+              ? (formulation as any).formulation_name
+              : "product_name" in formulation
+                ? formulation.product_name
+                : null
+          ) as string | null;
+          const category = (
+            "formulation_category" in formulation
+              ? (formulation as any).formulation_category
+              : "product_category" in formulation
+                ? formulation.product_category
+                : null
+          ) as string | null;
+          const status = (
+            "formulation_status" in formulation
+              ? (formulation as any).formulation_status
+              : "status" in formulation
+                ? formulation.status
+                : null
+          ) as string | null;
           setFormulationData({
             formulation_id: formulation.formulation_id || "",
             formulation_name: name || "",
@@ -75,9 +99,27 @@ const FormulationActionsCell = memo(function FormulationActionsCell({
         }
       } catch {
         // Fallback on error
-        const name = ("formulation_name" in formulation ? (formulation as any).formulation_name : ("product_name" in formulation ? formulation.product_name : null)) as string | null;
-        const category = ("formulation_category" in formulation ? (formulation as any).formulation_category : ("product_category" in formulation ? formulation.product_category : null)) as string | null;
-        const status = ("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) as string | null;
+        const name = (
+          "formulation_name" in formulation
+            ? (formulation as any).formulation_name
+            : "product_name" in formulation
+              ? formulation.product_name
+              : null
+        ) as string | null;
+        const category = (
+          "formulation_category" in formulation
+            ? (formulation as any).formulation_category
+            : "product_category" in formulation
+              ? formulation.product_category
+              : null
+        ) as string | null;
+        const status = (
+          "formulation_status" in formulation
+            ? (formulation as any).formulation_status
+            : "status" in formulation
+              ? formulation.status
+              : null
+        ) as string | null;
         setFormulationData({
           formulation_id: formulation.formulation_id || "",
           formulation_name: name || "",
@@ -132,7 +174,9 @@ const FormulationActionsCell = memo(function FormulationActionsCell({
 });
 
 // Memoize columns outside component to prevent recreation on every render
-const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[] => {
+const createColumns = (
+  canEdit: boolean,
+): ColumnDef<FormulationWithNestedData>[] => {
   const cols: ColumnDef<FormulationWithNestedData>[] = [
     {
       accessorKey: "formulation_code",
@@ -155,7 +199,13 @@ const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[]
       header: "Product Name",
       cell: ({ row }) => {
         const formulation = row.original;
-        const name = ("formulation_name" in formulation ? (formulation as any).formulation_name : ("product_name" in formulation ? formulation.product_name : null)) as string | null;
+        const name = (
+          "formulation_name" in formulation
+            ? (formulation as any).formulation_name
+            : "product_name" in formulation
+              ? formulation.product_name
+              : null
+        ) as string | null;
         const id = formulation.formulation_id;
         return (
           <Link
@@ -172,7 +222,11 @@ const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[]
       header: "Short Name",
       cell: ({ row }) => {
         const shortName = row.getValue("short_name") as string | null;
-        return <span className="text-sm text-muted-foreground">{shortName || "—"}</span>;
+        return (
+          <span className="text-sm text-muted-foreground">
+            {shortName || "—"}
+          </span>
+        );
       },
     },
     {
@@ -180,7 +234,13 @@ const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[]
       header: "Category",
       cell: ({ row }) => {
         const formulation = row.original;
-        const category = ("formulation_category" in formulation ? (formulation as any).formulation_category : ("product_category" in formulation ? formulation.product_category : null)) as string | null;
+        const category = (
+          "formulation_category" in formulation
+            ? (formulation as any).formulation_category
+            : "product_category" in formulation
+              ? formulation.product_category
+              : null
+        ) as string | null;
         return <span>{category || "—"}</span>;
       },
     },
@@ -189,10 +249,16 @@ const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[]
       header: "Status",
       cell: ({ row }) => {
         const formulation = row.original;
-        const status = ("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) as string | null;
+        const status = (
+          "formulation_status" in formulation
+            ? (formulation as any).formulation_status
+            : "status" in formulation
+              ? formulation.status
+              : null
+        ) as string | null;
         const statusValue = status || "Not Yet Considered";
         return (
-          <Badge variant={statusColors[statusValue] as any || "secondary"}>
+          <Badge variant={(statusColors[statusValue] as any) || "secondary"}>
             {statusValue}
           </Badge>
         );
@@ -205,9 +271,7 @@ const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[]
       cell: ({ row }) => {
         const count = row.original.countries_count;
         return (
-          <span className="font-medium text-center block">
-            {count || 0}
-          </span>
+          <span className="font-medium text-center block">{count || 0}</span>
         );
       },
       meta: {
@@ -220,9 +284,7 @@ const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[]
       cell: ({ row }) => {
         const count = row.original.use_groups_count;
         return (
-          <span className="font-medium text-center block">
-            {count || 0}
-          </span>
+          <span className="font-medium text-center block">{count || 0}</span>
         );
       },
       meta: {
@@ -236,9 +298,7 @@ const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[]
         const revenue = row.original.total_revenue;
         if (!revenue) return <span className="text-muted-foreground">—</span>;
         return (
-          <span className="font-medium">
-            €{(revenue / 1000).toFixed(0)}K
-          </span>
+          <span className="font-medium">€{(revenue / 1000).toFixed(0)}K</span>
         );
       },
       meta: {
@@ -252,9 +312,7 @@ const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[]
         const margin = row.original.total_margin;
         if (!margin) return <span className="text-muted-foreground">—</span>;
         return (
-          <span className="font-medium">
-            €{(margin / 1000).toFixed(0)}K
-          </span>
+          <span className="font-medium">€{(margin / 1000).toFixed(0)}K</span>
         );
       },
       meta: {
@@ -268,7 +326,9 @@ const createColumns = (canEdit: boolean): ColumnDef<FormulationWithNestedData>[]
     cols.push({
       id: "actions",
       header: "Actions",
-      cell: ({ row }) => <FormulationActionsCell formulation={row.original} canEdit={canEdit} />,
+      cell: ({ row }) => (
+        <FormulationActionsCell formulation={row.original} canEdit={canEdit} />
+      ),
     });
   }
 
@@ -279,11 +339,47 @@ interface FormulationsListWithActionsProps {
   formulations: FormulationWithNestedData[];
 }
 
-export function FormulationsListWithActions({ formulations }: FormulationsListWithActionsProps) {
+// Filter configurations for the formulations table
+const filterConfigs: FilterConfig<FormulationWithNestedData>[] = [
+  {
+    columnKey: "product_category",
+    label: "Category",
+    paramKey: "categories",
+    getValue: (row) =>
+      "formulation_category" in row
+        ? (row as any).formulation_category
+        : "product_category" in row
+          ? row.product_category
+          : null,
+  },
+  {
+    columnKey: "status",
+    label: "Status",
+    paramKey: "statuses",
+    getValue: (row) =>
+      "formulation_status" in row
+        ? (row as any).formulation_status
+        : "status" in row
+          ? row.status
+          : null,
+  },
+  {
+    columnKey: "formulation_type",
+    label: "Type",
+    paramKey: "types",
+  },
+];
+
+export function FormulationsListWithActions({
+  formulations,
+}: FormulationsListWithActionsProps) {
   const { canEditFormulations, isLoading } = usePermissions();
-  
+
   // Memoize columns to prevent recreation
-  const columns = useMemo(() => createColumns(canEditFormulations), [canEditFormulations]);
+  const columns = useMemo(
+    () => createColumns(canEditFormulations),
+    [canEditFormulations],
+  );
 
   return (
     <EnhancedDataTable
@@ -295,6 +391,7 @@ export function FormulationsListWithActions({ formulations }: FormulationsListWi
       showPageSizeSelector={true}
       tableId="formulations"
       enableUrlPagination={true}
+      filterConfigs={filterConfigs}
     />
   );
 }

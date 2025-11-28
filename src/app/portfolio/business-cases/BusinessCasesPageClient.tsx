@@ -1,13 +1,21 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BusinessCasesProjectionTable } from "@/components/business-cases/BusinessCasesProjectionTable";
+import { GitBranch, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
+import { BusinessCaseModal } from "@/components/business-cases/BusinessCaseModal";
 import { BusinessCaseFilters } from "@/components/business-cases/BusinessCaseFilters";
-import { BusinessCaseCreateModal } from "@/components/business-cases/BusinessCaseCreateModal";
+import { BusinessCasesProjectionTable } from "@/components/business-cases/BusinessCasesProjectionTable";
 import { Button } from "@/components/ui/button";
-import { Plus, GitBranch } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { usePermissions } from "@/hooks/use-permissions";
+import { type FilterState, useUrlFilters } from "@/hooks/use-url-filters";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
 
 interface BusinessCasesPageClientProps {
@@ -15,32 +23,48 @@ interface BusinessCasesPageClientProps {
   exchangeRates: Map<string, number>; // country_id -> exchange_rate_to_eur
 }
 
-export function BusinessCasesPageClient({ initialBusinessCases, exchangeRates }: BusinessCasesPageClientProps) {
-  const [businessCases] = useState(initialBusinessCases);
-  const [filters, setFilters] = useState({
-    countryIds: [] as string[],
-    formulationIds: [] as string[],
-    useGroupIds: [] as string[],
-  });
+function BusinessCasesContent({
+  initialBusinessCases,
+  exchangeRates,
+}: BusinessCasesPageClientProps) {
+  // Use URL-based filters for persistence across navigation
+  const { filters, setFilters } = useUrlFilters();
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  
-  // Permission checks
-  const { canCreateBusinessCases, canEditBusinessCases, isLoading: permissionsLoading } = usePermissions();
+  const router = useRouter();
 
-  // Filter business cases based on selected filters
+  // Permission checks
+  const {
+    canCreateBusinessCases,
+    canEditBusinessCases,
+    isLoading: permissionsLoading,
+  } = usePermissions();
+
+  // Use initialBusinessCases directly - don't store in state!
+  // This ensures data updates properly after router.refresh()
+  const businessCases = initialBusinessCases;
+
+  // Filter business cases based on URL-persisted filters
   const filteredBusinessCases = useMemo(() => {
     return businessCases.filter((bc) => {
       // Country filter
-      if (filters.countryIds.length > 0 && !filters.countryIds.includes(bc.country_id)) {
+      if (
+        filters.countryIds.length > 0 &&
+        !filters.countryIds.includes(bc.country_id)
+      ) {
         return false;
       }
       // Formulation filter
-      if (filters.formulationIds.length > 0 && !filters.formulationIds.includes(bc.formulation_id)) {
+      if (
+        filters.formulationIds.length > 0 &&
+        !filters.formulationIds.includes(bc.formulation_id)
+      ) {
         return false;
       }
       // Use group filter
       if (filters.useGroupIds.length > 0) {
-        const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+        const useGroupKey =
+          bc.use_group_id ||
+          `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
         if (!filters.useGroupIds.includes(useGroupKey)) {
           return false;
         }
@@ -49,11 +73,17 @@ export function BusinessCasesPageClient({ initialBusinessCases, exchangeRates }:
     });
   }, [businessCases, filters]);
 
+  // Handle filter changes from the filter component
+  const handleFilterChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
+  };
+
   return (
     <>
-      <BusinessCaseFilters 
+      <BusinessCaseFilters
         businessCases={businessCases}
-        onFilterChange={setFilters} 
+        onFilterChange={handleFilterChange}
+        initialFilters={filters}
       />
 
       <Card>
@@ -70,17 +100,21 @@ export function BusinessCasesPageClient({ initialBusinessCases, exchangeRates }:
               </CardDescription>
             </div>
             {canCreateBusinessCases && !permissionsLoading && (
-              <Button onClick={() => setCreateModalOpen(true)} size="lg" className="h-12 px-6">
+              <Button
+                onClick={() => setCreateModalOpen(true)}
+                size="lg"
+                className="h-12 px-6"
+              >
                 <Plus className="mr-2 h-5 w-5" />
-                Create/Update Business Case
+                New Business Case
               </Button>
             )}
           </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="p-4 sm:p-6 pt-0">
-            <BusinessCasesProjectionTable 
-              businessCases={filteredBusinessCases} 
+            <BusinessCasesProjectionTable
+              businessCases={filteredBusinessCases}
               exchangeRates={exchangeRates}
               canEdit={canEditBusinessCases}
             />
@@ -89,15 +123,26 @@ export function BusinessCasesPageClient({ initialBusinessCases, exchangeRates }:
       </Card>
 
       {canCreateBusinessCases && (
-        <BusinessCaseCreateModal
+        <BusinessCaseModal
           open={createModalOpen}
           onOpenChange={setCreateModalOpen}
           onSuccess={() => {
-            // Refresh data - in a real app you'd refetch here
-            window.location.reload();
+            // Use router.refresh() to get fresh data from the server
+            router.refresh();
           }}
         />
       )}
     </>
+  );
+}
+
+// Wrap in Suspense for useSearchParams
+export function BusinessCasesPageClient(props: BusinessCasesPageClientProps) {
+  return (
+    <Suspense
+      fallback={<div className="animate-pulse">Loading filters...</div>}
+    >
+      <BusinessCasesContent {...props} />
+    </Suspense>
   );
 }

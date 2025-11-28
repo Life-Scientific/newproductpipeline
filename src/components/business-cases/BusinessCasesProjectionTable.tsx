@@ -1,17 +1,16 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit, ChevronDown, ChevronsDown, Calendar } from "lucide-react";
+import { Edit, ChevronDown, ChevronsDown, Calendar, Clock } from "lucide-react";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
-import { BusinessCaseEditModal } from "./BusinessCaseEditModal";
+import { BusinessCaseModal } from "./BusinessCaseModal";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { getBusinessCaseGroupAction } from "@/lib/actions/business-cases";
+import { formatDistanceToNow } from "date-fns";
 
 interface BusinessCasesProjectionTableProps {
   businessCases: BusinessCaseGroupData[];
@@ -26,10 +25,8 @@ const LOAD_MORE_INCREMENT = 25;
 const DEFAULT_YEAR_RANGE = 10;
 
 export function BusinessCasesProjectionTable({ businessCases, exchangeRates, canEdit = false }: BusinessCasesProjectionTableProps) {
-  const router = useRouter();
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(DEFAULT_PAGE_SIZE);
-  const [loadingGroupId, setLoadingGroupId] = useState<string | null>(null);
   
   // Year range selection state
   const [startYear, setStartYear] = useState<number>(CURRENT_FISCAL_YEAR);
@@ -147,31 +144,6 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
   // Load all handler
   const handleLoadAll = () => {
     setDisplayCount(businessCases.length);
-  };
-
-  // Handle row click to navigate to business case detail
-  const handleRowClick = async (groupId: string, e: React.MouseEvent) => {
-    // Don't navigate if clicking on edit button or other interactive elements
-    const target = e.target as HTMLElement;
-    if (target.closest('button') || target.closest('a')) {
-      return;
-    }
-
-    setLoadingGroupId(groupId);
-    try {
-      const result = await getBusinessCaseGroupAction(groupId);
-      if (result.data && result.data.length > 0) {
-        // Navigate to the first business case in the group (year 1)
-        const firstBusinessCase = result.data[0];
-        if (firstBusinessCase.business_case_id) {
-          router.push(`/business-cases/${firstBusinessCase.business_case_id}`);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching business case group:', error);
-    } finally {
-      setLoadingGroupId(null);
-    }
   };
 
   if (businessCases.length === 0) {
@@ -354,31 +326,35 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                 },
               ];
 
-              return metricRows.map((metric, metricIndex) => {
+              const rows = metricRows.map((metric, metricIndex) => {
                 const effectiveStartYear = getEffectiveStartFiscalYear(bc.effective_start_fiscal_year);
-                
-                const isLoading = loadingGroupId === bc.business_case_group_id;
                 
                 return (
                   <TableRow 
                     key={`${bc.business_case_group_id}-${metricIndex}`} 
                     className={cn(
                       metricIndex === 0 ? rowGroupClass : "",
-                      "hover:bg-muted/30 transition-colors",
-                      metricIndex === 0 && "cursor-pointer",
-                      isLoading && "opacity-50"
+                      "hover:bg-muted/30 transition-colors"
                     )}
-                    onClick={metricIndex === 0 ? (e) => handleRowClick(bc.business_case_group_id, e) : undefined}
                   >
                     {metricIndex === 0 ? (
                       <>
                         <TableCell className="sticky left-0 bg-background z-20 font-medium text-sm" rowSpan={6}>
-                          <div className="max-w-[140px] truncate" title={bc.formulation_name || bc.formulation_code || ""}>
-                            {bc.formulation_name || bc.formulation_code || "—"}
+                          <div className="max-w-[140px]">
+                            <div className="truncate" title={bc.formulation_name || bc.formulation_code || ""}>
+                              {bc.formulation_name || bc.formulation_code || "—"}
+                            </div>
+                            {bc.formulation_code && bc.formulation_name && (
+                              <div className="text-xs text-muted-foreground">{bc.formulation_code}</div>
+                            )}
+                            {/* Subtle last updated */}
+                            {bc.updated_at && (
+                              <div className="flex items-center gap-1 text-[10px] text-muted-foreground/50 mt-0.5">
+                                <Clock className="h-2.5 w-2.5" />
+                                <span>{formatDistanceToNow(new Date(bc.updated_at), { addSuffix: true })}</span>
+                              </div>
+                            )}
                           </div>
-                          {bc.formulation_code && bc.formulation_name && (
-                            <div className="text-xs text-muted-foreground">{bc.formulation_code}</div>
-                          )}
                         </TableCell>
                         <TableCell className="sticky left-[150px] bg-background z-20 text-sm" rowSpan={6}>
                           {bc.country_name || "—"}
@@ -435,6 +411,8 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   </TableRow>
                 );
               });
+              
+              return rows;
             })}
           </TableBody>
         </Table>
@@ -469,11 +447,14 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
       )}
 
       {canEdit && editingGroupId && (
-        <BusinessCaseEditModal
+        <BusinessCaseModal
           groupId={editingGroupId}
           open={!!editingGroupId}
           onOpenChange={(open) => {
             if (!open) setEditingGroupId(null);
+          }}
+          onSuccess={() => {
+            setEditingGroupId(null);
           }}
         />
       )}

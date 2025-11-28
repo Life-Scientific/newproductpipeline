@@ -158,6 +158,7 @@ export interface DndTableProps {
   isLoading: boolean;
   emptyMessage: string;
   onColumnOrderChange: (newOrder: string[]) => void;
+  getRowClassName?: (row: any, index: number) => string;
 }
 
 export function DndTable({
@@ -170,6 +171,7 @@ export function DndTable({
   isLoading,
   emptyMessage,
   onColumnOrderChange,
+  getRowClassName,
 }: DndTableProps) {
   // Drag and drop sensors
   const sensors = useSensors(
@@ -260,11 +262,11 @@ export function DndTable({
               </TableCell>
             </TableRow>
           ) : rowModel.rows?.length ? (
-            rowModel.rows.map((row: any) => (
+            rowModel.rows.map((row: any, index: number) => (
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className="h-12"
+                className={`h-12 hover:bg-muted/30 border-border/40 ${getRowClassName ? getRowClassName(row.original, index) : ""}`}
               >
                 {row.getVisibleCells().map((cell: any) => {
                   const columnId = cell.column.id || ((cell.column.columnDef as any).accessorKey as string);

@@ -1,32 +1,37 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import {
+  Beaker,
+  ChevronRight,
+  FileText,
+  Globe,
+  LayoutGrid,
+  List,
+  Package,
+  Pencil,
+  Search,
+} from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import type { Database } from "@/lib/supabase/database.types";
-import { 
-  FileText, 
-  Globe, 
-  Beaker, 
-  Pencil, 
-  ChevronRight, 
-  Search,
-  Package,
-  ArrowUpDown,
-  LayoutGrid,
-  List
-} from "lucide-react";
-import { UseGroupEditModal } from "@/components/use-groups/UseGroupEditModal";
-import { getStatusVariant } from "@/lib/design-system";
-import { cn } from "@/lib/utils";
-import { usePermissions } from "@/hooks/use-permissions";
 import { useToast } from "@/components/ui/use-toast";
+import { UseGroupEditModal } from "@/components/use-groups/UseGroupEditModal";
+import { usePermissions } from "@/hooks/use-permissions";
+import { getStatusVariant } from "@/lib/design-system";
+import type { Database } from "@/lib/supabase/database.types";
+import { cn } from "@/lib/utils";
 
-type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
+type FormulationCountryUseGroup =
+  Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 
 interface UseGroupWithFormulationId extends FormulationCountryUseGroup {
   formulation_id?: string | null;
@@ -40,15 +45,22 @@ type ViewMode = "grouped" | "flat";
 type SortField = "formulation" | "country" | "status";
 
 export function UseGroupsList({ useGroups }: UseGroupsListProps) {
-  const [editingUseGroupId, setEditingUseGroupId] = useState<string | null>(null);
+  const router = useRouter();
+  const [editingUseGroupId, setEditingUseGroupId] = useState<string | null>(
+    null,
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grouped");
   const [sortField, setSortField] = useState<SortField>("formulation");
-  const [expandedFormulations, setExpandedFormulations] = useState<Set<string>>(new Set());
+  const [expandedFormulations, setExpandedFormulations] = useState<Set<string>>(
+    new Set(),
+  );
   const { canEditUseGroups, isLoading: permissionsLoading } = usePermissions();
   const { toast } = useToast();
-  
-  const editingUseGroup = useGroups.find((ug) => ug.formulation_country_use_group_id === editingUseGroupId);
+
+  const editingUseGroup = useGroups.find(
+    (ug) => ug.formulation_country_use_group_id === editingUseGroupId,
+  );
 
   const handleEditClick = (useGroupId: string | null) => {
     if (!canEditUseGroups) {
@@ -66,27 +78,31 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
   const filteredUseGroups = useMemo(() => {
     if (!searchTerm) return useGroups;
     const term = searchTerm.toLowerCase();
-    return useGroups.filter(ug => 
-      ug.formulation_code?.toLowerCase().includes(term) ||
-      ug.formulation_name?.toLowerCase().includes(term) ||
-      ug.country_name?.toLowerCase().includes(term) ||
-      ug.use_group_name?.toLowerCase().includes(term) ||
-      ug.use_group_variant?.toLowerCase().includes(term)
+    return useGroups.filter(
+      (ug) =>
+        ug.formulation_code?.toLowerCase().includes(term) ||
+        ug.formulation_name?.toLowerCase().includes(term) ||
+        ug.country_name?.toLowerCase().includes(term) ||
+        ug.use_group_name?.toLowerCase().includes(term) ||
+        ug.use_group_variant?.toLowerCase().includes(term),
     );
   }, [useGroups, searchTerm]);
 
   // Group by formulation
   const groupedByFormulation = useMemo(() => {
-    const groups = new Map<string, {
-      formulationCode: string;
-      formulationName: string | null;
-      formulationId: string | null;
-      countries: Map<string, UseGroupWithFormulationId[]>;
-      totalUseGroups: number;
-      approvedCount: number;
-    }>();
+    const groups = new Map<
+      string,
+      {
+        formulationCode: string;
+        formulationName: string | null;
+        formulationId: string | null;
+        countries: Map<string, UseGroupWithFormulationId[]>;
+        totalUseGroups: number;
+        approvedCount: number;
+      }
+    >();
 
-    filteredUseGroups.forEach(ug => {
+    filteredUseGroups.forEach((ug) => {
       const key = ug.formulation_code || "Unknown";
       if (!groups.has(key)) {
         groups.set(key, {
@@ -98,10 +114,10 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
           approvedCount: 0,
         });
       }
-      
+
       const group = groups.get(key)!;
       const countryKey = ug.country_name || "Unknown";
-      
+
       if (!group.countries.has(countryKey)) {
         group.countries.set(countryKey, []);
       }
@@ -132,7 +148,9 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
   };
 
   const expandAll = () => {
-    setExpandedFormulations(new Set(groupedByFormulation.map(g => g.formulationCode)));
+    setExpandedFormulations(
+      new Set(groupedByFormulation.map((g) => g.formulationCode)),
+    );
   };
 
   const collapseAll = () => {
@@ -186,7 +204,8 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
       <p className="text-sm text-muted-foreground mb-4">
         {filteredUseGroups.length} use groups
         {searchTerm && ` matching "${searchTerm}"`}
-        {viewMode === "grouped" && ` across ${groupedByFormulation.length} formulations`}
+        {viewMode === "grouped" &&
+          ` across ${groupedByFormulation.length} formulations`}
       </p>
 
       {viewMode === "grouped" ? (
@@ -194,8 +213,9 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
         <div className="space-y-2">
           {groupedByFormulation.map((group) => {
             const isExpanded = expandedFormulations.has(group.formulationCode);
-            const countriesArray = Array.from(group.countries.entries())
-              .sort((a, b) => a[0].localeCompare(b[0]));
+            const countriesArray = Array.from(group.countries.entries()).sort(
+              (a, b) => a[0].localeCompare(b[0]),
+            );
 
             return (
               <Collapsible
@@ -211,19 +231,22 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
                           <ChevronRight
                             className={cn(
                               "h-4 w-4 text-muted-foreground transition-transform",
-                              isExpanded && "rotate-90"
+                              isExpanded && "rotate-90",
                             )}
                           />
                           <Beaker className="h-4 w-4 text-primary" />
                           <div>
                             <CardTitle className="text-sm font-medium">
-                              {group.formulationName 
+                              {group.formulationName
                                 ? `${group.formulationName} (${group.formulationCode})`
-                                : group.formulationCode
-                              }
+                                : group.formulationCode}
                             </CardTitle>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {group.countries.size} {group.countries.size === 1 ? "country" : "countries"} • {group.totalUseGroups} use groups
+                              {group.countries.size}{" "}
+                              {group.countries.size === 1
+                                ? "country"
+                                : "countries"}{" "}
+                              • {group.totalUseGroups} use groups
                             </p>
                           </div>
                         </div>
@@ -240,7 +263,9 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
                               asChild
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <Link href={`/portfolio/formulations/${group.formulationId}`}>
+                              <Link
+                                href={`/portfolio/formulations/${group.formulationId}`}
+                              >
                                 View
                               </Link>
                             </Button>
@@ -249,66 +274,84 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
                       </div>
                     </CardHeader>
                   </CollapsibleTrigger>
-                  
+
                   <CollapsibleContent>
                     <CardContent className="pt-0 pb-3 px-4">
                       <div className="ml-7 space-y-3">
-                        {countriesArray.map(([countryName, countryUseGroups]) => (
-                          <div key={countryName} className="border-l-2 border-muted pl-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-                              <span className="font-medium text-sm">{countryName}</span>
-                              <Badge variant="outline" className="text-xs">
-                                {countryUseGroups.length} use groups
-                              </Badge>
-                            </div>
-                            
-                            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                              {countryUseGroups.map((ug) => (
-                                <div
-                                  key={ug.formulation_country_use_group_id}
-                                  className="flex items-center justify-between p-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors group"
-                                >
-                                  <Link
-                                    href={`/portfolio/use-groups/${ug.formulation_country_use_group_id}`}
-                                    className="flex items-center gap-2 flex-1 min-w-0"
+                        {countriesArray.map(
+                          ([countryName, countryUseGroups]) => (
+                            <div
+                              key={countryName}
+                              className="border-l-2 border-muted pl-4"
+                            >
+                              <div className="flex items-center gap-2 mb-2">
+                                <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="font-medium text-sm">
+                                  {countryName}
+                                </span>
+                                <Badge variant="outline" className="text-xs">
+                                  {countryUseGroups.length} use groups
+                                </Badge>
+                              </div>
+
+                              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                {countryUseGroups.map((ug) => (
+                                  <div
+                                    key={ug.formulation_country_use_group_id}
+                                    className="flex items-center justify-between p-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors group"
                                   >
-                                    <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                    <div className="min-w-0">
-                                      <p className="text-sm font-medium truncate hover:text-primary">
-                                        {ug.use_group_name || `Variant ${ug.use_group_variant}`}
-                                      </p>
-                                      <div className="flex items-center gap-2 mt-0.5">
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                          {ug.use_group_variant}
-                                        </Badge>
-                                        {ug.use_group_status && (
-                                          <Badge 
-                                            variant={getStatusVariant(ug.use_group_status, "registration")} 
+                                    <Link
+                                      href={`/portfolio/use-groups/${ug.formulation_country_use_group_id}`}
+                                      className="flex items-center gap-2 flex-1 min-w-0"
+                                    >
+                                      <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                      <div className="min-w-0">
+                                        <p className="text-sm font-medium truncate hover:text-primary">
+                                          {ug.use_group_name ||
+                                            `Variant ${ug.use_group_variant}`}
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                          <Badge
+                                            variant="outline"
                                             className="text-[10px] px-1.5 py-0"
                                           >
-                                            {ug.use_group_status}
+                                            {ug.use_group_variant}
                                           </Badge>
-                                        )}
+                                          {ug.use_group_status && (
+                                            <Badge
+                                              variant={getStatusVariant(
+                                                ug.use_group_status,
+                                                "registration",
+                                              )}
+                                              className="text-[10px] px-1.5 py-0"
+                                            >
+                                              {ug.use_group_status}
+                                            </Badge>
+                                          )}
+                                        </div>
                                       </div>
-                                    </div>
-                                  </Link>
-                                  {canEditUseGroups && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleEditClick(ug.formulation_country_use_group_id)}
-                                    className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    disabled={permissionsLoading}
-                                  >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                  </Button>
-                                )}
-                                </div>
-                              ))}
+                                    </Link>
+                                    {canEditUseGroups && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() =>
+                                          handleEditClick(
+                                            ug.formulation_country_use_group_id,
+                                          )
+                                        }
+                                        className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        disabled={permissionsLoading}
+                                      >
+                                        <Pencil className="h-3.5 w-3.5" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ),
+                        )}
                       </div>
                     </CardContent>
                   </CollapsibleContent>
@@ -338,8 +381,11 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
                       {ug.use_group_variant}
                     </Badge>
                     {ug.use_group_status && (
-                      <Badge 
-                        variant={getStatusVariant(ug.use_group_status, "registration")} 
+                      <Badge
+                        variant={getStatusVariant(
+                          ug.use_group_status,
+                          "registration",
+                        )}
                         className="text-xs shrink-0"
                       >
                         {ug.use_group_status}
@@ -368,7 +414,9 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleEditClick(ug.formulation_country_use_group_id)}
+                  onClick={() =>
+                    handleEditClick(ug.formulation_country_use_group_id)
+                  }
                   className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                   disabled={permissionsLoading}
                 >
@@ -397,15 +445,21 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
       {editingUseGroup && (
         <UseGroupEditModal
           useGroup={{
-            formulation_country_use_group_id: editingUseGroup.formulation_country_use_group_id || "",
+            formulation_country_use_group_id:
+              editingUseGroup.formulation_country_use_group_id || "",
             use_group_variant: editingUseGroup.use_group_variant || "",
             use_group_name: editingUseGroup.use_group_name || null,
             use_group_status: editingUseGroup.use_group_status || null,
-            target_market_entry_fy: editingUseGroup.target_market_entry_fy || null,
-            earliest_planned_submission_date: editingUseGroup.earliest_planned_submission_date || null,
-            earliest_planned_approval_date: editingUseGroup.earliest_planned_approval_date || null,
-            earliest_actual_submission_date: editingUseGroup.earliest_actual_submission_date || null,
-            earliest_actual_approval_date: editingUseGroup.earliest_actual_approval_date || null,
+            target_market_entry_fy:
+              editingUseGroup.target_market_entry_fy || null,
+            earliest_planned_submission_date:
+              editingUseGroup.earliest_planned_submission_date || null,
+            earliest_planned_approval_date:
+              editingUseGroup.earliest_planned_approval_date || null,
+            earliest_actual_submission_date:
+              editingUseGroup.earliest_actual_submission_date || null,
+            earliest_actual_approval_date:
+              editingUseGroup.earliest_actual_approval_date || null,
             reference_product_id: editingUseGroup.reference_product_id || null,
             country_name: editingUseGroup.country_name || undefined,
             formulation_name: editingUseGroup.formulation_code || undefined,
@@ -416,7 +470,7 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
           }}
           onSuccess={() => {
             setEditingUseGroupId(null);
-            window.location.reload();
+            router.refresh();
           }}
         />
       )}

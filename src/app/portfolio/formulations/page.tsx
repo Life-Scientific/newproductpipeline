@@ -1,9 +1,9 @@
-import { getFormulationsWithNestedData } from "@/lib/db/queries";
-import { FormulationsPageContent } from "@/components/formulations/FormulationsPageContent";
-import { AnimatedPage } from "@/components/layout/AnimatedPage";
-import { FormulationFormButton } from "@/components/forms/FormulationFormButton";
-import { FormulationsViewSwitcher } from "@/components/formulations/FormulationsViewSwitcher";
 import { Suspense } from "react";
+import { FormulationFormButton } from "@/components/forms/FormulationFormButton";
+import { FormulationsPageContent } from "@/components/formulations/FormulationsPageContent";
+import { FormulationsViewSwitcher } from "@/components/formulations/FormulationsViewSwitcher";
+import { AnimatedPage } from "@/components/layout/AnimatedPage";
+import { getFormulationsWithNestedData } from "@/lib/db/queries";
 
 // Cache formulations data for 60 seconds
 export const revalidate = 60;
@@ -30,7 +30,9 @@ export default async function FormulationsPage() {
         </div>
 
         <Suspense fallback={<div>Loading...</div>}>
-          <FormulationsPageContent formulationsWithNested={formulationsWithNested} />
+          <FormulationsPageContent
+            formulationsWithNested={formulationsWithNested}
+          />
         </Suspense>
       </AnimatedPage>
     </div>

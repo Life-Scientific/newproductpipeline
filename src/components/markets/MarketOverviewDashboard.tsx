@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, TrendingUp, Package, FileCheck, Plus } from "lucide-react";
-import { BusinessCaseCreateModal } from "@/components/business-cases/BusinessCaseCreateModal";
+import { BusinessCaseModal } from "@/components/business-cases/BusinessCaseModal";
 import Link from "next/link";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -330,7 +330,7 @@ export function MarketOverviewDashboard({
       </Card>
       </div>
 
-      <BusinessCaseCreateModal
+      <BusinessCaseModal
         open={createModalOpen}
         onOpenChange={setCreateModalOpen}
         onSuccess={() => {

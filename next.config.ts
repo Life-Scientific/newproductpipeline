@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === "production",
   },
   experimental: {
+    // Enable scroll restoration for better UX when navigating back
+    scrollRestoration: true,
     cacheLife: {
       // Default cache profile for pages
       page: {
