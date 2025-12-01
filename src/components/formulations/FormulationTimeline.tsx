@@ -26,6 +26,7 @@ interface FiscalYearData {
   volume: number;
   nsp: number;
   cogs: number;
+  unitCogs: number;
   yearOffset: number;
   countries: Set<string>;
   useGroups: Set<string>;
@@ -96,6 +97,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
     const volume = bc.volume || 0;
     const nsp = bc.nsp || 0;
     const cogs = bc.total_cogs || 0;
+    const cogsPerUnit = bc.cogs_per_unit || 0;
     const marginPercent = bc.margin_percent || 0;
     const yearOffset = bc.year_offset || 0;
 
@@ -108,6 +110,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
         volume: 0,
         nsp: 0,
         cogs: 0,
+        unitCogs: 0,
         yearOffset: yearOffset,
         countries: new Set(),
         useGroups: new Set(),
@@ -145,6 +148,16 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
         fyData.nsp += nsp * volume; // Accumulate weighted sum
       }
     }
+
+    // Track Unit COGS for weighted average calculation (same pattern as NSP)
+    if (volume > 0 && cogsPerUnit > 0) {
+      // Store weighted sum: cogsPerUnit * volume
+      if (fyData.unitCogs === 0) {
+        fyData.unitCogs = cogsPerUnit * volume; // Store weighted sum
+      } else {
+        fyData.unitCogs += cogsPerUnit * volume; // Accumulate weighted sum
+      }
+    }
   });
 
   // Set business case group counts per fiscal year
@@ -160,6 +173,11 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
     // Calculate weighted average NSP
     if (data.volume > 0 && data.nsp > 0) {
       data.nsp = data.nsp / data.volume; // Convert weighted sum to average
+    }
+
+    // Calculate weighted average Unit COGS
+    if (data.volume > 0 && data.unitCogs > 0) {
+      data.unitCogs = data.unitCogs / data.volume; // Convert weighted sum to average
     }
 
     // Calculate margin percent from aggregated values
@@ -184,6 +202,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
     let cumulativeVolume = 0;
     let cumulativeCogs = 0;
     let cumulativeNspWeightedSum = 0;
+    let cumulativeUnitCogsWeightedSum = 0;
 
     timelineData = timelineData.map((data, index) => {
       cumulativeRevenue += data.revenue;
@@ -196,8 +215,17 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
         cumulativeNspWeightedSum += data.nsp * data.volume;
       }
 
+      // For Unit COGS, same weighted average approach as NSP
+      if (data.volume > 0 && data.unitCogs > 0) {
+        cumulativeUnitCogsWeightedSum += data.unitCogs * data.volume;
+      }
+
       const cumulativeNsp = cumulativeVolume > 0 && cumulativeNspWeightedSum > 0
         ? cumulativeNspWeightedSum / cumulativeVolume
+        : 0;
+
+      const cumulativeUnitCogs = cumulativeVolume > 0 && cumulativeUnitCogsWeightedSum > 0
+        ? cumulativeUnitCogsWeightedSum / cumulativeVolume
         : 0;
 
       const cumulativeMarginPercent = cumulativeRevenue > 0
@@ -211,6 +239,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
         volume: cumulativeVolume,
         cogs: cumulativeCogs,
         nsp: cumulativeNsp,
+        unitCogs: cumulativeUnitCogs,
         marginPercent: cumulativeMarginPercent,
       };
     });
@@ -375,15 +404,13 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                     <TableCell className="text-center font-medium bg-muted">—</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">COGS</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">Unit COGS</TableCell>
                     {timelineData.map((data) => (
-                      <TableCell key={`cogs-${data.fiscalYear}`} className="text-center">
-                        {formatCurrency(data.cogs)}
+                      <TableCell key={`unit-cogs-${data.fiscalYear}`} className="text-center">
+                        {data.unitCogs > 0 ? formatCurrency(data.unitCogs) : "—"}
                       </TableCell>
                     ))}
-                    <TableCell className="text-center font-medium bg-muted">
-                      {formatCurrency(totalMargin > 0 ? totalRevenue - totalMargin : 0)}
-                    </TableCell>
+                    <TableCell className="text-center font-medium bg-muted">—</TableCell>
                   </TableRow>
                   <TableRow className="bg-muted/30">
                     <TableCell className="font-semibold sticky left-0 bg-background z-10">Revenue</TableCell>
@@ -412,6 +439,17 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                     })}
                     <TableCell className="text-center font-semibold bg-muted">
                       {formatCurrency(totalRevenue)}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow className="bg-muted/30">
+                    <TableCell className="font-semibold sticky left-0 bg-background z-10">COGS</TableCell>
+                    {timelineData.map((data) => (
+                      <TableCell key={`cogs-${data.fiscalYear}`} className="text-center font-semibold">
+                        {formatCurrency(data.cogs)}
+                      </TableCell>
+                    ))}
+                    <TableCell className="text-center font-semibold bg-muted">
+                      {formatCurrency(totalMargin > 0 ? totalRevenue - totalMargin : 0)}
                     </TableCell>
                   </TableRow>
                   <TableRow className="bg-muted/30">
