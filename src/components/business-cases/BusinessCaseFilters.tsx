@@ -321,10 +321,14 @@ export function BusinessCaseFilters({
         selectedFormulationIds.includes(bc.formulation_id);
       let matchesUseGroup = true;
       if (selectedUseGroupIds.length > 0) {
-        const useGroupKey =
-          bc.use_group_id ||
-          `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
-        matchesUseGroup = selectedUseGroupIds.includes(useGroupKey);
+        const useGroupUuid = bc.use_group_id;
+        const useGroupComposite = `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+        // Check both UUID and composite formats for backward compatibility
+        matchesUseGroup = selectedUseGroupIds.some((filterId) => {
+          if (useGroupUuid && filterId === useGroupUuid) return true;
+          if (filterId === useGroupComposite) return true;
+          return false;
+        });
       }
       return matchesCountry && matchesFormulation && matchesUseGroup;
     }).length;

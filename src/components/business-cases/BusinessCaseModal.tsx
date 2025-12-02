@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -708,6 +709,7 @@ export function BusinessCaseModal({
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Loading...</DialogTitle>
+            <DialogDescription>Please wait while we load the business case data.</DialogDescription>
           </DialogHeader>
           <div className="py-8 text-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
@@ -729,6 +731,14 @@ export function BusinessCaseModal({
               {isEditMode || existingGroupId ? "Creates New Version" : "Version Controlled"}
             </Badge>
           </DialogTitle>
+          <DialogDescription>
+            {isEditMode 
+              ? "Update the 10-year financial projections for this business case. Changes create a new version."
+              : existingGroupId 
+                ? "Create a new version of this business case with updated projections."
+                : "Define 10-year revenue and margin projections for a formulation in a specific market."
+            }
+          </DialogDescription>
         </DialogHeader>
 
         {step === "select" ? (

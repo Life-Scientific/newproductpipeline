@@ -60,12 +60,21 @@ function BusinessCasesContent({
       ) {
         return false;
       }
-      // Use group filter
+      // Use group filter - handle both UUID and composite formats for backward compatibility
       if (filters.useGroupIds.length > 0) {
-        const useGroupKey =
-          bc.use_group_id ||
-          `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
-        if (!filters.useGroupIds.includes(useGroupKey)) {
+        const useGroupUuid = bc.use_group_id;
+        const useGroupComposite = `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+        
+        // Check if any of the filter IDs match either the UUID or composite format
+        const matchesFilter = filters.useGroupIds.some((filterId) => {
+          // Direct UUID match
+          if (useGroupUuid && filterId === useGroupUuid) return true;
+          // Composite format match (for backward compatible URLs)
+          if (filterId === useGroupComposite) return true;
+          return false;
+        });
+        
+        if (!matchesFilter) {
           return false;
         }
       }
