@@ -20,20 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Check, ChevronsUpDown, GitBranch, Calendar, Tag, Package, Edit3, History } from "lucide-react";
+import { Check, GitBranch, Calendar, Tag, Package, Edit3, History, Search, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { 
   createBusinessCaseGroupAction,
@@ -97,7 +84,6 @@ export function BusinessCaseModal({
   
   // Search state
   const [formulationSearch, setFormulationSearch] = useState("");
-  const [formulationPopoverOpen, setFormulationPopoverOpen] = useState(false);
   
   // Form data
   const [formData, setFormData] = useState({
@@ -380,9 +366,13 @@ export function BusinessCaseModal({
     return formulations.filter((f) => {
       const name = ("product_name" in f ? f.product_name : null) || "";
       const code = f.formulation_code || "";
+      const activeIngredients = ("active_ingredients" in f ? f.active_ingredients : null) || "";
+      const category = ("product_category" in f ? f.product_category : null) || "";
       return (
         name.toLowerCase().includes(search) ||
-        code.toLowerCase().includes(search)
+        code.toLowerCase().includes(search) ||
+        activeIngredients.toLowerCase().includes(search) ||
+        category.toLowerCase().includes(search)
       );
     });
   }, [formulations, formulationSearch]);
@@ -782,85 +772,112 @@ export function BusinessCaseModal({
                   Formulation <span className="text-destructive">*</span>
                 </Label>
                 
-                <Popover open={formulationPopoverOpen} onOpenChange={setFormulationPopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={formulationPopoverOpen}
-                      className={cn(
-                        "w-full justify-between h-10 font-normal",
-                        !formData.country_id && "opacity-50 cursor-not-allowed",
-                        !formData.formulation_id && "text-muted-foreground"
-                      )}
-                      disabled={!formData.country_id}
-                    >
-                      {formData.formulation_id ? (
-                        (() => {
-                          const sel = formulations.find(f => f.formulation_id === formData.formulation_id);
-                          if (!sel) return "Select formulation...";
-                          const name = "product_name" in sel ? sel.product_name : null;
-                          const code = sel.formulation_code;
+{/* Search input */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={!formData.country_id ? "Select country first" : "Search formulations by name, code, or ingredients..."}
+                    value={formulationSearch}
+                    onChange={(e) => setFormulationSearch(e.target.value)}
+                    disabled={!formData.country_id}
+                    className="pl-9"
+                  />
+                </div>
+                
+                {/* Selected formulation display */}
+                {formData.formulation_id && (() => {
+                  const sel = formulations.find(f => f.formulation_id === formData.formulation_id);
+                  if (!sel) return null;
+                  const name = "product_name" in sel ? sel.product_name : null;
+                  const category = "product_category" in sel ? sel.product_category : null;
+                  const activeIngredients = "active_ingredients" in sel ? sel.active_ingredients : null;
+                  return (
+                    <div className="flex items-center gap-2 p-2 rounded-md bg-primary/10 border border-primary/20">
+                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-sm">{name || sel.formulation_code}</span>
+                        <span className="text-xs text-muted-foreground ml-2">({sel.formulation_code})</span>
+                      </div>
+                      {category && <Badge variant="secondary" className="text-xs">{category}</Badge>}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 w-6 p-0"
+                        onClick={() => setFormData({ ...formData, formulation_id: "", use_group_ids: [] })}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  );
+                })()}
+
+                {/* Formulation list */}
+                {formData.country_id && !formData.formulation_id && (
+                  <div className="border rounded-md max-h-[280px] overflow-y-auto">
+                    {filteredFormulations.length === 0 ? (
+                      <div className="p-4 text-sm text-muted-foreground text-center">
+                        {formulations.length === 0 
+                          ? "No formulations available for this country"
+                          : "No formulations match your search"}
+                      </div>
+                    ) : (
+                      <div className="divide-y" role="listbox">
+                        {filteredFormulations.map((f) => {
+                          const name = "product_name" in f ? f.product_name : null;
+                          const category = "product_category" in f ? f.product_category : null;
+                          const formType = "formulation_type" in f ? f.formulation_type : null;
+                          const activeIngredients = "active_ingredients" in f ? f.active_ingredients : null;
+                          
                           return (
-                            <div className="flex items-center gap-2 text-left">
-                              <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                              <span className="truncate">{name ? `${name} (${code})` : code || "Unknown"}</span>
-                            </div>
-                          );
-                        })()
-                      ) : (
-                        !formData.country_id 
-                          ? "Select country first" 
-                          : formulations.length === 0 
-                            ? "No formulations available" 
-                            : "Search formulations..."
-                      )}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-                    <Command shouldFilter={false}>
-                      <CommandInput 
-                        placeholder="Search by name or code..." 
-                        value={formulationSearch}
-                        onValueChange={setFormulationSearch}
-                      />
-                      <CommandList>
-                        <CommandEmpty>
-                          {formulations.length === 0 
-                            ? "No formulations available for this country"
-                            : "No formulations match your search"}
-                        </CommandEmpty>
-                        <CommandGroup>
-                          {filteredFormulations.map((f) => {
-                            const name = "product_name" in f ? f.product_name : null;
-                            const code = f.formulation_code;
-                            const isSelected = formData.formulation_id === f.formulation_id;
-                            return (
-                              <CommandItem
-                                key={f.formulation_id || ""}
-                                value={f.formulation_id || ""}
-                                onSelect={() => {
-                                  setFormData({ ...formData, formulation_id: f.formulation_id || "", use_group_ids: [] });
-                                  setFormulationSearch("");
-                                  setFormulationPopoverOpen(false);
-                                }}
-                                className="cursor-pointer"
-                              >
-                                <Check className={cn("mr-2 h-4 w-4", isSelected ? "opacity-100" : "opacity-0")} />
-                                <Package className="mr-2 h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <button
+                              type="button"
+                              key={f.formulation_id || f.formulation_code}
+                              className="w-full p-3 hover:bg-accent cursor-pointer transition-colors text-left focus:outline-none focus:bg-accent"
+                              onClick={() => {
+                                setFormData({ ...formData, formulation_id: f.formulation_id || "", use_group_ids: [] });
+                                setFormulationSearch("");
+                              }}
+                              role="option"
+                              aria-selected={false}
+                            >
+                              <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
-                                  <span className="font-medium">{name ? `${name} (${code})` : code || "Unknown"}</span>
+                                  <div className="flex items-center gap-2">
+                                    <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                    <span className="font-medium text-sm">{name || f.formulation_code}</span>
+                                    <span className="text-xs text-muted-foreground">({f.formulation_code})</span>
+                                  </div>
+                                  {activeIngredients && (
+                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1 ml-6">
+                                      {activeIngredients}
+                                    </p>
+                                  )}
                                 </div>
-                                {f.uom && <Badge variant="secondary" className="text-xs ml-2">{f.uom}</Badge>}
-                              </CommandItem>
-                            );
-                          })}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  {category && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {category}
+                                    </Badge>
+                                  )}
+                                  {formType && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      {formType}
+                                    </Badge>
+                                  )}
+                                  {f.uom && (
+                                    <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                      {f.uom}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Use Group Selector */}
