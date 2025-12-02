@@ -9,8 +9,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { Database } from "@/lib/supabase/database.types";
 import { TrendingUp, TrendingDown, Info } from "lucide-react";
+
+// Constants for unit conversion
+const VOLUME_TO_GAL = 0.264172; // 1 L = 0.264172 GAL
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -32,17 +36,6 @@ interface FiscalYearData {
   businessCaseCount: number;
 }
 
-function formatCurrency(value: number | null | undefined): string {
-  if (!value || value === 0) return "—";
-  if (value >= 1000000) {
-    return `€${(value / 1000000).toFixed(2)}M`;
-  }
-  if (value >= 1000) {
-    return `€${(value / 1000).toFixed(0)}K`;
-  }
-  return `€${value.toFixed(0)}`;
-}
-
 function formatNumber(value: number | null | undefined): string {
   if (!value || value === 0) return "—";
   return value.toLocaleString();
@@ -51,6 +44,36 @@ function formatNumber(value: number | null | undefined): string {
 export function FormulationTimeline({ businessCases }: FormulationTimelineProps) {
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
   const [cumulativeMode, setCumulativeMode] = useState(false);
+  const { 
+    formatCurrencyCompact, 
+    convertCurrency, 
+    convertVolume,
+    preferences,
+    currencySymbol,
+    volumeUnit
+  } = useDisplayPreferences();
+
+  // Wrapper for currency formatting
+  const formatCurrency = (value: number | null | undefined): string => formatCurrencyCompact(value);
+  
+  // Convert and format volume based on user preferences
+  const formatVolumeDisplay = (liters: number | null | undefined): string => {
+    if (!liters || liters === 0) return "—";
+    const converted = convertVolume(liters);
+    return converted.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  };
+  
+  // Convert and format NSP per unit (EUR/L -> USD/GAL etc.)
+  const formatNspPerUnit = (eurPerLiter: number | null | undefined): string => {
+    if (!eurPerLiter || eurPerLiter === 0) return "—";
+    // Convert currency
+    let converted = convertCurrency(eurPerLiter);
+    // Adjust for unit conversion: price per GAL = price per L / VOLUME_TO_GAL
+    if (preferences.volumeUnit === "GAL") {
+      converted = converted / VOLUME_TO_GAL;
+    }
+    return `${currencySymbol}${converted.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
 
   // Get unique countries from business cases
   const uniqueCountries = useMemo(() => {
@@ -355,27 +378,27 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                 </TableHeader>
                 <TableBody>
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">Volume</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">Volume ({volumeUnit})</TableCell>
                     {timelineData.map((data) => (
                       <TableCell key={`volume-${data.fiscalYear}`} className="text-center">
-                        {formatNumber(data.volume)}
+                        {formatVolumeDisplay(data.volume)}
                       </TableCell>
                     ))}
                     <TableCell className="text-center font-medium bg-muted">
-                      {formatNumber(timelineData.reduce((sum, d) => sum + d.volume, 0))}
+                      {formatVolumeDisplay(timelineData.reduce((sum, d) => sum + d.volume, 0))}
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">NSP</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">NSP ({preferences.currency}/{volumeUnit})</TableCell>
                     {timelineData.map((data) => (
                       <TableCell key={`nsp-${data.fiscalYear}`} className="text-center">
-                        {data.nsp > 0 ? formatCurrency(data.nsp) : "—"}
+                        {formatNspPerUnit(data.nsp)}
                       </TableCell>
                     ))}
                     <TableCell className="text-center font-medium bg-muted">—</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">COGS</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">COGS ({preferences.currency})</TableCell>
                     {timelineData.map((data) => (
                       <TableCell key={`cogs-${data.fiscalYear}`} className="text-center">
                         {formatCurrency(data.cogs)}
@@ -386,7 +409,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                     </TableCell>
                   </TableRow>
                   <TableRow className="bg-muted/30">
-                    <TableCell className="font-semibold sticky left-0 bg-background z-10">Revenue</TableCell>
+                    <TableCell className="font-semibold sticky left-0 bg-background z-10">Revenue ({preferences.currency})</TableCell>
                     {timelineData.map((data, index) => {
                       const prevRevenue = index > 0 ? timelineData[index - 1].revenue : null;
                       const revenueChange = prevRevenue && prevRevenue > 0
@@ -415,7 +438,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                     </TableCell>
                   </TableRow>
                   <TableRow className="bg-muted/30">
-                    <TableCell className="font-semibold sticky left-0 bg-background z-10">Margin</TableCell>
+                    <TableCell className="font-semibold sticky left-0 bg-background z-10">Margin ({preferences.currency})</TableCell>
                     {timelineData.map((data) => (
                       <TableCell key={`margin-${data.fiscalYear}`} className="text-center font-semibold">
                         {formatCurrency(data.margin)}

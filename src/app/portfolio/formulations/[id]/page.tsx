@@ -26,6 +26,7 @@ import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import Link from "next/link";
 import { Network, Package, Globe, DollarSign, FileText, Shield, History } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FormattedCurrency } from "@/components/ui/formatted-currency";
 
 interface FormulationDetailPageProps {
   params: Promise<{ id: string }>;
@@ -186,7 +187,7 @@ export default async function FormulationDetailPage({
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">{countUniqueBusinessCaseGroups(businessCases)}</div>
               <p className="text-xs text-muted-foreground">
-                {formatCurrency(totalRevenue)} revenue
+                <FormattedCurrency value={totalRevenue} compact /> revenue
               </p>
             </CardContent>
           </Card>
@@ -284,12 +285,12 @@ export default async function FormulationDetailPage({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground">Total Revenue</p>
-                      <p className="text-lg font-semibold">{formatCurrency(totalRevenue)}</p>
+                      <p className="text-lg font-semibold"><FormattedCurrency value={totalRevenue} compact /></p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground">Total Margin</p>
                       <p className={cn("text-lg font-semibold", totalMargin < 0 && "text-destructive")}>
-                        {formatCurrency(totalMargin)}
+                        <FormattedCurrency value={totalMargin} compact />
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -375,7 +376,7 @@ export default async function FormulationDetailPage({
                               <div className="space-y-2">
                                 <div className="flex justify-between text-sm">
                                   <span className="text-muted-foreground">Revenue</span>
-                                  <span className="font-medium">{formatCurrency(countryRevenue)}</span>
+                                  <span className="font-medium"><FormattedCurrency value={countryRevenue} compact /></span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                   <span className="text-muted-foreground">Margin</span>
@@ -383,7 +384,7 @@ export default async function FormulationDetailPage({
                                     "font-medium",
                                     countryMargin < 0 && "text-destructive"
                                   )}>
-                                    {formatCurrency(countryMargin)}
+                                    <FormattedCurrency value={countryMargin} compact />
                                   </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
@@ -446,12 +447,4 @@ export default async function FormulationDetailPage({
       </AnimatedPage>
     </div>
   );
-}
-
-function formatCurrency(value: number | null) {
-  if (!value) return "—";
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(2)}M`;
-  }
-  return `$${(value / 1000).toFixed(0)}K`;
 }

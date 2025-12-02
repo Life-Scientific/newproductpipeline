@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProviderWrapper } from "@/components/providers/ThemeProviderWrapper";
+import { DisplayPreferencesProvider } from "@/contexts/DisplayPreferencesContext";
 import { KonamiCode } from "@/components/easter-eggs/KonamiCode";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 
@@ -76,10 +77,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProviderWrapper>
-          {children}
-          <Toaster />
-          <KonamiCode />
-          <FeedbackButton />
+          <DisplayPreferencesProvider>
+            {children}
+            <Toaster />
+            <KonamiCode />
+            <FeedbackButton />
+          </DisplayPreferencesProvider>
         </ThemeProviderWrapper>
       </body>
     </html>

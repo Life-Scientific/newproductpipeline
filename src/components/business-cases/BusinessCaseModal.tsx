@@ -32,6 +32,7 @@ import {
 } from "@/lib/actions/business-cases";
 import { useSupabase } from "@/hooks/use-supabase";
 import { usePermissions } from "@/hooks/use-permissions";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import type { BusinessCaseYearData } from "@/lib/db/types";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { BusinessCaseVersionHistory } from "./BusinessCaseVersionHistory";
+import { formatVolumeInput, formatCurrencyInput, parseFormattedNumber } from "@/lib/utils/currency";
 
 type Formulation = Database["public"]["Tables"]["formulations"]["Row"] | Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
@@ -71,6 +73,12 @@ export function BusinessCaseModal({
   const { toast } = useToast();
   const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
+  const { 
+    preferences, currencySymbol, formatCurrency, 
+    convertCurrency, convertVolume, convertWeight, convertPerUnit,
+    toEUR, toLiters, toKG,
+    isWetProduct, isDryProduct, getDisplayUnit
+  } = useDisplayPreferences();
   
   // Mode: "select" for choosing country/formulation/use group, "data" for entering/editing year data
   const [step, setStep] = useState<"select" | "data">("select");
@@ -109,6 +117,9 @@ export function BusinessCaseModal({
   
   // Shadow data - previous version's values for comparison
   const [shadowData, setShadowData] = useState<Record<number, { volume: number | null; nsp: number | null; cogs: number | null }>>({});
+  
+  // Use group ID for Version History (used in both create and edit flows)
+  const [useGroupIdForHistory, setUseGroupIdForHistory] = useState<string | null>(null);
   
   const { canCreateBusinessCases, canEditBusinessCases, isLoading: permissionsLoading } = usePermissions();
   
@@ -163,6 +174,8 @@ export function BusinessCaseModal({
               const firstYear = result.data[0];
               if (firstYear) {
                 setTargetMarketEntry(firstYear.target_market_entry_fy || firstYear.effective_start_fiscal_year || null);
+                // Store use group ID for Version History
+                setUseGroupIdForHistory(firstYear.formulation_country_use_group_id || null);
                 // Note: assumptions would need to be fetched separately or added to the view
               }
             }
@@ -187,6 +200,7 @@ export function BusinessCaseModal({
         setShadowData({});
         setOriginalValues({});
         setChangedCells(new Set());
+        setUseGroupIdForHistory(null);
         setFormData({
           formulation_id: "",
           country_id: "",
@@ -229,6 +243,7 @@ export function BusinessCaseModal({
       setShadowData({});
       setOriginalValues({});
       setChangedCells(new Set());
+      setUseGroupIdForHistory(null);
       setTargetMarketEntry(null);
       setTargetEntryError(null);
     }
@@ -480,6 +495,12 @@ export function BusinessCaseModal({
         
         setShadowData(shadow);
         setYearDataRecord(prefill);
+        
+        // Store use group ID for Version History
+        const firstYear = existingDataResult.data[0];
+        if (firstYear?.formulation_country_use_group_id) {
+          setUseGroupIdForHistory(firstYear.formulation_country_use_group_id);
+        }
       }
       
       toast({
@@ -521,28 +542,84 @@ export function BusinessCaseModal({
     }
   };
 
-  // Calculate metrics
+  // Calculate metrics with currency conversion for display
+  // Note: Data is stored in EUR, so we convert to user's preferred currency for display
   const calculateMetrics = (yearOffset: number) => {
     if (isEditMode) {
       const year = yearDataArray.find((y) => y.year_offset === yearOffset);
-      const volume = year?.volume || 0;
-      const nsp = year?.nsp || 0;
-      const cogs = year?.cogs_per_unit || 0;
-      const revenue = volume * nsp;
-      const margin = revenue - volume * cogs;
-      const marginPercent = revenue > 0 ? (margin / revenue) * 100 : 0;
+      const volumeEUR = year?.volume || 0;
+      const nspEUR = year?.nsp || 0;
+      const cogsEUR = year?.cogs_per_unit || 0;
+      // Calculate in EUR first
+      const revenueEUR = volumeEUR * nspEUR;
+      const marginEUR = revenueEUR - volumeEUR * cogsEUR;
+      const marginPercent = revenueEUR > 0 ? (marginEUR / revenueEUR) * 100 : 0;
+      // Convert to user's preferred currency for display
+      const revenue = convertCurrency(revenueEUR);
+      const margin = convertCurrency(marginEUR);
       return { revenue, margin, marginPercent };
     } else {
       const year = yearDataRecord[yearOffset];
-      const volume = parseFloat(year?.volume || "0") || 0;
-      const nsp = parseFloat(year?.nsp || "0") || 0;
-      const cogs = parseFloat(year?.cogs || "0") || 0;
-      const revenue = volume * nsp;
-      const margin = revenue - volume * cogs;
-      const marginPercent = revenue > 0 ? (margin / revenue) * 100 : 0;
+      const volumeEUR = parseFloat(year?.volume || "0") || 0;
+      const nspEUR = parseFloat(year?.nsp || "0") || 0;
+      const cogsEUR = parseFloat(year?.cogs || "0") || 0;
+      // Calculate in EUR first
+      const revenueEUR = volumeEUR * nspEUR;
+      const marginEUR = revenueEUR - volumeEUR * cogsEUR;
+      const marginPercent = revenueEUR > 0 ? (marginEUR / revenueEUR) * 100 : 0;
+      // Convert to user's preferred currency for display
+      const revenue = convertCurrency(revenueEUR);
+      const margin = convertCurrency(marginEUR);
       return { revenue, margin, marginPercent };
     }
   };
+  
+  // Helper to convert volume/weight for display based on UOM
+  const convertQuantityForDisplay = (value: number) => {
+    const productIsWet = isWetProduct(uom);
+    const productIsDry = isDryProduct(uom);
+    if (productIsWet) return convertVolume(value);
+    if (productIsDry) return convertWeight(value);
+    return value;
+  };
+  
+  // Helper to convert quantity back to base units (L/KG) for storage
+  const convertQuantityToBase = (value: number) => {
+    const productIsWet = isWetProduct(uom);
+    const productIsDry = isDryProduct(uom);
+    if (productIsWet) return toLiters(value);
+    if (productIsDry) return toKG(value);
+    return value;
+  };
+  
+  // Helper to convert per-unit price for display (NSP, COGS)
+  // EUR/L → USD/GAL (or whatever user prefers)
+  const convertPerUnitForDisplay = (eurValue: number) => {
+    return convertPerUnit(eurValue, uom);
+  };
+  
+  // Helper to convert per-unit price back to EUR/base-unit for storage
+  // USD/GAL → EUR/L (reverse of convertPerUnit)
+  const convertPerUnitToBase = (userValue: number) => {
+    // First convert currency: USD → EUR
+    const eurValue = toEUR(userValue);
+    // Then adjust for unit conversion (reverse the division that convertPerUnit does)
+    const productIsWet = isWetProduct(uom);
+    const productIsDry = isDryProduct(uom);
+    const VOLUME_TO_GAL = 0.264172;
+    const WEIGHT_TO_LB = 2.20462;
+    
+    if (productIsWet && preferences.volumeUnit === "GAL") {
+      return eurValue * VOLUME_TO_GAL; // Reverse: multiply instead of divide
+    }
+    if (productIsDry && preferences.weightUnit === "LB") {
+      return eurValue * WEIGHT_TO_LB; // Reverse: multiply instead of divide
+    }
+    return eurValue;
+  };
+  
+  // Get the display unit based on UOM and user preferences
+  const displayUnit = getDisplayUnit(uom);
 
   // Handle save
   const handleSave = () => {
@@ -715,7 +792,7 @@ export function BusinessCaseModal({
       <DialogContent className={step === "data" ? "max-w-[90vw] max-h-[90vh] overflow-y-auto" : "max-w-4xl max-h-[90vh] overflow-y-auto"}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isEditMode ? `Edit Business Case - ${formulationName}` : existingGroupId ? "Create New Version" : "Create Business Case"}
+            {isEditMode || existingGroupId ? (formulationName ? `Edit Business Case - ${formulationName}` : "Edit Business Case") : "Create Business Case"}
             <Badge variant="outline" className="text-xs font-normal gap-1">
               <GitBranch className="h-3 w-3" />
               {isEditMode || existingGroupId ? "Creates New Version" : "Version Controlled"}
@@ -1001,9 +1078,9 @@ export function BusinessCaseModal({
             <TabsList className="mb-4">
               <TabsTrigger value="edit" className="gap-2">
                 <Edit3 className="h-4 w-4" />
-                {isEditMode ? "Edit Data" : "Enter Data"}
+                Data
               </TabsTrigger>
-              {isEditMode && yearDataArray[0]?.formulation_country_use_group_id && (
+              {(yearDataArray[0]?.formulation_country_use_group_id || useGroupIdForHistory) && (
                 <TabsTrigger value="history" className="gap-2">
                   <History className="h-4 w-4" />
                   Version History
@@ -1047,56 +1124,73 @@ export function BusinessCaseModal({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {/* Shadow row for previous version - Volume (create flow only) */}
-                    {!isEditMode && existingGroupId && Object.keys(shadowData).length > 0 && (
+                    {/* Shadow row for previous version - Volume */}
+                    {Object.keys(shadowData).length > 0 && (
                       <TableRow className="bg-muted/30">
                         <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">↳ prev</TableCell>
-                        {fiscalYearColumns.map((col) => (
-                          <TableCell key={col.yearOffset} className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums">
-                            {shadowData[col.yearOffset]?.volume?.toLocaleString() || "-"}
-                          </TableCell>
-                        ))}
+                        {fiscalYearColumns.map((col) => {
+                          const rawVal = shadowData[col.yearOffset]?.volume || 0;
+                          const displayVal = convertQuantityForDisplay(rawVal);
+                          return (
+                            <TableCell key={col.yearOffset} className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums">
+                              {displayVal > 0 ? Math.round(displayVal).toLocaleString() : "-"}
+                            </TableCell>
+                          );
+                        })}
                       </TableRow>
                     )}
 
                     {/* Volume row */}
                     <TableRow>
-                      <TableCell className="font-medium sticky left-0 bg-background z-10">Volume ({uom})</TableCell>
+                      <TableCell className="font-medium sticky left-0 bg-background z-10">Volume ({displayUnit})</TableCell>
                       {fiscalYearColumns.map((col) => {
                         const cellKey = `${col.yearOffset}_volume`;
                         const isChanged = changedCells.has(cellKey);
                         
                         if (isEditMode) {
                           const year = yearDataArray.find((y) => y.year_offset === col.yearOffset);
+                          // Convert L/KG to GAL/LB for display
+                          const rawVal = parseFloat(String(year?.volume || 0)) || 0;
+                          const displayValue = convertQuantityForDisplay(rawVal);
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <Input
-                                type="number"
-                                step="0.01"
-                                value={year?.volume || ""}
-                                onChange={(e) => handleCellChange(col.yearOffset, "volume", e.target.value)}
+                                type="text"
+                                inputMode="numeric"
+                                value={formatVolumeInput(displayValue)}
+                                onChange={(e) => {
+                                  // Convert from display unit back to L/KG
+                                  const inputVal = parseFormattedNumber(e.target.value);
+                                  const baseVal = convertQuantityToBase(inputVal);
+                                  handleCellChange(col.yearOffset, "volume", String(Math.round(baseVal)));
+                                }}
                                 className={cn("h-8 text-sm text-right tabular-nums", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
                               />
                             </TableCell>
                           );
                         } else {
+                          // Create mode - also convert for display
+                          const rawValue = parseFloat(yearDataRecord[col.yearOffset]?.volume || "0") || 0;
+                          const displayValue = convertQuantityForDisplay(rawValue);
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <Input
-                                type="number"
-                                step="0.01"
-                                value={yearDataRecord[col.yearOffset]?.volume || ""}
-                                onChange={(e) =>
+                                type="text"
+                                inputMode="numeric"
+                                value={formatVolumeInput(displayValue)}
+                                onChange={(e) => {
+                                  const inputVal = parseFormattedNumber(e.target.value);
+                                  const baseVal = convertQuantityToBase(inputVal);
                                   setYearDataRecord({
                                     ...yearDataRecord,
                                     [col.yearOffset]: {
                                       ...yearDataRecord[col.yearOffset],
-                                      volume: e.target.value,
+                                      volume: String(Math.round(baseVal)),
                                       nsp: yearDataRecord[col.yearOffset]?.nsp || "",
                                       cogs: yearDataRecord[col.yearOffset]?.cogs || "",
                                     },
-                                  })
-                                }
+                                  });
+                                }}
                                 className="h-8 text-sm text-right tabular-nums"
                                 placeholder="0"
                               />
@@ -1107,58 +1201,84 @@ export function BusinessCaseModal({
                     </TableRow>
 
                     {/* Shadow row for NSP */}
-                    {!isEditMode && existingGroupId && Object.keys(shadowData).length > 0 && (
+                    {Object.keys(shadowData).length > 0 && (
                       <TableRow className="bg-muted/30">
                         <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">↳ prev</TableCell>
-                        {fiscalYearColumns.map((col) => (
-                          <TableCell key={col.yearOffset} className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums">
-                            {shadowData[col.yearOffset]?.nsp?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "-"}
-                          </TableCell>
-                        ))}
+                        {fiscalYearColumns.map((col) => {
+                          const rawVal = shadowData[col.yearOffset]?.nsp || 0;
+                          const displayVal = convertPerUnitForDisplay(rawVal);
+                          return (
+                            <TableCell key={col.yearOffset} className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums">
+                              {displayVal > 0 ? displayVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"}
+                            </TableCell>
+                          );
+                        })}
                       </TableRow>
                     )}
 
                     {/* NSP row */}
                     <TableRow>
-                      <TableCell className="font-medium sticky left-0 bg-background z-10">NSP (EUR/{uom})</TableCell>
+                      <TableCell className="font-medium sticky left-0 bg-background z-10">NSP ({preferences.currency}/{displayUnit})</TableCell>
                       {fiscalYearColumns.map((col) => {
                         const cellKey = `${col.yearOffset}_nsp`;
                         const isChanged = changedCells.has(cellKey);
                         
                         if (isEditMode) {
                           const year = yearDataArray.find((y) => y.year_offset === col.yearOffset);
+                          // Convert EUR value to display currency/unit
+                          const displayValue = convertPerUnitForDisplay(parseFloat(String(year?.nsp || 0)) || 0);
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
-                              <Input
-                                type="number"
-                                step="0.01"
-                                value={year?.nsp || ""}
-                                onChange={(e) => handleCellChange(col.yearOffset, "nsp", e.target.value)}
-                                className={cn("h-8 text-sm text-right tabular-nums", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
-                              />
+                              <div className="relative">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                  {currencySymbol}
+                                </span>
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={formatCurrencyInput(displayValue)}
+                                  onChange={(e) => {
+                                    // Convert from display currency/unit back to EUR/L
+                                    const inputVal = parseFormattedNumber(e.target.value);
+                                    const baseVal = convertPerUnitToBase(inputVal);
+                                    handleCellChange(col.yearOffset, "nsp", String(baseVal));
+                                  }}
+                                  className={cn("h-8 text-sm text-right tabular-nums pl-6", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                />
+                              </div>
                             </TableCell>
                           );
                         } else {
+                          // Create mode - also convert for display
+                          const rawValue = parseFloat(yearDataRecord[col.yearOffset]?.nsp || "0") || 0;
+                          const displayValue = convertPerUnitForDisplay(rawValue);
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
-                              <Input
-                                type="number"
-                                step="0.01"
-                                value={yearDataRecord[col.yearOffset]?.nsp || ""}
-                                onChange={(e) =>
-                                  setYearDataRecord({
-                                    ...yearDataRecord,
-                                    [col.yearOffset]: {
-                                      ...yearDataRecord[col.yearOffset],
-                                      volume: yearDataRecord[col.yearOffset]?.volume || "",
-                                      nsp: e.target.value,
-                                      cogs: yearDataRecord[col.yearOffset]?.cogs || "",
-                                    },
-                                  })
-                                }
-                                className="h-8 text-sm text-right tabular-nums"
-                                placeholder="0"
-                              />
+                              <div className="relative">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                  {currencySymbol}
+                                </span>
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={formatCurrencyInput(displayValue)}
+                                  onChange={(e) => {
+                                    const inputVal = parseFormattedNumber(e.target.value);
+                                    const baseVal = convertPerUnitToBase(inputVal);
+                                    setYearDataRecord({
+                                      ...yearDataRecord,
+                                      [col.yearOffset]: {
+                                        ...yearDataRecord[col.yearOffset],
+                                        volume: yearDataRecord[col.yearOffset]?.volume || "",
+                                        nsp: String(baseVal),
+                                        cogs: yearDataRecord[col.yearOffset]?.cogs || "",
+                                      },
+                                    });
+                                  }}
+                                  className="h-8 text-sm text-right tabular-nums pl-6"
+                                  placeholder="0"
+                                />
+                              </div>
                             </TableCell>
                           );
                         }
@@ -1166,14 +1286,18 @@ export function BusinessCaseModal({
                     </TableRow>
 
                     {/* Shadow row for COGS */}
-                    {!isEditMode && existingGroupId && Object.keys(shadowData).length > 0 && (
+                    {Object.keys(shadowData).length > 0 && (
                       <TableRow className="bg-muted/30">
                         <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">↳ prev</TableCell>
-                        {fiscalYearColumns.map((col) => (
-                          <TableCell key={col.yearOffset} className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums">
-                            {shadowData[col.yearOffset]?.cogs?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "-"}
-                          </TableCell>
-                        ))}
+                        {fiscalYearColumns.map((col) => {
+                          const rawVal = shadowData[col.yearOffset]?.cogs || 0;
+                          const displayVal = rawVal > 0 ? convertPerUnitForDisplay(rawVal) : 0;
+                          return (
+                            <TableCell key={col.yearOffset} className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums">
+                              {displayVal > 0 ? displayVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"}
+                            </TableCell>
+                          );
+                        })}
                       </TableRow>
                     )}
 
@@ -1181,7 +1305,7 @@ export function BusinessCaseModal({
                     <TableRow>
                       <TableCell className="font-medium sticky left-0 bg-background z-10">
                         <div className="flex flex-col">
-                          <span>COGS (EUR/{uom})</span>
+                          <span>COGS ({preferences.currency}/{displayUnit})</span>
                           {!isEditMode && <span className="text-xs text-muted-foreground font-normal">Optional override</span>}
                         </div>
                       </TableCell>
@@ -1191,38 +1315,61 @@ export function BusinessCaseModal({
                         
                         if (isEditMode) {
                           const year = yearDataArray.find((y) => y.year_offset === col.yearOffset);
+                          // Convert EUR value to display currency/unit
+                          const rawVal = parseFloat(String(year?.cogs_per_unit || 0)) || 0;
+                          const displayValue = rawVal > 0 ? convertPerUnitForDisplay(rawVal) : 0;
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
-                              <Input
-                                type="number"
-                                step="0.01"
-                                value={year?.cogs_per_unit || ""}
-                                onChange={(e) => handleCellChange(col.yearOffset, "cogs_per_unit", e.target.value)}
-                                className={cn("h-8 text-sm text-right tabular-nums", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
-                              />
+                              <div className="relative">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                  {currencySymbol}
+                                </span>
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={formatCurrencyInput(displayValue)}
+                                  onChange={(e) => {
+                                    // Convert from display currency/unit back to EUR/L
+                                    const inputVal = parseFormattedNumber(e.target.value);
+                                    const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
+                                    handleCellChange(col.yearOffset, "cogs_per_unit", inputVal > 0 ? String(baseVal) : "");
+                                  }}
+                                  className={cn("h-8 text-sm text-right tabular-nums pl-6", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                />
+                              </div>
                             </TableCell>
                           );
                         } else {
+                          // Create mode - also convert for display
+                          const rawValue = parseFloat(yearDataRecord[col.yearOffset]?.cogs || "0") || 0;
+                          const displayValue = rawValue > 0 ? convertPerUnitForDisplay(rawValue) : 0;
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
-                              <Input
-                                type="number"
-                                step="0.01"
-                                value={yearDataRecord[col.yearOffset]?.cogs || ""}
-                                onChange={(e) =>
-                                  setYearDataRecord({
-                                    ...yearDataRecord,
-                                    [col.yearOffset]: {
-                                      ...yearDataRecord[col.yearOffset],
-                                      volume: yearDataRecord[col.yearOffset]?.volume || "",
-                                      nsp: yearDataRecord[col.yearOffset]?.nsp || "",
-                                      cogs: e.target.value,
-                                    },
-                                  })
-                                }
-                                className="h-8 text-sm text-right tabular-nums"
-                                placeholder="Auto"
-                              />
+                              <div className="relative">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                  {currencySymbol}
+                                </span>
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={formatCurrencyInput(displayValue)}
+                                  onChange={(e) => {
+                                    const inputVal = parseFormattedNumber(e.target.value);
+                                    const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
+                                    setYearDataRecord({
+                                      ...yearDataRecord,
+                                      [col.yearOffset]: {
+                                        ...yearDataRecord[col.yearOffset],
+                                        volume: yearDataRecord[col.yearOffset]?.volume || "",
+                                        nsp: yearDataRecord[col.yearOffset]?.nsp || "",
+                                        cogs: inputVal > 0 ? String(baseVal) : "",
+                                      },
+                                    });
+                                  }}
+                                  className="h-8 text-sm text-right tabular-nums pl-6"
+                                  placeholder="Auto"
+                                />
+                              </div>
                             </TableCell>
                           );
                         }
@@ -1231,13 +1378,13 @@ export function BusinessCaseModal({
 
                     {/* Calculated rows */}
                     <TableRow>
-                      <TableCell className="font-medium sticky left-0 bg-background z-10">Total Revenue (EUR)</TableCell>
+                      <TableCell className="font-medium sticky left-0 bg-background z-10">Total Revenue ({preferences.currency})</TableCell>
                       {fiscalYearColumns.map((col) => {
                         const metrics = calculateMetrics(col.yearOffset);
                         return (
                           <TableCell key={col.yearOffset} className="p-1 text-right">
                             <span className="text-sm tabular-nums">
-                              {metrics.revenue > 0 ? `€${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                              {metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
                             </span>
                           </TableCell>
                         );
@@ -1245,13 +1392,13 @@ export function BusinessCaseModal({
                     </TableRow>
 
                     <TableRow>
-                      <TableCell className="font-medium sticky left-0 bg-background z-10">Gross Margin (EUR)</TableCell>
+                      <TableCell className="font-medium sticky left-0 bg-background z-10">Gross Margin ({preferences.currency})</TableCell>
                       {fiscalYearColumns.map((col) => {
                         const metrics = calculateMetrics(col.yearOffset);
                         return (
                           <TableCell key={col.yearOffset} className="p-1 text-right">
                             <span className="text-sm tabular-nums">
-                              {metrics.margin > 0 ? `€${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                              {metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
                             </span>
                           </TableCell>
                         );
@@ -1288,6 +1435,22 @@ export function BusinessCaseModal({
                       ? yearDataArray.find((y) => y.year_offset === col.yearOffset)
                       : yearDataRecord[col.yearOffset];
                     
+                    // Compute converted display values for mobile
+                    const rawVolume = isEditMode 
+                      ? parseFloat(String((yearValue as BusinessCaseYearData)?.volume || 0)) || 0
+                      : parseFloat((yearValue as any)?.volume || "0") || 0;
+                    const displayVolume = convertQuantityForDisplay(rawVolume);
+                    
+                    const rawNsp = isEditMode
+                      ? parseFloat(String((yearValue as BusinessCaseYearData)?.nsp || 0)) || 0
+                      : parseFloat((yearValue as any)?.nsp || "0") || 0;
+                    const displayNsp = convertPerUnitForDisplay(rawNsp);
+                    
+                    const rawCogs = isEditMode
+                      ? parseFloat(String((yearValue as BusinessCaseYearData)?.cogs_per_unit || 0)) || 0
+                      : parseFloat((yearValue as any)?.cogs || "0") || 0;
+                    const displayCogs = rawCogs > 0 ? convertPerUnitForDisplay(rawCogs) : 0;
+                    
                     return (
                       <Card key={col.yearOffset} className="overflow-hidden">
                         <div className="bg-muted/50 px-3 py-2 border-b">
@@ -1295,19 +1458,21 @@ export function BusinessCaseModal({
                         </div>
                         <CardContent className="p-3 space-y-3">
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">Volume ({uom})</Label>
+                            <Label className="text-xs text-muted-foreground">Volume ({displayUnit})</Label>
                             <Input
-                              type="number"
-                              step="0.01"
-                              value={isEditMode ? (yearValue as BusinessCaseYearData)?.volume || "" : (yearValue as any)?.volume || ""}
+                              type="text"
+                              inputMode="numeric"
+                              value={formatVolumeInput(displayVolume)}
                               onChange={(e) => {
+                                const inputVal = parseFormattedNumber(e.target.value);
+                                const baseVal = convertQuantityToBase(inputVal);
                                 if (isEditMode) {
-                                  handleCellChange(col.yearOffset, "volume", e.target.value);
+                                  handleCellChange(col.yearOffset, "volume", String(Math.round(baseVal)));
                                 } else {
                                   setYearDataRecord({
                                     ...yearDataRecord,
                                     [col.yearOffset]: {
-                                      volume: e.target.value,
+                                      volume: String(Math.round(baseVal)),
                                       nsp: yearDataRecord[col.yearOffset]?.nsp || "",
                                       cogs: yearDataRecord[col.yearOffset]?.cogs || "",
                                     },
@@ -1318,62 +1483,76 @@ export function BusinessCaseModal({
                             />
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">NSP (EUR/{uom})</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={isEditMode ? (yearValue as BusinessCaseYearData)?.nsp || "" : (yearValue as any)?.nsp || ""}
-                              onChange={(e) => {
-                                if (isEditMode) {
-                                  handleCellChange(col.yearOffset, "nsp", e.target.value);
-                                } else {
-                                  setYearDataRecord({
-                                    ...yearDataRecord,
-                                    [col.yearOffset]: {
-                                      volume: yearDataRecord[col.yearOffset]?.volume || "",
-                                      nsp: e.target.value,
-                                      cogs: yearDataRecord[col.yearOffset]?.cogs || "",
-                                    },
-                                  });
-                                }
-                              }}
-                              className={cn("h-8 text-sm text-right tabular-nums", nspChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
-                            />
+                            <Label className="text-xs text-muted-foreground">NSP ({preferences.currency}/{displayUnit})</Label>
+                            <div className="relative">
+                              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                {currencySymbol}
+                              </span>
+                              <Input
+                                type="text"
+                                inputMode="decimal"
+                                value={formatCurrencyInput(displayNsp)}
+                                onChange={(e) => {
+                                  const inputVal = parseFormattedNumber(e.target.value);
+                                  const baseVal = convertPerUnitToBase(inputVal);
+                                  if (isEditMode) {
+                                    handleCellChange(col.yearOffset, "nsp", String(baseVal));
+                                  } else {
+                                    setYearDataRecord({
+                                      ...yearDataRecord,
+                                      [col.yearOffset]: {
+                                        volume: yearDataRecord[col.yearOffset]?.volume || "",
+                                        nsp: String(baseVal),
+                                        cogs: yearDataRecord[col.yearOffset]?.cogs || "",
+                                      },
+                                    });
+                                  }
+                                }}
+                                className={cn("h-8 text-sm text-right tabular-nums pl-6", nspChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                              />
+                            </div>
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">COGS (EUR/{uom})</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={isEditMode ? (yearValue as BusinessCaseYearData)?.cogs_per_unit || "" : (yearValue as any)?.cogs || ""}
-                              onChange={(e) => {
-                                if (isEditMode) {
-                                  handleCellChange(col.yearOffset, "cogs_per_unit", e.target.value);
-                                } else {
-                                  setYearDataRecord({
-                                    ...yearDataRecord,
-                                    [col.yearOffset]: {
-                                      volume: yearDataRecord[col.yearOffset]?.volume || "",
-                                      nsp: yearDataRecord[col.yearOffset]?.nsp || "",
-                                      cogs: e.target.value,
-                                    },
-                                  });
-                                }
-                              }}
-                              className={cn("h-8 text-sm text-right tabular-nums", cogsChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
-                            />
+                            <Label className="text-xs text-muted-foreground">COGS ({preferences.currency}/{displayUnit})</Label>
+                            <div className="relative">
+                              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                {currencySymbol}
+                              </span>
+                              <Input
+                                type="text"
+                                inputMode="decimal"
+                                value={formatCurrencyInput(displayCogs)}
+                                onChange={(e) => {
+                                  const inputVal = parseFormattedNumber(e.target.value);
+                                  const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
+                                  if (isEditMode) {
+                                    handleCellChange(col.yearOffset, "cogs_per_unit", inputVal > 0 ? String(baseVal) : "");
+                                  } else {
+                                    setYearDataRecord({
+                                      ...yearDataRecord,
+                                      [col.yearOffset]: {
+                                        volume: yearDataRecord[col.yearOffset]?.volume || "",
+                                        nsp: yearDataRecord[col.yearOffset]?.nsp || "",
+                                        cogs: inputVal > 0 ? String(baseVal) : "",
+                                      },
+                                    });
+                                  }
+                                }}
+                                className={cn("h-8 text-sm text-right tabular-nums pl-6", cogsChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                              />
+                            </div>
                           </div>
                           <div className="pt-2 border-t space-y-1.5 text-xs">
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Revenue</span>
                               <span className="font-medium tabular-nums">
-                                {metrics.revenue > 0 ? `€${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                                {metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Margin</span>
                               <span className="font-medium tabular-nums">
-                                {metrics.margin > 0 ? `€${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                                {metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
                               </span>
                             </div>
                             <div className="flex justify-between">
@@ -1419,16 +1598,16 @@ export function BusinessCaseModal({
                   onClick={handleSave} 
                   disabled={isPending || permissionsLoading || (existingGroupId || isEditMode ? !canEditBusinessCases : !canCreateBusinessCases)}
                 >
-                  {isPending ? "Saving..." : existingGroupId || isEditMode ? "Save New Version" : "Create Business Case"}
+                  {isPending ? "Saving..." : "Save Business Case"}
                 </Button>
               </DialogFooter>
             </TabsContent>
 
-            {isEditMode && yearDataArray[0]?.formulation_country_use_group_id && (
+            {(yearDataArray[0]?.formulation_country_use_group_id || useGroupIdForHistory) && (
               <TabsContent value="history">
                 <BusinessCaseVersionHistory
-                  useGroupId={yearDataArray[0].formulation_country_use_group_id}
-                  currentGroupId={groupId || ""}
+                  useGroupId={yearDataArray[0]?.formulation_country_use_group_id || useGroupIdForHistory || ""}
+                  currentGroupId={groupId || existingGroupId || ""}
                   formulationName={formulationName ?? undefined}
                   countryName={countryName ?? undefined}
                 />

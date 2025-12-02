@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import type { Database } from "@/lib/supabase/database.types";
 import { useRouter } from "next/navigation";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -25,6 +26,7 @@ interface RevenueChartProps {
 
 export function RevenueChart({ businessCases, onDrillDown }: RevenueChartProps) {
   const router = useRouter();
+  const { currencySymbol } = useDisplayPreferences();
 
   // Group by fiscal year
   const byFiscalYear = businessCases.reduce((acc, bc) => {
@@ -73,12 +75,12 @@ export function RevenueChart({ businessCases, onDrillDown }: RevenueChartProps) 
               axisLine={{ stroke: 'var(--color-border)' }}
             />
             <YAxis 
-              label={{ value: "Amount (M$)", angle: -90, position: "insideLeft", fill: 'var(--color-muted-foreground)' }} 
+              label={{ value: `Amount (M${currencySymbol})`, angle: -90, position: "insideLeft", fill: 'var(--color-muted-foreground)' }} 
               tick={{ fill: 'var(--color-muted-foreground)' }}
               axisLine={{ stroke: 'var(--color-border)' }}
             />
             <Tooltip
-              formatter={(value: number) => [`$${value.toFixed(2)}M`, ""]}
+              formatter={(value: number) => [`${currencySymbol}${value.toFixed(2)}M`, ""]}
               labelFormatter={(label) => `Fiscal Year: ${label}`}
               contentStyle={{ 
                 backgroundColor: 'var(--color-popover)', 

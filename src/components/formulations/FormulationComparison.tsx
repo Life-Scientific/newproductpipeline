@@ -16,6 +16,7 @@ import { X } from "lucide-react";
 import type { Database } from "@/lib/supabase/database.types";
 import Link from "next/link";
 import { useRequestCache } from "@/hooks/use-request-cache";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 
@@ -36,17 +37,6 @@ interface ComparisonData {
 
 const MAX_COMPARISONS = 5;
 
-function formatCurrency(value: number | null | undefined): string {
-  if (!value || value === 0) return "—";
-  if (value >= 1000000) {
-    return `€${(value / 1000000).toFixed(2)}M`;
-  }
-  if (value >= 1000) {
-    return `€${(value / 1000).toFixed(0)}K`;
-  }
-  return `€${value.toFixed(0)}`;
-}
-
 function formatNumber(value: number | null | undefined): string {
   if (!value || value === 0) return "—";
   return value.toLocaleString();
@@ -54,8 +44,12 @@ function formatNumber(value: number | null | undefined): string {
 
 export function FormulationComparison({ formulations }: FormulationComparisonProps) {
   const { cachedFetch } = useRequestCache();
+  const { formatCurrencyCompact } = useDisplayPreferences();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [comparisonData, setComparisonData] = useState<Map<string, ComparisonData>>(new Map());
+  
+  // Use hook's formatter
+  const formatCurrency = formatCurrencyCompact;
 
   const selectedFormulations = useMemo(() => {
     return formulations.filter((f) => f.formulation_id && selectedIds.includes(f.formulation_id));

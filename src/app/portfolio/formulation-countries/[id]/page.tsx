@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { HierarchicalBreadcrumb } from "@/components/navigation/HierarchicalBreadcrumb";
 import { RevenueChart } from "@/components/charts/RevenueChart";
+import { FormattedCurrency } from "@/components/ui/formatted-currency";
 import Link from "next/link";
 import {
   Globe,
@@ -23,17 +24,6 @@ type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
 interface FormulationCountryDetailPageProps {
   params: Promise<{ id: string }>;
-}
-
-function formatCurrency(value: number | null | undefined): string {
-  if (!value || value === 0) return "—";
-  if (value >= 1000000) {
-    return `€${(value / 1000000).toFixed(2)}M`;
-  }
-  if (value >= 1000) {
-    return `€${(value / 1000).toFixed(0)}K`;
-  }
-  return `€${value.toFixed(2)}`;
 }
 
 function formatNumber(value: number | null | undefined): string {
@@ -110,7 +100,7 @@ export default async function FormulationCountryDetailPage({
             </CardHeader>
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">
-                {formatCurrency(totalRevenue)}
+                <FormattedCurrency value={totalRevenue} />
               </div>
               <p className="text-xs text-muted-foreground">
                 Across {businessCases.length} business case{businessCases.length !== 1 ? "s" : ""}
@@ -127,7 +117,7 @@ export default async function FormulationCountryDetailPage({
             </CardHeader>
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">
-                {formatCurrency(totalMargin)}
+                <FormattedCurrency value={totalMargin} />
               </div>
               <p className="text-xs text-muted-foreground">
                 {avgMarginPercent > 0 ? `${avgMarginPercent.toFixed(1)}% avg margin` : "—"}
@@ -350,7 +340,7 @@ export default async function FormulationCountryDetailPage({
                         </p>
                       </div>
                       <div className="text-right space-y-1">
-                        <div className="font-semibold">{formatCurrency(bc.total_revenue)}</div>
+                        <div className="font-semibold"><FormattedCurrency value={bc.total_revenue} /></div>
                         {bc.margin_percent !== null && (
                           <div className="text-sm text-muted-foreground">
                             {bc.margin_percent.toFixed(1)}% margin

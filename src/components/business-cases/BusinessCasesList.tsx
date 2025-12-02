@@ -12,9 +12,36 @@ import { DeleteConfirmDialog } from "@/components/forms/DeleteConfirmDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useSupabase } from "@/hooks/use-supabase";
 import { usePermissions } from "@/hooks/use-permissions";
+import { FormattedCurrency } from "@/components/ui/formatted-currency";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { Database } from "@/lib/supabase/database.types";
 import type { EnrichedBusinessCase } from "@/lib/db/queries";
 import { Pencil, Trash2 } from "lucide-react";
+
+// Cell components that use hooks for proper conversion
+// Note: Not using memo because these need to re-render when display preferences change
+function VolumeCell({ volume, uom }: { volume: number | null; uom: string | null }) {
+  const { isWetProduct, isDryProduct, convertVolume, convertWeight, getDisplayUnit } = useDisplayPreferences();
+  if (!volume) return <span className="text-muted-foreground">—</span>;
+  
+  const unitOfMeasure = uom || "L";
+  const productIsWet = isWetProduct(unitOfMeasure);
+  const productIsDry = isDryProduct(unitOfMeasure);
+  const converted = productIsWet ? convertVolume(volume) : (productIsDry ? convertWeight(volume) : volume);
+  const displayUnit = getDisplayUnit(unitOfMeasure);
+  
+  return <span>{converted.toLocaleString(undefined, { maximumFractionDigits: 0 })} {displayUnit}</span>;
+}
+
+function PerUnitCell({ value, uom }: { value: number | null; uom: string | null }) {
+  const { formatPerUnit, getDisplayUnit } = useDisplayPreferences();
+  if (!value) return <span className="text-muted-foreground">—</span>;
+  
+  const unitOfMeasure = uom || "L";
+  const displayUnit = getDisplayUnit(unitOfMeasure);
+  
+  return <span>{formatPerUnit(value, unitOfMeasure, { decimals: 2 })}/{displayUnit}</span>;
+}
 
 type BusinessCaseTable = Database["public"]["Tables"]["business_case"]["Row"];
 
@@ -193,7 +220,8 @@ const createColumns = (): ColumnDef<EnrichedBusinessCase>[] => [
     header: "Volume",
     cell: ({ row }) => {
       const volume = row.getValue("volume") as number | null;
-      return volume ? volume.toLocaleString() : "—";
+      const uom = row.original.uom;
+      return <VolumeCell volume={volume} uom={uom} />;
     },
   },
   {
@@ -201,7 +229,8 @@ const createColumns = (): ColumnDef<EnrichedBusinessCase>[] => [
     header: "NSP",
     cell: ({ row }) => {
       const nsp = row.getValue("nsp") as number | null;
-      return nsp ? `$${nsp.toLocaleString()}` : "—";
+      const uom = row.original.uom;
+      return <PerUnitCell value={nsp} uom={uom} />;
     },
   },
   {
@@ -209,7 +238,8 @@ const createColumns = (): ColumnDef<EnrichedBusinessCase>[] => [
     header: "COGS/Unit",
     cell: ({ row }) => {
       const cogs = row.getValue("cogs_per_unit") as number | null;
-      return cogs ? `$${cogs.toLocaleString()}` : "—";
+      const uom = row.original.uom;
+      return <PerUnitCell value={cogs} uom={uom} />;
     },
   },
   {
@@ -217,7 +247,7 @@ const createColumns = (): ColumnDef<EnrichedBusinessCase>[] => [
     header: "Revenue",
     cell: ({ row }) => {
       const revenue = row.getValue("total_revenue") as number | null;
-      return revenue ? `$${revenue.toLocaleString()}` : "—";
+      return <FormattedCurrency value={revenue} compact />;
     },
   },
   {
@@ -225,7 +255,7 @@ const createColumns = (): ColumnDef<EnrichedBusinessCase>[] => [
     header: "Total COGS",
     cell: ({ row }) => {
       const cogs = row.getValue("total_cogs") as number | null;
-      return cogs ? `$${cogs.toLocaleString()}` : "—";
+      return <FormattedCurrency value={cogs} compact />;
     },
   },
   {
@@ -233,7 +263,7 @@ const createColumns = (): ColumnDef<EnrichedBusinessCase>[] => [
     header: "Margin",
     cell: ({ row }) => {
       const margin = row.getValue("total_margin") as number | null;
-      return margin ? `$${margin.toLocaleString()}` : "—";
+      return <FormattedCurrency value={margin} compact />;
     },
   },
   {
@@ -263,11 +293,17 @@ interface BusinessCasesListProps {
 }
 
 export function BusinessCasesList({ businessCases }: BusinessCasesListProps) {
+  const { preferences } = useDisplayPreferences();
+  
   // Memoize columns to prevent recreation
   const memoizedColumns = useMemo(() => columns, []);
 
+  // Key forces table re-render when preferences change
+  const tableKey = `${preferences.currency}-${preferences.volumeUnit}-${preferences.weightUnit}`;
+
   return (
     <EnhancedDataTable
+      key={tableKey}
       columns={memoizedColumns}
       data={businessCases}
       searchKey="formulation_name"

@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { formatCurrencyCompact } from "@/lib/utils/currency";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { CountryWithStats } from "@/lib/db/countries";
 import type { Database } from "@/lib/supabase/database.types";
 import { FiscalYearSelector } from "@/components/countries/FiscalYearSelector";
@@ -55,6 +55,7 @@ function matchesFiscalYear(bc: BusinessCase, selectedFY: number): boolean {
 export function CountryList({ countries, businessCases }: CountryListProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { formatCurrencyCompact } = useDisplayPreferences();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>("revenue");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");

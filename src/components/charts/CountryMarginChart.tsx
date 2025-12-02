@@ -14,6 +14,7 @@ import {
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
 import { chartTheme, chartColors, getAxisProps, getTooltipProps, getLegendFormatter } from "@/lib/utils/chart-theme";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -27,6 +28,7 @@ export function CountryMarginChart({
   onDrillDown,
 }: CountryMarginChartProps) {
   const router = useRouter();
+  const { currencySymbol } = useDisplayPreferences();
 
   // Group by country and calculate average margin percentage
   const byCountry = businessCases.reduce((acc, bc) => {
@@ -103,7 +105,7 @@ export function CountryMarginChart({
                 if (name === "marginPercent" || name === "Margin %") {
                   return `${value.toFixed(1)}%`;
                 }
-                return `$${value.toFixed(2)}M`;
+                return `${currencySymbol}${value.toFixed(2)}M`;
               }}
               labelFormatter={(label) => `Country: ${label}`}
               {...getTooltipProps()}

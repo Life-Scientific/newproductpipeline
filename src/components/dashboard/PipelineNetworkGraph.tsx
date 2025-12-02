@@ -32,6 +32,7 @@ import { getStatusVariant } from "@/lib/design-system";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import type { Database } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
@@ -302,12 +303,9 @@ export function PipelineNetworkGraph({
   searchTerm,
   statusFilter,
 }: PipelineNetworkGraphProps) {
+  const { formatCurrencyCompact } = useDisplayPreferences();
 
-  const formatCurrency = (val: number) => {
-    if (val >= 1000000) return `€${(val / 1000000).toFixed(1)}M`;
-    if (val >= 1000) return `€${(val / 1000).toFixed(0)}K`;
-    return `€${val}`;
-  };
+  const formatCurrency = (val: number) => formatCurrencyCompact(val);
 
   // Build graph elements
   const { nodes: initialNodes, edges: initialEdges, stats } = useMemo(() => {

@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { PipelineNetworkGraph } from "./PipelineNetworkGraph";
 import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import { type ColumnDef } from "@tanstack/react-table";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
@@ -52,13 +53,6 @@ interface EnrichedFormulation extends Formulation {
   };
 }
 
-// Helper function to format currency
-function formatCurrency(val: number) {
-  if (val >= 1000000) return `€${(val / 1000000).toFixed(1)}M`;
-  if (val >= 1000) return `€${(val / 1000).toFixed(0)}K`;
-  return `€${val.toFixed(0)}`;
-}
-
 export function PipelineTrackerDashboard({
   formulations,
   countries,
@@ -67,6 +61,10 @@ export function PipelineTrackerDashboard({
 }: PipelineTrackerDashboardProps) {
   const [statusFilters, setStatusFilters] = useState<Set<string>>(new Set());
   const [selectedView, setSelectedView] = useState<"table" | "network">("table");
+  const { formatCurrencyCompact } = useDisplayPreferences();
+  
+  // Helper function to format currency using display preferences
+  const formatCurrency = (val: number) => formatCurrencyCompact(val);
 
   // Data processing - enriches formulations with computed statistics
   const { processedData, globalStats } = useMemo(() => {

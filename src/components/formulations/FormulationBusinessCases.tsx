@@ -9,6 +9,7 @@ import { ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 import type { Database } from "@/lib/supabase/database.types";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { cn } from "@/lib/utils";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -43,17 +44,6 @@ function convertToEUR(
   return value;
 }
 
-function formatCurrency(value: number | null | undefined): string {
-  if (!value && value !== 0) return "—";
-  if (value >= 1000000) {
-    return `€${(value / 1000000).toFixed(2)}M`;
-  }
-  if (value >= 1000) {
-    return `€${(value / 1000).toFixed(0)}K`;
-  }
-  return `€${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
 function formatNumber(value: number | null | undefined): string {
   if (!value && value !== 0) return "—";
   return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
@@ -61,6 +51,10 @@ function formatNumber(value: number | null | undefined): string {
 
 export function FormulationBusinessCases({ businessCases, exchangeRates }: FormulationBusinessCasesProps) {
   const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
+  const { formatCurrencyCompact } = useDisplayPreferences();
+
+  // Wrapper for currency formatting
+  const formatCurrency = (value: number | null | undefined): string => formatCurrencyCompact(value);
 
   // Group business cases by country
   const groupedByCountry = useMemo(() => {

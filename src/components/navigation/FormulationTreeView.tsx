@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { Database } from "@/lib/supabase/database.types";
 
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
@@ -95,13 +96,8 @@ export function FormulationTreeView({
     return acc;
   }, {} as Record<string, BusinessCase[]>);
 
-  const formatCurrency = (value: number | null) => {
-    if (!value) return "—";
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(2)}M`;
-    }
-    return `$${(value / 1000).toFixed(0)}K`;
-  };
+  // Use display preferences hook for currency formatting
+  const { formatCurrencyCompact } = useDisplayPreferences();
 
   const totalBusinessCaseGroups = countUniqueBusinessCaseGroups(businessCases);
   const totalRevenue = businessCases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
@@ -129,7 +125,7 @@ export function FormulationTreeView({
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Total Revenue</p>
-              <p className="text-lg font-semibold">{formatCurrency(totalRevenue)}</p>
+              <p className="text-lg font-semibold">{formatCurrencyCompact(totalRevenue)}</p>
             </div>
           </div>
         </CardContent>
@@ -239,7 +235,7 @@ export function FormulationTreeView({
                                     </div>
                                   </div>
                                   <div className="text-right flex-shrink-0">
-                                    <div className="text-xs sm:text-sm font-semibold">{formatCurrency(bc.total_revenue)}</div>
+                                    <div className="text-xs sm:text-sm font-semibold">{formatCurrencyCompact(bc.total_revenue)}</div>
                                     <div className="text-xs text-muted-foreground">
                                       {bc.margin_percent?.toFixed(1)}%
                                     </div>
@@ -364,7 +360,7 @@ export function FormulationTreeView({
                                                     </div>
                                                   </div>
                                                   <div className="text-right flex-shrink-0">
-                                                    <div className="text-xs font-semibold">{formatCurrency(bc.total_revenue)}</div>
+                                                    <div className="text-xs font-semibold">{formatCurrencyCompact(bc.total_revenue)}</div>
                                                     <div className="text-xs text-muted-foreground">
                                                       {bc.margin_percent?.toFixed(1)}%
                                                     </div>
