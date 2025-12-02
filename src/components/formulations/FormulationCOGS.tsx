@@ -15,7 +15,7 @@ interface FormulationCOGSProps {
 export function FormulationCOGS({ cogs }: FormulationCOGSProps) {
   const { formatCurrency } = useDisplayPreferences();
   const formatCurrencyValue = (value: number | null | undefined): string => 
-    formatCurrency(value, undefined, { compact: false, decimals: 2 });
+    formatCurrency(value, { compact: false, decimals: 2 });
   if (cogs.length === 0) {
     return (
       <Card>
