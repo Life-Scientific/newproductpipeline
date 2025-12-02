@@ -29,6 +29,9 @@ export function BusinessCaseVersionHistory({
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // All hooks must be called before any early returns (Rules of Hooks)
+  const { formatCurrencyCompact } = useDisplayPreferences();
 
   useEffect(() => {
     if (useGroupId) {
@@ -72,8 +75,6 @@ export function BusinessCaseVersionHistory({
       </Card>
     );
   }
-
-  const { formatCurrencyCompact } = useDisplayPreferences();
 
   if (versions.length <= 1) {
     // Only one version or no versions - don't show history

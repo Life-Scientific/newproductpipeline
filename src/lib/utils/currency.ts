@@ -71,3 +71,61 @@ export function formatCurrencyCompact(value: number | null | undefined): string 
   });
   return `€${formatted}`;
 }
+
+/**
+ * Format a number as an integer with comma separators (for Volume inputs)
+ * @param value Number to format
+ * @returns Formatted string with commas (e.g., "20,000") or empty string if invalid
+ */
+export function formatVolumeInput(value: number | null | undefined): string {
+  if (value === null || value === undefined || isNaN(value) || value === 0) {
+    return "";
+  }
+  return Math.round(value).toLocaleString("en-US", {
+    maximumFractionDigits: 0,
+  });
+}
+
+/**
+ * Format a number as currency with 2 decimal places (for NSP/COGS inputs)
+ * @param value Number to format
+ * @returns Formatted string with 2 decimals (e.g., "9.88") or empty string if invalid
+ */
+export function formatCurrencyInput(value: number | null | undefined): string {
+  if (value === null || value === undefined || isNaN(value) || value === 0) {
+    return "";
+  }
+  return value.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+/**
+ * Parse a formatted string back to a number (handles commas)
+ * @param value Formatted string (e.g., "20,000" or "9.88")
+ * @returns Parsed number or 0 if invalid
+ */
+export function parseFormattedNumber(value: string): number {
+  if (!value || value.trim() === "") {
+    return 0;
+  }
+  // Remove commas and any non-numeric characters except decimal point and minus
+  const cleaned = value.replace(/[^0-9.\-]/g, "");
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+/**
+ * Check if a string is a valid number input (allows digits, commas, decimal, minus)
+ * @param value String to validate
+ * @param allowDecimals Whether to allow decimal points
+ * @returns True if valid input
+ */
+export function isValidNumberInput(value: string, allowDecimals: boolean = true): boolean {
+  if (!value || value.trim() === "") return true;
+  const pattern = allowDecimals 
+    ? /^-?[\d,]*\.?\d*$/
+    : /^-?[\d,]*$/;
+  return pattern.test(value);
+}

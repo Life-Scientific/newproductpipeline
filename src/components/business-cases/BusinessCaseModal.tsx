@@ -55,6 +55,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import type { BusinessCaseYearData } from "@/lib/db/types";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { BusinessCaseVersionHistory } from "./BusinessCaseVersionHistory";
+import { formatVolumeInput, formatCurrencyInput, parseFormattedNumber } from "@/lib/utils/currency";
 
 type Formulation = Database["public"]["Tables"]["formulations"]["Row"] | Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
@@ -1114,12 +1115,12 @@ export function BusinessCaseModal({
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <Input
-                                type="number"
-                                step="1"
-                                value={displayValue > 0 ? Math.round(displayValue) : ""}
+                                type="text"
+                                inputMode="numeric"
+                                value={formatVolumeInput(displayValue)}
                                 onChange={(e) => {
                                   // Convert from display unit back to L/KG
-                                  const inputVal = parseFloat(e.target.value) || 0;
+                                  const inputVal = parseFormattedNumber(e.target.value);
                                   const baseVal = convertQuantityToBase(inputVal);
                                   handleCellChange(col.yearOffset, "volume", String(Math.round(baseVal)));
                                 }}
@@ -1134,11 +1135,11 @@ export function BusinessCaseModal({
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <Input
-                                type="number"
-                                step="1"
-                                value={displayValue > 0 ? Math.round(displayValue) : ""}
+                                type="text"
+                                inputMode="numeric"
+                                value={formatVolumeInput(displayValue)}
                                 onChange={(e) => {
-                                  const inputVal = parseFloat(e.target.value) || 0;
+                                  const inputVal = parseFormattedNumber(e.target.value);
                                   const baseVal = convertQuantityToBase(inputVal);
                                   setYearDataRecord({
                                     ...yearDataRecord,
@@ -1188,18 +1189,23 @@ export function BusinessCaseModal({
                           const displayValue = convertPerUnitForDisplay(parseFloat(String(year?.nsp || 0)) || 0);
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
-                              <Input
-                                type="number"
-                                step="0.01"
-                                value={displayValue.toFixed(2)}
-                                onChange={(e) => {
-                                  // Convert from display currency/unit back to EUR/L
-                                  const inputVal = parseFloat(e.target.value) || 0;
-                                  const baseVal = convertPerUnitToBase(inputVal);
-                                  handleCellChange(col.yearOffset, "nsp", String(baseVal));
-                                }}
-                                className={cn("h-8 text-sm text-right tabular-nums", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
-                              />
+                              <div className="relative">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                  {currencySymbol}
+                                </span>
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={formatCurrencyInput(displayValue)}
+                                  onChange={(e) => {
+                                    // Convert from display currency/unit back to EUR/L
+                                    const inputVal = parseFormattedNumber(e.target.value);
+                                    const baseVal = convertPerUnitToBase(inputVal);
+                                    handleCellChange(col.yearOffset, "nsp", String(baseVal));
+                                  }}
+                                  className={cn("h-8 text-sm text-right tabular-nums pl-6", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                />
+                              </div>
                             </TableCell>
                           );
                         } else {
@@ -1208,26 +1214,31 @@ export function BusinessCaseModal({
                           const displayValue = convertPerUnitForDisplay(rawValue);
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
-                              <Input
-                                type="number"
-                                step="0.01"
-                                value={rawValue > 0 ? displayValue.toFixed(2) : ""}
-                                onChange={(e) => {
-                                  const inputVal = parseFloat(e.target.value) || 0;
-                                  const baseVal = convertPerUnitToBase(inputVal);
-                                  setYearDataRecord({
-                                    ...yearDataRecord,
-                                    [col.yearOffset]: {
-                                      ...yearDataRecord[col.yearOffset],
-                                      volume: yearDataRecord[col.yearOffset]?.volume || "",
-                                      nsp: String(baseVal),
-                                      cogs: yearDataRecord[col.yearOffset]?.cogs || "",
-                                    },
-                                  });
-                                }}
-                                className="h-8 text-sm text-right tabular-nums"
-                                placeholder="0"
-                              />
+                              <div className="relative">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                  {currencySymbol}
+                                </span>
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={formatCurrencyInput(displayValue)}
+                                  onChange={(e) => {
+                                    const inputVal = parseFormattedNumber(e.target.value);
+                                    const baseVal = convertPerUnitToBase(inputVal);
+                                    setYearDataRecord({
+                                      ...yearDataRecord,
+                                      [col.yearOffset]: {
+                                        ...yearDataRecord[col.yearOffset],
+                                        volume: yearDataRecord[col.yearOffset]?.volume || "",
+                                        nsp: String(baseVal),
+                                        cogs: yearDataRecord[col.yearOffset]?.cogs || "",
+                                      },
+                                    });
+                                  }}
+                                  className="h-8 text-sm text-right tabular-nums pl-6"
+                                  placeholder="0"
+                                />
+                              </div>
                             </TableCell>
                           );
                         }
@@ -1269,18 +1280,23 @@ export function BusinessCaseModal({
                           const displayValue = rawVal > 0 ? convertPerUnitForDisplay(rawVal) : 0;
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
-                              <Input
-                                type="number"
-                                step="0.01"
-                                value={displayValue > 0 ? displayValue.toFixed(2) : ""}
-                                onChange={(e) => {
-                                  // Convert from display currency/unit back to EUR/L
-                                  const inputVal = parseFloat(e.target.value) || 0;
-                                  const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
-                                  handleCellChange(col.yearOffset, "cogs_per_unit", inputVal > 0 ? String(baseVal) : "");
-                                }}
-                                className={cn("h-8 text-sm text-right tabular-nums", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
-                              />
+                              <div className="relative">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                  {currencySymbol}
+                                </span>
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={formatCurrencyInput(displayValue)}
+                                  onChange={(e) => {
+                                    // Convert from display currency/unit back to EUR/L
+                                    const inputVal = parseFormattedNumber(e.target.value);
+                                    const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
+                                    handleCellChange(col.yearOffset, "cogs_per_unit", inputVal > 0 ? String(baseVal) : "");
+                                  }}
+                                  className={cn("h-8 text-sm text-right tabular-nums pl-6", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                />
+                              </div>
                             </TableCell>
                           );
                         } else {
@@ -1289,26 +1305,31 @@ export function BusinessCaseModal({
                           const displayValue = rawValue > 0 ? convertPerUnitForDisplay(rawValue) : 0;
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
-                              <Input
-                                type="number"
-                                step="0.01"
-                                value={displayValue > 0 ? displayValue.toFixed(2) : ""}
-                                onChange={(e) => {
-                                  const inputVal = parseFloat(e.target.value) || 0;
-                                  const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
-                                  setYearDataRecord({
-                                    ...yearDataRecord,
-                                    [col.yearOffset]: {
-                                      ...yearDataRecord[col.yearOffset],
-                                      volume: yearDataRecord[col.yearOffset]?.volume || "",
-                                      nsp: yearDataRecord[col.yearOffset]?.nsp || "",
-                                      cogs: inputVal > 0 ? String(baseVal) : "",
-                                    },
-                                  });
-                                }}
-                                className="h-8 text-sm text-right tabular-nums"
-                                placeholder="Auto"
-                              />
+                              <div className="relative">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                  {currencySymbol}
+                                </span>
+                                <Input
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={formatCurrencyInput(displayValue)}
+                                  onChange={(e) => {
+                                    const inputVal = parseFormattedNumber(e.target.value);
+                                    const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
+                                    setYearDataRecord({
+                                      ...yearDataRecord,
+                                      [col.yearOffset]: {
+                                        ...yearDataRecord[col.yearOffset],
+                                        volume: yearDataRecord[col.yearOffset]?.volume || "",
+                                        nsp: yearDataRecord[col.yearOffset]?.nsp || "",
+                                        cogs: inputVal > 0 ? String(baseVal) : "",
+                                      },
+                                    });
+                                  }}
+                                  className="h-8 text-sm text-right tabular-nums pl-6"
+                                  placeholder="Auto"
+                                />
+                              </div>
                             </TableCell>
                           );
                         }
@@ -1399,11 +1420,11 @@ export function BusinessCaseModal({
                           <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Volume ({displayUnit})</Label>
                             <Input
-                              type="number"
-                              step="1"
-                              value={displayVolume > 0 ? Math.round(displayVolume) : ""}
+                              type="text"
+                              inputMode="numeric"
+                              value={formatVolumeInput(displayVolume)}
                               onChange={(e) => {
-                                const inputVal = parseFloat(e.target.value) || 0;
+                                const inputVal = parseFormattedNumber(e.target.value);
                                 const baseVal = convertQuantityToBase(inputVal);
                                 if (isEditMode) {
                                   handleCellChange(col.yearOffset, "volume", String(Math.round(baseVal)));
@@ -1423,53 +1444,63 @@ export function BusinessCaseModal({
                           </div>
                           <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">NSP ({preferences.currency}/{displayUnit})</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={displayNsp > 0 ? displayNsp.toFixed(2) : ""}
-                              onChange={(e) => {
-                                const inputVal = parseFloat(e.target.value) || 0;
-                                const baseVal = convertPerUnitToBase(inputVal);
-                                if (isEditMode) {
-                                  handleCellChange(col.yearOffset, "nsp", String(baseVal));
-                                } else {
-                                  setYearDataRecord({
-                                    ...yearDataRecord,
-                                    [col.yearOffset]: {
-                                      volume: yearDataRecord[col.yearOffset]?.volume || "",
-                                      nsp: String(baseVal),
-                                      cogs: yearDataRecord[col.yearOffset]?.cogs || "",
-                                    },
-                                  });
-                                }
-                              }}
-                              className={cn("h-8 text-sm text-right tabular-nums", nspChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
-                            />
+                            <div className="relative">
+                              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                {currencySymbol}
+                              </span>
+                              <Input
+                                type="text"
+                                inputMode="decimal"
+                                value={formatCurrencyInput(displayNsp)}
+                                onChange={(e) => {
+                                  const inputVal = parseFormattedNumber(e.target.value);
+                                  const baseVal = convertPerUnitToBase(inputVal);
+                                  if (isEditMode) {
+                                    handleCellChange(col.yearOffset, "nsp", String(baseVal));
+                                  } else {
+                                    setYearDataRecord({
+                                      ...yearDataRecord,
+                                      [col.yearOffset]: {
+                                        volume: yearDataRecord[col.yearOffset]?.volume || "",
+                                        nsp: String(baseVal),
+                                        cogs: yearDataRecord[col.yearOffset]?.cogs || "",
+                                      },
+                                    });
+                                  }
+                                }}
+                                className={cn("h-8 text-sm text-right tabular-nums pl-6", nspChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                              />
+                            </div>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">COGS ({preferences.currency}/{displayUnit})</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={displayCogs > 0 ? displayCogs.toFixed(2) : ""}
-                              onChange={(e) => {
-                                const inputVal = parseFloat(e.target.value) || 0;
-                                const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
-                                if (isEditMode) {
-                                  handleCellChange(col.yearOffset, "cogs_per_unit", inputVal > 0 ? String(baseVal) : "");
-                                } else {
-                                  setYearDataRecord({
-                                    ...yearDataRecord,
-                                    [col.yearOffset]: {
-                                      volume: yearDataRecord[col.yearOffset]?.volume || "",
-                                      nsp: yearDataRecord[col.yearOffset]?.nsp || "",
-                                      cogs: e.target.value,
-                                    },
-                                  });
-                                }
-                              }}
-                              className={cn("h-8 text-sm text-right tabular-nums", cogsChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
-                            />
+                            <div className="relative">
+                              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                {currencySymbol}
+                              </span>
+                              <Input
+                                type="text"
+                                inputMode="decimal"
+                                value={formatCurrencyInput(displayCogs)}
+                                onChange={(e) => {
+                                  const inputVal = parseFormattedNumber(e.target.value);
+                                  const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
+                                  if (isEditMode) {
+                                    handleCellChange(col.yearOffset, "cogs_per_unit", inputVal > 0 ? String(baseVal) : "");
+                                  } else {
+                                    setYearDataRecord({
+                                      ...yearDataRecord,
+                                      [col.yearOffset]: {
+                                        volume: yearDataRecord[col.yearOffset]?.volume || "",
+                                        nsp: yearDataRecord[col.yearOffset]?.nsp || "",
+                                        cogs: inputVal > 0 ? String(baseVal) : "",
+                                      },
+                                    });
+                                  }
+                                }}
+                                className={cn("h-8 text-sm text-right tabular-nums pl-6", cogsChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                              />
+                            </div>
                           </div>
                           <div className="pt-2 border-t space-y-1.5 text-xs">
                             <div className="flex justify-between">
