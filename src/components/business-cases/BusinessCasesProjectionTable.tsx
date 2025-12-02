@@ -128,8 +128,7 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
 
   // Helper function to format currency using display preferences
   const formatCurrencyValue = (value: number | null | undefined, countryId?: string): string => {
-    const rate = countryId ? exchangeRates.get(countryId) : undefined;
-    return formatCurrency(value, rate, { compact: true, decimals: 1 });
+    return formatCurrency(value, { compact: true, decimals: 1 });
   };
 
   // Helper function to format percentage
