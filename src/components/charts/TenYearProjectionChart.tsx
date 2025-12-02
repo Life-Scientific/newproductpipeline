@@ -28,6 +28,7 @@ import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import type { Database } from "@/lib/supabase/database.types";
 import { useTheme } from "@/contexts/ThemeContext";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 // MECE (Mutually Exclusive, Collectively Exhaustive) status constants
 const ALL_COUNTRY_STATUSES = [
@@ -238,6 +239,7 @@ export function TenYearProjectionChart({
 }: TenYearProjectionChartProps) {
   const router = useRouter();
   const { currentTheme } = useTheme();
+  const { currencySymbol, preferences, formatCurrencyCompact, convertCurrency } = useDisplayPreferences();
   // Initialize with default filter states
   const [filters, setFilters] = useState<FilterType>({
     countries: [],
@@ -678,16 +680,17 @@ export function TenYearProjectionChart({
       }
     });
 
-    // Convert to millions for display
+    // Convert to millions for display and apply user's currency preference
     return years.map((year) => ({
       ...year,
       revenue: year.revenue / 1000000,
       margin: year.margin / 1000000,
-      revenueEUR: year.revenueEUR / 1000000,
-      marginEUR: year.marginEUR / 1000000,
+      // Convert EUR values to user's preferred currency for display
+      revenueEUR: convertCurrency(year.revenueEUR) / 1000000,
+      marginEUR: convertCurrency(year.marginEUR) / 1000000,
       cogs: year.cogs / 1000000,
     }));
-  }, [filteredBusinessCases, exchangeRates, effectiveStartYear, effectiveEndYear]);
+  }, [filteredBusinessCases, exchangeRates, effectiveStartYear, effectiveEndYear, convertCurrency]);
 
   const handleRemoveFilter = (type: keyof FilterType, value: string) => {
     setFilters((prev) => {
@@ -1151,7 +1154,7 @@ export function TenYearProjectionChart({
                 />
                 <YAxis 
                   label={{ 
-                    value: "Amount (M€)", 
+                    value: `Amount (M${currencySymbol})`, 
                     angle: -90, 
                     position: "insideLeft",
                     style: { fill: axisColor, fontSize: 12, fontWeight: 500 }
@@ -1181,7 +1184,7 @@ export function TenYearProjectionChart({
                           return false;
                         }
                         // Only include entries with the expected names
-                        if (entry.name !== 'Revenue (EUR)' && entry.name !== 'Margin (EUR)') {
+                        if (!entry.name?.includes('Revenue') && !entry.name?.includes('Margin')) {
                           return false;
                         }
                         seen.add(key);
@@ -1201,7 +1204,7 @@ export function TenYearProjectionChart({
                                   style={{ backgroundColor: color }}
                                 />
                                 <span className="text-muted-foreground">{name}:</span>
-                                <span className="font-medium">€{Number(entry.value).toFixed(2)}M</span>
+                                <span className="font-medium">{currencySymbol}{Number(entry.value).toFixed(2)}M</span>
                               </div>
                             );
                           })}
@@ -1227,7 +1230,7 @@ export function TenYearProjectionChart({
                   stroke={revenueColor}
                   strokeWidth={2.5}
                   fill={`url(#colorRevenue-${chartId})`}
-                  name="Revenue (EUR)"
+                  name={`Revenue (${preferences.currency})`}
                   dot={{ r: 3, fill: revenueColor, strokeWidth: 2, stroke: bgColor }}
                   activeDot={{ r: 5, fill: revenueColor, strokeWidth: 2, stroke: bgColor }}
                   isAnimationActive={true}
@@ -1241,7 +1244,7 @@ export function TenYearProjectionChart({
                   stroke={marginColor}
                   strokeWidth={2.5}
                   fill={`url(#colorMargin-${chartId})`}
-                  name="Margin (EUR)"
+                  name={`Margin (${preferences.currency})`}
                   dot={{ r: 3, fill: marginColor, strokeWidth: 2, stroke: bgColor }}
                   activeDot={{ r: 5, fill: marginColor, strokeWidth: 2, stroke: bgColor }}
                   isAnimationActive={true}
@@ -1281,7 +1284,7 @@ export function TenYearProjectionChart({
                 />
                 <YAxis 
                   label={{ 
-                    value: "Amount (M€)", 
+                    value: `Amount (M${currencySymbol})`, 
                     angle: -90, 
                     position: "insideLeft",
                     style: { fill: axisColor, fontSize: 12, fontWeight: 500 }
@@ -1310,7 +1313,7 @@ export function TenYearProjectionChart({
                           return false;
                         }
                         // Only include entries with the expected names
-                        if (entry.name !== 'Revenue (EUR)' && entry.name !== 'Margin (EUR)') {
+                        if (!entry.name?.includes('Revenue') && !entry.name?.includes('Margin')) {
                           return false;
                         }
                         seen.add(key);
@@ -1330,7 +1333,7 @@ export function TenYearProjectionChart({
                                   style={{ backgroundColor: color }}
                                 />
                                 <span className="text-muted-foreground">{name}:</span>
-                                <span className="font-medium">€{Number(entry.value).toFixed(2)}M</span>
+                                <span className="font-medium">{currencySymbol}{Number(entry.value).toFixed(2)}M</span>
                               </div>
                             );
                           })}
@@ -1351,7 +1354,7 @@ export function TenYearProjectionChart({
                 <Bar 
                   dataKey="revenueEUR" 
                   fill={revenueColor} 
-                  name="Revenue (EUR)" 
+                  name={`Revenue (${preferences.currency})`} 
                   radius={[4, 4, 0, 0]}
                   isAnimationActive={true}
                   animationDuration={800}
@@ -1360,7 +1363,7 @@ export function TenYearProjectionChart({
                 <Bar 
                   dataKey="marginEUR" 
                   fill={marginColor} 
-                  name="Margin (EUR)" 
+                  name={`Margin (${preferences.currency})`} 
                   radius={[4, 4, 0, 0]}
                   isAnimationActive={true}
                   animationDuration={800}
@@ -1413,47 +1416,31 @@ export function TenYearProjectionChart({
                   </thead>
                   <tbody>
                     <tr className="border-b hover:bg-muted/50 transition-colors">
-                      <td className="py-3 px-3 text-sm font-medium sticky left-0 bg-background z-10 whitespace-nowrap">Revenue (EUR)</td>
+                      <td className="py-3 px-3 text-sm font-medium sticky left-0 bg-background z-10 whitespace-nowrap">Revenue ({preferences.currency})</td>
                       {chartData.map((year) => (
                         <td 
                           key={`revenue-${year.fiscalYear}`}
                           className="text-center py-3 px-3 text-sm tabular-nums whitespace-nowrap"
                         >
-                          €{(year.revenueEUR * 1000000).toLocaleString(undefined, {
-                            maximumFractionDigits: 1,
-                            notation: "compact",
-                            compactDisplay: "short",
-                          })}
+                          {currencySymbol}{(year.revenueEUR).toFixed(2)}M
                         </td>
                       ))}
                       <td className="text-center py-3 px-3 text-sm tabular-nums font-semibold bg-muted/50 whitespace-nowrap">
-                        €{(totalRevenue * 1000000).toLocaleString(undefined, {
-                          maximumFractionDigits: 1,
-                          notation: "compact",
-                          compactDisplay: "short",
-                        })}
+                        {currencySymbol}{(totalRevenue).toFixed(2)}M
                       </td>
                     </tr>
                     <tr className="border-b hover:bg-muted/50 transition-colors">
-                      <td className="py-3 px-3 text-sm font-medium sticky left-0 bg-background z-10 whitespace-nowrap">Margin (EUR)</td>
+                      <td className="py-3 px-3 text-sm font-medium sticky left-0 bg-background z-10 whitespace-nowrap">Margin ({preferences.currency})</td>
                       {chartData.map((year) => (
                         <td 
                           key={`margin-${year.fiscalYear}`}
                           className="text-center py-3 px-3 text-sm tabular-nums whitespace-nowrap"
                         >
-                          €{(year.marginEUR * 1000000).toLocaleString(undefined, {
-                            maximumFractionDigits: 1,
-                            notation: "compact",
-                            compactDisplay: "short",
-                          })}
+                          {currencySymbol}{(year.marginEUR).toFixed(2)}M
                         </td>
                       ))}
                       <td className="text-center py-3 px-3 text-sm tabular-nums font-semibold bg-muted/50 whitespace-nowrap">
-                        €{(totalMargin * 1000000).toLocaleString(undefined, {
-                          maximumFractionDigits: 1,
-                          notation: "compact",
-                          compactDisplay: "short",
-                        })}
+                        {currencySymbol}{(totalMargin).toFixed(2)}M
                       </td>
                     </tr>
                     <tr className="border-b hover:bg-muted/50 transition-colors">

@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Star, AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
 import type { Database } from "@/lib/supabase/database.types";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 
@@ -27,22 +28,14 @@ interface PrioritizationRow {
   priority: "high" | "medium" | "low";
 }
 
-function formatCurrency(value: number | null | undefined): string {
-  if (!value || value === 0) return "—";
-  if (value >= 1000000) {
-    return `€${(value / 1000000).toFixed(2)}M`;
-  }
-  if (value >= 1000) {
-    return `€${(value / 1000).toFixed(0)}K`;
-  }
-  return `€${value.toFixed(0)}`;
-}
-
 export function PortfolioPrioritization({
   formulations,
   businessCases,
   protectionStatus,
 }: PortfolioPrioritizationProps) {
+  const { formatCurrencyCompact } = useDisplayPreferences();
+  const formatCurrency = formatCurrencyCompact;
+
   // Filter to "Not Yet Considered" products
   const notYetConsidered = formulations.filter((f) => f.status === "Not Yet Considered");
 

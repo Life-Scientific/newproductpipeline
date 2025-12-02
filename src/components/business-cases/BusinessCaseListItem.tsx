@@ -13,6 +13,7 @@ import { MoreHorizontal, ExternalLink, AlertTriangle, Beaker, Globe, FileText, C
 import type { EnrichedBusinessCase } from "@/lib/db/queries";
 import { cn } from "@/lib/utils";
 import { getStatusVariant } from "@/lib/design-system";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 interface BusinessCaseListItemProps {
   businessCase: EnrichedBusinessCase;
@@ -21,6 +22,7 @@ interface BusinessCaseListItemProps {
 
 export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCaseListItemProps) {
   const router = useRouter();
+  const { formatCurrencyCompact } = useDisplayPreferences();
 
   const handleNestedClick = (e: React.MouseEvent, href: string) => {
     e.stopPropagation();
@@ -132,32 +134,7 @@ export function BusinessCaseListItem({ businessCase, exchangeRates }: BusinessCa
       <div className="flex items-center gap-2 flex-shrink-0">
         <div className="text-right space-y-0.5">
           <p className="font-semibold text-sm">
-            {(() => {
-              if (!businessCase.total_revenue) return "—";
-              
-              // Convert to EUR if needed
-              let eurValue = businessCase.total_revenue;
-              
-              // Check if already in EUR (currency_code should be available from BusinessCase view)
-              const currencyCode = "currency_code" in businessCase ? (businessCase as any).currency_code : "";
-              if (currencyCode && currencyCode.toUpperCase() !== "EUR") {
-                // Convert from local currency to EUR
-                if (exchangeRates && businessCase.country_id) {
-                  const rate = exchangeRates.get(businessCase.country_id);
-                  if (rate && rate > 0) {
-                    eurValue = businessCase.total_revenue / rate;
-                  }
-                }
-              }
-              
-              if (eurValue >= 1000000) {
-                return `€${(eurValue / 1000000).toFixed(1)}M`;
-              }
-              if (eurValue >= 1000) {
-                return `€${(eurValue / 1000).toFixed(0)}K`;
-              }
-              return `€${eurValue.toFixed(0)}`;
-            })()}
+            {formatCurrencyCompact(businessCase.total_revenue)}
           </p>
           <div className="flex items-center justify-end gap-1">
             {(businessCase.total_margin || 0) < 0 && (

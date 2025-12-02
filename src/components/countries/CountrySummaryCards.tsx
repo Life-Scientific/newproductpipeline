@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { formatCurrencyCompact } from "@/lib/utils/currency";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import { Package, FileText, DollarSign, TrendingUp } from "lucide-react";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -42,6 +42,7 @@ function matchesFiscalYear(bc: BusinessCase, selectedFY: number): boolean {
 
 export function CountrySummaryCards({ stats, businessCases }: CountrySummaryCardsProps) {
   const searchParams = useSearchParams();
+  const { formatCurrencyCompact } = useDisplayPreferences();
   
   // Get selected FY from URL params, default to FY30
   const selectedFY = parseInt(searchParams.get("fy") || "30", 10);

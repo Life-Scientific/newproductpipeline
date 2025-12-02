@@ -10,6 +10,7 @@ import { formatDistanceToNow, format } from "date-fns";
 import { getBusinessCaseVersionHistoryAction } from "@/lib/actions/business-cases";
 import type { BusinessCaseVersionHistoryEntry } from "@/lib/db/queries";
 import { hasChanges } from "@/lib/utils/business-case-diff";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 interface BusinessCaseVersionHistoryProps {
   useGroupId: string;
@@ -72,18 +73,12 @@ export function BusinessCaseVersionHistory({
     );
   }
 
+  const { formatCurrencyCompact } = useDisplayPreferences();
+
   if (versions.length <= 1) {
     // Only one version or no versions - don't show history
     return null;
   }
-
-  const formatCurrency = (value: number | null) => {
-    if (value === null) return "—";
-    if (value >= 1000000) {
-      return `€${(value / 1000000).toFixed(1)}M`;
-    }
-    return `€${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-  };
 
   const displayVersions = expanded ? versions : versions.slice(0, 3);
 
@@ -203,7 +198,7 @@ export function BusinessCaseVersionHistory({
                 {/* Year 1 summary */}
                 <div className="text-right flex-shrink-0">
                   <div className="text-sm font-medium">
-                    {formatCurrency(version.year_1_summary.total_revenue)}
+                    {formatCurrencyCompact(version.year_1_summary.total_revenue)}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     FY1 Revenue

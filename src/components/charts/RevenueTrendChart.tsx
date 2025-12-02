@@ -14,6 +14,7 @@ import {
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
 import { chartTheme, chartColors, getAxisProps, getTooltipProps, getLegendFormatter } from "@/lib/utils/chart-theme";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -27,6 +28,7 @@ export function RevenueTrendChart({
   onDrillDown,
 }: RevenueTrendChartProps) {
   const router = useRouter();
+  const { currencySymbol } = useDisplayPreferences();
 
   // Group by fiscal year
   const byFiscalYear = businessCases.reduce((acc, bc) => {
@@ -73,10 +75,10 @@ export function RevenueTrendChart({
               {...getAxisProps()}
             />
             <YAxis 
-              {...getAxisProps("Amount (M$)", true)}
+              {...getAxisProps(`Amount (M${currencySymbol})`, true)}
             />
             <Tooltip
-              formatter={(value: number) => `$${value.toFixed(2)}M`}
+              formatter={(value: number) => `${currencySymbol}${value.toFixed(2)}M`}
               labelFormatter={(label) => `Fiscal Year: ${label}`}
               {...getTooltipProps()}
             />

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import type { Database } from "@/lib/supabase/database.types";
 import { getStatusVariant } from "@/lib/design-system";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
@@ -30,6 +31,7 @@ export function PipelineTrackerTreeView({
   useGroups,
   businessCases,
 }: PipelineTrackerTreeViewProps) {
+  const { formatCurrencyCompact } = useDisplayPreferences();
   const [expandedFormulations, setExpandedFormulations] = useState<Set<string>>(new Set());
   const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
   const [expandedUseGroups, setExpandedUseGroups] = useState<Set<string>>(new Set());
@@ -109,13 +111,8 @@ export function PipelineTrackerTreeView({
     return acc;
   }, {} as Record<string, BusinessCase[]>);
 
-  const formatCurrency = (value: number | null) => {
-    if (!value) return "—";
-    if (value >= 1000000) {
-      return `€${(value / 1000000).toFixed(2)}M`;
-    }
-    return `€${(value / 1000).toFixed(0)}K`;
-  };
+  // Use hook's formatCurrency
+  const formatCurrency = formatCurrencyCompact;
 
   // Filter formulations based on search
   const filteredFormulations = formulations.filter(f => {

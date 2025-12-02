@@ -11,6 +11,7 @@ import { BusinessCaseModal } from "./BusinessCaseModal";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 interface BusinessCasesProjectionTableProps {
   businessCases: BusinessCaseGroupData[];
@@ -27,6 +28,10 @@ const DEFAULT_YEAR_RANGE = 10;
 export function BusinessCasesProjectionTable({ businessCases, exchangeRates, canEdit = false }: BusinessCasesProjectionTableProps) {
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(DEFAULT_PAGE_SIZE);
+  const { 
+    formatCurrency, formatCurrencyCompact, currencySymbol, volumeUnit, weightUnit, preferences, 
+    convertVolume, convertWeight, getDisplayUnit, convertPerUnit, formatPerUnit, isWetProduct, isDryProduct 
+  } = useDisplayPreferences();
   
   // Year range selection state
   const [startYear, setStartYear] = useState<number>(CURRENT_FISCAL_YEAR);
@@ -121,13 +126,10 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
     return value;
   };
 
-  // Helper function to format currency in EUR
-  const formatCurrencyEUR = (value: number | null | undefined): string => {
-    if (value === null || value === undefined) return "—";
-    if (value >= 1000000) {
-      return `€${(value / 1000000).toFixed(1)}M`;
-    }
-    return `€${formatNumber(value, 0)}`;
+  // Helper function to format currency using display preferences
+  const formatCurrencyValue = (value: number | null | undefined, countryId?: string): string => {
+    const rate = countryId ? exchangeRates.get(countryId) : undefined;
+    return formatCurrency(value, rate, { compact: true, decimals: 1 });
   };
 
   // Helper function to format percentage
@@ -273,48 +275,64 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
               const isNewFormulation = bcIndex === 0 || displayedBusinessCases[bcIndex - 1].formulation_id !== bc.formulation_id;
               const rowGroupClass = isNewFormulation ? "border-t-2 border-border" : "";
 
+              // Determine product type and display unit
+              const productIsWet = isWetProduct(uom);
+              const productIsDry = isDryProduct(uom);
+              const displayUnit = getDisplayUnit(uom);
+
               const metricRows = [
                 {
-                  label: `Volume (${uom})`,
+                  // Show Volume for wet products, Weight for dry products
+                  label: productIsWet ? `Volume (${volumeUnit})` : (productIsDry ? `Weight (${weightUnit})` : `Quantity (${uom})`),
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    return formatNumber(bc.years_data[fyStr]?.volume);
+                    const rawValue = bc.years_data[fyStr]?.volume;
+                    if (!rawValue) return "—";
+                    // Convert based on product type
+                    const converted = productIsWet ? convertVolume(rawValue) : (productIsDry ? convertWeight(rawValue) : rawValue);
+                    return converted.toLocaleString(undefined, { maximumFractionDigits: 0 });
                   },
                 },
                 {
-                  label: `NSP (EUR/${uom})`,
+                  label: `NSP (${preferences.currency}/${displayUnit})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.nsp;
                     const eurValue = convertToEUR(localValue, bc.country_id, bc.currency_code);
-                    return formatCurrencyEUR(eurValue);
+                    if (eurValue === null) return "—";
+                    // Use formatPerUnit for proper per-unit conversion (currency + unit)
+                    return formatPerUnit(eurValue, uom, { decimals: 2 });
                   },
                 },
                 {
-                  label: `COGS (EUR/${uom})`,
+                  label: `COGS (${preferences.currency}/${displayUnit})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.cogs_per_unit;
                     const eurValue = convertToEUR(localValue, bc.country_id, bc.currency_code);
-                    return formatCurrencyEUR(eurValue);
+                    if (eurValue === null) return "—";
+                    // Use formatPerUnit for proper per-unit conversion (currency + unit)
+                    return formatPerUnit(eurValue, uom, { decimals: 2 });
                   },
                 },
                 {
-                  label: `Revenue (EUR)`,
+                  label: `Revenue (${preferences.currency})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.total_revenue;
                     const eurValue = convertToEUR(localValue, bc.country_id, bc.currency_code);
-                    return formatCurrencyEUR(eurValue);
+                    // Total revenue only needs currency conversion, not unit conversion
+                    return formatCurrencyCompact(eurValue);
                   },
                 },
                 {
-                  label: `Margin (EUR)`,
+                  label: `Margin (${preferences.currency})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
                     const localValue = bc.years_data[fyStr]?.total_margin;
                     const eurValue = convertToEUR(localValue, bc.country_id, bc.currency_code);
-                    return formatCurrencyEUR(eurValue);
+                    // Total margin only needs currency conversion, not unit conversion
+                    return formatCurrencyCompact(eurValue);
                   },
                 },
                 {

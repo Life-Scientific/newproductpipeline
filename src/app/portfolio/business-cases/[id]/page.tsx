@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { HierarchicalBreadcrumb } from "@/components/navigation/HierarchicalBreadcrumb";
+import { FormattedCurrency } from "@/components/ui/formatted-currency";
 import Link from "next/link";
 import {
   DollarSign,
@@ -26,17 +27,6 @@ const confidenceColors: Record<string, string> = {
   Medium: "secondary",
   Low: "outline",
 };
-
-function formatCurrency(value: number | null | undefined): string {
-  if (!value || value === 0) return "—";
-  if (value >= 1000000) {
-    return `€${(value / 1000000).toFixed(2)}M`;
-  }
-  if (value >= 1000) {
-    return `€${(value / 1000).toFixed(0)}K`;
-  }
-  return `€${value.toFixed(2)}`;
-}
 
 function formatNumber(value: number | null | undefined): string {
   if (!value || value === 0) return "—";
@@ -99,7 +89,7 @@ export default async function BusinessCaseDetailPage({
             </CardHeader>
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">
-                {formatCurrency(businessCase.total_revenue)}
+                <FormattedCurrency value={businessCase.total_revenue} />
               </div>
               <p className="text-xs text-muted-foreground">
                 {businessCase.fiscal_year || "—"}
@@ -116,7 +106,7 @@ export default async function BusinessCaseDetailPage({
             </CardHeader>
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">
-                {formatCurrency(businessCase.total_margin)}
+                <FormattedCurrency value={businessCase.total_margin} />
               </div>
               <p className="text-xs text-muted-foreground">
                 {businessCase.margin_percent !== null &&
@@ -153,7 +143,7 @@ export default async function BusinessCaseDetailPage({
             </CardHeader>
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">
-                {formatCurrency(businessCase.nsp)}
+                <FormattedCurrency value={businessCase.nsp} compact={false} decimals={2} />
               </div>
               <p className="text-xs text-muted-foreground">Net Sales Price</p>
             </CardContent>
@@ -190,7 +180,7 @@ export default async function BusinessCaseDetailPage({
                     COGS per Unit
                   </p>
                   <p className="text-sm">
-                    {formatCurrency(businessCase.cogs_per_unit)}
+                    <FormattedCurrency value={businessCase.cogs_per_unit} compact={false} decimals={2} />
                   </p>
                 </div>
               </div>
@@ -297,12 +287,12 @@ export default async function BusinessCaseDetailPage({
                     <div className="flex justify-between text-sm">
                       <span>NSP:</span>
                       <span className="font-medium">
-                        {formatCurrency(businessCase.nsp)}
+                        <FormattedCurrency value={businessCase.nsp} compact={false} decimals={2} />
                       </span>
                     </div>
                     <div className="flex justify-between text-sm font-semibold pt-2 border-t">
                       <span>Total Revenue:</span>
-                      <span>{formatCurrency(businessCase.total_revenue)}</span>
+                      <span><FormattedCurrency value={businessCase.total_revenue} /></span>
                     </div>
                   </div>
                 </div>
@@ -321,12 +311,12 @@ export default async function BusinessCaseDetailPage({
                     <div className="flex justify-between text-sm">
                       <span>COGS per Unit:</span>
                       <span className="font-medium">
-                        {formatCurrency(businessCase.cogs_per_unit)}
+                        <FormattedCurrency value={businessCase.cogs_per_unit} compact={false} decimals={2} />
                       </span>
                     </div>
                     <div className="flex justify-between text-sm font-semibold pt-2 border-t">
                       <span>Total COGS:</span>
-                      <span>{formatCurrency(businessCase.total_cogs)}</span>
+                      <span><FormattedCurrency value={businessCase.total_cogs} /></span>
                     </div>
                   </div>
                 </div>
@@ -339,19 +329,19 @@ export default async function BusinessCaseDetailPage({
                     <div className="flex justify-between text-sm">
                       <span>Revenue:</span>
                       <span className="font-medium">
-                        {formatCurrency(businessCase.total_revenue)}
+                        <FormattedCurrency value={businessCase.total_revenue} />
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>COGS:</span>
                       <span className="font-medium">
-                        {formatCurrency(businessCase.total_cogs)}
+                        <FormattedCurrency value={businessCase.total_cogs} />
                       </span>
                     </div>
                     <div className="flex justify-between text-sm font-semibold pt-2 border-t">
                       <span>Margin:</span>
                       <span className="text-green-600">
-                        {formatCurrency(businessCase.total_margin)}
+                        <FormattedCurrency value={businessCase.total_margin} />
                       </span>
                     </div>
                     <div className="flex justify-between text-sm pt-1">

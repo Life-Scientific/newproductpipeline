@@ -2,6 +2,7 @@
 
 import { HeatmapGrid, type HeatmapDataPoint } from "@/components/charts/HeatmapGrid";
 import type { Database } from "@/lib/supabase/database.types";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -10,6 +11,7 @@ interface SegmentRevenueMatrixProps {
 }
 
 export function SegmentRevenueMatrix({ businessCases }: SegmentRevenueMatrixProps) {
+  const { formatCurrencyCompact, formatCurrency, currencySymbol, convertCurrency } = useDisplayPreferences();
   const revenueByCountry: Record<string, number> = {};
   const revenueByCategory: Record<string, number> = {};
   const dataMap: Record<string, number> = {};
@@ -43,8 +45,8 @@ export function SegmentRevenueMatrix({ businessCases }: SegmentRevenueMatrixProp
         x: cat,
         y: country,
         value: value / 1000,
-        label: value > 0 ? `€${(value / 1000000).toFixed(1)}M` : "",
-        context: value > 0 ? `Revenue: €${value.toLocaleString()}` : "No revenue"
+        label: value > 0 ? formatCurrencyCompact(value) : "",
+        context: value > 0 ? `Revenue: ${formatCurrency(value, { compact: false, decimals: 0 })}` : "No revenue"
       });
     });
   });
@@ -54,7 +56,7 @@ export function SegmentRevenueMatrix({ businessCases }: SegmentRevenueMatrixProp
       data={heatmapData}
       xLabels={categories}
       yLabels={topCountries}
-      valueFormatter={(v) => `€${v.toFixed(0)}K`}
+      valueFormatter={(v) => `${currencySymbol}${convertCurrency(v * 1000).toFixed(0)}K`}
       height={600}
     />
   );
