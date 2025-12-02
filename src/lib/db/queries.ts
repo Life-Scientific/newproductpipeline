@@ -1628,7 +1628,9 @@ export async function checkExistingBusinessCase(
   }
 
   // Extract business_case_group_id from the joined data
-  const businessCase = junctionData[0].business_case as { business_case_group_id: string; status: string } | null;
+  // business_case is returned as an array by Supabase's !inner join
+  const businessCaseArray = junctionData[0].business_case as { business_case_group_id: string; status: string }[] | null;
+  const businessCase = businessCaseArray?.[0];
   return businessCase?.business_case_group_id || null;
 }
 
