@@ -131,6 +131,9 @@ export function BusinessCaseModal({
   // Shadow data - previous version's values for comparison
   const [shadowData, setShadowData] = useState<Record<number, { volume: number | null; nsp: number | null; cogs: number | null }>>({});
   
+  // Use group ID for Version History (used in both create and edit flows)
+  const [useGroupIdForHistory, setUseGroupIdForHistory] = useState<string | null>(null);
+  
   const { canCreateBusinessCases, canEditBusinessCases, isLoading: permissionsLoading } = usePermissions();
   
   // Determine if we're in edit mode (have a groupId)
@@ -184,6 +187,8 @@ export function BusinessCaseModal({
               const firstYear = result.data[0];
               if (firstYear) {
                 setTargetMarketEntry(firstYear.target_market_entry_fy || firstYear.effective_start_fiscal_year || null);
+                // Store use group ID for Version History
+                setUseGroupIdForHistory(firstYear.formulation_country_use_group_id || null);
                 // Note: assumptions would need to be fetched separately or added to the view
               }
             }
@@ -208,6 +213,7 @@ export function BusinessCaseModal({
         setShadowData({});
         setOriginalValues({});
         setChangedCells(new Set());
+        setUseGroupIdForHistory(null);
         setFormData({
           formulation_id: "",
           country_id: "",
@@ -250,6 +256,7 @@ export function BusinessCaseModal({
       setShadowData({});
       setOriginalValues({});
       setChangedCells(new Set());
+      setUseGroupIdForHistory(null);
       setTargetMarketEntry(null);
       setTargetEntryError(null);
     }
@@ -497,6 +504,12 @@ export function BusinessCaseModal({
         
         setShadowData(shadow);
         setYearDataRecord(prefill);
+        
+        // Store use group ID for Version History
+        const firstYear = existingDataResult.data[0];
+        if (firstYear?.formulation_country_use_group_id) {
+          setUseGroupIdForHistory(firstYear.formulation_country_use_group_id);
+        }
       }
       
       toast({
@@ -787,7 +800,7 @@ export function BusinessCaseModal({
       <DialogContent className={step === "data" ? "max-w-[90vw] max-h-[90vh] overflow-y-auto" : "max-w-4xl max-h-[90vh] overflow-y-auto"}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isEditMode ? `Edit Business Case - ${formulationName}` : existingGroupId ? "Create New Version" : "Create Business Case"}
+            {isEditMode || existingGroupId ? (formulationName ? `Edit Business Case - ${formulationName}` : "Edit Business Case") : "Create Business Case"}
             <Badge variant="outline" className="text-xs font-normal gap-1">
               <GitBranch className="h-3 w-3" />
               {isEditMode || existingGroupId ? "Creates New Version" : "Version Controlled"}
@@ -1038,9 +1051,9 @@ export function BusinessCaseModal({
             <TabsList className="mb-4">
               <TabsTrigger value="edit" className="gap-2">
                 <Edit3 className="h-4 w-4" />
-                {isEditMode ? "Edit Data" : "Enter Data"}
+                Data
               </TabsTrigger>
-              {isEditMode && yearDataArray[0]?.formulation_country_use_group_id && (
+              {(yearDataArray[0]?.formulation_country_use_group_id || useGroupIdForHistory) && (
                 <TabsTrigger value="history" className="gap-2">
                   <History className="h-4 w-4" />
                   Version History
@@ -1084,8 +1097,8 @@ export function BusinessCaseModal({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {/* Shadow row for previous version - Volume (create flow only) */}
-                    {!isEditMode && existingGroupId && Object.keys(shadowData).length > 0 && (
+                    {/* Shadow row for previous version - Volume */}
+                    {Object.keys(shadowData).length > 0 && (
                       <TableRow className="bg-muted/30">
                         <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">↳ prev</TableCell>
                         {fiscalYearColumns.map((col) => {
@@ -1161,7 +1174,7 @@ export function BusinessCaseModal({
                     </TableRow>
 
                     {/* Shadow row for NSP */}
-                    {!isEditMode && existingGroupId && Object.keys(shadowData).length > 0 && (
+                    {Object.keys(shadowData).length > 0 && (
                       <TableRow className="bg-muted/30">
                         <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">↳ prev</TableCell>
                         {fiscalYearColumns.map((col) => {
@@ -1246,7 +1259,7 @@ export function BusinessCaseModal({
                     </TableRow>
 
                     {/* Shadow row for COGS */}
-                    {!isEditMode && existingGroupId && Object.keys(shadowData).length > 0 && (
+                    {Object.keys(shadowData).length > 0 && (
                       <TableRow className="bg-muted/30">
                         <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">↳ prev</TableCell>
                         {fiscalYearColumns.map((col) => {
@@ -1558,16 +1571,16 @@ export function BusinessCaseModal({
                   onClick={handleSave} 
                   disabled={isPending || permissionsLoading || (existingGroupId || isEditMode ? !canEditBusinessCases : !canCreateBusinessCases)}
                 >
-                  {isPending ? "Saving..." : existingGroupId || isEditMode ? "Save New Version" : "Create Business Case"}
+                  {isPending ? "Saving..." : "Save Business Case"}
                 </Button>
               </DialogFooter>
             </TabsContent>
 
-            {isEditMode && yearDataArray[0]?.formulation_country_use_group_id && (
+            {(yearDataArray[0]?.formulation_country_use_group_id || useGroupIdForHistory) && (
               <TabsContent value="history">
                 <BusinessCaseVersionHistory
-                  useGroupId={yearDataArray[0].formulation_country_use_group_id}
-                  currentGroupId={groupId || ""}
+                  useGroupId={yearDataArray[0]?.formulation_country_use_group_id || useGroupIdForHistory || ""}
+                  currentGroupId={groupId || existingGroupId || ""}
                   formulationName={formulationName ?? undefined}
                   countryName={countryName ?? undefined}
                 />
