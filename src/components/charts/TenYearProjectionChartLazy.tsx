@@ -12,7 +12,6 @@ type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients
 interface TenYearProjectionChartLazyProps {
   businessCases: BusinessCase[];
   formulations: Formulation[];
-  exchangeRates?: Map<string, number>;
 }
 
 /**
@@ -31,13 +30,11 @@ const TenYearProjectionChartDynamic = dynamic(
 export function TenYearProjectionChartLazy({
   businessCases,
   formulations,
-  exchangeRates,
 }: TenYearProjectionChartLazyProps) {
   return (
     <TenYearProjectionChartDynamic
       businessCases={businessCases}
       formulations={formulations}
-      exchangeRates={exchangeRates}
     />
   );
 }

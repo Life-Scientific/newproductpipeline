@@ -56,7 +56,6 @@ type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients
 interface TenYearProjectionChartProps {
   businessCases: BusinessCase[];
   formulations: Formulation[];
-  exchangeRates?: Map<string, number>; // country_id -> exchange_rate_to_eur
 }
 
 type FilterType = {
@@ -235,7 +234,6 @@ const DEFAULT_YEAR_RANGE = 10;
 export function TenYearProjectionChart({
   businessCases,
   formulations,
-  exchangeRates: initialExchangeRates,
 }: TenYearProjectionChartProps) {
   const router = useRouter();
   const { currentTheme } = useTheme();
@@ -249,7 +247,6 @@ export function TenYearProjectionChart({
     countryStatuses: ["Selected for entry"],
   });
   const [chartType, setChartType] = useState<"line" | "bar">("line");
-  const [exchangeRates] = useState<Map<string, number>>(initialExchangeRates || new Map());
   const chartId = useId().replace(/:/g, "-");
   
   // Year range selection state
@@ -663,20 +660,9 @@ export function TenYearProjectionChart({
         years[yearIndex].cogs += localCogs;
         years[yearIndex].count += 1;
 
-        // Convert to EUR using exchange rate if available
-        // Default to rate of 1.0 (assume EUR) if no rate found
-        const countryId = bc.country_id;
-        let rate = 1.0;
-        
-        if (countryId && exchangeRates.has(countryId)) {
-          const foundRate = exchangeRates.get(countryId);
-          if (foundRate && foundRate > 0 && Number.isFinite(foundRate)) {
-            rate = foundRate;
-          }
-        }
-        
-        years[yearIndex].revenueEUR += localRevenue / rate;
-        years[yearIndex].marginEUR += localMargin / rate;
+        // Data is already in EUR - no conversion needed
+        years[yearIndex].revenueEUR += localRevenue;
+        years[yearIndex].marginEUR += localMargin;
       }
     });
 
@@ -690,7 +676,7 @@ export function TenYearProjectionChart({
       marginEUR: convertCurrency(year.marginEUR) / 1000000,
       cogs: year.cogs / 1000000,
     }));
-  }, [filteredBusinessCases, exchangeRates, effectiveStartYear, effectiveEndYear, convertCurrency]);
+  }, [filteredBusinessCases, effectiveStartYear, effectiveEndYear, convertCurrency]);
 
   const handleRemoveFilter = (type: keyof FilterType, value: string) => {
     setFilters((prev) => {

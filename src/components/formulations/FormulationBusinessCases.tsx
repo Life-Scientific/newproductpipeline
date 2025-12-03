@@ -15,33 +15,6 @@ type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
 interface FormulationBusinessCasesProps {
   businessCases: BusinessCase[];
-  exchangeRates?: Map<string, number>; // country_id -> exchange_rate_to_eur
-}
-
-// Helper function to convert to EUR
-function convertToEUR(
-  value: number | null | undefined,
-  countryId: string | null,
-  currencyCode: string | null,
-  exchangeRates?: Map<string, number>
-): number | null {
-  if (value === null || value === undefined) return null;
-  
-  // If already in EUR, no conversion needed
-  if (currencyCode?.toUpperCase() === "EUR") {
-    return value;
-  }
-  
-  // Convert using exchange rate
-  if (exchangeRates && countryId) {
-    const rate = exchangeRates.get(countryId);
-    if (rate && rate > 0) {
-      return value / rate;
-    }
-  }
-  
-  // If no rate found, assume already EUR
-  return value;
 }
 
 function formatNumber(value: number | null | undefined): string {
@@ -49,7 +22,7 @@ function formatNumber(value: number | null | undefined): string {
   return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
-export function FormulationBusinessCases({ businessCases, exchangeRates }: FormulationBusinessCasesProps) {
+export function FormulationBusinessCases({ businessCases }: FormulationBusinessCasesProps) {
   const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
   const { formatCurrencyCompact } = useDisplayPreferences();
 
@@ -89,14 +62,9 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
     const uniqueUseGroups = new Set(cases.map(bc => bc.use_group_name || bc.formulation_country_use_group_id).filter(Boolean));
     
     cases.forEach((bc) => {
-      const countryId = (bc as any).country_id || null;
-      const currencyCode = (bc as any).currency_code || null;
-      
-      const revenueEUR = convertToEUR(bc.total_revenue, countryId, currencyCode, exchangeRates) || 0;
-      const marginEUR = convertToEUR(bc.total_margin, countryId, currencyCode, exchangeRates) || 0;
-      
-      totalRevenue += revenueEUR;
-      totalMargin += marginEUR;
+      // Data is already in EUR - no conversion needed
+      totalRevenue += bc.total_revenue || 0;
+      totalMargin += bc.total_margin || 0;
     });
     
     const avgMarginPercent = cases.length > 0
@@ -230,12 +198,7 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
                                   )}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  {(() => {
-                                    const countryId = (bc as any).country_id || null;
-                                    const currencyCode = (bc as any).currency_code || null;
-                                    const eurValue = convertToEUR(bc.nsp, countryId, currencyCode, exchangeRates);
-                                    return <span className="text-sm font-medium">{formatCurrency(eurValue)}</span>;
-                                  })()}
+                                  <span className="text-sm font-medium">{formatCurrency(bc.nsp)}</span>
                                   {bc.nsp_last_updated_by && (
                                     <div className="text-xs text-muted-foreground mt-0.5">
                                       by {bc.nsp_last_updated_by}
@@ -243,12 +206,7 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
                                   )}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  {(() => {
-                                    const countryId = (bc as any).country_id || null;
-                                    const currencyCode = (bc as any).currency_code || null;
-                                    const eurValue = convertToEUR(bc.cogs_per_unit, countryId, currencyCode, exchangeRates);
-                                    return <span className="text-sm font-medium">{formatCurrency(eurValue)}</span>;
-                                  })()}
+                                  <span className="text-sm font-medium">{formatCurrency(bc.cogs_per_unit)}</span>
                                   {bc.cogs_last_updated_by && (
                                     <div className="text-xs text-muted-foreground mt-0.5">
                                       by {bc.cogs_last_updated_by}
@@ -256,12 +214,7 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
                                   )}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  {(() => {
-                                    const countryId = (bc as any).country_id || null;
-                                    const currencyCode = (bc as any).currency_code || null;
-                                    const eurValue = convertToEUR(bc.total_revenue, countryId, currencyCode, exchangeRates);
-                                    return <span className="text-sm font-semibold">{formatCurrency(eurValue)}</span>;
-                                  })()}
+                                  <span className="text-sm font-semibold">{formatCurrency(bc.total_revenue)}</span>
                                 </TableCell>
                                 <TableCell className="text-right">
                                   <div className="flex items-center justify-end gap-1">
@@ -270,16 +223,9 @@ export function FormulationBusinessCases({ businessCases, exchangeRates }: Formu
                                         <AlertTriangle className="h-3 w-3 text-destructive" />
                                       </span>
                                     )}
-                                    {(() => {
-                                      const countryId = (bc as any).country_id || null;
-                                      const currencyCode = (bc as any).currency_code || null;
-                                      const eurValue = convertToEUR(bc.total_margin, countryId, currencyCode, exchangeRates);
-                                      return (
-                                        <span className={cn("text-sm font-semibold", (eurValue || 0) < 0 && "text-destructive")}>
-                                          {formatCurrency(eurValue)}
-                                        </span>
-                                      );
-                                    })()}
+                                    <span className={cn("text-sm font-semibold", (bc.total_margin || 0) < 0 && "text-destructive")}>
+                                      {formatCurrency(bc.total_margin)}
+                                    </span>
                                   </div>
                                 </TableCell>
                                 <TableCell className="text-right">

@@ -6,7 +6,6 @@ import {
   getFormulationStatusHistory,
   getFormulationProtectionStatus,
   getFormulationUseGroups,
-  getExchangeRates,
 } from "@/lib/db/queries";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,7 +52,6 @@ export default async function FormulationDetailPage({
     protectionStatus,
     useGroups,
     businessCasesForTree,
-    allExchangeRates,
   ] = await Promise.all([
     getFormulationById(id),
     getFormulationCountryDetails(id),
@@ -63,28 +61,7 @@ export default async function FormulationDetailPage({
     getFormulationProtectionStatus(id),
     getFormulationUseGroups(id),
     getFormulationBusinessCasesForTree(id),
-    getExchangeRates(),
   ]);
-
-  // Create exchange rate map: country_id -> exchange_rate_to_eur
-  const exchangeRateMap = new Map<string, number>();
-  const countryToLatestRate = new Map<string, { rate: number; date: string }>();
-  
-  allExchangeRates.forEach((er: any) => {
-    if (er.country_id && er.exchange_rate_to_eur && er.is_active) {
-      const existing = countryToLatestRate.get(er.country_id);
-      if (!existing || er.effective_date > existing.date) {
-        countryToLatestRate.set(er.country_id, {
-          rate: er.exchange_rate_to_eur,
-          date: er.effective_date,
-        });
-      }
-    }
-  });
-  
-  countryToLatestRate.forEach((value, countryId) => {
-    exchangeRateMap.set(countryId, value.rate);
-  });
 
   if (!formulation) {
     notFound();
@@ -317,7 +294,7 @@ export default async function FormulationDetailPage({
             <FormulationIngredients ingredients={ingredients} />
 
             {/* Business Cases */}
-            <FormulationBusinessCases businessCases={businessCases} exchangeRates={exchangeRateMap} />
+            <FormulationBusinessCases businessCases={businessCases} />
 
             {/* Country Portfolio Overview */}
             {countryDetails.length > 0 && (

@@ -31,7 +31,6 @@ import type { BusinessCaseGroupData } from "@/lib/db/queries";
 
 interface ScenarioPlanningClientProps {
   businessCases: BusinessCaseGroupData[];
-  exchangeRates: Map<string, number>;
 }
 
 interface Scenario {
@@ -56,7 +55,7 @@ const SCENARIO_COLORS = [
 
 const ADJUSTMENT_STEP = 5;
 
-export function ScenarioPlanningClient({ businessCases, exchangeRates }: ScenarioPlanningClientProps) {
+export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClientProps) {
   const { formatCurrencyCompact } = useDisplayPreferences();
   
   // Filter state
@@ -305,10 +304,10 @@ export function ScenarioPlanningClient({ businessCases, exchangeRates }: Scenari
       let totalMargin = 0;
       
       cases.forEach((bc) => {
-        const rate = exchangeRates.get(bc.country_id) || 1;
+        // Data is already in EUR - no conversion needed
         Object.values(bc.years_data).forEach((data) => {
-          totalRevenue += (data.total_revenue ?? 0) / rate;
-          totalMargin += (data.total_margin ?? 0) / rate;
+          totalRevenue += data.total_revenue ?? 0;
+          totalMargin += data.total_margin ?? 0;
         });
       });
 
@@ -323,7 +322,7 @@ export function ScenarioPlanningClient({ businessCases, exchangeRates }: Scenari
     }));
 
     return { baseline, scenarioTotals };
-  }, [selectedBusinessCases, scenarioResults, exchangeRates]);
+  }, [selectedBusinessCases, scenarioResults]);
 
   // Clear all filters
   const clearFilters = useCallback(() => {
@@ -943,11 +942,11 @@ function ComparisonByYear({
       let revenue = 0;
       let margin = 0;
       cases.forEach((bc) => {
-        const rate = exchangeRates.get(bc.country_id) || 1;
+        // Data is already in EUR - no conversion needed
         const data = bc.years_data[fy];
         if (data) {
-          revenue += (data.total_revenue ?? 0) / rate;
-          margin += (data.total_margin ?? 0) / rate;
+          revenue += data.total_revenue ?? 0;
+          margin += data.total_margin ?? 0;
         }
       });
       return { revenue, margin };
