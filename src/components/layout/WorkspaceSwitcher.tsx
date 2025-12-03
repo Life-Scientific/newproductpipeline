@@ -1,28 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
-  ChevronDown,
-  LayoutDashboard,
-  GitBranch,
-  FlaskConical,
-  Globe,
-  FileText,
-  TrendingUp,
-  DollarSign,
-  BarChart3,
-  GitCompare,
-  Database,
-  Calculator,
-  Target,
-  Map,
-  Shield,
-  PieChart,
-  MapPin,
-  Beaker,
   Ban,
+  BarChart3,
+  Beaker,
+  Calculator,
+  ChevronDown,
+  Database,
+  DollarSign,
+  FileText,
+  FlaskConical,
+  GitBranch,
+  GitCompare,
+  Globe,
+  LayoutDashboard,
+  Link as LinkIcon,
   type LucideIcon,
+  Map,
+  MapPin,
+  PieChart,
+  Shield,
+  Target,
+  TrendingUp,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,14 +34,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/ui/sidebar";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { useSidebar } from "@/components/ui/sidebar";
 import { getWorkspaces, type Workspace } from "@/lib/actions/workspaces";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +64,7 @@ const iconMap: Record<string, LucideIcon> = {
   MapPin,
   Beaker,
   Ban,
+  Link: LinkIcon,
 };
 
 // Helper function to get icon component from string name
@@ -71,6 +74,7 @@ function getIconComponent(iconName: string | null): LucideIcon {
 }
 
 export function WorkspaceSwitcher() {
+  const router = useRouter();
   const { currentWorkspace, switchWorkspace, isLoading } = useWorkspace();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -98,14 +102,18 @@ export function WorkspaceSwitcher() {
   // Loading state
   if (isLoadingWorkspaces || isLoading) {
     return (
-      <div className={cn(
-        "flex items-center",
-        isCollapsed ? "justify-center" : "gap-2"
-      )}>
-        <div className={cn(
-          "flex items-center justify-center rounded-md bg-primary text-primary-foreground animate-pulse",
-          isCollapsed ? "h-9 w-9" : "h-8 w-8"
-        )}>
+      <div
+        className={cn(
+          "flex items-center",
+          isCollapsed ? "justify-center" : "gap-2",
+        )}
+      >
+        <div
+          className={cn(
+            "flex items-center justify-center rounded-md bg-primary text-primary-foreground animate-pulse",
+            isCollapsed ? "h-9 w-9" : "h-8 w-8",
+          )}
+        >
           <LayoutDashboard className="h-4 w-4" />
         </div>
         {!isCollapsed && (
@@ -122,15 +130,17 @@ export function WorkspaceSwitcher() {
       variant="ghost"
       className={cn(
         "transition-all hover:bg-sidebar-accent",
-        isCollapsed 
-          ? "h-9 w-9 p-0 justify-center" 
-          : "w-full justify-start gap-2 h-9 px-2"
+        isCollapsed
+          ? "h-9 w-9 p-0 justify-center"
+          : "w-full justify-start gap-2 h-9 px-2",
       )}
     >
-      <div className={cn(
-        "flex shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground",
-        isCollapsed ? "h-7 w-7" : "h-6 w-6"
-      )}>
+      <div
+        className={cn(
+          "flex shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground",
+          isCollapsed ? "h-7 w-7" : "h-6 w-6",
+        )}
+      >
         <CurrentIcon className={cn(isCollapsed ? "h-4 w-4" : "h-3.5 w-3.5")} />
       </div>
       {!isCollapsed && (
@@ -149,9 +159,7 @@ export function WorkspaceSwitcher() {
       <DropdownMenuTrigger asChild>
         {isCollapsed ? (
           <Tooltip>
-            <TooltipTrigger asChild>
-              {triggerButton}
-            </TooltipTrigger>
+            <TooltipTrigger asChild>{triggerButton}</TooltipTrigger>
             <TooltipContent side="right">
               {currentWorkspace?.name || "Select Workspace"}
             </TooltipContent>
@@ -160,9 +168,9 @@ export function WorkspaceSwitcher() {
           triggerButton
         )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        className="w-56" 
-        align="start" 
+      <DropdownMenuContent
+        className="w-56"
+        align="start"
         side="right"
         sideOffset={8}
       >
@@ -172,16 +180,20 @@ export function WorkspaceSwitcher() {
         <DropdownMenuSeparator />
         {workspaces.map((workspace) => {
           const Icon = getIconComponent(workspace.icon);
-          const isActive = currentWorkspace?.workspace_id === workspace.workspace_id;
-          
+          const isActive =
+            currentWorkspace?.workspace_id === workspace.workspace_id;
+
+          const handleSwitch = async () => {
+            await switchWorkspace(workspace.slug);
+            // Navigate to the workspace root
+            router.push(`/${workspace.slug}`);
+          };
+
           return (
             <DropdownMenuItem
               key={workspace.workspace_id}
-              onClick={() => switchWorkspace(workspace.slug)}
-              className={cn(
-                "cursor-pointer gap-2",
-                isActive && "bg-accent"
-              )}
+              onClick={handleSwitch}
+              className={cn("cursor-pointer gap-2", isActive && "bg-accent")}
             >
               <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
                 <Icon className="h-3.5 w-3.5 text-primary" />

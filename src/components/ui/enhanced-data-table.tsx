@@ -269,8 +269,14 @@ export function EnhancedDataTable<TData, TValue>({
   // Update filter values (updates local state and URL)
   const updateFilter = React.useCallback(
     (paramKey: string, values: string[]) => {
+      console.log('[EnhancedDataTable] updateFilter called:', { paramKey, values });
+      
       // Update local state
-      setActiveFilters((prev) => ({ ...prev, [paramKey]: values }));
+      setActiveFilters((prev) => {
+        const next = { ...prev, [paramKey]: values };
+        console.log('[EnhancedDataTable] activeFilters updating:', { prev, next });
+        return next;
+      });
       
       // Reset to page 1 when filters change
       setPagination((prev) => ({ ...prev, pageIndex: 0 }));
@@ -287,6 +293,7 @@ export function EnhancedDataTable<TData, TValue>({
         const newUrl = params.toString()
           ? `${pathname}?${params.toString()}`
           : pathname;
+        console.log('[EnhancedDataTable] Updating URL to:', newUrl);
         window.history.replaceState(null, '', newUrl);
       }
     },
@@ -323,9 +330,10 @@ export function EnhancedDataTable<TData, TValue>({
 
   // Filter data based on active filters
   const filteredData = React.useMemo(() => {
+    console.log('[EnhancedDataTable] filteredData memo recalculating, activeFilters:', activeFilters);
     if (filterConfigs.length === 0) return data;
 
-    return data.filter((row) => {
+    const result = data.filter((row) => {
       return filterConfigs.every((config) => {
         const paramKey = config.paramKey || String(config.columnKey);
         const filterValues = activeFilters[paramKey];
@@ -341,6 +349,9 @@ export function EnhancedDataTable<TData, TValue>({
         return value && filterValues.includes(value);
       });
     });
+    
+    console.log('[EnhancedDataTable] filteredData result:', { originalCount: data.length, filteredCount: result.length });
+    return result;
   }, [data, filterConfigs, activeFilters]);
 
   // Check if any filters are active
@@ -380,6 +391,9 @@ export function EnhancedDataTable<TData, TValue>({
   const [viewName, setViewName] = React.useState("");
   const [isMounted, setIsMounted] = React.useState(false);
 
+  // Track if we've done initial URL sync (to avoid overwriting user's filter selections)
+  const hasInitializedFromUrl = React.useRef(false);
+  
   // Ensure drag-and-drop only renders on client to avoid hydration mismatch
   React.useEffect(() => {
     setIsMounted(true);
@@ -387,8 +401,10 @@ export function EnhancedDataTable<TData, TValue>({
   
   // Sync URL params after mount to avoid hydration mismatch
   // This ensures server and client render the same initial state, then syncs with URL
+  // Only runs ONCE on mount - subsequent filter changes are handled via updateFilter/clearAllFilters
   React.useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || hasInitializedFromUrl.current) return;
+    hasInitializedFromUrl.current = true;
     
     const params = new URLSearchParams(window.location.search);
     
@@ -406,20 +422,27 @@ export function EnhancedDataTable<TData, TValue>({
     // Sync filters from URL
     if (filterConfigs.length > 0) {
       const newFilters: Record<string, string[]> = {};
+      let hasUrlFilters = false;
       filterConfigs.forEach((config) => {
         const paramKey = config.paramKey || String(config.columnKey);
         const value = params.get(paramKey);
-        newFilters[paramKey] = value ? value.split(",").filter(Boolean) : [];
+        const filterValues = value ? value.split(",").filter(Boolean) : [];
+        newFilters[paramKey] = filterValues;
+        if (filterValues.length > 0) hasUrlFilters = true;
       });
-      setActiveFilters(newFilters);
+      // Only update if there are actually URL filters to apply
+      if (hasUrlFilters) {
+        setActiveFilters(newFilters);
+      }
     }
-  }, [enableUrlPagination, filterConfigs]);
+  }, []); // Empty deps - only run once on mount
   
   // Handle browser back/forward navigation (syncs both pagination and filters)
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
     
     const handlePopState = () => {
+      console.log('[EnhancedDataTable] popstate event triggered');
       const params = new URLSearchParams(window.location.search);
       
       // Sync pagination
@@ -437,6 +460,7 @@ export function EnhancedDataTable<TData, TValue>({
           const value = params.get(paramKey);
           newFilters[paramKey] = value ? value.split(",").filter(Boolean) : [];
         });
+        console.log('[EnhancedDataTable] popstate setting filters:', newFilters);
         setActiveFilters(newFilters);
       }
     };

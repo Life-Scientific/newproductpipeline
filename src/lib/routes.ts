@@ -11,6 +11,10 @@ export const WORKSPACE_SLUG = "portfolio";
 // Base workspace path
 export const WORKSPACE_BASE = `/${WORKSPACE_SLUG}`;
 
+// Short URL workspace (separate workspace)
+export const SHORTURL_WORKSPACE_SLUG = "shorturl";
+export const SHORTURL_WORKSPACE_BASE = `/${SHORTURL_WORKSPACE_SLUG}`;
+
 /**
  * Generate a workspace-prefixed route
  * @example route("/formulations") => "/portfolio/formulations"
@@ -88,6 +92,17 @@ export const routes = {
 } as const;
 
 /**
+ * Short URL workspace routes (ls.life management)
+ */
+export const shortUrlRoutes = {
+  home: () => SHORTURL_WORKSPACE_BASE,
+  list: () => SHORTURL_WORKSPACE_BASE,
+  new: () => `${SHORTURL_WORKSPACE_BASE}/new`,
+  detail: (id: string) => `${SHORTURL_WORKSPACE_BASE}/${id}`,
+  analytics: () => `${SHORTURL_WORKSPACE_BASE}/analytics`,
+} as const;
+
+/**
  * Legacy route patterns that should be redirected
  * Used by middleware to handle old bookmarks/links
  */
@@ -112,9 +127,23 @@ export const LEGACY_ROUTES = [
 ] as const;
 
 /**
+ * Workspace base paths (these are valid workspaces, not legacy routes)
+ */
+export const WORKSPACE_PATHS = [
+  WORKSPACE_BASE,        // /portfolio
+  SHORTURL_WORKSPACE_BASE, // /shorturl
+] as const;
+
+/**
  * Check if a path is a legacy route that needs redirecting
+ * Excludes valid workspace paths
  */
 export function isLegacyRoute(pathname: string): boolean {
+  // Don't redirect if it's a valid workspace path
+  if (WORKSPACE_PATHS.some(wp => pathname === wp || pathname.startsWith(`${wp}/`))) {
+    return false;
+  }
+  
   return LEGACY_ROUTES.some(route => 
     pathname === route || pathname.startsWith(`${route}/`)
   );
@@ -126,6 +155,8 @@ export function isLegacyRoute(pathname: string): boolean {
 export function toLegacyRedirect(pathname: string): string {
   return `${WORKSPACE_BASE}${pathname}`;
 }
+
+
 
 
 
