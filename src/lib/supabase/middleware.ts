@@ -1,8 +1,27 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { WORKSPACE_BASE, isLegacyRoute, toLegacyRedirect } from "@/lib/routes";
+import { WORKSPACE_BASE, SHORTURL_WORKSPACE_BASE, isLegacyRoute, toLegacyRedirect } from "@/lib/routes";
 
 export async function updateSession(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  
+  // ============================================================================
+  // ls.life Short URL Domain Handling
+  // Handle this BEFORE auth setup since redirects don't need session management
+  // ============================================================================
+  const hostname = request.headers.get("host") || "";
+  const isShortUrlDomain = hostname.includes("ls.life");
+
+  if (isShortUrlDomain) {
+    const slug = pathname.slice(1); // Remove leading /
+    if (slug && slug !== "" && !slug.startsWith("_next") && !slug.startsWith("api")) {
+      // Rewrite to redirect handler (internal route, user never sees /s/ path)
+      return NextResponse.rewrite(new URL(`/s/${slug}`, request.url));
+    }
+    // ls.life root -> redirect to lsnav.app home
+    return NextResponse.redirect("https://lsnav.app");
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -49,13 +68,12 @@ export async function updateSession(request: NextRequest) {
   
   const user = session?.user ?? null;
 
-  const pathname = request.nextUrl.pathname;
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
   const isAcceptInvite = pathname.startsWith("/accept-invite");
   const isAuthCallback = pathname.startsWith("/auth/callback");
   const isLandingPage = pathname === "/";
   const isApiRoute = pathname.startsWith("/api");
-  const isWorkspaceRoute = pathname.startsWith(WORKSPACE_BASE);
+  const isWorkspaceRoute = pathname.startsWith(WORKSPACE_BASE) || pathname.startsWith(SHORTURL_WORKSPACE_BASE);
   const isPublicPath = isAuthPage || isAcceptInvite || isAuthCallback || isLandingPage || isApiRoute;
 
   // Check if this is a legacy route that needs redirecting

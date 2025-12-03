@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
-import { ThemeProviderWrapper } from "@/components/providers/ThemeProviderWrapper";
+import { Toaster as SonnerToaster } from "sonner";
 import { KonamiCode } from "@/components/easter-eggs/KonamiCode";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
+import { ThemeProviderWrapper } from "@/components/providers/ThemeProviderWrapper";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -67,9 +68,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-theme="light">
       <head>
-        <script
-          dangerouslySetInnerHTML={{ __html: themeScript }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script async src="https://tally.so/widgets/embed.js"></script>
       </head>
       <body
@@ -78,6 +77,7 @@ export default function RootLayout({
         <ThemeProviderWrapper>
           {children}
           <Toaster />
+          <SonnerToaster position="bottom-right" richColors />
           <KonamiCode />
           <FeedbackButton />
         </ThemeProviderWrapper>

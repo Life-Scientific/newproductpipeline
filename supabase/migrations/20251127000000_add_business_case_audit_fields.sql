@@ -26,3 +26,4 @@ CREATE INDEX IF NOT EXISTS idx_business_case_previous_group
 ON public.business_case(previous_group_id) 
 WHERE previous_group_id IS NOT NULL;
 
+`
