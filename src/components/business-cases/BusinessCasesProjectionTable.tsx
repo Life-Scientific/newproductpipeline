@@ -15,7 +15,6 @@ import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 interface BusinessCasesProjectionTableProps {
   businessCases: BusinessCaseGroupData[];
-  exchangeRates: Map<string, number>; // country_id -> exchange_rate_to_eur
   canEdit?: boolean; // Permission to edit business cases
 }
 
@@ -25,7 +24,7 @@ const LOAD_MORE_INCREMENT = 25;
 // Default year range is 10 years from current fiscal year
 const DEFAULT_YEAR_RANGE = 10;
 
-export function BusinessCasesProjectionTable({ businessCases, exchangeRates, canEdit = false }: BusinessCasesProjectionTableProps) {
+export function BusinessCasesProjectionTable({ businessCases, canEdit = false }: BusinessCasesProjectionTableProps) {
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [displayCount, setDisplayCount] = useState(DEFAULT_PAGE_SIZE);
   const { 
@@ -108,22 +107,6 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
   const formatNumber = (value: number | null | undefined, decimals = 0): string => {
     if (value === null || value === undefined) return "—";
     return value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-  };
-
-  // Helper function to convert to EUR
-  const convertToEUR = (value: number | null | undefined, countryId: string, currencyCode: string): number | null => {
-    if (value === null || value === undefined) return null;
-    
-    if (currencyCode?.toUpperCase() === "EUR") {
-      return value;
-    }
-    
-    const rate = exchangeRates.get(countryId);
-    if (rate && rate > 0) {
-      return value / rate;
-    }
-    
-    return value;
   };
 
   // Helper function to format currency using display preferences
@@ -296,10 +279,9 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   label: `NSP (${preferences.currency}/${displayUnit})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    const localValue = bc.years_data[fyStr]?.nsp;
-                    const eurValue = convertToEUR(localValue, bc.country_id, bc.currency_code);
-                    if (eurValue === null) return "—";
-                    // Use formatPerUnit for proper per-unit conversion (currency + unit)
+                    const eurValue = bc.years_data[fyStr]?.nsp;
+                    if (eurValue === null || eurValue === undefined) return "—";
+                    // Data is already in EUR - formatPerUnit handles currency and unit conversion
                     return formatPerUnit(eurValue, uom, { decimals: 2 });
                   },
                 },
@@ -307,10 +289,9 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   label: `COGS (${preferences.currency}/${displayUnit})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    const localValue = bc.years_data[fyStr]?.cogs_per_unit;
-                    const eurValue = convertToEUR(localValue, bc.country_id, bc.currency_code);
-                    if (eurValue === null) return "—";
-                    // Use formatPerUnit for proper per-unit conversion (currency + unit)
+                    const eurValue = bc.years_data[fyStr]?.cogs_per_unit;
+                    if (eurValue === null || eurValue === undefined) return "—";
+                    // Data is already in EUR - formatPerUnit handles currency and unit conversion
                     return formatPerUnit(eurValue, uom, { decimals: 2 });
                   },
                 },
@@ -318,9 +299,8 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   label: `Revenue (${preferences.currency})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    const localValue = bc.years_data[fyStr]?.total_revenue;
-                    const eurValue = convertToEUR(localValue, bc.country_id, bc.currency_code);
-                    // Total revenue only needs currency conversion, not unit conversion
+                    const eurValue = bc.years_data[fyStr]?.total_revenue;
+                    // Data is already in EUR - formatCurrencyCompact handles currency conversion
                     return formatCurrencyCompact(eurValue);
                   },
                 },
@@ -328,9 +308,8 @@ export function BusinessCasesProjectionTable({ businessCases, exchangeRates, can
                   label: `Margin (${preferences.currency})`,
                   getValue: (fy: number) => {
                     const fyStr = `FY${fy.toString().padStart(2, "0")}`;
-                    const localValue = bc.years_data[fyStr]?.total_margin;
-                    const eurValue = convertToEUR(localValue, bc.country_id, bc.currency_code);
-                    // Total margin only needs currency conversion, not unit conversion
+                    const eurValue = bc.years_data[fyStr]?.total_margin;
+                    // Data is already in EUR - formatCurrencyCompact handles currency conversion
                     return formatCurrencyCompact(eurValue);
                   },
                 },

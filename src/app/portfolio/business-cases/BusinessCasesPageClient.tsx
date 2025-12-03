@@ -20,12 +20,10 @@ import type { BusinessCaseGroupData } from "@/lib/db/queries";
 
 interface BusinessCasesPageClientProps {
   initialBusinessCases: BusinessCaseGroupData[];
-  exchangeRates: Map<string, number>; // country_id -> exchange_rate_to_eur
 }
 
 function BusinessCasesContent({
   initialBusinessCases,
-  exchangeRates,
 }: BusinessCasesPageClientProps) {
   // Use URL-based filters for persistence across navigation
   const { filters, setFilters } = useUrlFilters();
@@ -124,7 +122,6 @@ function BusinessCasesContent({
           <div className="p-4 sm:p-6 pt-0">
             <BusinessCasesProjectionTable
               businessCases={filteredBusinessCases}
-              exchangeRates={exchangeRates}
               canEdit={canEditBusinessCases}
             />
           </div>

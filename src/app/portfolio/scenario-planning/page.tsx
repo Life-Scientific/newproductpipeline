@@ -1,4 +1,4 @@
-import { getBusinessCasesForProjectionTable, getExchangeRates } from "@/lib/db/queries";
+import { getBusinessCasesForProjectionTable } from "@/lib/db/queries";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { ScenarioPlanningClient } from "./ScenarioPlanningClient";
 
@@ -6,30 +6,7 @@ import { ScenarioPlanningClient } from "./ScenarioPlanningClient";
 export const revalidate = 60;
 
 export default async function ScenarioPlanningPage() {
-  const [businessCases, allExchangeRates] = await Promise.all([
-    getBusinessCasesForProjectionTable(),
-    getExchangeRates(),
-  ]);
-
-  // Create exchange rate map: country_id -> exchange_rate_to_eur
-  const exchangeRateMap = new Map<string, number>();
-  const countryToLatestRate = new Map<string, { rate: number; date: string }>();
-  
-  allExchangeRates.forEach((er: any) => {
-    if (er.country_id && er.exchange_rate_to_eur && er.is_active) {
-      const existing = countryToLatestRate.get(er.country_id);
-      if (!existing || er.effective_date > existing.date) {
-        countryToLatestRate.set(er.country_id, {
-          rate: er.exchange_rate_to_eur,
-          date: er.effective_date,
-        });
-      }
-    }
-  });
-  
-  countryToLatestRate.forEach((value, countryId) => {
-    exchangeRateMap.set(countryId, value.rate);
-  });
+  const businessCases = await getBusinessCasesForProjectionTable();
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -44,7 +21,6 @@ export default async function ScenarioPlanningPage() {
 
           <ScenarioPlanningClient 
             businessCases={businessCases} 
-            exchangeRates={exchangeRateMap}
           />
         </div>
       </AnimatedPage>

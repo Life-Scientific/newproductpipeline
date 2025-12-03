@@ -171,7 +171,6 @@ export default async function Home() {
       <TenYearProjectionChartLazy 
         businessCases={businessCases} 
         formulations={formulations}
-        exchangeRates={exchangeRateMap}
       />
 
       {/* Status Overview Cards */}
