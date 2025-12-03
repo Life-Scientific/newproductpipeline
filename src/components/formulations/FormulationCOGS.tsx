@@ -3,20 +3,19 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { Database } from "@/lib/supabase/database.types";
 
 type COGS = Database["public"]["Views"]["vw_cogs"]["Row"];
-
-function formatCurrency(value: number | null | undefined): string {
-  if (!value && value !== 0) return "—";
-  return `€${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
 
 interface FormulationCOGSProps {
   cogs: COGS[];
 }
 
 export function FormulationCOGS({ cogs }: FormulationCOGSProps) {
+  const { formatCurrency } = useDisplayPreferences();
+  const formatCurrencyValue = (value: number | null | undefined): string => 
+    formatCurrency(value, { compact: false, decimals: 2 });
   if (cogs.length === 0) {
     return (
       <Card>
@@ -79,19 +78,19 @@ export function FormulationCOGS({ cogs }: FormulationCOGSProps) {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className="text-sm font-semibold">{formatCurrency(cog.cogs_value)}</span>
+                    <span className="text-sm font-semibold">{formatCurrencyValue(cog.cogs_value)}</span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className="text-sm">{formatCurrency(cog.raw_material_cost)}</span>
+                    <span className="text-sm">{formatCurrencyValue(cog.raw_material_cost)}</span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className="text-sm">{formatCurrency(cog.manufacturing_cost)}</span>
+                    <span className="text-sm">{formatCurrencyValue(cog.manufacturing_cost)}</span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className="text-sm">{formatCurrency(cog.packaging_cost)}</span>
+                    <span className="text-sm">{formatCurrencyValue(cog.packaging_cost)}</span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className="text-sm">{formatCurrency(cog.other_costs)}</span>
+                    <span className="text-sm">{formatCurrencyValue(cog.other_costs)}</span>
                   </TableCell>
                   <TableCell>
                     <span className="text-sm text-muted-foreground">

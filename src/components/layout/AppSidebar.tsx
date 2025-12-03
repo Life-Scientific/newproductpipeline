@@ -74,6 +74,7 @@ import {
   usePrefetchOnIntent,
 } from "@/hooks/use-prefetch-on-intent";
 import { useSupabase } from "@/hooks/use-supabase";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { WorkspaceMenuItem } from "@/lib/actions/workspaces";
 import { routes, WORKSPACE_BASE } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -213,6 +214,7 @@ export function AppSidebar() {
     isLoading: workspaceLoading,
   } = useWorkspace();
   const { currentTheme, availableThemes, setTheme } = useTheme();
+  const { preferences, updatePreferences, currencySymbol, CURRENCY_OPTIONS, VOLUME_OPTIONS, WEIGHT_OPTIONS } = useDisplayPreferences();
   const [user, setUser] = useState<any>(null);
 
   // Initialize ForesightJS for predictive prefetching
@@ -565,6 +567,88 @@ export function AppSidebar() {
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
 
+                {/* Display Preferences Submenu */}
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="cursor-pointer">
+                    <DollarSign className="mr-2 h-4 w-4" />
+                    <span className="flex-1">Display</span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      {currencySymbol} / {preferences.volumeUnit}
+                    </span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuPortal>
+                    <DropdownMenuSubContent className="w-56">
+                      {/* Currency Options */}
+                      <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1.5">
+                        Currency
+                      </DropdownMenuLabel>
+                      {CURRENCY_OPTIONS.map((option) => {
+                        const isActive = preferences.currency === option.code;
+                        return (
+                          <DropdownMenuItem
+                            key={option.code}
+                            onClick={() => updatePreferences({ currency: option.code })}
+                            className={cn(
+                              "cursor-pointer gap-2 px-2 py-2 transition-colors",
+                              isActive && "bg-accent"
+                            )}
+                          >
+                            <span className="w-6 text-center font-medium">{option.symbol}</span>
+                            <span className="flex-1 text-sm">{option.name}</span>
+                            {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                          </DropdownMenuItem>
+                        );
+                      })}
+
+                      <DropdownMenuSeparator className="my-1" />
+
+                      {/* Volume Options */}
+                      <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1.5">
+                        Volume Unit
+                      </DropdownMenuLabel>
+                      {VOLUME_OPTIONS.map((option) => {
+                        const isActive = preferences.volumeUnit === option.code;
+                        return (
+                          <DropdownMenuItem
+                            key={option.code}
+                            onClick={() => updatePreferences({ volumeUnit: option.code })}
+                            className={cn(
+                              "cursor-pointer gap-2 px-2 py-2 transition-colors",
+                              isActive && "bg-accent"
+                            )}
+                          >
+                            <span className="flex-1 text-sm">{option.name}</span>
+                            {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                          </DropdownMenuItem>
+                        );
+                      })}
+
+                      <DropdownMenuSeparator className="my-1" />
+
+                      {/* Weight Options */}
+                      <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1.5">
+                        Weight Unit
+                      </DropdownMenuLabel>
+                      {WEIGHT_OPTIONS.map((option) => {
+                        const isActive = preferences.weightUnit === option.code;
+                        return (
+                          <DropdownMenuItem
+                            key={option.code}
+                            onClick={() => updatePreferences({ weightUnit: option.code })}
+                            className={cn(
+                              "cursor-pointer gap-2 px-2 py-2 transition-colors",
+                              isActive && "bg-accent"
+                            )}
+                          >
+                            <span className="flex-1 text-sm">{option.name}</span>
+                            {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
+                
                 <DropdownMenuItem asChild className="cursor-pointer">
                   <Link
                     href={routes.settings()}

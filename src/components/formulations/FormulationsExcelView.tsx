@@ -56,6 +56,7 @@ import {
 import type { Database } from "@/lib/supabase/database.types";
 import type { FormulationWithNestedData } from "@/lib/db/queries";
 import { usePermissions } from "@/hooks/use-permissions";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type FormulationTable = Database["public"]["Tables"]["formulations"]["Row"];
 
@@ -291,14 +292,14 @@ const ALL_COLUMNS: ColumnDef[] = [
     header: "Total Revenue",
     accessor: (row) => row.total_revenue,
     minWidth: 140,
-    render: (value) => (value ? `€${(value / 1000).toFixed(0)}K` : "—"),
+    // Currency render handled in component via useMemo
   },
   {
     id: "total_margin",
     header: "Total Margin",
     accessor: (row) => row.total_margin,
     minWidth: 140,
-    render: (value) => (value ? `€${(value / 1000).toFixed(0)}K` : "—"),
+    // Currency render handled in component via useMemo
   },
   {
     id: "cogs_count",
@@ -312,7 +313,7 @@ const ALL_COLUMNS: ColumnDef[] = [
     header: "Latest COGS",
     accessor: (row) => row.latest_cogs,
     minWidth: 120,
-    render: (value) => (value ? `€${value.toFixed(2)}` : "—"),
+    // Currency render handled in component via useMemo
   },
   {
     id: "registration_statuses",
@@ -499,6 +500,28 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
   // Permission check
   const { canEditFormulations, isLoading: permissionsLoading } = usePermissions();
 
+  // Display preferences for currency formatting
+  const { formatCurrencyCompact, formatCurrency } = useDisplayPreferences();
+
+  // Process columns to add currency render functions
+  const processedColumns = useMemo(() => {
+    return ALL_COLUMNS.map(col => {
+      if (col.id === "total_revenue" || col.id === "total_margin") {
+        return {
+          ...col,
+          render: (value: number | null) => value ? formatCurrencyCompact(value) : "—"
+        };
+      }
+      if (col.id === "latest_cogs") {
+        return {
+          ...col,
+          render: (value: number | null) => value ? formatCurrency(value, { compact: false, decimals: 2 }) : "—"
+        };
+      }
+      return col;
+    });
+  }, [formatCurrencyCompact, formatCurrency]);
+
   // Fullscreen state
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -613,9 +636,9 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
   const orderedVisibleColumns = useMemo(() => {
     return columnOrder
       .filter((id) => visibleColumns.includes(id))
-      .map((id) => ALL_COLUMNS.find((c) => c.id === id)!)
+      .map((id) => processedColumns.find((c) => c.id === id)!)
       .filter(Boolean);
-  }, [columnOrder, visibleColumns]);
+  }, [columnOrder, visibleColumns, processedColumns]);
 
   // Filter formulations
   const filteredFormulations = useMemo(() => {
@@ -759,7 +782,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
     if (editedData[formulation.formulation_id]?.[field as keyof FormulationTable] !== undefined) {
       return editedData[formulation.formulation_id][field as keyof FormulationTable];
     }
-    const column = ALL_COLUMNS.find((c) => c.id === field);
+    const column = processedColumns.find((c) => c.id === field);
     if (column) {
       return column.accessor(formulation);
     }

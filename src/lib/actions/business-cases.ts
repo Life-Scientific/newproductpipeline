@@ -3,7 +3,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
-import { checkExistingBusinessCase, validateUseGroupTargetEntryConsistency } from "@/lib/db/queries";
+import { 
+  checkExistingBusinessCase, 
+  validateUseGroupTargetEntryConsistency, 
+  getBusinessCaseGroup,
+  getFormulations,
+  getCountries,
+  getBusinessCaseVersionHistory
+} from "@/lib/db/queries";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { lookupCOGSWithCarryForward } from "./cogs";
 import { withUserContext } from "@/lib/supabase/user-context";
@@ -715,11 +722,11 @@ export async function updateBusinessCaseGroupAction(
  * Server action to get business case group data (for client components)
  */
 export async function getBusinessCaseGroupAction(groupId: string) {
-  const { getBusinessCaseGroup } = await import("@/lib/db/queries");
   try {
     const data = await getBusinessCaseGroup(groupId);
     return { data, error: null };
   } catch (error) {
+    console.error("getBusinessCaseGroupAction error:", error);
     return { data: null, error: error instanceof Error ? error.message : "Failed to fetch business case group" };
   }
 }
@@ -732,7 +739,6 @@ export async function checkExistingBusinessCaseAction(
   countryId: string,
   useGroupId: string
 ) {
-  const { checkExistingBusinessCase } = await import("@/lib/db/queries");
   try {
     const groupId = await checkExistingBusinessCase(formulationId, countryId, useGroupId);
     return { data: groupId, error: null };
@@ -745,7 +751,6 @@ export async function checkExistingBusinessCaseAction(
  * Server action to get formulations (for client components)
  */
 export async function getFormulationsAction() {
-  const { getFormulations } = await import("@/lib/db/queries");
   try {
     const data = await getFormulations();
     return { data, error: null };
@@ -758,7 +763,6 @@ export async function getFormulationsAction() {
  * Server action to get countries (for client components)
  */
 export async function getCountriesAction() {
-  const { getCountries } = await import("@/lib/db/queries");
   try {
     const data = await getCountries();
     return { data, error: null };
@@ -771,7 +775,6 @@ export async function getCountriesAction() {
  * Server action to get business case version history (for client components)
  */
 export async function getBusinessCaseVersionHistoryAction(useGroupId: string) {
-  const { getBusinessCaseVersionHistory } = await import("@/lib/db/queries");
   try {
     const data = await getBusinessCaseVersionHistory(useGroupId);
     return { data, error: null };

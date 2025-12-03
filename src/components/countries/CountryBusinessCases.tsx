@@ -7,9 +7,10 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormattedCurrency } from "@/components/ui/formatted-currency";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { Database } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
-import { formatCurrencyCompact } from "@/lib/utils/currency";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -40,6 +41,11 @@ function matchesFiscalYear(bc: BusinessCase, selectedFY: number): boolean {
 
 export function CountryBusinessCases({ businessCases, countryName }: CountryBusinessCasesProps) {
   const searchParams = useSearchParams();
+  const { 
+    formatCurrencyCompact, formatPerUnit, getDisplayUnit, 
+    isWetProduct, isDryProduct, convertVolume, convertWeight,
+    volumeUnit, weightUnit, preferences
+  } = useDisplayPreferences();
   
   // Get selected FY from URL params, default to FY30
   const selectedFY = parseInt(searchParams.get("fy") || "30", 10);
@@ -123,11 +129,18 @@ export function CountryBusinessCases({ businessCases, countryName }: CountryBusi
       header: "Volume",
       cell: ({ row }) => {
         const volume = row.getValue("volume") as number | null;
-        const uom = row.original.uom;
+        const uom = row.original.uom || "L";
         if (!volume) return <span className="text-sm text-muted-foreground">—</span>;
+        
+        // Convert based on product type
+        const productIsWet = isWetProduct(uom);
+        const productIsDry = isDryProduct(uom);
+        const converted = productIsWet ? convertVolume(volume) : (productIsDry ? convertWeight(volume) : volume);
+        const displayUnit = getDisplayUnit(uom);
+        
         return (
           <span className="text-sm">
-            {volume.toLocaleString()} {uom || ""}
+            {converted.toLocaleString(undefined, { maximumFractionDigits: 0 })} {displayUnit}
           </span>
         );
       },
@@ -137,8 +150,29 @@ export function CountryBusinessCases({ businessCases, countryName }: CountryBusi
       header: "NSP",
       cell: ({ row }) => {
         const nsp = row.getValue("nsp") as number | null;
+        const uom = row.original.uom || "L";
         if (!nsp) return <span className="text-sm text-muted-foreground">—</span>;
-        return <span className="text-sm">{formatCurrencyCompact(nsp)}</span>;
+        const displayUnit = getDisplayUnit(uom);
+        return (
+          <span className="text-sm">
+            {formatPerUnit(nsp, uom, { decimals: 2 })}/{displayUnit}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "cogs_per_unit",
+      header: "COGS",
+      cell: ({ row }) => {
+        const cogs = row.original.cogs_per_unit as number | null;
+        const uom = row.original.uom || "L";
+        if (!cogs) return <span className="text-sm text-muted-foreground">—</span>;
+        const displayUnit = getDisplayUnit(uom);
+        return (
+          <span className="text-sm">
+            {formatPerUnit(cogs, uom, { decimals: 2 })}/{displayUnit}
+          </span>
+        );
       },
     },
     {
@@ -148,7 +182,19 @@ export function CountryBusinessCases({ businessCases, countryName }: CountryBusi
         const revenue = row.getValue("total_revenue") as number | null;
         return (
           <span className="text-sm font-medium">
-            {formatCurrencyCompact(revenue)}
+            <FormattedCurrency value={revenue} compact />
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "total_cogs",
+      header: "Total COGS",
+      cell: ({ row }) => {
+        const cogs = row.original.total_cogs as number | null;
+        return (
+          <span className="text-sm">
+            <FormattedCurrency value={cogs} compact />
           </span>
         );
       },
@@ -163,7 +209,7 @@ export function CountryBusinessCases({ businessCases, countryName }: CountryBusi
             "text-sm font-medium",
             margin && margin < 0 && "text-destructive"
           )}>
-            {formatCurrencyCompact(margin)}
+            <FormattedCurrency value={margin} compact />
           </span>
         );
       },
@@ -190,7 +236,7 @@ export function CountryBusinessCases({ businessCases, countryName }: CountryBusi
         );
       },
     },
-  ], []);
+  ], [formatPerUnit, getDisplayUnit, isWetProduct, isDryProduct, convertVolume, convertWeight, preferences.currency, preferences.volumeUnit, preferences.weightUnit]);
 
   return (
     <Card>
@@ -204,6 +250,7 @@ export function CountryBusinessCases({ businessCases, countryName }: CountryBusi
       </CardHeader>
       <CardContent>
         <EnhancedDataTable
+          key={`${preferences.currency}-${preferences.volumeUnit}-${preferences.weightUnit}`}
           columns={columns}
           data={filteredBusinessCases}
           searchKey="formulation_code"

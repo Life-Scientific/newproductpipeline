@@ -26,6 +26,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
 
 interface ScenarioPlanningClientProps {
@@ -56,6 +57,8 @@ const SCENARIO_COLORS = [
 const ADJUSTMENT_STEP = 5;
 
 export function ScenarioPlanningClient({ businessCases, exchangeRates }: ScenarioPlanningClientProps) {
+  const { formatCurrencyCompact } = useDisplayPreferences();
+  
   // Filter state
   const [selectedCountryIds, setSelectedCountryIds] = useState<string[]>([]);
   const [selectedFormulationIds, setSelectedFormulationIds] = useState<string[]>([]);
@@ -392,16 +395,8 @@ export function ScenarioPlanningClient({ businessCases, exchangeRates }: Scenari
     ]);
   }, [scenarios.length]);
 
-  // Format currency
-  const formatCurrency = (value: number) => {
-    if (Math.abs(value) >= 1000000) {
-      return `€${(value / 1000000).toFixed(1)}M`;
-    }
-    if (Math.abs(value) >= 1000) {
-      return `€${(value / 1000).toFixed(0)}K`;
-    }
-    return `€${value.toFixed(0)}`;
-  };
+  // Format currency - use hook's formatCurrencyCompact
+  const formatCurrency = formatCurrencyCompact;
 
   // Format percentage change
   const formatChange = (baseline: number, scenario: number) => {

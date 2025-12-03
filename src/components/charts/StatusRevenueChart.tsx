@@ -14,6 +14,7 @@ import {
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
 import { chartTheme, chartColors, getAxisProps, getLegendFormatter } from "@/lib/utils/chart-theme";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
@@ -30,6 +31,7 @@ export function StatusRevenueChart({
   onDrillDown,
 }: StatusRevenueChartProps) {
   const router = useRouter();
+  const { currencySymbol } = useDisplayPreferences();
 
   // Create a map of formulation_id to status
   const formulationStatusMap = new Map<string, string>();
@@ -96,7 +98,7 @@ export function StatusRevenueChart({
               }}
             />
             <YAxis 
-              {...getAxisProps("Amount (M$)", true)}
+              {...getAxisProps(`Amount (M${currencySymbol})`, true)}
             />
             <Tooltip
               content={({ active, payload, label }) => {
@@ -122,7 +124,7 @@ export function StatusRevenueChart({
                             <span className="font-medium text-foreground">
                               {name === "Margin %" 
                                 ? `${Number(entry.value).toFixed(1)}%`
-                                : `$${Number(entry.value).toFixed(2)}M`}
+                                : `${currencySymbol}${Number(entry.value).toFixed(2)}M`}
                             </span>
                           </div>
                         );

@@ -11,6 +11,7 @@ import {
   EnhancedDataTable,
   type FilterConfig,
 } from "@/components/ui/enhanced-data-table";
+import { FormattedCurrency } from "@/components/ui/formatted-currency";
 import { usePermissions } from "@/hooks/use-permissions";
 import type { FormulationWithNestedData } from "@/lib/db/queries";
 import type { Database } from "@/lib/supabase/database.types";
@@ -298,7 +299,9 @@ const createColumns = (
         const revenue = row.original.total_revenue;
         if (!revenue) return <span className="text-muted-foreground">—</span>;
         return (
-          <span className="font-medium">€{(revenue / 1000).toFixed(0)}K</span>
+          <span className="font-medium">
+            <FormattedCurrency value={revenue} compact={true} />
+          </span>
         );
       },
       meta: {
@@ -312,7 +315,9 @@ const createColumns = (
         const margin = row.original.total_margin;
         if (!margin) return <span className="text-muted-foreground">—</span>;
         return (
-          <span className="font-medium">€{(margin / 1000).toFixed(0)}K</span>
+          <span className="font-medium">
+            <FormattedCurrency value={margin} compact={true} />
+          </span>
         );
       },
       meta: {

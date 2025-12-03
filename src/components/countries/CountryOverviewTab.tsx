@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { formatCurrencyCompact } from "@/lib/utils/currency";
+import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import { getStatusVariant } from "@/lib/design-system";
 import { FiscalYearSelector } from "@/components/countries/FiscalYearSelector";
 import type { Database } from "@/lib/supabase/database.types";
@@ -59,6 +59,7 @@ export function CountryOverviewTab({
 }: CountryOverviewTabProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { formatCurrencyCompact } = useDisplayPreferences();
   
   // Get selected FY from URL params, default to FY30
   const selectedFY = parseInt(searchParams.get("fy") || "30", 10);

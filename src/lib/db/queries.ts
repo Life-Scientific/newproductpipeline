@@ -1610,26 +1610,28 @@ export async function checkExistingBusinessCase(
 ): Promise<string | null> {
   const supabase = await createClient();
   
-  // Find business cases linked to this use group
+  // Find business cases linked to this use group that are ACTIVE
+  // We join with business_case to filter by status = 'active' to avoid
+  // getting superseded (old version) business case IDs
   const { data: junctionData } = await supabase
     .from("business_case_use_groups")
-    .select("business_case_id")
+    .select(`
+      business_case_id,
+      business_case!inner(business_case_group_id, status)
+    `)
     .eq("formulation_country_use_group_id", useGroupId)
+    .eq("business_case.status", "active")
     .limit(1);
 
   if (!junctionData || junctionData.length === 0) {
     return null;
   }
 
-  // Get business_case_group_id from one of the business cases
-  const { data: bcData } = await supabase
-    .from("business_case")
-    .select("business_case_group_id")
-    .eq("business_case_id", junctionData[0].business_case_id)
-    .eq("status", "active")
-    .single();
-
-  return bcData?.business_case_group_id || null;
+  // Extract business_case_group_id from the joined data
+  // business_case is returned as an array by Supabase's !inner join
+  const businessCaseArray = junctionData[0].business_case as { business_case_group_id: string; status: string }[] | null;
+  const businessCase = businessCaseArray?.[0];
+  return businessCase?.business_case_group_id || null;
 }
 
 /**
