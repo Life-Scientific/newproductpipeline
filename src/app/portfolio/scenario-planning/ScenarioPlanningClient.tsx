@@ -612,7 +612,6 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
                 <ComparisonByYear
                   selectedBusinessCases={selectedBusinessCases}
                   scenarioResults={scenarioResults}
-                  exchangeRates={exchangeRates}
                   formatCurrency={formatCurrency}
                 />
               </TabsContent>
@@ -917,14 +916,12 @@ interface ComparisonByYearProps {
     scenario: Scenario;
     adjustedCases: BusinessCaseGroupData[];
   }>;
-  exchangeRates: Map<string, number>;
   formatCurrency: (value: number) => string;
 }
 
 function ComparisonByYear({ 
   selectedBusinessCases, 
   scenarioResults, 
-  exchangeRates,
   formatCurrency 
 }: ComparisonByYearProps) {
   // Get all fiscal years across all selected cases
@@ -960,7 +957,7 @@ function ComparisonByYear({
         ...aggregateYear(adjustedCases, fy),
       })),
     }));
-  }, [allYears, selectedBusinessCases, scenarioResults, exchangeRates]);
+  }, [allYears, selectedBusinessCases, scenarioResults]);
 
   if (yearlyData.length === 0) {
     return (
