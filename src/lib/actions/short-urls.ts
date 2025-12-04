@@ -47,7 +47,7 @@ export interface ClickAnalytics {
 // ============================================================================
 
 /**
- * Get all short URLs for the current user with click counts
+ * Get all short URLs (org-wide) with click counts
  */
 export async function getShortUrls(): Promise<ShortUrlWithStats[]> {
   const supabase = await createClient();
@@ -60,31 +60,41 @@ export async function getShortUrls(): Promise<ShortUrlWithStats[]> {
     throw new Error("User not authenticated");
   }
 
-  // Get short URLs with click counts using a subquery
+  // Get ALL short URLs (org-wide, RLS allows all authenticated users to view)
   const { data: shortUrls, error } = await supabase
     .from("short_urls")
     .select("*")
-    .eq("created_by", user.id)
     .order("created_at", { ascending: false });
 
   if (error) {
     throw new Error(`Failed to fetch short URLs: ${error.message}`);
   }
 
-  // Get click counts for each URL
-  const urlsWithStats: ShortUrlWithStats[] = await Promise.all(
-    (shortUrls || []).map(async (url) => {
-      const { count } = await supabase
-        .from("short_url_clicks")
-        .select("*", { count: "exact", head: true })
-        .eq("short_url_id", url.id);
+  if (!shortUrls || shortUrls.length === 0) {
+    return [];
+  }
 
-      return {
-        ...url,
-        click_count: count || 0,
-      };
-    }),
-  );
+  // Get all click counts in a single query using aggregation
+  const urlIds = shortUrls.map((u) => u.id);
+  const { data: clickCounts } = await supabase
+    .from("short_url_clicks")
+    .select("short_url_id")
+    .in("short_url_id", urlIds);
+
+  // Count clicks per URL
+  const clickCountMap = new Map<string, number>();
+  for (const click of clickCounts || []) {
+    clickCountMap.set(
+      click.short_url_id,
+      (clickCountMap.get(click.short_url_id) || 0) + 1,
+    );
+  }
+
+  // Merge URLs with click counts
+  const urlsWithStats: ShortUrlWithStats[] = shortUrls.map((url) => ({
+    ...url,
+    click_count: clickCountMap.get(url.id) || 0,
+  }));
 
   return urlsWithStats;
 }
@@ -107,11 +117,11 @@ export async function getShortUrl(id: string): Promise<{
     throw new Error("User not authenticated");
   }
 
+  // Get any short URL (org-wide viewing)
   const { data: shortUrl, error } = await supabase
     .from("short_urls")
     .select("*")
     .eq("id", id)
-    .eq("created_by", user.id)
     .single();
 
   if (error || !shortUrl) {
@@ -208,7 +218,7 @@ export async function createShortUrl(formData: FormData): Promise<ShortUrl> {
 }
 
 /**
- * Update an existing short URL
+ * Update an existing short URL (Admin/Editor only via RLS)
  */
 export async function updateShortUrl(
   id: string,
@@ -235,6 +245,7 @@ export async function updateShortUrl(
     throw new Error("Invalid destination URL");
   }
 
+  // RLS restricts UPDATE to Admin/Editor roles
   const { data: updatedUrl, error } = await supabase
     .from("short_urls")
     .update({
@@ -243,11 +254,14 @@ export async function updateShortUrl(
       description,
     })
     .eq("id", id)
-    .eq("created_by", user.id)
     .select()
     .single();
 
   if (error) {
+    // Check if it's a permission error from RLS
+    if (error.code === "42501" || error.message.includes("policy")) {
+      throw new Error("Only Admin or Editor roles can edit short URLs");
+    }
     throw new Error(`Failed to update short URL: ${error.message}`);
   }
 
@@ -257,7 +271,7 @@ export async function updateShortUrl(
 }
 
 /**
- * Delete a short URL
+ * Delete a short URL (Admin/Editor only via RLS)
  */
 export async function deleteShortUrl(id: string): Promise<void> {
   const supabase = await createClient();
@@ -270,13 +284,17 @@ export async function deleteShortUrl(id: string): Promise<void> {
     throw new Error("User not authenticated");
   }
 
+  // RLS restricts DELETE to Admin/Editor roles
   const { error } = await supabase
     .from("short_urls")
     .delete()
-    .eq("id", id)
-    .eq("created_by", user.id);
+    .eq("id", id);
 
   if (error) {
+    // Check if it's a permission error from RLS
+    if (error.code === "42501" || error.message.includes("policy")) {
+      throw new Error("Only Admin or Editor roles can delete short URLs");
+    }
     throw new Error(`Failed to delete short URL: ${error.message}`);
   }
 
@@ -288,7 +306,7 @@ export async function deleteShortUrl(id: string): Promise<void> {
 // ============================================================================
 
 /**
- * Get analytics for a specific short URL or all URLs
+ * Get analytics for a specific short URL or all URLs (org-wide)
  */
 export async function getShortUrlAnalytics(
   shortUrlId?: string,
@@ -303,28 +321,26 @@ export async function getShortUrlAnalytics(
     throw new Error("User not authenticated");
   }
 
-  // Get user's short URL IDs for filtering
+  // Get short URL IDs for filtering (org-wide)
   let urlIds: string[] = [];
 
   if (shortUrlId) {
-    // Verify user owns this URL
+    // Verify URL exists
     const { data: url } = await supabase
       .from("short_urls")
       .select("id")
       .eq("id", shortUrlId)
-      .eq("created_by", user.id)
       .single();
 
     if (!url) {
-      throw new Error("Short URL not found or not authorized");
+      throw new Error("Short URL not found");
     }
     urlIds = [shortUrlId];
   } else {
-    // Get all user's URLs
+    // Get ALL URLs (org-wide)
     const { data: urls } = await supabase
       .from("short_urls")
-      .select("id")
-      .eq("created_by", user.id);
+      .select("id");
 
     urlIds = (urls || []).map((u) => u.id);
   }
@@ -426,7 +442,7 @@ export async function getShortUrlAnalytics(
 }
 
 /**
- * Get top performing short URLs
+ * Get top performing short URLs (org-wide)
  */
 export async function getTopShortUrls(
   limit: number = 10,
