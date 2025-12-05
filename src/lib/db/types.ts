@@ -94,3 +94,132 @@ export interface BusinessCaseYearData {
   formulation_country_use_group_id: string | null; // For version history lookup
 }
 
+// ============================================================================
+// Business Case Import Types
+// ============================================================================
+
+/**
+ * Raw CSV row data for business case import.
+ * All year data fields are optional - COGS will auto-lookup if empty.
+ */
+export interface BusinessCaseImportRow {
+  /** Formulation code (e.g., "323-01") - required */
+  formulation_code: string;
+  /** Country code (e.g., "IE", "UK", "DE") - required */
+  country_code: string;
+  /** Use group variant (e.g., "001") - required */
+  use_group_variant: string;
+  /** Effective fiscal year start (e.g., "FY26") - optional, uses use group's target_market_entry_fy if omitted */
+  effective_start_fiscal_year?: string;
+  /** Business case name/description - optional */
+  business_case_name?: string;
+  /** Reason for change - required when updating existing business case */
+  change_reason?: string;
+  /** Year 1-10 data: volume (in base units L/KG), nsp (in EUR), cogs (optional EUR override) */
+  year_1_volume: number;
+  year_1_nsp: number;
+  year_1_cogs?: number;
+  year_2_volume: number;
+  year_2_nsp: number;
+  year_2_cogs?: number;
+  year_3_volume: number;
+  year_3_nsp: number;
+  year_3_cogs?: number;
+  year_4_volume: number;
+  year_4_nsp: number;
+  year_4_cogs?: number;
+  year_5_volume: number;
+  year_5_nsp: number;
+  year_5_cogs?: number;
+  year_6_volume: number;
+  year_6_nsp: number;
+  year_6_cogs?: number;
+  year_7_volume: number;
+  year_7_nsp: number;
+  year_7_cogs?: number;
+  year_8_volume: number;
+  year_8_nsp: number;
+  year_8_cogs?: number;
+  year_9_volume: number;
+  year_9_nsp: number;
+  year_9_cogs?: number;
+  year_10_volume: number;
+  year_10_nsp: number;
+  year_10_cogs?: number;
+}
+
+/**
+ * Validation result for a single import row.
+ */
+export interface BusinessCaseImportRowValidation {
+  /** Original row index in CSV (0-based, excluding header) */
+  rowIndex: number;
+  /** The parsed row data */
+  row: BusinessCaseImportRow;
+  /** Whether validation passed */
+  isValid: boolean;
+  /** Validation errors (if any) */
+  errors: string[];
+  /** Validation warnings (non-blocking issues) */
+  warnings: string[];
+  /** Resolved entity IDs (populated during validation) */
+  resolved?: {
+    formulation_id: string;
+    country_id: string;
+    formulation_country_id: string;
+    formulation_country_use_group_id: string;
+    target_market_entry_fy: string | null;
+    existing_business_case_group_id: string | null; // If updating existing
+  };
+}
+
+/**
+ * Status of a single row during import process.
+ */
+export type ImportRowStatus = 
+  | "pending"
+  | "validating"
+  | "valid"
+  | "invalid"
+  | "importing"
+  | "created"
+  | "updated"
+  | "skipped"
+  | "error";
+
+/**
+ * Progress tracking for a row during import.
+ */
+export interface BusinessCaseImportRowProgress {
+  rowIndex: number;
+  status: ImportRowStatus;
+  message?: string;
+  businessCaseGroupId?: string; // Set after successful import
+}
+
+/**
+ * Overall import result summary.
+ */
+export interface BusinessCaseImportResult {
+  /** Total rows processed */
+  totalRows: number;
+  /** Rows that passed validation */
+  validRows: number;
+  /** Rows that failed validation */
+  invalidRows: number;
+  /** New business cases created */
+  created: number;
+  /** Existing business cases updated (new version created) */
+  updated: number;
+  /** Rows skipped (e.g., dry run or user choice) */
+  skipped: number;
+  /** Rows that failed during import */
+  errors: number;
+  /** Detailed validation results per row */
+  rowValidations: BusinessCaseImportRowValidation[];
+  /** Progress tracking per row */
+  rowProgress: BusinessCaseImportRowProgress[];
+  /** Overall error message if import failed catastrophically */
+  error?: string;
+}
+
