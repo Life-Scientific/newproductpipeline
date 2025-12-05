@@ -204,20 +204,7 @@ function FilterMultiSelectClient({ label, options, selected, onSelectionChange, 
                       "w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors cursor-pointer",
                       isSelected && "bg-accent/50"
                     )}
-                    onClick={(e) => {
-                      // Only handle click if it's not on the checkbox or label
-                      const target = e.target as HTMLElement;
-                      // Check if click originated from checkbox or label
-                      if (
-                        target.closest('button[role="checkbox"]') || 
-                        target.tagName === 'LABEL' || 
-                        target.closest('label') ||
-                        target.id === optionId
-                      ) {
-                        return;
-                      }
-                      handleToggle(option);
-                    }}
+                    onClick={() => handleToggle(option)}
                   >
                     <Checkbox 
                       id={optionId}
@@ -229,9 +216,11 @@ function FilterMultiSelectClient({ label, options, selected, onSelectionChange, 
                       htmlFor={optionId} 
                       className="flex-1 cursor-pointer"
                       onClick={(e) => {
+                        // Prevent the label's htmlFor from triggering the checkbox
+                        // and handle the toggle directly to avoid double-firing
+                        e.preventDefault();
                         e.stopPropagation();
-                        // The label's htmlFor will trigger the checkbox,
-                        // so we don't need to manually toggle here
+                        handleToggle(option);
                       }}
                     >
                       {option}
