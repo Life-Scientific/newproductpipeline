@@ -1,9 +1,10 @@
 "use client";
 
-import { GitBranch, Plus } from "lucide-react";
+import { GitBranch, Plus, Upload, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { BusinessCaseModal } from "@/components/business-cases/BusinessCaseModal";
+import { BusinessCaseImportModal } from "@/components/business-cases/BusinessCaseImportModal";
 import { BusinessCaseFilters } from "@/components/business-cases/BusinessCaseFilters";
 import { BusinessCasesProjectionTable } from "@/components/business-cases/BusinessCasesProjectionTable";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ import {
 import { usePermissions } from "@/hooks/use-permissions";
 import { type FilterState, useUrlFilters } from "@/hooks/use-url-filters";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
+import { exportBusinessCasesToCSV, generateBusinessCaseImportTemplate } from "@/lib/actions/business-cases";
+import { useToast } from "@/components/ui/use-toast";
 
 interface BusinessCasesPageClientProps {
   initialBusinessCases: BusinessCaseGroupData[];
@@ -28,7 +31,9 @@ function BusinessCasesContent({
   // Use URL-based filters for persistence across navigation
   const { filters, setFilters } = useUrlFilters();
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   // Permission checks
   const {
@@ -85,6 +90,60 @@ function BusinessCasesContent({
     setFilters(newFilters);
   };
 
+  // Handle export to CSV
+  const handleExport = async () => {
+    try {
+      const csvContent = await exportBusinessCasesToCSV(filteredBusinessCases);
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `business_cases_export_${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Export successful",
+        description: `Exported ${filteredBusinessCases.length} business case${filteredBusinessCases.length !== 1 ? "s" : ""} to CSV`,
+      });
+    } catch (error) {
+      toast({
+        title: "Export failed",
+        description: error instanceof Error ? error.message : "Failed to export business cases",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle template download
+  const handleDownloadTemplate = async () => {
+    try {
+      const csvContent = await generateBusinessCaseImportTemplate();
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "business_case_import_template.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Template downloaded",
+        description: "Template includes examples showing the same formulation across multiple countries",
+      });
+    } catch (error) {
+      toast({
+        title: "Download failed",
+        description: error instanceof Error ? error.message : "Failed to download template",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <>
       <BusinessCaseFilters
@@ -106,16 +165,50 @@ function BusinessCasesContent({
                 </span>
               </CardDescription>
             </div>
-            {canCreateBusinessCases && !permissionsLoading && (
-              <Button
-                onClick={() => setCreateModalOpen(true)}
-                size="lg"
-                className="h-12 px-6"
-              >
-                <Plus className="mr-2 h-5 w-5" />
-                New Business Case
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {filteredBusinessCases.length > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={handleExport}
+                  size="lg"
+                  className="h-12 px-6"
+                >
+                  <Download className="mr-2 h-5 w-5" />
+                  Export
+                </Button>
+              )}
+              {canCreateBusinessCases && !permissionsLoading && (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={handleDownloadTemplate}
+                    size="lg"
+                    className="h-12 px-6"
+                    title="Download CSV template with examples"
+                  >
+                    <Download className="mr-2 h-5 w-5" />
+                    Template
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setImportModalOpen(true)}
+                    size="lg"
+                    className="h-12 px-6"
+                  >
+                    <Upload className="mr-2 h-5 w-5" />
+                    Import
+                  </Button>
+                  <Button
+                    onClick={() => setCreateModalOpen(true)}
+                    size="lg"
+                    className="h-12 px-6"
+                  >
+                    <Plus className="mr-2 h-5 w-5" />
+                    New Business Case
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -129,14 +222,24 @@ function BusinessCasesContent({
       </Card>
 
       {canCreateBusinessCases && (
-        <BusinessCaseModal
-          open={createModalOpen}
-          onOpenChange={setCreateModalOpen}
-          onSuccess={() => {
-            // Use router.refresh() to get fresh data from the server
-            router.refresh();
-          }}
-        />
+        <>
+          <BusinessCaseModal
+            open={createModalOpen}
+            onOpenChange={setCreateModalOpen}
+            onSuccess={() => {
+              // Use router.refresh() to get fresh data from the server
+              router.refresh();
+            }}
+          />
+          <BusinessCaseImportModal
+            open={importModalOpen}
+            onOpenChange={setImportModalOpen}
+            onSuccess={() => {
+              // Use router.refresh() to get fresh data from the server
+              router.refresh();
+            }}
+          />
+        </>
       )}
     </>
   );

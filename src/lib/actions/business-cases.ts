@@ -1105,3 +1105,194 @@ export async function importBusinessCases(
     rowProgress,
   };
 }
+
+/**
+ * Exports business cases to CSV format matching the import template.
+ * Returns CSV string that can be downloaded.
+ */
+export async function exportBusinessCasesToCSV(
+  businessCaseGroups: Array<{
+    formulation_code: string | null;
+    country_code: string;
+    use_group_variant: string | null;
+    effective_start_fiscal_year: string | null;
+    business_case_name?: string | null;
+    change_reason?: string | null;
+    years_data: Record<string, {
+      volume: number | null;
+      nsp: number | null;
+      cogs_per_unit: number | null;
+    }>;
+  }>
+): Promise<string> {
+  // Permission check
+  const canView = await hasPermission(PERMISSIONS.BUSINESS_CASE_CREATE);
+  if (!canView) {
+    throw new Error("Unauthorized: You don't have permission to export business cases");
+  }
+
+  const headers = [
+    "formulation_code",
+    "country_code",
+    "use_group_variant",
+    "effective_start_fiscal_year",
+    "business_case_name",
+    "change_reason",
+    ...Array.from({ length: 10 }, (_, i) => [
+      `year_${i + 1}_volume`,
+      `year_${i + 1}_nsp`,
+      `year_${i + 1}_cogs`,
+    ]).flat(),
+  ];
+
+  const rows: string[] = [];
+
+  for (const group of businessCaseGroups) {
+    const row: string[] = [
+      group.formulation_code || "",
+      group.country_code || "",
+      group.use_group_variant || "",
+      group.effective_start_fiscal_year || "",
+      group.business_case_name || "",
+      group.change_reason || "",
+    ];
+
+    // Calculate fiscal years for years 1-10 based on effective_start_fiscal_year
+    let startYear = CURRENT_FISCAL_YEAR;
+    if (group.effective_start_fiscal_year) {
+      const match = group.effective_start_fiscal_year.match(/FY(\d{2})/);
+      if (match) {
+        startYear = parseInt(match[1], 10);
+      }
+    }
+
+    // Add year data (years 1-10) - years_data is keyed by fiscal year strings like "FY26"
+    for (let yearOffset = 1; yearOffset <= 10; yearOffset++) {
+      const fiscalYearNum = startYear + (yearOffset - 1);
+      const fiscalYearStr = `FY${String(fiscalYearNum).padStart(2, "0")}`;
+      const yearData = group.years_data[fiscalYearStr];
+      
+      if (yearData) {
+        row.push(String(yearData.volume || ""));
+        row.push(String(yearData.nsp || ""));
+        row.push(String(yearData.cogs_per_unit || ""));
+      } else {
+        row.push("", "", "");
+      }
+    }
+
+    rows.push(row.map((cell) => {
+      // Escape commas and quotes in CSV
+      if (cell.includes(",") || cell.includes('"') || cell.includes("\n")) {
+        return `"${cell.replace(/"/g, '""')}"`;
+      }
+      return cell;
+    }).join(","));
+  }
+
+  return [headers.join(","), ...rows].join("\n");
+}
+
+/**
+ * Generates a CSV template with example rows showing how to import
+ * the same formulation across multiple countries.
+ * Returns CSV string that can be downloaded.
+ */
+export async function generateBusinessCaseImportTemplate(): Promise<string> {
+  // Permission check
+  const canView = await hasPermission(PERMISSIONS.BUSINESS_CASE_CREATE);
+  if (!canView) {
+    throw new Error("Unauthorized: You don't have permission to download templates");
+  }
+
+  const headers = [
+    "formulation_code",
+    "country_code",
+    "use_group_variant",
+    "effective_start_fiscal_year",
+    "business_case_name",
+    "change_reason",
+    ...Array.from({ length: 10 }, (_, i) => [
+      `year_${i + 1}_volume`,
+      `year_${i + 1}_nsp`,
+      `year_${i + 1}_cogs`,
+    ]).flat(),
+  ];
+
+  // Generate example rows showing the same formulation in different countries
+  // This demonstrates that each row = one formulation-country-use_group combination
+  const exampleRows = [
+    // Row 1: Ireland
+    [
+      "323-01",           // formulation_code
+      "IE",               // country_code
+      "001",              // use_group_variant
+      "FY26",             // effective_start_fiscal_year
+      "Ireland Market Expansion", // business_case_name
+      "Initial import",   // change_reason
+      ...Array.from({ length: 10 }, (_, i) => [
+        String(50000 + i * 5000),  // volume (increasing)
+        String(12.5 + i * 0.25),  // nsp (increasing)
+        "",                        // cogs (optional - auto-looked up if empty)
+      ]).flat(),
+    ],
+    // Row 2: UK - same formulation, different country
+    [
+      "323-01",           // Same formulation_code
+      "UK",               // Different country_code
+      "001",              // use_group_variant
+      "FY26",             // effective_start_fiscal_year
+      "UK Market Entry",  // business_case_name
+      "Initial import",   // change_reason
+      ...Array.from({ length: 10 }, (_, i) => [
+        String(30000 + i * 3000),  // Different volume
+        String(13.0 + i * 0.3),    // Different nsp
+        "",                        // cogs (optional)
+      ]).flat(),
+    ],
+    // Row 3: Germany - same formulation, different country
+    [
+      "323-01",           // Same formulation_code
+      "DE",               // Different country_code
+      "001",              // use_group_variant
+      "FY26",             // effective_start_fiscal_year
+      "Germany Market",   // business_case_name
+      "Initial import",   // change_reason
+      ...Array.from({ length: 10 }, (_, i) => [
+        String(40000 + i * 4000),  // Different volume
+        String(12.75 + i * 0.25), // Different nsp
+        "",                        // cogs (optional)
+      ]).flat(),
+    ],
+  ];
+
+  // Format rows with proper CSV escaping
+  const formattedRows = exampleRows.map((row) =>
+    row.map((cell) => {
+      // Escape commas and quotes in CSV
+      const cellStr = String(cell);
+      if (cellStr.includes(",") || cellStr.includes('"') || cellStr.includes("\n")) {
+        return `"${cellStr.replace(/"/g, '""')}"`;
+      }
+      return cellStr;
+    }).join(",")
+  );
+
+  // Add comment rows to explain the format
+  const commentRows = [
+    "# Business Case Import Template",
+    "# Each row represents ONE formulation-country-use_group combination",
+    "# You can import the same formulation across multiple countries by adding multiple rows",
+    "# Example: Rows 1-3 show formulation '323-01' in Ireland, UK, and Germany",
+    "#",
+    "# Required fields: formulation_code, country_code, use_group_variant, year_1-10_volume, year_1-10_nsp",
+    "# Optional fields: effective_start_fiscal_year, business_case_name, change_reason, year_N_cogs",
+    "#",
+  ];
+
+  return [
+    ...commentRows,
+    headers.join(","),
+    ...formattedRows,
+  ].join("\n");
+}
