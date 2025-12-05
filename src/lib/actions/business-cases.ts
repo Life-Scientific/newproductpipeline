@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import { 
   checkExistingBusinessCase, 
@@ -113,8 +113,10 @@ export async function createBusinessCase(formData: FormData) {
     return { error: `Failed to link use groups: ${junctionError.message}` };
   }
 
+  revalidateTag("business-cases", "page");
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/scenario-planning");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { data: businessCase, success: true };
@@ -233,8 +235,10 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
     }
   }
 
+  revalidateTag("business-cases", "page");
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/scenario-planning");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { data, success: true };
@@ -258,8 +262,10 @@ export async function deleteBusinessCase(businessCaseId: string) {
     return { error: error.message };
   }
 
+  revalidateTag("business-cases", "page");
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/scenario-planning");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { success: true };
@@ -495,8 +501,10 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     }
   }
 
+  revalidateTag("business-cases", "page");
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/scenario-planning");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { data: { business_case_group_id: groupId }, success: true };
@@ -716,8 +724,10 @@ export async function updateBusinessCaseGroupAction(
     return { error: result.error };
   }
 
+  revalidateTag("business-cases", "page");
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/scenario-planning");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { success: true, data: result.data };
@@ -787,4 +797,3 @@ export async function getBusinessCaseVersionHistoryAction(useGroupId: string) {
     return { data: null, error: error instanceof Error ? error.message : "Failed to fetch version history" };
   }
 }
-
