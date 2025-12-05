@@ -1,6 +1,6 @@
 "use client";
 
-import { GitBranch, Plus, Upload, Download } from "lucide-react";
+import { GitBranch, Plus, Upload, Download, ChevronDown, FileSpreadsheet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { BusinessCaseModal } from "@/components/business-cases/BusinessCaseModal";
@@ -8,6 +8,13 @@ import { BusinessCaseImportModal } from "@/components/business-cases/BusinessCas
 import { BusinessCaseFilters } from "@/components/business-cases/BusinessCaseFilters";
 import { BusinessCasesProjectionTable } from "@/components/business-cases/BusinessCasesProjectionTable";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Card,
   CardContent,
@@ -166,38 +173,39 @@ function BusinessCasesContent({
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              {filteredBusinessCases.length > 0 && (
-                <Button
-                  variant="outline"
-                  onClick={handleExport}
-                  size="lg"
-                  className="h-12 px-6"
-                >
-                  <Download className="mr-2 h-5 w-5" />
-                  Export
-                </Button>
-              )}
               {canCreateBusinessCases && !permissionsLoading && (
                 <>
-                  <Button
-                    variant="outline"
-                    onClick={handleDownloadTemplate}
-                    size="lg"
-                    className="h-12 px-6"
-                    title="Download CSV template with examples"
-                  >
-                    <Download className="mr-2 h-5 w-5" />
-                    Template
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setImportModalOpen(true)}
-                    size="lg"
-                    className="h-12 px-6"
-                  >
-                    <Upload className="mr-2 h-5 w-5" />
-                    Import
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="lg" className="h-12 px-6">
+                        <FileSpreadsheet className="mr-2 h-5 w-5" />
+                        Data
+                        <ChevronDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      {filteredBusinessCases.length > 0 && (
+                        <>
+                          <DropdownMenuItem onClick={handleExport}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Export CSV
+                            <span className="ml-auto text-xs text-muted-foreground">
+                              {filteredBusinessCases.length} cases
+                            </span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      <DropdownMenuItem onClick={handleDownloadTemplate}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download Template
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setImportModalOpen(true)}>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Import CSV
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button
                     onClick={() => setCreateModalOpen(true)}
                     size="lg"
@@ -207,6 +215,17 @@ function BusinessCasesContent({
                     New Business Case
                   </Button>
                 </>
+              )}
+              {!canCreateBusinessCases && !permissionsLoading && filteredBusinessCases.length > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={handleExport}
+                  size="lg"
+                  className="h-12 px-6"
+                >
+                  <Download className="mr-2 h-5 w-5" />
+                  Export
+                </Button>
               )}
             </div>
           </div>
