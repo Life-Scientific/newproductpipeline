@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition, useMemo } from "react";
+import { useState, useEffect, useTransition, useMemo, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -72,6 +72,19 @@ export function BusinessCaseModal({
 }: BusinessCaseModalProps) {
   const { toast } = useToast();
   const supabase = useSupabase();
+  
+  // Refs for callbacks to avoid useEffect dependency issues
+  // This prevents race conditions when parent re-renders with new callback references
+  const onOpenChangeRef = useRef(onOpenChange);
+  const onSuccessRef = useRef(onSuccess);
+  const toastRef = useRef(toast);
+  
+  // Keep refs updated with latest callback values
+  useEffect(() => {
+    onOpenChangeRef.current = onOpenChange;
+    onSuccessRef.current = onSuccess;
+    toastRef.current = toast;
+  });
   const [isPending, startTransition] = useTransition();
   const { 
     preferences, currencySymbol, formatCurrency, 
@@ -127,7 +140,10 @@ export function BusinessCaseModal({
   const isEditMode = !!groupId;
   
   // Reset state when modal opens/closes or groupId changes
+  // Uses refs for callbacks to prevent race conditions from unstable callback references
   useEffect(() => {
+    let aborted = false; // Abort flag to prevent stale state updates
+    
     if (open) {
       if (groupId) {
         // Edit mode - load existing data
@@ -137,13 +153,25 @@ export function BusinessCaseModal({
         
         getBusinessCaseGroupAction(groupId)
           .then((result) => {
+            if (aborted) return; // Don't update state if effect was cleaned up
+            
             if (result.error) {
-              toast({
+              toastRef.current({
                 title: "Error",
                 description: result.error,
                 variant: "destructive",
               });
-              onOpenChange(false);
+              onOpenChangeRef.current(false);
+              return;
+            }
+            if (!result.data || result.data.length === 0) {
+              console.error("Business case group returned no data:", groupId);
+              toastRef.current({
+                title: "Error",
+                description: "Business case not found or contains no data. It may have been deleted.",
+                variant: "destructive",
+              });
+              onOpenChangeRef.current(false);
               return;
             }
             if (result.data && result.data.length > 0) {
@@ -181,15 +209,19 @@ export function BusinessCaseModal({
             }
           })
           .catch((error) => {
-            toast({
+            if (aborted) return; // Don't update state if effect was cleaned up
+            
+            toastRef.current({
               title: "Error",
               description: `Failed to load business case: ${error.message}`,
               variant: "destructive",
             });
-            onOpenChange(false);
+            onOpenChangeRef.current(false);
           })
           .finally(() => {
-            setLoading(false);
+            if (!aborted) {
+              setLoading(false);
+            }
           });
       } else {
         // Create mode - load selection data
@@ -211,12 +243,14 @@ export function BusinessCaseModal({
         
         Promise.all([getFormulationsAction(), getCountriesAction()])
           .then(([formResult, countryResult]) => {
+            if (aborted) return; // Don't update state if effect was cleaned up
+            
             if (formResult.error) {
-              toast({ title: "Error", description: formResult.error, variant: "destructive" });
+              toastRef.current({ title: "Error", description: formResult.error, variant: "destructive" });
               return;
             }
             if (countryResult.error) {
-              toast({ title: "Error", description: countryResult.error, variant: "destructive" });
+              toastRef.current({ title: "Error", description: countryResult.error, variant: "destructive" });
               return;
             }
             if (formResult.data) {
@@ -226,7 +260,9 @@ export function BusinessCaseModal({
             if (countryResult.data) setCountries(countryResult.data);
           })
           .catch((error) => {
-            toast({
+            if (aborted) return; // Don't update state if effect was cleaned up
+            
+            toastRef.current({
               title: "Error",
               description: `Failed to load data: ${error.message}`,
               variant: "destructive",
@@ -247,7 +283,12 @@ export function BusinessCaseModal({
       setTargetMarketEntry(null);
       setTargetEntryError(null);
     }
-  }, [open, groupId, toast, onOpenChange]);
+    
+    // Cleanup function: abort any pending state updates when effect re-runs or unmounts
+    return () => {
+      aborted = true;
+    };
+  }, [open, groupId]); // Stable dependencies only - callbacks accessed via refs
 
   // Filter formulations by selected country
   useEffect(() => {
@@ -395,14 +436,33 @@ export function BusinessCaseModal({
   // Calculate fiscal year columns
   const fiscalYearColumns = useMemo(() => {
     if (isEditMode && yearDataArray.length > 0) {
-      // Use effective_start_fiscal_year from loaded data
+      // Use effective_start_fiscal_year from loaded data, with fallback to target_market_entry_fy
       const effectiveStart = yearDataArray[0]?.effective_start_fiscal_year;
-      const match = effectiveStart?.match(/FY(\d{2})/);
-      if (!match) return [];
+      const targetEntryFallback = yearDataArray[0]?.target_market_entry_fy;
+      
+      // Try effective_start_fiscal_year first
+      let match = effectiveStart?.match(/FY(\d{2})/);
+      
+      // Fallback to target_market_entry_fy if effective_start_fiscal_year is missing
+      if (!match && targetEntryFallback) {
+        match = targetEntryFallback.match(/FY(\d{2})/);
+      }
+      
+      // Final fallback: use current fiscal year if neither field is available
+      // This handles legacy data that predates the effective_start_fiscal_year column
+      if (!match) {
+        console.warn("Business case missing effective_start_fiscal_year and target_market_entry_fy, using current fiscal year as fallback");
+        return Array.from({ length: 10 }, (_, i) => ({
+          yearOffset: i + 1,
+          fiscalYear: `FY${String(CURRENT_FISCAL_YEAR + i).padStart(2, "0")}`,
+        }));
+      }
+      
       const startYear = parseInt(match[1], 10);
+      const effectiveStartYear = startYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : startYear;
       return Array.from({ length: 10 }, (_, i) => ({
         yearOffset: i + 1,
-        fiscalYear: `FY${String(startYear + i).padStart(2, "0")}`,
+        fiscalYear: `FY${String(effectiveStartYear + i).padStart(2, "0")}`,
       }));
     } else if (targetMarketEntry) {
       const match = targetMarketEntry.match(/FY(\d{2})/);
@@ -760,7 +820,22 @@ export function BusinessCaseModal({
   // Effective start fiscal year for display
   const effectiveStartFiscalYear = useMemo(() => {
     if (isEditMode && yearDataArray.length > 0) {
-      return yearDataArray[0]?.effective_start_fiscal_year || "";
+      // Use effective_start_fiscal_year, fallback to target_market_entry_fy, then current FY
+      const effectiveStart = yearDataArray[0]?.effective_start_fiscal_year;
+      if (effectiveStart) return effectiveStart;
+      
+      const targetEntryFallback = yearDataArray[0]?.target_market_entry_fy;
+      if (targetEntryFallback) {
+        const match = targetEntryFallback.match(/FY(\d{2})/);
+        if (match) {
+          const startYear = parseInt(match[1], 10);
+          const effectiveStartYear = startYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : startYear;
+          return `FY${String(effectiveStartYear).padStart(2, "0")}`;
+        }
+      }
+      
+      // Final fallback for legacy data
+      return `FY${String(CURRENT_FISCAL_YEAR).padStart(2, "0")}`;
     }
     if (!targetMarketEntry) return null;
     const match = targetMarketEntry.match(/FY(\d{2})/);
@@ -781,6 +856,26 @@ export function BusinessCaseModal({
           <div className="py-8 text-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
             <p className="text-muted-foreground">Loading business case data...</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Guard: If we're in edit mode but have no data, something went wrong
+  // This can happen briefly during state transitions or if data failed to load
+  if (isEditMode && step === "data" && yearDataArray.length === 0 && !loading) {
+    console.error("BusinessCaseModal: Edit mode with no data loaded. groupId:", groupId);
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Error Loading Business Case</DialogTitle>
+            <DialogDescription>Unable to load business case data. The business case may have been deleted or is unavailable.</DialogDescription>
+          </DialogHeader>
+          <div className="py-8 text-center">
+            <p className="text-muted-foreground mb-4">Please close this dialog and try again.</p>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
           </div>
         </DialogContent>
       </Dialog>
