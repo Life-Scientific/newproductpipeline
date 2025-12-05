@@ -247,9 +247,10 @@ export async function createCOGSGroupAction(formData: FormData) {
     return { error: cogsError?.message || "Failed to create COGS group" };
   }
 
-  revalidatePath("/cogs");
-  revalidatePath("/formulations");
-  revalidatePath("/business-cases");
+  revalidatePath("/portfolio/cogs");
+  revalidatePath("/portfolio/formulations");
+  revalidatePath("/portfolio/business-cases");
+  revalidatePath("/portfolio");
   return { data: { cogs_group_id: groupId }, success: true };
 }
 
@@ -370,10 +371,11 @@ export async function updateCOGSGroupAction(groupId: string, formData: FormData)
     // Don't fail the whole operation, just log it
   }
 
-  revalidatePath("/cogs");
-  revalidatePath("/formulations");
-  revalidatePath("/business-cases");
-  revalidatePath("/analytics");
+  revalidatePath("/portfolio/cogs");
+  revalidatePath("/portfolio/formulations");
+  revalidatePath("/portfolio/business-cases");
+  revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio");
   return {
     data: { cogs_group_id: newGroupId, business_cases_updated: cascadeResult.count },
     success: true,
