@@ -350,14 +350,24 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     }
     
     // Mark old business cases as superseded (archived)
-    const { error: deactivateError } = await supabase
+    // Update ALL records in the old group that aren't already superseded
+    // This handles edge cases where records might be in "active" or "inactive" status
+    const { data: deactivatedData, error: deactivateError } = await supabase
       .from("business_case")
       .update({ status: "superseded", updated_at: new Date().toISOString() })
       .eq("business_case_group_id", existingGroupId)
-      .eq("status", "active");
+      .neq("status", "superseded")
+      .select();
 
     if (deactivateError) {
       return { error: `Failed to archive old version: ${deactivateError.message}` };
+    }
+
+    // Verify that we actually updated some records
+    // If no records were updated, it might mean the old group was already superseded
+    // or doesn't exist, which is fine - we'll still create the new version
+    if (deactivatedData && deactivatedData.length === 0) {
+      console.warn(`No records found to supersede for group ${existingGroupId} - may already be superseded or not exist`);
     }
   }
 
@@ -652,14 +662,24 @@ export async function updateBusinessCaseGroupAction(
   // Start transaction: mark old as inactive, create new
   const result = await withUserContext(async (supabase) => {
     // Mark old business cases as superseded (archived)
-    const { error: deactivateError } = await supabase
+    // Update ALL records in the old group that aren't already superseded
+    // This handles edge cases where records might be in "active" or "inactive" status
+    const { data: deactivatedData, error: deactivateError } = await supabase
       .from("business_case")
       .update({ status: "superseded", updated_at: new Date().toISOString() })
       .eq("business_case_group_id", oldGroupId)
-      .eq("status", "active");
+      .neq("status", "superseded")
+      .select();
 
     if (deactivateError) {
       return { error: `Failed to archive old version: ${deactivateError.message}` };
+    }
+
+    // Verify that we actually updated some records
+    // If no records were updated, it might mean the old group was already superseded
+    // or doesn't exist, which is fine - we'll still create the new version
+    if (deactivatedData && deactivatedData.length === 0) {
+      console.warn(`No records found to supersede for group ${oldGroupId} - may already be superseded or not exist`);
     }
 
     // Create new business case records

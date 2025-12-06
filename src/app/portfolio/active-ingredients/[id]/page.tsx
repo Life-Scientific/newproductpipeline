@@ -14,6 +14,8 @@ import { Package, AlertTriangle, CheckCircle, Building2, FlaskConical, FileText 
 import { getStatusVariant } from "@/lib/design-system";
 import { IngredientFormButton } from "@/components/forms/IngredientFormButton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ChemicalStructure } from "@/components/ingredients/ChemicalStructure";
+import { ChemicalEnrichment } from "@/components/ingredients/ChemicalEnrichment";
 
 interface ActiveIngredientDetailPageProps {
   params: Promise<{ id: string }>;
@@ -161,7 +163,7 @@ export default async function ActiveIngredientDetailPage({
 
           {/* Details Tab */}
           <TabsContent value="details" className="space-y-4 sm:space-y-6">
-            <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
               {/* Basic Information */}
               <Card>
                 <CardHeader className="space-y-1.5">
@@ -235,7 +237,23 @@ export default async function ActiveIngredientDetailPage({
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Chemical Structure */}
+              {ingredient.cas_number && (
+                <ChemicalStructure 
+                  casNumber={ingredient.cas_number} 
+                  ingredientName={ingredient.ingredient_name}
+                />
+              )}
             </div>
+
+            {/* Enrichment Data - Full Width */}
+            {ingredient.cas_number && (
+              <ChemicalEnrichment 
+                casNumber={ingredient.cas_number} 
+                ingredientName={ingredient.ingredient_name}
+              />
+            )}
           </TabsContent>
 
           {/* Formulations Tab */}

@@ -1446,7 +1446,9 @@ export const getBusinessCasesForProjectionTable = unstable_cache(
     });
 
     // Group by business_case_group_id
+    // Also track created_at for deduplication
     const groups = new Map<string, BusinessCaseGroupData>();
+    const groupCreatedAt = new Map<string, string | null>(); // Track created_at per group
     
     data.forEach((bc) => {
       if (!bc.business_case_group_id || !bc.formulation_id || !bc.country_id) {
@@ -1487,6 +1489,9 @@ export const getBusinessCasesForProjectionTable = unstable_cache(
           change_reason: (bc as any).change_reason || null,
           change_summary: (bc as any).change_summary || null,
         });
+        
+        // Store created_at for deduplication
+        groupCreatedAt.set(groupId, (bc as any).created_at || null);
       }
 
       const group = groups.get(groupId)!;
@@ -1534,7 +1539,42 @@ export const getBusinessCasesForProjectionTable = unstable_cache(
       }
     });
 
-    return Array.from(groups.values());
+    // Deduplicate: If multiple active versions exist for the same formulation-country-use_group,
+    // keep only the most recent one (by created_at, then updated_at)
+    // This handles edge cases where multiple versions might still be marked as active
+    const deduplicatedGroups = new Map<string, BusinessCaseGroupData>();
+    const deduplicatedGroupIds = new Map<string, string>(); // Track which groupId is stored for each dedupeKey
+    
+    Array.from(groups.entries()).forEach(([groupId, group]) => {
+      // Create a unique key: formulation_id + country_id + use_group_id
+      const dedupeKey = `${group.formulation_id}_${group.country_id}_${group.use_group_id}`;
+      
+      if (!deduplicatedGroups.has(dedupeKey)) {
+        deduplicatedGroups.set(dedupeKey, group);
+        deduplicatedGroupIds.set(dedupeKey, groupId);
+      } else {
+        // Compare with existing group - keep the one with the most recent created_at
+        const existingGroupId = deduplicatedGroupIds.get(dedupeKey)!;
+        const existingCreatedAt = groupCreatedAt.get(existingGroupId);
+        const newCreatedAt = groupCreatedAt.get(groupId);
+        
+        // Prefer created_at for comparison (when versions are created), fall back to updated_at
+        const existingTime = existingCreatedAt 
+          ? new Date(existingCreatedAt).getTime() 
+          : (deduplicatedGroups.get(dedupeKey)!.updated_at ? new Date(deduplicatedGroups.get(dedupeKey)!.updated_at!).getTime() : 0);
+        const newTime = newCreatedAt 
+          ? new Date(newCreatedAt).getTime() 
+          : (group.updated_at ? new Date(group.updated_at).getTime() : 0);
+        
+        // Keep the most recent one
+        if (newTime > existingTime) {
+          deduplicatedGroups.set(dedupeKey, group);
+          deduplicatedGroupIds.set(dedupeKey, groupId);
+        }
+      }
+    });
+
+    return Array.from(deduplicatedGroups.values());
   },
   ["business-cases-projection"],
   { tags: ["business-cases"] }
