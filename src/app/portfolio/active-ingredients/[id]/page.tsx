@@ -14,8 +14,6 @@ import { Package, AlertTriangle, CheckCircle, Building2, FlaskConical, FileText 
 import { getStatusVariant } from "@/lib/design-system";
 import { IngredientFormButton } from "@/components/forms/IngredientFormButton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ChemicalStructure } from "@/components/ingredients/ChemicalStructure";
-import { ChemicalEnrichment } from "@/components/ingredients/ChemicalEnrichment";
 
 // Active ingredient detail page component
 interface ActiveIngredientDetailPageProps {
@@ -238,23 +236,7 @@ export default async function ActiveIngredientDetailPage({
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Chemical Structure */}
-              {ingredient.cas_number && (
-                <ChemicalStructure 
-                  casNumber={ingredient.cas_number} 
-                  ingredientName={ingredient.ingredient_name}
-                />
-              )}
             </div>
-
-            {/* Enrichment Data - Full Width */}
-            {ingredient.cas_number && (
-              <ChemicalEnrichment 
-                casNumber={ingredient.cas_number} 
-                ingredientName={ingredient.ingredient_name}
-              />
-            )}
           </TabsContent>
 
           {/* Formulations Tab */}
