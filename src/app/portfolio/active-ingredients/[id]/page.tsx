@@ -15,6 +15,7 @@ import { getStatusVariant } from "@/lib/design-system";
 import { IngredientFormButton } from "@/components/forms/IngredientFormButton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
+// Active ingredient detail page component
 interface ActiveIngredientDetailPageProps {
   params: Promise<{ id: string }>;
 }
