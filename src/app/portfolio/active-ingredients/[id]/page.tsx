@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ChemicalStructure } from "@/components/ingredients/ChemicalStructure";
 import { ChemicalEnrichment } from "@/components/ingredients/ChemicalEnrichment";
 
+// Active ingredient detail page component
 interface ActiveIngredientDetailPageProps {
   params: Promise<{ id: string }>;
 }
