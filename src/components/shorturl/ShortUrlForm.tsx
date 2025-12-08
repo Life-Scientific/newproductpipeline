@@ -1,5 +1,6 @@
 "use client";
 
+import { ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -141,6 +142,19 @@ export function ShortUrlForm({ shortUrl, mode }: ShortUrlFormProps) {
               ? "Create Short URL"
               : "Save Changes"}
         </Button>
+        {mode === "edit" && shortUrl?.slug && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              const testUrl = `https://ls.life/${shortUrl.slug}`;
+              window.open(testUrl, "_blank", "noopener,noreferrer");
+            }}
+          >
+            <ExternalLink className="mr-2 h-4 w-4" />
+            Test Link
+          </Button>
+        )}
         <Button
           type="button"
           variant="outline"

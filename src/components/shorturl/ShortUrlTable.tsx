@@ -86,7 +86,7 @@ export function ShortUrlTable({ urls }: ShortUrlTableProps) {
               <TableHead className="w-[100px] text-center">Clicks</TableHead>
               <TableHead className="w-[100px]">Visibility</TableHead>
               <TableHead className="w-[120px]">Created</TableHead>
-              <TableHead className="w-[60px]" />
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -101,6 +101,7 @@ export function ShortUrlTable({ urls }: ShortUrlTableProps) {
                       size="icon"
                       className="h-6 w-6"
                       onClick={() => copyToClipboard(url.slug)}
+                      title="Copy link"
                     >
                       <Copy className="h-3 w-3" />
                     </Button>
@@ -140,35 +141,48 @@ export function ShortUrlTable({ urls }: ShortUrlTableProps) {
                   {new Date(url.created_at).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link href={`/shorturl/${url.id}`}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => copyToClipboard(url.slug)}
-                      >
-                        <Copy className="mr-2 h-4 w-4" />
-                        Copy Link
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={() => setDeleteId(url.id)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const testUrl = `https://ls.life/${url.slug}`;
+                        window.open(testUrl, "_blank", "noopener,noreferrer");
+                      }}
+                    >
+                      <ExternalLink className="mr-2 h-3 w-3" />
+                      Test
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link href={`/shorturl/${url.id}`}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => copyToClipboard(url.slug)}
+                        >
+                          <Copy className="mr-2 h-4 w-4" />
+                          Copy Link
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => setDeleteId(url.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

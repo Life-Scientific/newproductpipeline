@@ -60,7 +60,13 @@ function LoginContent() {
       setLoading(false);
     } else {
       // Use window.location for full page reload to ensure cookies are set
-      window.location.href = WORKSPACE_BASE;
+      const nextUrl = searchParams.get("next");
+      const redirectUrl = nextUrl && nextUrl.startsWith("http") 
+        ? nextUrl 
+        : nextUrl && nextUrl.startsWith("/")
+        ? `${window.location.origin}${nextUrl}`
+        : WORKSPACE_BASE;
+      window.location.href = redirectUrl;
     }
   };
 
@@ -68,11 +74,16 @@ function LoginContent() {
     setError(null);
     setSsoLoading(true);
 
+    const nextUrl = searchParams.get("next");
+    const callbackUrl = nextUrl 
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`
+      : `${window.location.origin}/auth/callback`;
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "azure",
       options: {
         scopes: "email openid profile",
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl,
       },
     });
 

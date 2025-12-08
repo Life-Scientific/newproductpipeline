@@ -22,16 +22,31 @@ export async function GET(
   // Check if URL is private and user is not authenticated
   if (!shortUrl.is_public) {
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-    if (!session?.user) {
-      return new NextResponse(
-        "Unauthorized - this link requires authentication",
-        {
-          status: 401,
-        },
-      );
+    if (!user || authError) {
+      // Redirect to login on the main domain with return URL
+      const hostname = request.headers.get("host") || "";
+      const isShortUrlDomain = hostname.includes("ls.life");
+      
+      if (isShortUrlDomain) {
+        // If on ls.life domain, redirect to main domain login
+        const mainDomain = process.env.NEXT_PUBLIC_APP_URL || "https://lsnav.app";
+        const returnUrl = encodeURIComponent(request.url);
+        return NextResponse.redirect(
+          `${mainDomain}/login?next=${returnUrl}`,
+          { status: 302 }
+        );
+      } else {
+        // If on main domain, redirect to login with return URL
+        const returnUrl = encodeURIComponent(request.url);
+        return NextResponse.redirect(
+          `/login?next=${returnUrl}`,
+          { status: 302 }
+        );
+      }
     }
   }
 
@@ -43,8 +58,8 @@ export async function GET(
     const country = request.headers.get("x-vercel-ip-country") || null;
 
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user },
+    } = await supabase.auth.getUser();
 
     // Insert click record - fire and forget (wrapped in async IIFE)
     void (async () => {
@@ -54,7 +69,7 @@ export async function GET(
           referrer,
           user_agent: userAgent,
           country,
-          is_authenticated: !!session?.user,
+          is_authenticated: !!user,
         });
       } catch (err) {
         console.error("Failed to log click:", err);
