@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { hasPermission } from "./user-management";
 import { PERMISSIONS } from "@/lib/permissions";
 
@@ -70,8 +70,7 @@ export async function createFormulationCountry(formData: FormData) {
     return { error: error.message };
   }
 
-  // Revalidate cache tags and paths for fresh data
-  revalidateTag("formulations");
+  // Revalidate paths for fresh data
   revalidatePath("/portfolio/formulation-countries");
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio/registration");
@@ -134,8 +133,7 @@ export async function updateFormulationCountry(
     return { error: error.message };
   }
 
-  // Revalidate cache tags and paths for fresh data
-  revalidateTag("formulations");
+  // Revalidate paths for fresh data
   revalidatePath("/portfolio/formulation-countries");
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio/registration");
@@ -163,8 +161,7 @@ export async function deleteFormulationCountry(formulationCountryId: string) {
     return { error: error.message };
   }
 
-  // Revalidate cache tags and paths for fresh data
-  revalidateTag("formulations");
+  // Revalidate paths for fresh data
   revalidatePath("/portfolio/formulation-countries");
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio/registration");

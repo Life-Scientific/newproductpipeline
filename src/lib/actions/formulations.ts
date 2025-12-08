@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import {
   createFormulationIngredients,
   updateFormulationIngredients,
@@ -147,8 +147,7 @@ export async function createFormulation(formData: FormData) {
     .eq("formulation_id", data.formulation_id)
     .single();
 
-  // Revalidate cache tags and paths for fresh data
-  revalidateTag("formulations");
+  // Revalidate paths for fresh data
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
@@ -282,8 +281,7 @@ export async function updateFormulation(formulationId: string, formData: FormDat
     .eq("formulation_id", formulationId)
     .single();
 
-  // Revalidate cache tags and paths for fresh data
-  revalidateTag("formulations");
+  // Revalidate paths for fresh data
   revalidatePath(`/portfolio/formulations/${formulationId}`);
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
@@ -324,8 +322,7 @@ export async function deleteFormulation(formulationId: string) {
     return { error: error.message };
   }
 
-  // Revalidate cache tags and paths for fresh data
-  revalidateTag("formulations");
+  // Revalidate paths for fresh data
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
