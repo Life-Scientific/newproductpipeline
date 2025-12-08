@@ -334,6 +334,9 @@ const createColumns = (
       cell: ({ row }) => (
         <FormulationActionsCell formulation={row.original} canEdit={canEdit} />
       ),
+      meta: {
+        enableReordering: false, // Keep actions column at the end
+      },
     });
   }
 

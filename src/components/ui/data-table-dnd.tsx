@@ -225,10 +225,14 @@ export function DndTable({
                     align?: string;
                     minWidth?: string;
                     sticky?: "left" | "right";
+                    enableReordering?: boolean;
                   } | undefined;
                   const stickyStyle = headerStylesMap.get(columnId);
+                  
+                  // Check if column is reorderable (default true unless explicitly disabled)
+                  const isReorderable = meta?.enableReordering !== false;
 
-                  return header.column.getCanHide() ? (
+                  return isReorderable ? (
                     <SortableHeaderCell
                       key={header.id}
                       header={header}

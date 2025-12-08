@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import { 
   checkExistingBusinessCase, 
@@ -113,8 +113,12 @@ export async function createBusinessCase(formData: FormData) {
     return { error: `Failed to link use groups: ${junctionError.message}` };
   }
 
+  // Revalidate cache tags for fresh data
+  revalidateTag("business-cases");
+  revalidateTag("formulations"); // Business cases affect formulation aggregates
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { data: businessCase, success: true };
@@ -233,8 +237,12 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
     }
   }
 
+  // Revalidate cache tags for fresh data
+  revalidateTag("business-cases");
+  revalidateTag("formulations"); // Business cases affect formulation aggregates
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { data, success: true };
@@ -258,8 +266,12 @@ export async function deleteBusinessCase(businessCaseId: string) {
     return { error: error.message };
   }
 
+  // Revalidate cache tags for fresh data
+  revalidateTag("business-cases");
+  revalidateTag("formulations"); // Business cases affect formulation aggregates
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { success: true };
@@ -505,8 +517,12 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     }
   }
 
+  // Revalidate cache tags for fresh data
+  revalidateTag("business-cases");
+  revalidateTag("formulations"); // Business cases affect formulation aggregates
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { data: { business_case_group_id: groupId }, success: true };
@@ -736,8 +752,12 @@ export async function updateBusinessCaseGroupAction(
     return { error: result.error };
   }
 
+  // Revalidate cache tags for fresh data
+  revalidateTag("business-cases");
+  revalidateTag("formulations"); // Business cases affect formulation aggregates
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { success: true, data: result.data };
@@ -1107,9 +1127,12 @@ export async function importBusinessCases(
     }
   }
 
-  // Revalidate paths
+  // Revalidate cache tags and paths for fresh data
+  revalidateTag("business-cases");
+  revalidateTag("formulations"); // Business cases affect formulation aggregates
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
 

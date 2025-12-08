@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   createFormulationIngredients,
   updateFormulationIngredients,
@@ -147,6 +147,12 @@ export async function createFormulation(formData: FormData) {
     .eq("formulation_id", data.formulation_id)
     .single();
 
+  // Revalidate cache tags and paths for fresh data
+  revalidateTag("formulations");
+  revalidatePath("/portfolio/formulations");
+  revalidatePath("/portfolio");
+  revalidatePath("/");
+
   return {
     data: updatedFormulation || data,
     success: true,
@@ -276,8 +282,13 @@ export async function updateFormulation(formulationId: string, formData: FormDat
     .eq("formulation_id", formulationId)
     .single();
 
-  // If status changed, the trigger will log it automatically with correct user context
-  revalidatePath(`/formulations/${formulationId}`);
+  // Revalidate cache tags and paths for fresh data
+  revalidateTag("formulations");
+  revalidatePath(`/portfolio/formulations/${formulationId}`);
+  revalidatePath("/portfolio/formulations");
+  revalidatePath("/portfolio");
+  revalidatePath("/");
+  
   return {
     data: updatedFormulation || data,
     success: true,
@@ -312,6 +323,12 @@ export async function deleteFormulation(formulationId: string) {
   if (error) {
     return { error: error.message };
   }
+
+  // Revalidate cache tags and paths for fresh data
+  revalidateTag("formulations");
+  revalidatePath("/portfolio/formulations");
+  revalidatePath("/portfolio");
+  revalidatePath("/");
 
   return { success: true };
 }

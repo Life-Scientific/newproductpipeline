@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { hasPermission } from "./user-management";
 import { PERMISSIONS } from "@/lib/permissions";
 
@@ -70,9 +70,14 @@ export async function createFormulationCountry(formData: FormData) {
     return { error: error.message };
   }
 
-  revalidatePath("/registration");
-  revalidatePath("/formulations");
-  revalidatePath("/countries");
+  // Revalidate cache tags and paths for fresh data
+  revalidateTag("formulations");
+  revalidatePath("/portfolio/formulation-countries");
+  revalidatePath("/portfolio/formulations");
+  revalidatePath("/portfolio/registration");
+  revalidatePath("/portfolio/countries");
+  revalidatePath("/portfolio");
+  revalidatePath("/");
   return { data, success: true };
 }
 
@@ -129,9 +134,14 @@ export async function updateFormulationCountry(
     return { error: error.message };
   }
 
-  revalidatePath("/registration");
-  revalidatePath("/formulations");
-  revalidatePath("/countries");
+  // Revalidate cache tags and paths for fresh data
+  revalidateTag("formulations");
+  revalidatePath("/portfolio/formulation-countries");
+  revalidatePath("/portfolio/formulations");
+  revalidatePath("/portfolio/registration");
+  revalidatePath("/portfolio/countries");
+  revalidatePath("/portfolio");
+  revalidatePath("/");
   return { data, success: true };
 }
 
@@ -153,8 +163,13 @@ export async function deleteFormulationCountry(formulationCountryId: string) {
     return { error: error.message };
   }
 
-  revalidatePath("/registration");
-  revalidatePath("/formulations");
-  revalidatePath("/countries");
+  // Revalidate cache tags and paths for fresh data
+  revalidateTag("formulations");
+  revalidatePath("/portfolio/formulation-countries");
+  revalidatePath("/portfolio/formulations");
+  revalidatePath("/portfolio/registration");
+  revalidatePath("/portfolio/countries");
+  revalidatePath("/portfolio");
+  revalidatePath("/");
   return { success: true };
 }

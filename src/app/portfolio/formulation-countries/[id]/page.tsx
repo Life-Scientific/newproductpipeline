@@ -1,5 +1,8 @@
 import { getFormulationCountryById, getFormulationBusinessCases } from "@/lib/db/queries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Force dynamic rendering to ensure fresh data
+export const dynamic = "force-dynamic";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
