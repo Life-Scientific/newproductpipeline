@@ -119,6 +119,12 @@ export function BusinessCaseModal({
   const [yearDataRecord, setYearDataRecord] = useState<Record<number, { volume: string; nsp: string; cogs: string }>>({});
   const [yearDataArray, setYearDataArray] = useState<BusinessCaseYearData[]>([]);
   
+  // Raw input strings for inputs while typing (prevents formatting from breaking input)
+  // Format: { [yearOffset]: { volume?: string, nsp?: string, cogs?: string } }
+  const [rawInputs, setRawInputs] = useState<Record<number, { volume?: string; nsp?: string; cogs?: string }>>({});
+  // Track which inputs are currently focused
+  const [focusedInputs, setFocusedInputs] = useState<Set<string>>(new Set());
+  
   // Edit mode state
   const [existingGroupId, setExistingGroupId] = useState<string | null>(null);
   const [originalValues, setOriginalValues] = useState<Record<number, { volume: number | null; nsp: number | null; cogs: number | null }>>({});
@@ -233,6 +239,8 @@ export function BusinessCaseModal({
         setOriginalValues({});
         setChangedCells(new Set());
         setUseGroupIdForHistory(null);
+        setRawInputs({});
+        setFocusedInputs(new Set());
         setFormData({
           formulation_id: "",
           country_id: "",
@@ -281,6 +289,8 @@ export function BusinessCaseModal({
       setChangedCells(new Set());
       setUseGroupIdForHistory(null);
       setTargetMarketEntry(null);
+      setRawInputs({});
+      setFocusedInputs(new Set());
       setTargetEntryError(null);
     }
     
@@ -1247,17 +1257,65 @@ export function BusinessCaseModal({
                           // Convert L/KG to GAL/LB for display
                           const rawVal = parseFloat(String(year?.volume || 0)) || 0;
                           const displayValue = convertQuantityForDisplay(rawVal);
+                          const inputKey = `${col.yearOffset}-volume`;
+                          const isFocused = focusedInputs.has(inputKey);
+                          // Show raw input while typing, formatted when not focused
+                          const inputValue = isFocused && rawInputs[col.yearOffset]?.volume !== undefined
+                            ? rawInputs[col.yearOffset].volume!
+                            : formatVolumeInput(displayValue);
+                          
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <Input
                                 type="text"
                                 inputMode="numeric"
-                                value={formatVolumeInput(displayValue)}
+                                value={inputValue}
+                                onFocus={() => {
+                                  setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                  // Initialize raw input with current formatted value (without commas)
+                                  if (!rawInputs[col.yearOffset]?.volume) {
+                                    setRawInputs(prev => ({
+                                      ...prev,
+                                      [col.yearOffset]: {
+                                        ...prev[col.yearOffset],
+                                        volume: String(displayValue).replace(/,/g, ""),
+                                      },
+                                    }));
+                                  }
+                                }}
                                 onChange={(e) => {
-                                  // Convert from display unit back to L/KG
-                                  const inputVal = parseFormattedNumber(e.target.value);
+                                  // Store raw input while typing
+                                  const rawValue = e.target.value;
+                                  setRawInputs(prev => ({
+                                    ...prev,
+                                    [col.yearOffset]: {
+                                      ...prev[col.yearOffset],
+                                      volume: rawValue,
+                                    },
+                                  }));
+                                }}
+                                onBlur={() => {
+                                  setFocusedInputs(prev => {
+                                    const next = new Set(prev);
+                                    next.delete(inputKey);
+                                    return next;
+                                  });
+                                  // Parse and update the actual value
+                                  const rawValue = rawInputs[col.yearOffset]?.volume || String(displayValue).replace(/,/g, "");
+                                  const inputVal = parseFormattedNumber(rawValue);
                                   const baseVal = convertQuantityToBase(inputVal);
                                   handleCellChange(col.yearOffset, "volume", String(Math.round(baseVal)));
+                                  // Clear raw input after blur
+                                  setRawInputs(prev => {
+                                    const next = { ...prev };
+                                    if (next[col.yearOffset]) {
+                                      delete next[col.yearOffset].volume;
+                                      if (Object.keys(next[col.yearOffset]).length === 0) {
+                                        delete next[col.yearOffset];
+                                      }
+                                    }
+                                    return next;
+                                  });
                                 }}
                                 className={cn("h-8 text-sm text-right tabular-nums", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
                               />
@@ -1267,14 +1325,53 @@ export function BusinessCaseModal({
                           // Create mode - also convert for display
                           const rawValue = parseFloat(yearDataRecord[col.yearOffset]?.volume || "0") || 0;
                           const displayValue = convertQuantityForDisplay(rawValue);
+                          const inputKey = `${col.yearOffset}-volume`;
+                          const isFocused = focusedInputs.has(inputKey);
+                          // Show raw input while typing, formatted when not focused
+                          const inputValue = isFocused && rawInputs[col.yearOffset]?.volume !== undefined
+                            ? rawInputs[col.yearOffset].volume!
+                            : formatVolumeInput(displayValue);
+                          
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <Input
                                 type="text"
                                 inputMode="numeric"
-                                value={formatVolumeInput(displayValue)}
+                                value={inputValue}
+                                placeholder="0"
+                                onFocus={() => {
+                                  setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                  // Initialize raw input with current formatted value (without commas)
+                                  if (!rawInputs[col.yearOffset]?.volume) {
+                                    setRawInputs(prev => ({
+                                      ...prev,
+                                      [col.yearOffset]: {
+                                        ...prev[col.yearOffset],
+                                        volume: String(displayValue).replace(/,/g, ""),
+                                      },
+                                    }));
+                                  }
+                                }}
                                 onChange={(e) => {
-                                  const inputVal = parseFormattedNumber(e.target.value);
+                                  // Store raw input while typing
+                                  const rawValue = e.target.value;
+                                  setRawInputs(prev => ({
+                                    ...prev,
+                                    [col.yearOffset]: {
+                                      ...prev[col.yearOffset],
+                                      volume: rawValue,
+                                    },
+                                  }));
+                                }}
+                                onBlur={() => {
+                                  setFocusedInputs(prev => {
+                                    const next = new Set(prev);
+                                    next.delete(inputKey);
+                                    return next;
+                                  });
+                                  // Parse and update the actual value
+                                  const rawValue = rawInputs[col.yearOffset]?.volume || String(displayValue).replace(/,/g, "");
+                                  const inputVal = parseFormattedNumber(rawValue);
                                   const baseVal = convertQuantityToBase(inputVal);
                                   setYearDataRecord({
                                     ...yearDataRecord,
@@ -1285,9 +1382,19 @@ export function BusinessCaseModal({
                                       cogs: yearDataRecord[col.yearOffset]?.cogs || "",
                                     },
                                   });
+                                  // Clear raw input after blur
+                                  setRawInputs(prev => {
+                                    const next = { ...prev };
+                                    if (next[col.yearOffset]) {
+                                      delete next[col.yearOffset].volume;
+                                      if (Object.keys(next[col.yearOffset]).length === 0) {
+                                        delete next[col.yearOffset];
+                                      }
+                                    }
+                                    return next;
+                                  });
                                 }}
                                 className="h-8 text-sm text-right tabular-nums"
-                                placeholder="0"
                               />
                             </TableCell>
                           );
@@ -1322,6 +1429,13 @@ export function BusinessCaseModal({
                           const year = yearDataArray.find((y) => y.year_offset === col.yearOffset);
                           // Convert EUR value to display currency/unit
                           const displayValue = convertPerUnitForDisplay(parseFloat(String(year?.nsp || 0)) || 0);
+                          const inputKey = `${col.yearOffset}-nsp`;
+                          const isFocused = focusedInputs.has(inputKey);
+                          // Show raw input while typing, formatted when not focused
+                          const inputValue = isFocused && rawInputs[col.yearOffset]?.nsp !== undefined
+                            ? rawInputs[col.yearOffset].nsp!
+                            : formatCurrencyInput(displayValue);
+                          
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <div className="relative">
@@ -1331,12 +1445,53 @@ export function BusinessCaseModal({
                                 <Input
                                   type="text"
                                   inputMode="decimal"
-                                  value={formatCurrencyInput(displayValue)}
+                                  value={inputValue}
+                                  onFocus={() => {
+                                    setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                    // Initialize raw input with current formatted value (without commas)
+                                    if (!rawInputs[col.yearOffset]?.nsp) {
+                                      setRawInputs(prev => ({
+                                        ...prev,
+                                        [col.yearOffset]: {
+                                          ...prev[col.yearOffset],
+                                          nsp: String(displayValue).replace(/,/g, ""),
+                                        },
+                                      }));
+                                    }
+                                  }}
                                   onChange={(e) => {
-                                    // Convert from display currency/unit back to EUR/L
-                                    const inputVal = parseFormattedNumber(e.target.value);
+                                    // Store raw input while typing
+                                    const rawValue = e.target.value;
+                                    setRawInputs(prev => ({
+                                      ...prev,
+                                      [col.yearOffset]: {
+                                        ...prev[col.yearOffset],
+                                        nsp: rawValue,
+                                      },
+                                    }));
+                                  }}
+                                  onBlur={() => {
+                                    setFocusedInputs(prev => {
+                                      const next = new Set(prev);
+                                      next.delete(inputKey);
+                                      return next;
+                                    });
+                                    // Parse and update the actual value
+                                    const rawValue = rawInputs[col.yearOffset]?.nsp || String(displayValue).replace(/,/g, "");
+                                    const inputVal = parseFormattedNumber(rawValue);
                                     const baseVal = convertPerUnitToBase(inputVal);
                                     handleCellChange(col.yearOffset, "nsp", String(baseVal));
+                                    // Clear raw input after blur
+                                    setRawInputs(prev => {
+                                      const next = { ...prev };
+                                      if (next[col.yearOffset]) {
+                                        delete next[col.yearOffset].nsp;
+                                        if (Object.keys(next[col.yearOffset]).length === 0) {
+                                          delete next[col.yearOffset];
+                                        }
+                                      }
+                                      return next;
+                                    });
                                   }}
                                   className={cn("h-8 text-sm text-right tabular-nums pl-6", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
                                 />
@@ -1347,6 +1502,13 @@ export function BusinessCaseModal({
                           // Create mode - also convert for display
                           const rawValue = parseFloat(yearDataRecord[col.yearOffset]?.nsp || "0") || 0;
                           const displayValue = convertPerUnitForDisplay(rawValue);
+                          const inputKey = `${col.yearOffset}-nsp`;
+                          const isFocused = focusedInputs.has(inputKey);
+                          // Show raw input while typing, formatted when not focused
+                          const inputValue = isFocused && rawInputs[col.yearOffset]?.nsp !== undefined
+                            ? rawInputs[col.yearOffset].nsp!
+                            : formatCurrencyInput(displayValue);
+                          
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <div className="relative">
@@ -1356,9 +1518,41 @@ export function BusinessCaseModal({
                                 <Input
                                   type="text"
                                   inputMode="decimal"
-                                  value={formatCurrencyInput(displayValue)}
+                                  value={inputValue}
+                                  placeholder="0"
+                                  onFocus={() => {
+                                    setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                    // Initialize raw input with current formatted value (without commas)
+                                    if (!rawInputs[col.yearOffset]?.nsp) {
+                                      setRawInputs(prev => ({
+                                        ...prev,
+                                        [col.yearOffset]: {
+                                          ...prev[col.yearOffset],
+                                          nsp: String(displayValue).replace(/,/g, ""),
+                                        },
+                                      }));
+                                    }
+                                  }}
                                   onChange={(e) => {
-                                    const inputVal = parseFormattedNumber(e.target.value);
+                                    // Store raw input while typing
+                                    const rawValue = e.target.value;
+                                    setRawInputs(prev => ({
+                                      ...prev,
+                                      [col.yearOffset]: {
+                                        ...prev[col.yearOffset],
+                                        nsp: rawValue,
+                                      },
+                                    }));
+                                  }}
+                                  onBlur={() => {
+                                    setFocusedInputs(prev => {
+                                      const next = new Set(prev);
+                                      next.delete(inputKey);
+                                      return next;
+                                    });
+                                    // Parse and update the actual value
+                                    const rawValue = rawInputs[col.yearOffset]?.nsp || String(displayValue).replace(/,/g, "");
+                                    const inputVal = parseFormattedNumber(rawValue);
                                     const baseVal = convertPerUnitToBase(inputVal);
                                     setYearDataRecord({
                                       ...yearDataRecord,
@@ -1369,9 +1563,19 @@ export function BusinessCaseModal({
                                         cogs: yearDataRecord[col.yearOffset]?.cogs || "",
                                       },
                                     });
+                                    // Clear raw input after blur
+                                    setRawInputs(prev => {
+                                      const next = { ...prev };
+                                      if (next[col.yearOffset]) {
+                                        delete next[col.yearOffset].nsp;
+                                        if (Object.keys(next[col.yearOffset]).length === 0) {
+                                          delete next[col.yearOffset];
+                                        }
+                                      }
+                                      return next;
+                                    });
                                   }}
                                   className="h-8 text-sm text-right tabular-nums pl-6"
-                                  placeholder="0"
                                 />
                               </div>
                             </TableCell>
@@ -1413,6 +1617,13 @@ export function BusinessCaseModal({
                           // Convert EUR value to display currency/unit
                           const rawVal = parseFloat(String(year?.cogs_per_unit || 0)) || 0;
                           const displayValue = rawVal > 0 ? convertPerUnitForDisplay(rawVal) : 0;
+                          const inputKey = `${col.yearOffset}-cogs`;
+                          const isFocused = focusedInputs.has(inputKey);
+                          // Show raw input while typing, formatted when not focused
+                          const inputValue = isFocused && rawInputs[col.yearOffset]?.cogs !== undefined
+                            ? rawInputs[col.yearOffset].cogs!
+                            : formatCurrencyInput(displayValue);
+                          
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <div className="relative">
@@ -1422,12 +1633,53 @@ export function BusinessCaseModal({
                                 <Input
                                   type="text"
                                   inputMode="decimal"
-                                  value={formatCurrencyInput(displayValue)}
+                                  value={inputValue}
+                                  onFocus={() => {
+                                    setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                    // Initialize raw input with current formatted value (without commas)
+                                    if (!rawInputs[col.yearOffset]?.cogs) {
+                                      setRawInputs(prev => ({
+                                        ...prev,
+                                        [col.yearOffset]: {
+                                          ...prev[col.yearOffset],
+                                          cogs: String(displayValue).replace(/,/g, ""),
+                                        },
+                                      }));
+                                    }
+                                  }}
                                   onChange={(e) => {
-                                    // Convert from display currency/unit back to EUR/L
-                                    const inputVal = parseFormattedNumber(e.target.value);
+                                    // Store raw input while typing
+                                    const rawValue = e.target.value;
+                                    setRawInputs(prev => ({
+                                      ...prev,
+                                      [col.yearOffset]: {
+                                        ...prev[col.yearOffset],
+                                        cogs: rawValue,
+                                      },
+                                    }));
+                                  }}
+                                  onBlur={() => {
+                                    setFocusedInputs(prev => {
+                                      const next = new Set(prev);
+                                      next.delete(inputKey);
+                                      return next;
+                                    });
+                                    // Parse and update the actual value
+                                    const rawValue = rawInputs[col.yearOffset]?.cogs || String(displayValue).replace(/,/g, "");
+                                    const inputVal = parseFormattedNumber(rawValue);
                                     const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
                                     handleCellChange(col.yearOffset, "cogs_per_unit", inputVal > 0 ? String(baseVal) : "");
+                                    // Clear raw input after blur
+                                    setRawInputs(prev => {
+                                      const next = { ...prev };
+                                      if (next[col.yearOffset]) {
+                                        delete next[col.yearOffset].cogs;
+                                        if (Object.keys(next[col.yearOffset]).length === 0) {
+                                          delete next[col.yearOffset];
+                                        }
+                                      }
+                                      return next;
+                                    });
                                   }}
                                   className={cn("h-8 text-sm text-right tabular-nums pl-6", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
                                 />
@@ -1438,6 +1690,13 @@ export function BusinessCaseModal({
                           // Create mode - also convert for display
                           const rawValue = parseFloat(yearDataRecord[col.yearOffset]?.cogs || "0") || 0;
                           const displayValue = rawValue > 0 ? convertPerUnitForDisplay(rawValue) : 0;
+                          const inputKey = `${col.yearOffset}-cogs`;
+                          const isFocused = focusedInputs.has(inputKey);
+                          // Show raw input while typing, formatted when not focused
+                          const inputValue = isFocused && rawInputs[col.yearOffset]?.cogs !== undefined
+                            ? rawInputs[col.yearOffset].cogs!
+                            : formatCurrencyInput(displayValue);
+                          
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <div className="relative">
@@ -1447,9 +1706,41 @@ export function BusinessCaseModal({
                                 <Input
                                   type="text"
                                   inputMode="decimal"
-                                  value={formatCurrencyInput(displayValue)}
+                                  value={inputValue}
+                                  placeholder="Auto"
+                                  onFocus={() => {
+                                    setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                    // Initialize raw input with current formatted value (without commas)
+                                    if (!rawInputs[col.yearOffset]?.cogs) {
+                                      setRawInputs(prev => ({
+                                        ...prev,
+                                        [col.yearOffset]: {
+                                          ...prev[col.yearOffset],
+                                          cogs: String(displayValue).replace(/,/g, ""),
+                                        },
+                                      }));
+                                    }
+                                  }}
                                   onChange={(e) => {
-                                    const inputVal = parseFormattedNumber(e.target.value);
+                                    // Store raw input while typing
+                                    const rawValue = e.target.value;
+                                    setRawInputs(prev => ({
+                                      ...prev,
+                                      [col.yearOffset]: {
+                                        ...prev[col.yearOffset],
+                                        cogs: rawValue,
+                                      },
+                                    }));
+                                  }}
+                                  onBlur={() => {
+                                    setFocusedInputs(prev => {
+                                      const next = new Set(prev);
+                                      next.delete(inputKey);
+                                      return next;
+                                    });
+                                    // Parse and update the actual value
+                                    const rawValue = rawInputs[col.yearOffset]?.cogs || String(displayValue).replace(/,/g, "");
+                                    const inputVal = parseFormattedNumber(rawValue);
                                     const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
                                     setYearDataRecord({
                                       ...yearDataRecord,
@@ -1460,9 +1751,19 @@ export function BusinessCaseModal({
                                         cogs: inputVal > 0 ? String(baseVal) : "",
                                       },
                                     });
+                                    // Clear raw input after blur
+                                    setRawInputs(prev => {
+                                      const next = { ...prev };
+                                      if (next[col.yearOffset]) {
+                                        delete next[col.yearOffset].cogs;
+                                        if (Object.keys(next[col.yearOffset]).length === 0) {
+                                          delete next[col.yearOffset];
+                                        }
+                                      }
+                                      return next;
+                                    });
                                   }}
                                   className="h-8 text-sm text-right tabular-nums pl-6"
-                                  placeholder="Auto"
                                 />
                               </div>
                             </TableCell>
@@ -1554,28 +1855,76 @@ export function BusinessCaseModal({
                         <CardContent className="p-3 space-y-3">
                           <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Volume ({displayUnit})</Label>
-                            <Input
-                              type="text"
-                              inputMode="numeric"
-                              value={formatVolumeInput(displayVolume)}
-                              onChange={(e) => {
-                                const inputVal = parseFormattedNumber(e.target.value);
-                                const baseVal = convertQuantityToBase(inputVal);
-                                if (isEditMode) {
-                                  handleCellChange(col.yearOffset, "volume", String(Math.round(baseVal)));
-                                } else {
-                                  setYearDataRecord({
-                                    ...yearDataRecord,
-                                    [col.yearOffset]: {
-                                      volume: String(Math.round(baseVal)),
-                                      nsp: yearDataRecord[col.yearOffset]?.nsp || "",
-                                      cogs: yearDataRecord[col.yearOffset]?.cogs || "",
-                                    },
-                                  });
-                                }
-                              }}
-                              className={cn("h-8 text-sm text-right tabular-nums", volumeChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
-                            />
+                            {(() => {
+                              const inputKey = `card-${col.yearOffset}-volume`;
+                              const isFocused = focusedInputs.has(inputKey);
+                              const inputValue = isFocused && rawInputs[col.yearOffset]?.volume !== undefined
+                                ? rawInputs[col.yearOffset].volume!
+                                : formatVolumeInput(displayVolume);
+                              
+                              return (
+                                <Input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={inputValue}
+                                  onFocus={() => {
+                                    setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                    if (!rawInputs[col.yearOffset]?.volume) {
+                                      setRawInputs(prev => ({
+                                        ...prev,
+                                        [col.yearOffset]: {
+                                          ...prev[col.yearOffset],
+                                          volume: String(displayVolume).replace(/,/g, ""),
+                                        },
+                                      }));
+                                    }
+                                  }}
+                                  onChange={(e) => {
+                                    const rawValue = e.target.value;
+                                    setRawInputs(prev => ({
+                                      ...prev,
+                                      [col.yearOffset]: {
+                                        ...prev[col.yearOffset],
+                                        volume: rawValue,
+                                      },
+                                    }));
+                                  }}
+                                  onBlur={() => {
+                                    setFocusedInputs(prev => {
+                                      const next = new Set(prev);
+                                      next.delete(inputKey);
+                                      return next;
+                                    });
+                                    const rawValue = rawInputs[col.yearOffset]?.volume || String(displayVolume).replace(/,/g, "");
+                                    const inputVal = parseFormattedNumber(rawValue);
+                                    const baseVal = convertQuantityToBase(inputVal);
+                                    if (isEditMode) {
+                                      handleCellChange(col.yearOffset, "volume", String(Math.round(baseVal)));
+                                    } else {
+                                      setYearDataRecord({
+                                        ...yearDataRecord,
+                                        [col.yearOffset]: {
+                                          volume: String(Math.round(baseVal)),
+                                          nsp: yearDataRecord[col.yearOffset]?.nsp || "",
+                                          cogs: yearDataRecord[col.yearOffset]?.cogs || "",
+                                        },
+                                      });
+                                    }
+                                    setRawInputs(prev => {
+                                      const next = { ...prev };
+                                      if (next[col.yearOffset]) {
+                                        delete next[col.yearOffset].volume;
+                                        if (Object.keys(next[col.yearOffset]).length === 0) {
+                                          delete next[col.yearOffset];
+                                        }
+                                      }
+                                      return next;
+                                    });
+                                  }}
+                                  className={cn("h-8 text-sm text-right tabular-nums", volumeChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                />
+                              );
+                            })()}
                           </div>
                           <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">NSP ({preferences.currency}/{displayUnit})</Label>
@@ -1583,28 +1932,76 @@ export function BusinessCaseModal({
                               <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
                                 {currencySymbol}
                               </span>
-                              <Input
-                                type="text"
-                                inputMode="decimal"
-                                value={formatCurrencyInput(displayNsp)}
-                                onChange={(e) => {
-                                  const inputVal = parseFormattedNumber(e.target.value);
-                                  const baseVal = convertPerUnitToBase(inputVal);
-                                  if (isEditMode) {
-                                    handleCellChange(col.yearOffset, "nsp", String(baseVal));
-                                  } else {
-                                    setYearDataRecord({
-                                      ...yearDataRecord,
-                                      [col.yearOffset]: {
-                                        volume: yearDataRecord[col.yearOffset]?.volume || "",
-                                        nsp: String(baseVal),
-                                        cogs: yearDataRecord[col.yearOffset]?.cogs || "",
-                                      },
-                                    });
-                                  }
-                                }}
-                                className={cn("h-8 text-sm text-right tabular-nums pl-6", nspChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
-                              />
+                              {(() => {
+                                const inputKey = `card-${col.yearOffset}-nsp`;
+                                const isFocused = focusedInputs.has(inputKey);
+                                const inputValue = isFocused && rawInputs[col.yearOffset]?.nsp !== undefined
+                                  ? rawInputs[col.yearOffset].nsp!
+                                  : formatCurrencyInput(displayNsp);
+                                
+                                return (
+                                  <Input
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={inputValue}
+                                    onFocus={() => {
+                                      setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                      if (!rawInputs[col.yearOffset]?.nsp) {
+                                        setRawInputs(prev => ({
+                                          ...prev,
+                                          [col.yearOffset]: {
+                                            ...prev[col.yearOffset],
+                                            nsp: String(displayNsp).replace(/,/g, ""),
+                                          },
+                                        }));
+                                      }
+                                    }}
+                                    onChange={(e) => {
+                                      const rawValue = e.target.value;
+                                      setRawInputs(prev => ({
+                                        ...prev,
+                                        [col.yearOffset]: {
+                                          ...prev[col.yearOffset],
+                                          nsp: rawValue,
+                                        },
+                                      }));
+                                    }}
+                                    onBlur={() => {
+                                      setFocusedInputs(prev => {
+                                        const next = new Set(prev);
+                                        next.delete(inputKey);
+                                        return next;
+                                      });
+                                      const rawValue = rawInputs[col.yearOffset]?.nsp || String(displayNsp).replace(/,/g, "");
+                                      const inputVal = parseFormattedNumber(rawValue);
+                                      const baseVal = convertPerUnitToBase(inputVal);
+                                      if (isEditMode) {
+                                        handleCellChange(col.yearOffset, "nsp", String(baseVal));
+                                      } else {
+                                        setYearDataRecord({
+                                          ...yearDataRecord,
+                                          [col.yearOffset]: {
+                                            volume: yearDataRecord[col.yearOffset]?.volume || "",
+                                            nsp: String(baseVal),
+                                            cogs: yearDataRecord[col.yearOffset]?.cogs || "",
+                                          },
+                                        });
+                                      }
+                                      setRawInputs(prev => {
+                                        const next = { ...prev };
+                                        if (next[col.yearOffset]) {
+                                          delete next[col.yearOffset].nsp;
+                                          if (Object.keys(next[col.yearOffset]).length === 0) {
+                                            delete next[col.yearOffset];
+                                          }
+                                        }
+                                        return next;
+                                      });
+                                    }}
+                                    className={cn("h-8 text-sm text-right tabular-nums pl-6", nspChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                  />
+                                );
+                              })()}
                             </div>
                           </div>
                           <div className="space-y-1">
@@ -1613,28 +2010,76 @@ export function BusinessCaseModal({
                               <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
                                 {currencySymbol}
                               </span>
-                              <Input
-                                type="text"
-                                inputMode="decimal"
-                                value={formatCurrencyInput(displayCogs)}
-                                onChange={(e) => {
-                                  const inputVal = parseFormattedNumber(e.target.value);
-                                  const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
-                                  if (isEditMode) {
-                                    handleCellChange(col.yearOffset, "cogs_per_unit", inputVal > 0 ? String(baseVal) : "");
-                                  } else {
-                                    setYearDataRecord({
-                                      ...yearDataRecord,
-                                      [col.yearOffset]: {
-                                        volume: yearDataRecord[col.yearOffset]?.volume || "",
-                                        nsp: yearDataRecord[col.yearOffset]?.nsp || "",
-                                        cogs: inputVal > 0 ? String(baseVal) : "",
-                                      },
-                                    });
-                                  }
-                                }}
-                                className={cn("h-8 text-sm text-right tabular-nums pl-6", cogsChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
-                              />
+                              {(() => {
+                                const inputKey = `card-${col.yearOffset}-cogs`;
+                                const isFocused = focusedInputs.has(inputKey);
+                                const inputValue = isFocused && rawInputs[col.yearOffset]?.cogs !== undefined
+                                  ? rawInputs[col.yearOffset].cogs!
+                                  : formatCurrencyInput(displayCogs);
+                                
+                                return (
+                                  <Input
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={inputValue}
+                                    onFocus={() => {
+                                      setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                      if (!rawInputs[col.yearOffset]?.cogs) {
+                                        setRawInputs(prev => ({
+                                          ...prev,
+                                          [col.yearOffset]: {
+                                            ...prev[col.yearOffset],
+                                            cogs: String(displayCogs).replace(/,/g, ""),
+                                          },
+                                        }));
+                                      }
+                                    }}
+                                    onChange={(e) => {
+                                      const rawValue = e.target.value;
+                                      setRawInputs(prev => ({
+                                        ...prev,
+                                        [col.yearOffset]: {
+                                          ...prev[col.yearOffset],
+                                          cogs: rawValue,
+                                        },
+                                      }));
+                                    }}
+                                    onBlur={() => {
+                                      setFocusedInputs(prev => {
+                                        const next = new Set(prev);
+                                        next.delete(inputKey);
+                                        return next;
+                                      });
+                                      const rawValue = rawInputs[col.yearOffset]?.cogs || String(displayCogs).replace(/,/g, "");
+                                      const inputVal = parseFormattedNumber(rawValue);
+                                      const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
+                                      if (isEditMode) {
+                                        handleCellChange(col.yearOffset, "cogs_per_unit", inputVal > 0 ? String(baseVal) : "");
+                                      } else {
+                                        setYearDataRecord({
+                                          ...yearDataRecord,
+                                          [col.yearOffset]: {
+                                            volume: yearDataRecord[col.yearOffset]?.volume || "",
+                                            nsp: yearDataRecord[col.yearOffset]?.nsp || "",
+                                            cogs: inputVal > 0 ? String(baseVal) : "",
+                                          },
+                                        });
+                                      }
+                                      setRawInputs(prev => {
+                                        const next = { ...prev };
+                                        if (next[col.yearOffset]) {
+                                          delete next[col.yearOffset].cogs;
+                                          if (Object.keys(next[col.yearOffset]).length === 0) {
+                                            delete next[col.yearOffset];
+                                          }
+                                        }
+                                        return next;
+                                      });
+                                    }}
+                                    className={cn("h-8 text-sm text-right tabular-nums pl-6", cogsChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                  />
+                                );
+                              })()}
                             </div>
                           </div>
                           <div className="pt-2 border-t space-y-1.5 text-xs">

@@ -1,13 +1,31 @@
-import { getCountriesWithStats, getBusinessCases } from "@/lib/db/queries";
+import { getCountriesWithStats, getBusinessCasesForChart, getFormulations, getFormulationCountries } from "@/lib/db/queries";
+import { getCountries } from "@/lib/db/countries";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
-import { CountryList } from "@/components/countries/CountryList";
 import type { CountryWithStats } from "@/lib/db/countries";
+import { CountriesClient } from "./CountriesClient";
 
 export default async function CountriesPage() {
-  const [countries, businessCases] = await Promise.all([
+  const [countriesWithStats, businessCases, formulations, referenceCountries, formulationCountries] = await Promise.all([
     getCountriesWithStats() as Promise<CountryWithStats[]>,
-    getBusinessCases(),
+    getBusinessCasesForChart(), // Use enriched version with country_status
+    getFormulations(), // Reference data for filter lookups
+    getCountries(), // Reference data for filter lookups
+    getFormulationCountries(), // For accurate filter counts
   ]);
+
+  // Build formulation status lookup map (using formulation_code for reliable lookup)
+  const formulationStatusMap = new Map<string, string>();
+  formulations.forEach((f) => {
+    if (f.formulation_code && f.status) {
+      formulationStatusMap.set(f.formulation_code, f.status);
+    }
+  });
+
+  // Enrich business cases with formulation_status
+  const enrichedBusinessCases = businessCases.map((bc) => ({
+    ...bc,
+    formulation_status: bc.formulation_code ? formulationStatusMap.get(bc.formulation_code) || null : null,
+  }));
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -21,7 +39,13 @@ export default async function CountriesPage() {
           </div>
         </div>
 
-        <CountryList countries={countries} businessCases={businessCases} />
+        <CountriesClient 
+          countries={countriesWithStats} 
+          businessCases={enrichedBusinessCases}
+          formulations={formulations}
+          referenceCountries={referenceCountries}
+          formulationCountries={formulationCountries || []}
+        />
       </AnimatedPage>
     </div>
   );

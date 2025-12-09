@@ -1,5 +1,6 @@
-import { getBusinessCasesForProjectionTable } from "@/lib/db/queries";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getBusinessCasesForProjectionTable, getFormulations, getFormulationCountries } from "@/lib/db/queries";
+import { getCountries } from "@/lib/db/countries";
+import { createClient } from "@/lib/supabase/server";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { BusinessCasesPageClient } from "./BusinessCasesPageClient";
 
@@ -7,7 +8,53 @@ import { BusinessCasesPageClient } from "./BusinessCasesPageClient";
 export const dynamic = "force-dynamic";
 
 export default async function BusinessCasesPage() {
-  const businessCases = await getBusinessCasesForProjectionTable();
+  // Fetch business cases, formulations, countries, and formulation-countries in parallel
+  const [businessCases, formulations, countries, formulationCountriesData] = await Promise.all([
+    getBusinessCasesForProjectionTable(),
+    getFormulations(), // Reference data for filter lookups
+    getCountries(), // Reference data for filter lookups
+    getFormulationCountries(), // For accurate filter counts
+  ]);
+
+  // Also fetch formulation-country data for country status lookup (with pagination)
+  // This is still needed for enriching business cases with country_status
+  const supabase = await createClient();
+  let formulationCountriesRaw: any[] = [];
+  let page = 0;
+  const pageSize = 10000;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data: pageData } = await supabase
+      .from("formulation_country")
+      .select("formulation_id, country_id, country_status")
+      .eq("is_active", true)
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    if (!pageData || pageData.length === 0) {
+      hasMore = false;
+    } else {
+      formulationCountriesRaw = [...formulationCountriesRaw, ...pageData];
+      hasMore = pageData.length === pageSize;
+      page++;
+    }
+  }
+
+  // Build status lookup maps
+  const formulationStatuses = new Map<string, string>();
+  formulations.forEach((f) => {
+    if (f.formulation_id && f.status) {
+      formulationStatuses.set(f.formulation_id, f.status);
+    }
+  });
+
+  const countryStatuses = new Map<string, string>();
+  formulationCountriesRaw.forEach((fc: any) => {
+    if (fc.formulation_id && fc.country_id && fc.country_status) {
+      const key = `${fc.formulation_id}-${fc.country_id}`;
+      countryStatuses.set(key, fc.country_status);
+    }
+  });
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -23,7 +70,12 @@ export default async function BusinessCasesPage() {
           </div>
 
           <BusinessCasesPageClient 
-            initialBusinessCases={businessCases} 
+            initialBusinessCases={businessCases}
+            formulationStatuses={formulationStatuses}
+            countryStatuses={countryStatuses}
+            formulations={formulations}
+            countries={countries}
+            formulationCountries={formulationCountriesData}
           />
         </div>
       </AnimatedPage>
