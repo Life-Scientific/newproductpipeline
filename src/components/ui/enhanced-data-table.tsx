@@ -269,12 +269,9 @@ export function EnhancedDataTable<TData, TValue>({
   // Update filter values (updates local state and URL)
   const updateFilter = React.useCallback(
     (paramKey: string, values: string[]) => {
-      console.log('[EnhancedDataTable] updateFilter called:', { paramKey, values });
-      
       // Update local state
       setActiveFilters((prev) => {
         const next = { ...prev, [paramKey]: values };
-        console.log('[EnhancedDataTable] activeFilters updating:', { prev, next });
         return next;
       });
       
@@ -293,7 +290,6 @@ export function EnhancedDataTable<TData, TValue>({
         const newUrl = params.toString()
           ? `${pathname}?${params.toString()}`
           : pathname;
-        console.log('[EnhancedDataTable] Updating URL to:', newUrl);
         window.history.replaceState(null, '', newUrl);
       }
     },
@@ -330,7 +326,6 @@ export function EnhancedDataTable<TData, TValue>({
 
   // Filter data based on active filters
   const filteredData = React.useMemo(() => {
-    console.log('[EnhancedDataTable] filteredData memo recalculating, activeFilters:', activeFilters);
     if (filterConfigs.length === 0) return data;
 
     const result = data.filter((row) => {
@@ -350,7 +345,6 @@ export function EnhancedDataTable<TData, TValue>({
       });
     });
     
-    console.log('[EnhancedDataTable] filteredData result:', { originalCount: data.length, filteredCount: result.length });
     return result;
   }, [data, filterConfigs, activeFilters]);
 
@@ -442,7 +436,6 @@ export function EnhancedDataTable<TData, TValue>({
     if (typeof window === 'undefined') return;
     
     const handlePopState = () => {
-      console.log('[EnhancedDataTable] popstate event triggered');
       const params = new URLSearchParams(window.location.search);
       
       // Sync pagination
@@ -460,7 +453,6 @@ export function EnhancedDataTable<TData, TValue>({
           const value = params.get(paramKey);
           newFilters[paramKey] = value ? value.split(",").filter(Boolean) : [];
         });
-        console.log('[EnhancedDataTable] popstate setting filters:', newFilters);
         setActiveFilters(newFilters);
       }
     };

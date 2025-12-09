@@ -17,6 +17,7 @@ import type { FormulationCountryDetail } from "@/lib/db/types";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"] & {
   formulation_status?: string | null;
+  country_status?: string | null;
 };
 
 interface CountriesClientProps {
@@ -36,6 +37,15 @@ function CountriesContent({
 }: CountriesClientProps) {
   // Use global portfolio filters from URL
   const { filters } = usePortfolioFilters();
+  
+  // Ensure filters object is fully initialized (defensive check)
+  const safeFilters = {
+    countries: filters?.countries ?? [],
+    formulations: filters?.formulations ?? [],
+    useGroups: filters?.useGroups ?? [],
+    formulationStatuses: filters?.formulationStatuses ?? [],
+    countryStatuses: filters?.countryStatuses ?? [],
+  };
 
   // Create formulation status lookup map
   const formulationStatusMap = useMemo(() => {
@@ -99,52 +109,52 @@ function CountriesContent({
     referenceCountriesData,
     filterableBusinessCases,
     null, // No formulation_country data needed for countries page
-    filters
+    safeFilters
   );
 
   // Filter business cases based on global filters
   const filteredBusinessCases = useMemo(() => {
     return businessCases.filter((bc) => {
-      // Country filter - filters.countries contains country codes
-      if (filters.countries.length > 0) {
-        if (!bc.country_code || !filters.countries.includes(bc.country_code)) {
+      // Country filter - safeFilters.countries contains country codes
+      if (safeFilters.countries.length > 0) {
+        if (!bc.country_code || !safeFilters.countries.includes(bc.country_code)) {
           return false;
         }
       }
 
-      // Formulation filter - filters.formulations contains codes
-      if (filters.formulations.length > 0) {
-        if (!bc.formulation_code || !filters.formulations.includes(bc.formulation_code)) {
+      // Formulation filter - safeFilters.formulations contains codes
+      if (safeFilters.formulations.length > 0) {
+        if (!bc.formulation_code || !safeFilters.formulations.includes(bc.formulation_code)) {
           return false;
         }
       }
 
       // Use group filter (by name)
-      if (filters.useGroups.length > 0) {
-        if (!bc.use_group_name || !filters.useGroups.includes(bc.use_group_name)) {
+      if (safeFilters.useGroups.length > 0) {
+        if (!bc.use_group_name || !safeFilters.useGroups.includes(bc.use_group_name)) {
           return false;
         }
       }
 
       // Formulation status filter
-      if (filters.formulationStatuses.length > 0) {
+      if (safeFilters.formulationStatuses.length > 0) {
         const status = bc.formulation_status || "Not Yet Evaluated";
-        if (!filters.formulationStatuses.includes(status)) {
+        if (!safeFilters.formulationStatuses.includes(status)) {
           return false;
         }
       }
 
       // Country status filter
-      if (filters.countryStatuses.length > 0) {
+      if (safeFilters.countryStatuses.length > 0) {
         const countryStatus = bc.country_status || "Not yet evaluated";
-        if (!filters.countryStatuses.includes(countryStatus)) {
+        if (!safeFilters.countryStatuses.includes(countryStatus)) {
           return false;
         }
       }
 
       return true;
     });
-  }, [businessCases, filters]);
+  }, [businessCases, safeFilters]);
 
   // Filter countries based on global filters
   // A country is shown if:
@@ -162,18 +172,18 @@ function CountriesContent({
 
     return countries.filter((country) => {
       // Country filter - direct match
-      if (filters.countries.length > 0) {
-        if (!country.country_code || !filters.countries.includes(country.country_code)) {
+      if (safeFilters.countries.length > 0) {
+        if (!country.country_code || !safeFilters.countries.includes(country.country_code)) {
           return false;
         }
       }
 
       // If we have formulation/formulation status/country status/use group filters,
       // only show countries that have matching business cases
-      const hasFormulationFilters = filters.formulations.length > 0 || 
-                                    filters.formulationStatuses.length > 0 ||
-                                    filters.useGroups.length > 0;
-      const hasCountryStatusFilters = filters.countryStatuses.length > 0;
+      const hasFormulationFilters = safeFilters.formulations.length > 0 || 
+                                    safeFilters.formulationStatuses.length > 0 ||
+                                    safeFilters.useGroups.length > 0;
+      const hasCountryStatusFilters = safeFilters.countryStatuses.length > 0;
 
       if (hasFormulationFilters || hasCountryStatusFilters) {
         if (!countryCodesWithFilteredBCs.has(country.country_code)) {
@@ -183,53 +193,53 @@ function CountriesContent({
 
       return true;
     });
-  }, [countries, filteredBusinessCases, filters]);
+  }, [countries, filteredBusinessCases, safeFilters]);
 
   // Filter formulation-countries based on global filters for accurate counts
   const filteredFormulationCountries = useMemo(() => {
     return enrichedFormulationCountries.filter((fc) => {
       // Country filter
-      if (filters.countries.length > 0) {
-        if (!fc.country_code || !filters.countries.includes(fc.country_code)) {
+      if (safeFilters.countries.length > 0) {
+        if (!fc.country_code || !safeFilters.countries.includes(fc.country_code)) {
           return false;
         }
       }
       // Formulation filter
-      if (filters.formulations.length > 0) {
-        if (!fc.formulation_code || !filters.formulations.includes(fc.formulation_code)) {
+      if (safeFilters.formulations.length > 0) {
+        if (!fc.formulation_code || !safeFilters.formulations.includes(fc.formulation_code)) {
           return false;
         }
       }
       // Formulation status filter
-      if (filters.formulationStatuses.length > 0) {
+      if (safeFilters.formulationStatuses.length > 0) {
         const status = fc.formulation_status || "Not Yet Evaluated";
-        if (!filters.formulationStatuses.includes(status)) {
+        if (!safeFilters.formulationStatuses.includes(status)) {
           return false;
         }
       }
       // Country status filter
-      if (filters.countryStatuses.length > 0) {
+      if (safeFilters.countryStatuses.length > 0) {
         const countryStatus = fc.country_status || "Not yet evaluated";
-        if (!filters.countryStatuses.includes(countryStatus)) {
+        if (!safeFilters.countryStatuses.includes(countryStatus)) {
           return false;
         }
       }
       return true;
     });
-  }, [enrichedFormulationCountries, filters]);
+  }, [enrichedFormulationCountries, safeFilters]);
 
   // Compute filtered counts for summary using unified counting utility
   const filteredCounts = useMemo(() => {
     return computeFilteredCounts(
       formulations,
       filteredFormulationCountries,
-      filters,
+      safeFilters,
       { includeOrphanFormulations: false }, // Countries page only shows intersection
       {
         businessCases: filteredBusinessCases,
       }
     );
-  }, [formulations, filteredFormulationCountries, filters, filteredBusinessCases]);
+  }, [formulations, filteredFormulationCountries, safeFilters, filteredBusinessCases]);
 
   return (
     <>

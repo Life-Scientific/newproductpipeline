@@ -995,10 +995,6 @@ export async function getBusinessCasesForChart() {
         .filter((id): id is string => Boolean(id))
     ),
   ];
-  
-  console.log(`[getBusinessCasesForChart] Total business cases: ${allData.length}`);
-  console.log(`[getBusinessCasesForChart] Direct formulation_country_ids: ${formulationCountryIds.length}`);
-  console.log(`[getBusinessCasesForChart] Use group IDs to resolve: ${useGroupIds.length}`);
 
   // Resolve use groups to formulation_country_ids
   let useGroupFormulationCountryIds: string[] = [];
@@ -1033,8 +1029,6 @@ export async function getBusinessCasesForChart() {
   // (The .in() query with many IDs was causing "Bad Request" errors)
   let countryStatusMap = new Map<string, string | null>();
   let countryStatusFetchFailed = false;
-  
-  console.log(`[getBusinessCasesForChart] Attempting to fetch country_status for ${allFormulationCountryIds.length} formulation_country_ids`);
   
   // Create a Set for faster lookup
   const fcIdSet = new Set(allFormulationCountryIds);
@@ -1076,20 +1070,12 @@ export async function getBusinessCasesForChart() {
           hasMore = false;
         }
       }
-      
-      console.log(`[getBusinessCasesForChart] Fetched ${countryStatusMap.size} country_status records (from ${page + 1} pages)`);
     } catch (err) {
       console.error(`[getBusinessCasesForChart] Exception fetching country_status:`, err);
       countryStatusFetchFailed = true;
     }
   }
   
-  if (countryStatusFetchFailed) {
-    console.warn(`[getBusinessCasesForChart] Country status fetch failed - continuing with null country_status values`);
-  } else {
-    console.log(`[getBusinessCasesForChart] Successfully loaded ${countryStatusMap.size} country_status mappings`);
-  }
-
   // Enrich business cases with country_status and formulation_country_id
   // Resolve formulation_country_id for each business case (direct or via use group)
   const enrichedData = allData.map((bc) => {
@@ -1120,15 +1106,6 @@ export async function getBusinessCasesForChart() {
       country_status: countryStatus,
     };
   });
-  
-  // Debug: Log enrichment statistics
-  const statusCounts = new Map<string, number>();
-  enrichedData.forEach((bc) => {
-    const status = bc.country_status || "null/undefined";
-    statusCounts.set(status, (statusCounts.get(status) || 0) + 1);
-  });
-  console.log("Country status enrichment stats:", Object.fromEntries(statusCounts));
-  console.log(`Total enriched: ${enrichedData.length}, Map size: ${countryStatusMap.size}, Unique FC IDs: ${allFormulationCountryIds.length}`);
   
   // Filter orphans only
   return enrichedData.filter(bc => bc.formulation_code && bc.country_name);
