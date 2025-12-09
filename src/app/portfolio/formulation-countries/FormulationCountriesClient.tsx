@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
 import { useFilterOptions, type ReferenceFormulation, type ReferenceCountry, type FilterableFormulationCountry } from "@/hooks/use-filter-options";
+import { computeFilteredCounts } from "@/lib/utils/filter-counts";
 import type { FormulationCountryDetail } from "@/lib/db/queries";
 import type { Formulation } from "@/lib/db/types";
 import type { Country } from "@/lib/db/types";
@@ -110,27 +111,15 @@ function FormulationCountriesContent({
     });
   }, [countries, filters]);
 
-  // Compute filtered counts for summary
+  // Compute filtered counts for summary using unified counting utility
   const filteredCounts = useMemo(() => {
-    const uniqueCountries = new Set<string>();
-    const uniqueFormulations = new Set<string>();
-
-    filteredCountries.forEach((fc) => {
-      if (fc.country_code) {
-        uniqueCountries.add(fc.country_code);
-      }
-      if (fc.formulation_code) {
-        uniqueFormulations.add(fc.formulation_code);
-      }
-    });
-
-    return {
-      countries: uniqueCountries.size,
-      formulations: uniqueFormulations.size,
-      formulationCountries: filteredCountries.length,
-      businessCases: undefined, // Not directly available
-    };
-  }, [filteredCountries]);
+    return computeFilteredCounts(
+      formulations,
+      filteredCountries,
+      filters,
+      { includeOrphanFormulations: false }, // Formulation-Countries page only shows junction data
+    );
+  }, [formulations, filteredCountries, filters]);
 
   return (
     <>

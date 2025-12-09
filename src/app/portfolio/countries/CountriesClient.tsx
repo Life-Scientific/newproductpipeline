@@ -8,10 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
 import { useFilterOptions, type ReferenceFormulation, type ReferenceCountry, type FilterableBusinessCase } from "@/hooks/use-filter-options";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
+import { computeFilteredCounts } from "@/lib/utils/filter-counts";
 import type { CountryWithStats } from "@/lib/db/countries";
 import type { Database } from "@/lib/supabase/database.types";
 import type { Formulation } from "@/lib/db/types";
 import type { Country } from "@/lib/db/types";
+import type { FormulationCountryDetail } from "@/lib/db/types";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"] & {
   formulation_status?: string | null;
@@ -22,6 +24,7 @@ interface CountriesClientProps {
   businessCases: BusinessCase[];
   formulations: Formulation[];
   referenceCountries: Country[];
+  formulationCountries: FormulationCountryDetail[];
 }
 
 function CountriesContent({
@@ -29,9 +32,34 @@ function CountriesContent({
   businessCases,
   formulations,
   referenceCountries,
+  formulationCountries,
 }: CountriesClientProps) {
   // Use global portfolio filters from URL
   const { filters } = usePortfolioFilters();
+
+  // Create formulation status lookup map
+  const formulationStatusMap = useMemo(() => {
+    const map = new Map<string, string>();
+    formulations.forEach((f) => {
+      if (f.formulation_code && f.status) {
+        map.set(f.formulation_code, f.status);
+      }
+    });
+    return map;
+  }, [formulations]);
+
+  // Enrich formulation-country data with formulation status
+  const enrichedFormulationCountries = useMemo(() => {
+    if (!formulationCountries || !Array.isArray(formulationCountries)) {
+      return [];
+    }
+    return formulationCountries.map((fc) => ({
+      ...fc,
+      formulation_status: fc.formulation_code 
+        ? (formulationStatusMap.get(fc.formulation_code) || null)
+        : null,
+    }));
+  }, [formulationCountries, formulationStatusMap]);
 
   // Transform reference data for filter options hook
   const referenceFormulations: ReferenceFormulation[] = useMemo(() => {
@@ -157,27 +185,51 @@ function CountriesContent({
     });
   }, [countries, filteredBusinessCases, filters]);
 
-  // Compute filtered counts for summary
-  const filteredCounts = useMemo(() => {
-    const uniqueFormulations = new Set<string>();
-    const uniqueFormulationCountries = new Set<string>();
-
-    filteredBusinessCases.forEach((bc) => {
-      if (bc.formulation_code) {
-        uniqueFormulations.add(bc.formulation_code);
+  // Filter formulation-countries based on global filters for accurate counts
+  const filteredFormulationCountries = useMemo(() => {
+    return enrichedFormulationCountries.filter((fc) => {
+      // Country filter
+      if (filters.countries.length > 0) {
+        if (!fc.country_code || !filters.countries.includes(fc.country_code)) {
+          return false;
+        }
       }
-      if (bc.formulation_code && bc.country_code) {
-        uniqueFormulationCountries.add(`${bc.formulation_code}|${bc.country_code}`);
+      // Formulation filter
+      if (filters.formulations.length > 0) {
+        if (!fc.formulation_code || !filters.formulations.includes(fc.formulation_code)) {
+          return false;
+        }
       }
+      // Formulation status filter
+      if (filters.formulationStatuses.length > 0) {
+        const status = fc.formulation_status || "Not Yet Evaluated";
+        if (!filters.formulationStatuses.includes(status)) {
+          return false;
+        }
+      }
+      // Country status filter
+      if (filters.countryStatuses.length > 0) {
+        const countryStatus = fc.country_status || "Not yet evaluated";
+        if (!filters.countryStatuses.includes(countryStatus)) {
+          return false;
+        }
+      }
+      return true;
     });
+  }, [enrichedFormulationCountries, filters]);
 
-    return {
-      countries: filteredCountries.length,
-      formulations: uniqueFormulations.size,
-      formulationCountries: uniqueFormulationCountries.size,
-      businessCases: countUniqueBusinessCaseGroups(filteredBusinessCases),
-    };
-  }, [filteredCountries, filteredBusinessCases]);
+  // Compute filtered counts for summary using unified counting utility
+  const filteredCounts = useMemo(() => {
+    return computeFilteredCounts(
+      formulations,
+      filteredFormulationCountries,
+      filters,
+      { includeOrphanFormulations: false }, // Countries page only shows intersection
+      {
+        businessCases: filteredBusinessCases,
+      }
+    );
+  }, [formulations, filteredFormulationCountries, filters, filteredBusinessCases]);
 
   return (
     <>

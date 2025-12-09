@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { FormulationFormButton } from "@/components/forms/FormulationFormButton";
 import { FormulationsViewSwitcher } from "@/components/formulations/FormulationsViewSwitcher";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
-import { getFormulationsWithNestedData, getFormulations } from "@/lib/db/queries";
+import { getFormulationsWithNestedData, getFormulations, getFormulationCountries } from "@/lib/db/queries";
 import { getCountries } from "@/lib/db/countries";
 import { FormulationsClient } from "./FormulationsClient";
 
@@ -10,10 +10,11 @@ import { FormulationsClient } from "./FormulationsClient";
 export const revalidate = 60;
 
 export default async function FormulationsPage() {
-  const [formulationsWithNested, formulations, countries] = await Promise.all([
+  const [formulationsWithNested, formulations, countries, formulationCountries] = await Promise.all([
     getFormulationsWithNestedData(),
     getFormulations(), // Reference data for filter lookups
     getCountries(), // Reference data for filter lookups
+    getFormulationCountries(), // For accurate filter counts
   ]);
 
   return (
@@ -38,6 +39,7 @@ export default async function FormulationsPage() {
           formulationsWithNested={formulationsWithNested}
           formulations={formulations}
           countries={countries}
+          formulationCountries={formulationCountries || []}
         />
       </AnimatedPage>
     </div>

@@ -1,4 +1,4 @@
-import { getBusinessCasesForProjectionTable, getFormulations } from "@/lib/db/queries";
+import { getBusinessCasesForProjectionTable, getFormulations, getFormulationCountries } from "@/lib/db/queries";
 import { getCountries } from "@/lib/db/countries";
 import { createClient } from "@/lib/supabase/server";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
@@ -8,16 +8,18 @@ import { BusinessCasesPageClient } from "./BusinessCasesPageClient";
 export const dynamic = "force-dynamic";
 
 export default async function BusinessCasesPage() {
-  // Fetch business cases, formulations, and countries in parallel
-  const [businessCases, formulations, countries] = await Promise.all([
+  // Fetch business cases, formulations, countries, and formulation-countries in parallel
+  const [businessCases, formulations, countries, formulationCountriesData] = await Promise.all([
     getBusinessCasesForProjectionTable(),
     getFormulations(), // Reference data for filter lookups
     getCountries(), // Reference data for filter lookups
+    getFormulationCountries(), // For accurate filter counts
   ]);
 
   // Also fetch formulation-country data for country status lookup (with pagination)
+  // This is still needed for enriching business cases with country_status
   const supabase = await createClient();
-  let formulationCountries: any[] = [];
+  let formulationCountriesRaw: any[] = [];
   let page = 0;
   const pageSize = 10000;
   let hasMore = true;
@@ -32,7 +34,7 @@ export default async function BusinessCasesPage() {
     if (!pageData || pageData.length === 0) {
       hasMore = false;
     } else {
-      formulationCountries = [...formulationCountries, ...pageData];
+      formulationCountriesRaw = [...formulationCountriesRaw, ...pageData];
       hasMore = pageData.length === pageSize;
       page++;
     }
@@ -48,7 +50,7 @@ export default async function BusinessCasesPage() {
 
   // Build country status lookup map (formulation_id-country_id -> status)
   const countryStatuses = new Map<string, string>();
-  formulationCountries.forEach((fc) => {
+  formulationCountriesRaw.forEach((fc) => {
     if (fc.formulation_id && fc.country_id) {
       const status = fc.country_status || "Not yet evaluated";
       countryStatuses.set(`${fc.formulation_id}-${fc.country_id}`, status);
@@ -74,6 +76,7 @@ export default async function BusinessCasesPage() {
             countryStatuses={countryStatuses}
             formulations={formulations}
             countries={countries}
+            formulationCountries={formulationCountriesData || []}
           />
         </div>
       </AnimatedPage>

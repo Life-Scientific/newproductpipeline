@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
 import { useFilterOptions, type ReferenceFormulation, type ReferenceCountry } from "@/hooks/use-filter-options";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
+import { computeFilteredCounts } from "@/lib/utils/filter-counts";
 import type { Database } from "@/lib/supabase/database.types";
 import type { Country } from "@/lib/db/types";
 import type { Formulation } from "@/lib/db/types";
@@ -221,88 +222,19 @@ function DashboardContent({
     });
   }, [useGroups, filters, selectedFormulationCodes]);
 
-  // Filter formulations based on global filters (count ALL formulations, not just those with formulation-countries)
-  const filteredFormulations = useMemo(() => {
-    return formulations.filter((f) => {
-      // Formulation filter
-      if (selectedFormulationCodes.length > 0) {
-        if (!f.formulation_code || !selectedFormulationCodes.includes(f.formulation_code)) {
-          return false;
-        }
-      }
-      // Formulation status filter
-      if (filters.formulationStatuses.length > 0) {
-        const status = f.status || "Not Yet Evaluated";
-        if (!filters.formulationStatuses.includes(status)) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [formulations, filters, selectedFormulationCodes]);
-
-  // Compute filtered counts for summary using dual-path logic
-  // Path A: When ONLY formulation filters active → formulations count from formulations table (includes those without country entries)
-  // Path B: When country-related filters active → ALL counts from filtered junction data (intersection)
+  // Compute filtered counts for summary using unified counting utility
   const filteredCounts = useMemo(() => {
-    const hasCountryRelatedFilters = 
-      filters.countries.length > 0 || 
-      filters.countryStatuses.length > 0 || 
-      filters.useGroups.length > 0;
-    
-    const hasFormulationFilters = 
-      filters.formulations.length > 0 || 
-      filters.formulationStatuses.length > 0;
-    
-    const hasAnyFilter = hasCountryRelatedFilters || hasFormulationFilters;
-
-    // Compute unique countries from all formulation-countries (for no-filter case)
-    const allCountries = new Set<string>();
-    formulationCountries.forEach(fc => {
-      if (fc.country_code) allCountries.add(fc.country_code);
-    });
-
-    if (!hasAnyFilter) {
-      // No filters: show totals
-      return {
-        countries: allCountries.size,
-        formulations: formulations.length,
-        formulationCountries: formulationCountries.length,
-        useGroups: useGroups.length,
-        businessCases: countUniqueBusinessCaseGroups(businessCases),
-      };
-    }
-
-    // Compute unique values from filtered junction data
-    const uniqueCountries = new Set<string>();
-    const uniqueFormulations = new Set<string>();
-    filteredFormulationCountries.forEach(fc => {
-      if (fc.country_code) uniqueCountries.add(fc.country_code);
-      if (fc.formulation_code) uniqueFormulations.add(fc.formulation_code);
-    });
-
-    if (hasFormulationFilters && !hasCountryRelatedFilters) {
-      // PATH A: Formulation-centric (include formulations without country entries)
-      return {
-        countries: uniqueCountries.size,
-        formulations: filteredFormulations.length, // From formulations table
-        formulationCountries: filteredFormulationCountries.length,
-        useGroups: filteredUseGroups.length,
-        businessCases: countUniqueBusinessCaseGroups(filteredBusinessCases),
-      };
-    }
-
-    // PATH B: Country-centric (intersection from junction data)
-    return {
-      countries: uniqueCountries.size,
-      formulations: uniqueFormulations.size, // From filtered junction
-      formulationCountries: filteredFormulationCountries.length,
-      useGroups: filteredUseGroups.length,
-      businessCases: countUniqueBusinessCaseGroups(filteredBusinessCases),
-    };
-  }, [formulations, formulationCountries, useGroups, businessCases,
-      filteredFormulations, filteredFormulationCountries, filteredUseGroups, 
-      filteredBusinessCases, filters]);
+    return computeFilteredCounts(
+      formulations,
+      filteredFormulationCountries,
+      filters,
+      { includeOrphanFormulations: false }, // Dashboard only shows counts, not orphan display
+      {
+        useGroups: filteredUseGroups,
+        businessCases: filteredBusinessCases,
+      }
+    );
+  }, [formulations, filteredFormulationCountries, filters, filteredUseGroups, filteredBusinessCases]);
 
   return (
     <>

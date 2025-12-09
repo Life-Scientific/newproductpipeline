@@ -929,9 +929,11 @@ export async function getBusinessCases() {
 export async function getBusinessCasesForChart() {
   const supabase = createCachedClient();
   
+  // Count only active business cases for accurate pagination
   const { count } = await supabase
     .from("vw_business_case")
-    .select("fiscal_year", { count: "exact", head: true });
+    .select("fiscal_year", { count: "exact", head: true })
+    .eq("status", "active");
   
   const pageSize = 10000;
   const totalPages = Math.ceil((count || 0) / pageSize);

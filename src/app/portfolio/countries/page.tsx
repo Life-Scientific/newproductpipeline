@@ -1,15 +1,16 @@
-import { getCountriesWithStats, getBusinessCasesForChart, getFormulations } from "@/lib/db/queries";
+import { getCountriesWithStats, getBusinessCasesForChart, getFormulations, getFormulationCountries } from "@/lib/db/queries";
 import { getCountries } from "@/lib/db/countries";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import type { CountryWithStats } from "@/lib/db/countries";
 import { CountriesClient } from "./CountriesClient";
 
 export default async function CountriesPage() {
-  const [countriesWithStats, businessCases, formulations, referenceCountries] = await Promise.all([
+  const [countriesWithStats, businessCases, formulations, referenceCountries, formulationCountries] = await Promise.all([
     getCountriesWithStats() as Promise<CountryWithStats[]>,
     getBusinessCasesForChart(), // Use enriched version with country_status
     getFormulations(), // Reference data for filter lookups
     getCountries(), // Reference data for filter lookups
+    getFormulationCountries(), // For accurate filter counts
   ]);
 
   // Build formulation status lookup map (using formulation_code for reliable lookup)
@@ -43,6 +44,7 @@ export default async function CountriesPage() {
           businessCases={enrichedBusinessCases}
           formulations={formulations}
           referenceCountries={referenceCountries}
+          formulationCountries={formulationCountries || []}
         />
       </AnimatedPage>
     </div>
