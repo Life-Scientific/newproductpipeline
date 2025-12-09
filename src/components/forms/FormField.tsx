@@ -12,23 +12,65 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { Check, AlertCircle, Loader2 } from "lucide-react";
+
+// Validation state type for real-time feedback
+export type ValidationState = "idle" | "validating" | "valid" | "error";
 
 interface FormFieldProps {
   label: string;
   required?: boolean;
   error?: string;
+  success?: boolean;
+  successMessage?: string;
+  validationState?: ValidationState;
+  hint?: string;
   className?: string;
   children: React.ReactNode;
 }
 
-export function FormField({ label, required, error, className, children }: FormFieldProps) {
+export function FormField({ 
+  label, 
+  required, 
+  error, 
+  success,
+  successMessage,
+  validationState = "idle",
+  hint,
+  className, 
+  children 
+}: FormFieldProps) {
   return (
     <div className={cn("space-y-2", className)}>
-      <Label>
+      <Label className="flex items-center gap-2">
         {label} {required && <span className="text-destructive">*</span>}
+        {/* Validation state indicators in label */}
+        {validationState === "validating" && (
+          <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+        )}
+        {validationState === "valid" && (
+          <Check className="h-3 w-3 text-success" />
+        )}
       </Label>
       {children}
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {/* Error message */}
+      {error && (
+        <div className="flex items-center gap-1.5 text-sm text-destructive">
+          <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+      {/* Success message */}
+      {success && !error && successMessage && (
+        <div className="flex items-center gap-1.5 text-sm text-success">
+          <Check className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>{successMessage}</span>
+        </div>
+      )}
+      {/* Hint text - only show if no error or success message */}
+      {hint && !error && !(success && successMessage) && (
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      )}
     </div>
   );
 }
@@ -53,11 +95,24 @@ export function FormInputField({
   maxLength,
   required,
   error,
+  success,
+  successMessage,
+  validationState,
+  hint,
   disabled,
   className,
 }: FormInputFieldProps) {
   return (
-    <FormField label={label} required={required} error={error} className={className}>
+    <FormField 
+      label={label} 
+      required={required} 
+      error={error} 
+      success={success}
+      successMessage={successMessage}
+      validationState={validationState}
+      hint={hint}
+      className={className}
+    >
       <Input
         id={id}
         type={type}
@@ -67,6 +122,10 @@ export function FormInputField({
         maxLength={maxLength}
         required={required}
         disabled={disabled}
+        className={cn(
+          error && "border-destructive focus-visible:ring-destructive/50",
+          success && !error && "border-success focus-visible:ring-success/50"
+        )}
       />
     </FormField>
   );
@@ -92,13 +151,32 @@ export function FormSelectField({
   noneOption = false,
   required,
   error,
+  success,
+  successMessage,
+  validationState,
+  hint,
   disabled,
   className,
 }: FormSelectFieldProps) {
   return (
-    <FormField label={label} required={required} error={error} className={className}>
+    <FormField 
+      label={label} 
+      required={required} 
+      error={error}
+      success={success}
+      successMessage={successMessage}
+      validationState={validationState}
+      hint={hint}
+      className={className}
+    >
       <Select value={value || "__none__"} onValueChange={onValueChange} disabled={disabled}>
-        <SelectTrigger id={id}>
+        <SelectTrigger 
+          id={id}
+          className={cn(
+            error && "border-destructive focus-visible:ring-destructive/50",
+            success && !error && "border-success focus-visible:ring-success/50"
+          )}
+        >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
@@ -132,11 +210,24 @@ export function FormTextareaField({
   rows = 3,
   required,
   error,
+  success,
+  successMessage,
+  validationState,
+  hint,
   disabled,
   className,
 }: FormTextareaFieldProps) {
   return (
-    <FormField label={label} required={required} error={error} className={className}>
+    <FormField 
+      label={label} 
+      required={required} 
+      error={error}
+      success={success}
+      successMessage={successMessage}
+      validationState={validationState}
+      hint={hint}
+      className={className}
+    >
       <Textarea
         id={id}
         value={value}
@@ -145,6 +236,10 @@ export function FormTextareaField({
         rows={rows}
         required={required}
         disabled={disabled}
+        className={cn(
+          error && "border-destructive focus-visible:ring-destructive/50",
+          success && !error && "border-success focus-visible:ring-success/50"
+        )}
       />
     </FormField>
   );
@@ -163,11 +258,21 @@ export function FormSwitchField({
   checked,
   onCheckedChange,
   error,
+  success,
+  successMessage,
+  hint,
   disabled,
   className,
 }: FormSwitchFieldProps) {
   return (
-    <FormField label="" error={error} className={className}>
+    <FormField 
+      label="" 
+      error={error}
+      success={success}
+      successMessage={successMessage}
+      hint={hint}
+      className={className}
+    >
       <div className="flex items-center space-x-2">
         <Switch
           id={id}
