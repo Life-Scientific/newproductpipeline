@@ -113,8 +113,10 @@ export async function createBusinessCase(formData: FormData) {
     return { error: `Failed to link use groups: ${junctionError.message}` };
   }
 
+  // Revalidate paths for fresh data
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { data: businessCase, success: true };
@@ -233,8 +235,10 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
     }
   }
 
+  // Revalidate paths for fresh data
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { data, success: true };
@@ -258,8 +262,10 @@ export async function deleteBusinessCase(businessCaseId: string) {
     return { error: error.message };
   }
 
+  // Revalidate paths for fresh data
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { success: true };
@@ -505,8 +511,10 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     }
   }
 
+  // Revalidate paths for fresh data
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { data: { business_case_group_id: groupId }, success: true };
@@ -736,8 +744,10 @@ export async function updateBusinessCaseGroupAction(
     return { error: result.error };
   }
 
+  // Revalidate paths for fresh data
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
   return { success: true, data: result.data };
@@ -1107,9 +1117,10 @@ export async function importBusinessCases(
     }
   }
 
-  // Revalidate paths
+  // Revalidate paths for fresh data
   revalidatePath("/portfolio/business-cases");
   revalidatePath("/portfolio/analytics");
+  revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
 

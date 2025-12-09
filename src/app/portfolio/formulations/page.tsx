@@ -5,8 +5,9 @@ import { FormulationsViewSwitcher } from "@/components/formulations/Formulations
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { getFormulationsWithNestedData } from "@/lib/db/queries";
 
-// Cache formulations data for 60 seconds
-export const revalidate = 60;
+// Use cache tags for invalidation instead of time-based revalidation
+// This ensures data is fresh when changed via actions while still allowing caching
+export const revalidate = 30; // Short revalidation as a fallback
 
 export default async function FormulationsPage() {
   const formulationsWithNested = await getFormulationsWithNestedData();

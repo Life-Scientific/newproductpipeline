@@ -193,18 +193,38 @@ const createColumns = (
               />
             );
           },
+          meta: {
+            enableReordering: false, // Keep actions column at the end
+          },
         },
       ]
     : []),
 ];
 
+// Build a lookup map for formulation code -> product name for better filter labels
+function buildFormulationLabelMap(data: FormulationCountryDetail[]): Map<string, string> {
+  const map = new Map<string, string>();
+  data.forEach((row) => {
+    if (row.formulation_code) {
+      const label = row.product_name 
+        ? `${row.formulation_code} - ${row.product_name}`
+        : row.formulation_code;
+      map.set(row.formulation_code, label);
+    }
+  });
+  return map;
+}
+
 // Filter configurations for the formulation-countries table
-const filterConfigs: FilterConfig<FormulationCountryWithGroup>[] = [
+// Note: getLabel is set dynamically in the component to include formulation names
+const createFilterConfigs = (
+  formulationLabelMap: Map<string, string>
+): FilterConfig<FormulationCountryWithGroup>[] => [
   {
     columnKey: "formulation_code",
     label: "Formulation",
     paramKey: "formulations",
-    getLabel: (value) => value,
+    getLabel: (value) => formulationLabelMap.get(value) || value,
   },
   {
     columnKey: "country_name",
@@ -276,6 +296,18 @@ export function FormulationCountriesList({
 
   // Add grouping info to data
   const groupedData = useMemo(() => addGroupingInfo(countries), [countries]);
+
+  // Build formulation label map for filter display (includes product names)
+  const formulationLabelMap = useMemo(
+    () => buildFormulationLabelMap(countries),
+    [countries]
+  );
+
+  // Create filter configs with dynamic labels
+  const filterConfigs = useMemo(
+    () => createFilterConfigs(formulationLabelMap),
+    [formulationLabelMap]
+  );
 
   // Memoize the edit handler
   const handleEdit = useCallback((id: string) => {

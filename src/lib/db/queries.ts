@@ -881,7 +881,8 @@ export async function getBusinessCases() {
   // First get total count, then fetch in batches if needed
   const { count } = await supabase
     .from("vw_business_case")
-    .select("*", { count: "exact", head: true });
+    .select("*", { count: "exact", head: true })
+    .eq("status", "active"); // Only count active business cases
   
   const pageSize = 10000;
   const totalPages = Math.ceil((count || 0) / pageSize);
@@ -892,6 +893,7 @@ export async function getBusinessCases() {
     const { data: pageData, error: pageError } = await supabase
       .from("vw_business_case")
       .select("*")
+      .eq("status", "active") // Only show active versions, exclude superseded
       .order("fiscal_year", { ascending: true })
       .order("year_offset", { ascending: true })
       .range(page * pageSize, (page + 1) * pageSize - 1);
@@ -1213,6 +1215,7 @@ export async function getFormulationBusinessCases(formulationId: string) {
     .from("vw_business_case")
     .select("*")
     .eq("formulation_code", formulation.formulation_code)
+    .eq("status", "active") // Only show active versions, exclude superseded
     .order("year_offset", { ascending: true })
     .order("fiscal_year", { ascending: true });
 
@@ -1220,7 +1223,7 @@ export async function getFormulationBusinessCases(formulationId: string) {
     throw new Error(`Failed to fetch business cases: ${error.message}`);
   }
 
-  // Deduplicate before enrichment
+  // Deduplicate before enrichment (handles edge cases where multiple active versions exist)
   const deduplicated = deduplicateBusinessCases(data || []);
   return enrichBusinessCases(deduplicated);
 }
@@ -1237,6 +1240,7 @@ export async function getFormulationBusinessCasesForTree(formulationId: string) 
     .from("vw_business_case")
     .select("*")
     .eq("formulation_code", formulation.formulation_code)
+    .eq("status", "active") // Only show active versions, exclude superseded
     .order("year_offset", { ascending: true })
     .order("fiscal_year", { ascending: true });
 
@@ -1244,7 +1248,7 @@ export async function getFormulationBusinessCasesForTree(formulationId: string) 
     throw new Error(`Failed to fetch business cases: ${error.message}`);
   }
 
-  // Deduplicate before enrichment
+  // Deduplicate before enrichment (handles edge cases where multiple active versions exist)
   const deduplicated = deduplicateBusinessCases(data || []);
   return enrichBusinessCases(deduplicated);
 }
@@ -1792,6 +1796,7 @@ export async function getRevenueProjections() {
   const { data, error } = await supabase
     .from("vw_business_case")
     .select("*")
+    .eq("status", "active") // Only show active versions, exclude superseded
     .order("fiscal_year", { ascending: false })
     .order("year_offset", { ascending: true });
 
@@ -1799,7 +1804,7 @@ export async function getRevenueProjections() {
     throw new Error(`Failed to fetch revenue projections: ${error.message}`);
   }
 
-  // Deduplicate before enrichment
+  // Deduplicate before enrichment (handles edge cases where multiple active versions exist)
   const deduplicated = deduplicateBusinessCases(data || []);
   return enrichBusinessCases(deduplicated);
 }

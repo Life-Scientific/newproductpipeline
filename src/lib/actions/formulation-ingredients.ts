@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 
 export interface IngredientInput {
   ingredient_id: string;
@@ -85,6 +86,11 @@ export async function createFormulationIngredients(
     .eq("formulation_id", formulationId)
     .single();
 
+  // Revalidate paths for fresh data
+  revalidatePath(`/portfolio/formulations/${formulationId}`);
+  revalidatePath("/portfolio/formulations");
+  revalidatePath("/portfolio");
+
   return {
     success: true,
     formulationCode: updatedFormulation?.formulation_code || null,
@@ -133,6 +139,11 @@ export async function updateFormulationIngredients(
     return { error: updateError.message };
   }
 
+  // Revalidate paths for fresh data
+  revalidatePath(`/portfolio/formulations/${formulationId}`);
+  revalidatePath("/portfolio/formulations");
+  revalidatePath("/portfolio");
+
   return { success: true };
 }
 
@@ -147,6 +158,10 @@ export async function deleteFormulationIngredient(ingredientId: string) {
   if (error) {
     return { error: error.message };
   }
+
+  // Revalidate paths for fresh data
+  revalidatePath("/portfolio/formulations");
+  revalidatePath("/portfolio");
 
   return { success: true };
 }

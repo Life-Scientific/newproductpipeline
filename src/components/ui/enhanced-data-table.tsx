@@ -735,10 +735,15 @@ export function EnhancedDataTable<TData, TValue>({
     }
   }, [tableId, columns]);
 
+  // All visible columns are reorderable unless explicitly disabled via meta.enableReordering = false
   const reorderableColumns = React.useMemo(
     () =>
       enableColumnReordering
-        ? visibleColumns.filter((col) => col.getCanHide())
+        ? visibleColumns.filter((col) => {
+            const meta = col.columnDef.meta as { enableReordering?: boolean } | undefined;
+            // Allow reordering unless explicitly disabled
+            return meta?.enableReordering !== false;
+          })
         : visibleColumns,
     [enableColumnReordering, visibleColumns],
   );
