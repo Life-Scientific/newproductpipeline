@@ -55,7 +55,7 @@ export function ValidatedInput({
   const [validationState, setValidationState] = useState<"idle" | "validating" | "valid" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const onValidationChangeRef = useRef(onValidationChange);
   
   // Keep callback ref updated
@@ -106,7 +106,9 @@ export function ValidatedInput({
     onChange(newValue);
 
     if (validateOnChange && touched) {
-      clearTimeout(debounceRef.current);
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
       debounceRef.current = setTimeout(() => {
         validate(newValue);
       }, debounceMs);
@@ -122,7 +124,11 @@ export function ValidatedInput({
 
   // Cleanup debounce on unmount
   useEffect(() => {
-    return () => clearTimeout(debounceRef.current);
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
   }, []);
 
   const showSuccess = validationState === "valid" && touched && showSuccessState;
