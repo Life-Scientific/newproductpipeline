@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import { 
   checkExistingBusinessCase, 
@@ -119,6 +119,9 @@ export async function createBusinessCase(formData: FormData) {
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
+  // Invalidate cached data (unstable_cache uses tags)
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   return { data: businessCase, success: true };
 }
 
@@ -241,6 +244,9 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
+  // Invalidate cached data (unstable_cache uses tags)
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   return { data, success: true };
 }
 
@@ -268,6 +274,9 @@ export async function deleteBusinessCase(businessCaseId: string) {
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
+  // Invalidate cached data (unstable_cache uses tags)
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   return { success: true };
 }
 
@@ -517,6 +526,9 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
+  // Invalidate cached data (unstable_cache uses tags)
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   return { data: { business_case_group_id: groupId }, success: true };
 }
 
@@ -750,6 +762,9 @@ export async function updateBusinessCaseGroupAction(
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
+  // Invalidate cached data (unstable_cache uses tags)
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
   return { success: true, data: result.data };
 }
 
@@ -1123,6 +1138,9 @@ export async function importBusinessCases(
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
+  // Invalidate cached data (unstable_cache uses tags)
+  revalidateTag("business-cases");
+  revalidateTag("formulations");
 
   return {
     totalRows: rows.length,
@@ -1315,6 +1333,13 @@ export async function generateBusinessCaseImportTemplate(): Promise<string> {
     "# Each row represents ONE formulation-country-use_group combination",
     "# You can import the same formulation across multiple countries by adding multiple rows",
     "# Example: Rows 1-3 show formulation '323-01' in Ireland, UK, and Germany",
+    "#",
+    "# REQUIRED FORMAT:",
+    "#   use_group_variant: Must be zero-padded (e.g. '001' '002' NOT '1' or '2')",
+    "#   All monetary values: EUR only (no currency conversion)",
+    "#   All volume values: Litres or KG (base units)",
+    "#   Volume and NSP: Must be greater than 0 (blanks and zeros will be rejected)",
+    "#   change_reason: Required when updating existing business cases",
     "#",
     "# Required fields: formulation_code, country_code, use_group_variant, year_1-10_volume, year_1-10_nsp",
     "# Optional fields: effective_start_fiscal_year, business_case_name, change_reason, year_N_cogs",

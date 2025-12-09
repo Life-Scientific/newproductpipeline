@@ -29,6 +29,18 @@ interface BusinessCaseImportModalProps {
 
 type ImportStep = "upload" | "validate" | "import" | "results";
 
+interface SkippedRow {
+  lineNumber: number;
+  reason: string;
+  rawData: string;
+}
+
+interface ParseResult {
+  validRows: BusinessCaseImportRow[];
+  skippedRows: SkippedRow[];
+  totalLines: number;
+}
+
 export function BusinessCaseImportModal({
   open,
   onOpenChange,
@@ -40,6 +52,8 @@ export function BusinessCaseImportModal({
   const [step, setStep] = useState<ImportStep>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [parsedRows, setParsedRows] = useState<BusinessCaseImportRow[]>([]);
+  const [skippedRows, setSkippedRows] = useState<SkippedRow[]>([]);
+  const [totalCsvLines, setTotalCsvLines] = useState(0);
   const [validations, setValidations] = useState<BusinessCaseImportRowValidation[]>([]);
   const [isValidating, setIsValidating] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -58,6 +72,8 @@ export function BusinessCaseImportModal({
     setStep("upload");
     setFile(null);
     setParsedRows([]);
+    setSkippedRows([]);
+    setTotalCsvLines(0);
     setValidations([]);
     setImportResult(null);
     if (fileInputRef.current) {
@@ -66,21 +82,26 @@ export function BusinessCaseImportModal({
     onOpenChange(false);
   }, [isValidating, isImporting, onOpenChange, toast]);
 
-  // Parse CSV file
-  const parseCSV = useCallback((csvText: string): BusinessCaseImportRow[] => {
-    // Remove comment lines (lines starting with #)
-    const lines = csvText.split("\n").filter((line) => {
-      const trimmed = line.trim();
-      return trimmed && !trimmed.startsWith("#");
-    });
+  // Parse CSV file - returns valid rows AND skipped rows with reasons
+  const parseCSV = useCallback((csvText: string): ParseResult => {
+    const allLines = csvText.split("\n");
     
-    if (lines.length < 2) {
+    // Filter out comment lines but track original line numbers
+    const dataLines: { line: string; originalLineNumber: number }[] = [];
+    for (let i = 0; i < allLines.length; i++) {
+      const trimmed = allLines[i].trim();
+      if (trimmed && !trimmed.startsWith("#")) {
+        dataLines.push({ line: trimmed, originalLineNumber: i + 1 });
+      }
+    }
+    
+    if (dataLines.length < 2) {
       throw new Error("CSV file must have at least a header row and one data row");
     }
 
-    const headers = lines[0].split(",").map((h) => h.trim());
+    const headers = dataLines[0].line.split(",").map((h) => h.trim());
     
-    // Only check required headers (not optional ones like effective_start_fiscal_year, business_case_name, change_reason, cogs)
+    // Only check required headers
     const requiredHeaders = [
       "formulation_code",
       "country_code",
@@ -99,10 +120,11 @@ export function BusinessCaseImportModal({
       throw new Error(`Missing required headers: ${missingRequired.join(", ")}`);
     }
 
-    const rows: BusinessCaseImportRow[] = [];
+    const validRows: BusinessCaseImportRow[] = [];
+    const skippedRows: SkippedRow[] = [];
     
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
+    for (let i = 1; i < dataLines.length; i++) {
+      const { line, originalLineNumber } = dataLines[i];
       if (!line) continue;
 
       // Handle CSV with quoted fields
@@ -124,6 +146,7 @@ export function BusinessCaseImportModal({
       values.push(current.trim());
 
       const row: Partial<BusinessCaseImportRow> = {};
+      const parseErrors: string[] = [];
       
       headers.forEach((header, idx) => {
         const value = values[idx]?.trim() || "";
@@ -149,9 +172,17 @@ export function BusinessCaseImportModal({
             const field = yearMatch[2];
             const key = `year_${yearNum}_${field}` as keyof BusinessCaseImportRow;
             if (field === "volume" || field === "nsp") {
-              const numValue = value ? parseFloat(value) : NaN;
-              if (!isNaN(numValue)) {
-                (row as any)[key] = numValue;
+              if (!value || value === "") {
+                parseErrors.push(`Year ${yearNum} ${field} is empty`);
+              } else {
+                const numValue = parseFloat(value);
+                if (isNaN(numValue)) {
+                  parseErrors.push(`Year ${yearNum} ${field} is not a valid number: "${value}"`);
+                } else if (numValue <= 0) {
+                  parseErrors.push(`Year ${yearNum} ${field} must be greater than 0 (got ${numValue})`);
+                } else {
+                  (row as any)[key] = numValue;
+                }
               }
             } else if (field === "cogs" && value) {
               const numValue = parseFloat(value);
@@ -163,37 +194,47 @@ export function BusinessCaseImportModal({
         }
       });
 
-      // Validate required fields
-      if (
-        row.formulation_code &&
-        row.country_code &&
-        row.use_group_variant &&
-        row.year_1_volume !== undefined &&
-        row.year_1_nsp !== undefined
-      ) {
-        // Ensure all 10 years have volume and nsp
-        let isValid = true;
-        for (let year = 1; year <= 10; year++) {
-          const volumeKey = `year_${year}_volume` as keyof BusinessCaseImportRow;
-          const nspKey = `year_${year}_nsp` as keyof BusinessCaseImportRow;
-          if (
-            row[volumeKey] === undefined ||
-            row[nspKey] === undefined ||
-            isNaN(Number(row[volumeKey])) ||
-            isNaN(Number(row[nspKey]))
-          ) {
-            isValid = false;
-            break;
-          }
+      // Check required identifiers
+      if (!row.formulation_code) {
+        parseErrors.push("Missing formulation_code");
+      }
+      if (!row.country_code) {
+        parseErrors.push("Missing country_code");
+      }
+      if (!row.use_group_variant) {
+        parseErrors.push("Missing use_group_variant");
+      }
+
+      // Check all 10 years have volume and nsp
+      for (let year = 1; year <= 10; year++) {
+        const volumeKey = `year_${year}_volume` as keyof BusinessCaseImportRow;
+        const nspKey = `year_${year}_nsp` as keyof BusinessCaseImportRow;
+        if (row[volumeKey] === undefined && !parseErrors.some(e => e.includes(`Year ${year} volume`))) {
+          parseErrors.push(`Year ${year} volume is missing`);
         }
-        
-        if (isValid) {
-          rows.push(row as BusinessCaseImportRow);
+        if (row[nspKey] === undefined && !parseErrors.some(e => e.includes(`Year ${year} nsp`))) {
+          parseErrors.push(`Year ${year} nsp is missing`);
         }
+      }
+
+      if (parseErrors.length > 0) {
+        // Get a preview of the row data
+        const preview = `${row.formulation_code || "?"} / ${row.country_code || "?"} / ${row.use_group_variant || "?"}`;
+        skippedRows.push({
+          lineNumber: originalLineNumber,
+          reason: parseErrors.slice(0, 3).join("; ") + (parseErrors.length > 3 ? ` (+${parseErrors.length - 3} more)` : ""),
+          rawData: preview,
+        });
+      } else {
+        validRows.push(row as BusinessCaseImportRow);
       }
     }
 
-    return rows;
+    return { 
+      validRows, 
+      skippedRows, 
+      totalLines: dataLines.length - 1 // Exclude header
+    };
   }, []);
 
   // Handle file selection
@@ -210,20 +251,40 @@ export function BusinessCaseImportModal({
 
       try {
         const text = await selectedFile.text();
-        const rows = parseCSV(text);
+        const result = parseCSV(text);
         
-        if (rows.length === 0) {
+        if (result.validRows.length === 0) {
           toast({
             title: "No valid rows found",
-            description: "The CSV file does not contain any valid data rows.",
+            description: result.skippedRows.length > 0 
+              ? `All ${result.skippedRows.length} rows had parsing errors. Check the skipped rows section for details.`
+              : "The CSV file does not contain any valid data rows.",
             variant: "destructive",
           });
+          // Still show the file so user can see what went wrong
+          if (result.skippedRows.length > 0) {
+            setFile(selectedFile);
+            setParsedRows([]);
+            setSkippedRows(result.skippedRows);
+            setTotalCsvLines(result.totalLines);
+            setStep("validate");
+          }
           return;
         }
 
         setFile(selectedFile);
-        setParsedRows(rows);
+        setParsedRows(result.validRows);
+        setSkippedRows(result.skippedRows);
+        setTotalCsvLines(result.totalLines);
         setStep("validate");
+        
+        // Notify about skipped rows if any
+        if (result.skippedRows.length > 0) {
+          toast({
+            title: "Some rows skipped",
+            description: `${result.validRows.length} valid, ${result.skippedRows.length} skipped due to parsing errors. Review skipped rows before proceeding.`,
+          });
+        }
       } catch (error) {
         toast({
           title: "Error parsing CSV",
@@ -466,10 +527,13 @@ export function BusinessCaseImportModal({
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">
-                  {parsedRows.length} row{parsedRows.length !== 1 ? "s" : ""} ready to validate
+                  {parsedRows.length} of {totalCsvLines} row{totalCsvLines !== 1 ? "s" : ""} ready to validate
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Click Validate to check all rows before importing
+                  {skippedRows.length > 0 
+                    ? `${skippedRows.length} row${skippedRows.length !== 1 ? "s" : ""} skipped due to parsing errors`
+                    : "Click Validate to check all rows before importing"
+                  }
                 </p>
               </div>
               <Button
@@ -477,18 +541,59 @@ export function BusinessCaseImportModal({
                 onClick={() => {
                   setStep("upload");
                   setValidations([]);
+                  setSkippedRows([]);
                 }}
               >
                 Change File
               </Button>
             </div>
 
+            {/* Skipped Rows Section - Show parsing errors */}
+            {skippedRows.length > 0 && (
+              <div className="border border-amber-300 dark:border-amber-700 rounded-lg bg-amber-50 dark:bg-amber-950/20">
+                <div className="p-3 border-b border-amber-300 dark:border-amber-700">
+                  <p className="font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    {skippedRows.length} Row{skippedRows.length !== 1 ? "s" : ""} Skipped (Parsing Errors)
+                  </p>
+                  <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
+                    These rows could not be parsed. Fix these issues in your CSV and re-upload.
+                  </p>
+                </div>
+                <div className="max-h-48 overflow-y-auto p-2">
+                  {skippedRows.map((skipped) => (
+                    <div 
+                      key={skipped.lineNumber} 
+                      className="text-sm p-2 border-b border-amber-200 dark:border-amber-800 last:border-0"
+                    >
+                      <div className="flex items-start gap-2">
+                        <span className="font-mono text-xs bg-amber-200 dark:bg-amber-800 px-1.5 py-0.5 rounded shrink-0">
+                          Line {skipped.lineNumber}
+                        </span>
+                        <span className="text-amber-800 dark:text-amber-300 font-medium">
+                          {skipped.rawData}
+                        </span>
+                      </div>
+                      <p className="text-xs text-amber-600 dark:text-amber-500 mt-1 ml-14">
+                        {skipped.reason}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {validations.length > 0 ? (
               <BusinessCaseImportPreview validations={validations} />
-            ) : (
+            ) : parsedRows.length > 0 ? (
               <div className="border rounded-lg p-8 text-center text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2" />
                 <p>No validation results yet. Click Validate to check the data.</p>
+              </div>
+            ) : (
+              <div className="border rounded-lg p-8 text-center text-muted-foreground">
+                <XCircle className="h-8 w-8 mx-auto mb-2 text-destructive" />
+                <p>No valid rows to validate. Fix the parsing errors above and re-upload.</p>
               </div>
             )}
 
