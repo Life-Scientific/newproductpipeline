@@ -10,11 +10,12 @@ import { revalidatePath, revalidateTag } from "next/cache";
 export async function revalidateAllCaches(): Promise<{ success: boolean; message: string }> {
   try {
     // Invalidate all cache tags used by unstable_cache
-    revalidateTag("business-cases");
-    revalidateTag("formulations");
-    revalidateTag("dashboard-summary");
-    revalidateTag("chart-data-by-year");
-    revalidateTag("chart-yearly-totals");
+    // Next.js 16 requires second parameter - using "page" type
+    revalidateTag("business-cases", "page");
+    revalidateTag("formulations", "page");
+    revalidateTag("dashboard-summary", "page");
+    revalidateTag("chart-data-by-year", "page");
+    revalidateTag("chart-yearly-totals", "page");
     
     // Revalidate key routes
     revalidatePath("/portfolio", "layout");

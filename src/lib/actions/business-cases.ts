@@ -120,8 +120,9 @@ export async function createBusinessCase(formData: FormData) {
   revalidatePath("/portfolio");
   revalidatePath("/");
   // Invalidate cached data (unstable_cache uses tags)
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
+  // Next.js 16 requires second parameter - using "page" type
+  revalidateTag("business-cases", "page");
+  revalidateTag("formulations", "page");
   return { data: businessCase, success: true };
 }
 
@@ -245,8 +246,9 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
   revalidatePath("/portfolio");
   revalidatePath("/");
   // Invalidate cached data (unstable_cache uses tags)
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
+  // Next.js 16 requires second parameter - using "page" type
+  revalidateTag("business-cases", "page");
+  revalidateTag("formulations", "page");
   return { data, success: true };
 }
 
@@ -275,8 +277,9 @@ export async function deleteBusinessCase(businessCaseId: string) {
   revalidatePath("/portfolio");
   revalidatePath("/");
   // Invalidate cached data (unstable_cache uses tags)
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
+  // Next.js 16 requires second parameter - using "page" type
+  revalidateTag("business-cases", "page");
+  revalidateTag("formulations", "page");
   return { success: true };
 }
 
@@ -527,8 +530,9 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
   revalidatePath("/portfolio");
   revalidatePath("/");
   // Invalidate cached data (unstable_cache uses tags)
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
+  // Next.js 16 requires second parameter - using "page" type
+  revalidateTag("business-cases", "page");
+  revalidateTag("formulations", "page");
   return { data: { business_case_group_id: groupId }, success: true };
 }
 
@@ -763,8 +767,9 @@ export async function updateBusinessCaseGroupAction(
   revalidatePath("/portfolio");
   revalidatePath("/");
   // Invalidate cached data (unstable_cache uses tags)
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
+  // Next.js 16 requires second parameter - using "page" type
+  revalidateTag("business-cases", "page");
+  revalidateTag("formulations", "page");
   return { success: true, data: result.data };
 }
 
@@ -1139,8 +1144,9 @@ export async function importBusinessCases(
   revalidatePath("/portfolio");
   revalidatePath("/");
   // Invalidate cached data (unstable_cache uses tags)
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
+  // Next.js 16 requires second parameter - using "page" type
+  revalidateTag("business-cases", "page");
+  revalidateTag("formulations", "page");
 
   return {
     totalRows: rows.length,

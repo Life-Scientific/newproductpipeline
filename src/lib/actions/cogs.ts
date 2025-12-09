@@ -377,8 +377,9 @@ export async function updateCOGSGroupAction(groupId: string, formData: FormData)
   revalidatePath("/portfolio/analytics");
   revalidatePath("/portfolio");
   // Invalidate cached data (unstable_cache uses tags)
-  revalidateTag("business-cases");
-  revalidateTag("formulations");
+  // Next.js 16 requires second parameter - using "page" type
+  revalidateTag("business-cases", "page");
+  revalidateTag("formulations", "page");
   return {
     data: { cogs_group_id: newGroupId, business_cases_updated: cascadeResult.count },
     success: true,
