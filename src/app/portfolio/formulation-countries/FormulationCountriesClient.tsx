@@ -51,9 +51,9 @@ function FormulationCountriesContent({
   const filterableFormulationCountries: FilterableFormulationCountry[] = useMemo(() => {
     return countries.map((fc) => ({
       formulation_country_id: fc.formulation_country_id || null,
-      formulation_id: fc.formulation_id || null,
+      formulation_id: fc.formulation_id ?? null, // Use nullish coalescing for optional field
       formulation_code: fc.formulation_code || null,
-      country_id: fc.country_id || null,
+      country_id: fc.country_id ?? null, // Use nullish coalescing for optional field
       country_code: fc.country_code || null,
       country_name: fc.country_name || null,
       country_status: fc.country_status || null,

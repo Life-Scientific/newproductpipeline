@@ -134,9 +134,9 @@ function BusinessCasesContent({
     filterableBusinessCases, // Filterable data for cascading logic
     enrichedFormulationCountries.length > 0 ? enrichedFormulationCountries.map((fc) => ({
       formulation_country_id: fc.formulation_country_id || null,
-      formulation_id: fc.formulation_id || null,
+      formulation_id: null, // FormulationCountryDetail doesn't have formulation_id, only formulation_code
       formulation_code: fc.formulation_code || null,
-      country_id: fc.country_id || null,
+      country_id: null, // FormulationCountryDetail doesn't have country_id, only country_code
       country_code: fc.country_code || null,
       country_name: fc.country_name || null,
       country_status: fc.country_status || null,
