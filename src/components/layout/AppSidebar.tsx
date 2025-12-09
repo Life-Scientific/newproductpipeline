@@ -15,6 +15,7 @@ import {
   Globe,
   LayoutDashboard,
   Link as LinkIcon,
+  Loader2,
   LogOut,
   type LucideIcon,
   Map as MapIcon,
@@ -24,6 +25,7 @@ import {
   PanelLeftClose,
   PieChart,
   Plus,
+  RefreshCw,
   Settings,
   Shield,
   Sparkles,
@@ -76,6 +78,7 @@ import {
 import { useSupabase } from "@/hooks/use-supabase";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { WorkspaceMenuItem } from "@/lib/actions/workspaces";
+import { revalidateAllCaches } from "@/lib/actions/cache";
 import { routes, WORKSPACE_BASE } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
@@ -216,6 +219,23 @@ export function AppSidebar() {
   const { currentTheme, availableThemes, setTheme } = useTheme();
   const { preferences, updatePreferences, currencySymbol, CURRENCY_OPTIONS, VOLUME_OPTIONS, WEIGHT_OPTIONS } = useDisplayPreferences();
   const [user, setUser] = useState<any>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Handle cache refresh
+  const handleRefreshData = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const result = await revalidateAllCaches();
+      if (result.success) {
+        // Force a page refresh to load fresh data
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Failed to refresh data:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [router]);
 
   // Initialize ForesightJS for predictive prefetching
   useForesightInit();
@@ -428,6 +448,28 @@ export function AppSidebar() {
               isCollapsed ? "flex-col" : "flex-row",
             )}
           >
+            {/* Refresh Data Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRefreshData}
+                  disabled={isRefreshing}
+                  className="h-9 w-9 shrink-0"
+                >
+                  {isRefreshing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Refresh all data</p>
+              </TooltipContent>
+            </Tooltip>
+
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
