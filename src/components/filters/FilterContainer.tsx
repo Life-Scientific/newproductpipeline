@@ -24,7 +24,7 @@ export function FilterContainer({
     return (
       <div
         className={cn(
-          "border-b border-border/50 pb-6",
+          "pb-6",
           "-mx-4 sm:-mx-6 px-4 sm:px-6",
           "bg-muted/20 -mt-4 sm:-mt-6 pt-4 sm:pt-6",
           "rounded-t-lg",

@@ -210,7 +210,7 @@ export function GlobalFilterBar({
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="flex flex-wrap gap-2 mb-4 pb-4 border-b"
+          className="flex flex-wrap gap-2 mb-4 pb-4"
         >
           {filters.countries.length > 0 && (
             <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
@@ -449,7 +449,7 @@ export function GlobalFilterBar({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className={cn("pt-4 border-t", inline && "mt-4")}
+            className={cn("pt-4", inline && "mt-4")}
           >
             <div className="flex items-center gap-2 flex-wrap text-sm">
               <span className="text-muted-foreground font-medium">{hasActiveFilters ? "Showing:" : "Total:"}</span>
@@ -472,7 +472,7 @@ export function GlobalFilterBar({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex flex-wrap gap-2 mt-3 pt-3 border-t"
+          className="flex flex-wrap gap-2 mt-3 pt-3"
         >
           {filters.countries.length > 0 && (
             <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
