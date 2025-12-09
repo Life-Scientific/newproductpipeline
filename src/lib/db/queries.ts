@@ -950,6 +950,7 @@ export async function getBusinessCasesForChart() {
         total_cogs,
         margin_percent,
         country_name,
+        country_code,
         country_id,
         formulation_country_id,
         formulation_country_use_group_id,
@@ -2158,22 +2159,40 @@ export async function getBusinessCaseGroupsUsingFormulation(
 
 /**
  * Get all formulation-country combinations
- * Used for Countries page
+ * Used for Countries page and Dashboard
+ * Note: Uses pagination to fetch all records (Supabase default limit is 1000)
  */
 export async function getFormulationCountries() {
   const supabase = await createClient();
   
-  const { data, error } = await supabase
+  // Get total count first
+  const { count } = await supabase
     .from("vw_formulation_country_detail")
-    .select("*")
-    .order("formulation_code", { ascending: true })
-    .order("country_name", { ascending: true });
-
-  if (error) {
-    throw new Error(`Failed to fetch formulation countries: ${error.message}`);
+    .select("formulation_country_id", { count: "exact", head: true });
+  
+  const pageSize = 10000;
+  const totalPages = Math.ceil((count || 0) / pageSize);
+  
+  let allData: FormulationCountryDetail[] = [];
+  
+  for (let page = 0; page < totalPages; page++) {
+    const { data: pageData, error: pageError } = await supabase
+      .from("vw_formulation_country_detail")
+      .select("*")
+      .order("formulation_code", { ascending: true })
+      .order("country_name", { ascending: true })
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+    
+    if (pageError) {
+      throw new Error(`Failed to fetch formulation countries: ${pageError.message}`);
+    }
+    
+    if (pageData) {
+      allData = allData.concat(pageData as FormulationCountryDetail[]);
+    }
   }
-
-  return data as FormulationCountryDetail[];
+  
+  return allData;
 }
 
 /**

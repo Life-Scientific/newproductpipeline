@@ -1,18 +1,73 @@
-import { getAllUseGroups } from "@/lib/db/queries";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getAllUseGroups, getFormulations } from "@/lib/db/queries";
+import { getCountries } from "@/lib/db/countries";
+import { createClient } from "@/lib/supabase/server";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
-import { UseGroupsList } from "@/components/use-groups/UseGroupsList";
 import { FormulationCountryUseGroupFormButton } from "@/components/forms/FormulationCountryUseGroupFormButton";
+import { UseGroupsClient } from "./UseGroupsClient";
 
 export default async function UseGroupsPage() {
-  const useGroups = await getAllUseGroups();
+  const [useGroups, formulations, countries] = await Promise.all([
+    getAllUseGroups(),
+    getFormulations(), // Reference data for filter lookups
+    getCountries(), // Reference data for filter lookups
+  ]);
 
-  // Calculate summary statistics
-  const totalUseGroups = useGroups.length;
-  const approvedUseGroups = useGroups.filter((ug) => ug.use_group_status === "Approved").length;
-  const submittedUseGroups = useGroups.filter((ug) => ug.use_group_status === "Submitted").length;
-  const uniqueFormulations = new Set(useGroups.map((ug) => ug.formulation_code).filter(Boolean)).size;
-  const uniqueCountries = new Set(useGroups.map((ug) => ug.country_name).filter(Boolean)).size;
+  // Also fetch country_id and country_status from formulation_country (with pagination)
+  const supabase = await createClient();
+  let fcData: any[] = [];
+  let page = 0;
+  const pageSize = 10000;
+  let hasMore = true;
+  
+  while (hasMore) {
+    const { data: pageData } = await supabase
+      .from("formulation_country")
+      .select("formulation_country_id, country_id, country_status")
+      .eq("is_active", true)
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+    
+    if (!pageData || pageData.length === 0) {
+      hasMore = false;
+    } else {
+      fcData = [...fcData, ...pageData];
+      hasMore = pageData.length === pageSize;
+      page++;
+    }
+  }
+
+  const fcIdToCountryId = new Map<string, string>();
+  const fcIdToCountryStatus = new Map<string, string>();
+  fcData.forEach((fc) => {
+    if (fc.formulation_country_id) {
+      if (fc.country_id) {
+        fcIdToCountryId.set(fc.formulation_country_id, fc.country_id);
+      }
+      fcIdToCountryStatus.set(fc.formulation_country_id, fc.country_status || "Not yet evaluated");
+    }
+  });
+
+  // Build lookup maps from formulations
+  const formulationCodeToId = new Map<string, string>();
+  const formulationCodeToStatus = new Map<string, string>();
+  formulations.forEach((f) => {
+    if (f.formulation_code) {
+      if (f.formulation_id) {
+        formulationCodeToId.set(f.formulation_code, f.formulation_id);
+      }
+      if (f.status) {
+        formulationCodeToStatus.set(f.formulation_code, f.status);
+      }
+    }
+  });
+
+  // Enrich use groups with formulation_id, formulation_status, country_id, country_status
+  const enrichedUseGroups = useGroups.map((ug) => ({
+    ...ug,
+    formulation_id: ug.formulation_code ? formulationCodeToId.get(ug.formulation_code) || null : null,
+    formulation_status: ug.formulation_code ? formulationCodeToStatus.get(ug.formulation_code) || null : null,
+    country_id: ug.formulation_country_id ? fcIdToCountryId.get(ug.formulation_country_id) || null : null,
+    country_status: ug.formulation_country_id ? fcIdToCountryStatus.get(ug.formulation_country_id) || null : null,
+  }));
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -27,75 +82,11 @@ export default async function UseGroupsPage() {
           <FormulationCountryUseGroupFormButton />
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-5 mb-6">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Total Use Groups</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalUseGroups}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Approved</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{approvedUseGroups}</div>
-              <p className="text-xs text-muted-foreground">
-                {totalUseGroups > 0 ? ((approvedUseGroups / totalUseGroups) * 100).toFixed(1) : 0}%
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Submitted</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{submittedUseGroups}</div>
-              <p className="text-xs text-muted-foreground">
-                {totalUseGroups > 0 ? ((submittedUseGroups / totalUseGroups) * 100).toFixed(1) : 0}%
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Formulations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{uniqueFormulations}</div>
-              <p className="text-xs text-muted-foreground">Unique products</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Countries</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{uniqueCountries}</div>
-              <p className="text-xs text-muted-foreground">Markets covered</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Use Groups</CardTitle>
-            <CardDescription>
-              Each use group links a formulation to a country with specific crop/pest targets. Use groups are created when registering a formulation for particular uses.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="p-4 sm:p-6 pt-0">
-              <UseGroupsList useGroups={useGroups} />
-            </div>
-          </CardContent>
-        </Card>
+        <UseGroupsClient 
+          useGroups={enrichedUseGroups}
+          formulations={formulations}
+          countries={countries}
+        />
       </AnimatedPage>
     </div>
   );

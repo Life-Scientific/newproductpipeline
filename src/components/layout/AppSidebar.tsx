@@ -32,8 +32,8 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -167,8 +167,17 @@ function getIconComponent(iconName: string | null): LucideIcon {
   return iconMap[iconName] || LayoutDashboard;
 }
 
-// NavItem component with predictive prefetching
-function NavItem({
+// Filter parameter keys that should be preserved when navigating between pages
+const FILTER_PARAM_KEYS = [
+  "countries",
+  "formulations",
+  "useGroups",
+  "formulationStatuses",
+  "countryStatuses",
+] as const;
+
+// NavItem component with predictive prefetching and filter preservation
+function NavItemInner({
   item,
   isActive,
 }: {
@@ -177,7 +186,33 @@ function NavItem({
 }) {
   const IconComponent = getIconComponent(item.icon);
   const prefetchRef = usePrefetchOnIntent(item.url);
+  const searchParams = useSearchParams();
   const linkRef = useRef<HTMLAnchorElement>(null);
+
+  // Build href with preserved filter params for portfolio pages
+  const href = useMemo(() => {
+    // Only preserve filters for portfolio pages
+    if (!item.url.startsWith("/portfolio")) {
+      return item.url;
+    }
+
+    // Parse the target URL
+    const [basePath, existingQuery] = item.url.split("?");
+    const params = new URLSearchParams(existingQuery || "");
+
+    // Copy filter params from current URL (if not already in target)
+    FILTER_PARAM_KEYS.forEach((key) => {
+      if (!params.has(key)) {
+        const value = searchParams.get(key);
+        if (value) {
+          params.set(key, value);
+        }
+      }
+    });
+
+    const queryString = params.toString();
+    return queryString ? `${basePath}?${queryString}` : basePath;
+  }, [item.url, searchParams]);
 
   // Combine refs - attach prefetch tracking to the link element
   const setRefs = useCallback(
@@ -193,12 +228,33 @@ function NavItem({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-        <Link ref={setRefs} href={item.url}>
+        <Link ref={setRefs} href={href}>
           <IconComponent className="size-4" />
           <span>{item.title}</span>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
+  );
+}
+
+// Wrapper to handle Suspense for useSearchParams
+function NavItem(props: { item: WorkspaceMenuItem; isActive: boolean }) {
+  return (
+    <Suspense fallback={
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild isActive={props.isActive} tooltip={props.item.title}>
+          <Link href={props.item.url}>
+            {(() => {
+              const IconComponent = getIconComponent(props.item.icon);
+              return <IconComponent className="size-4" />;
+            })()}
+            <span>{props.item.title}</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    }>
+      <NavItemInner {...props} />
+    </Suspense>
   );
 }
 

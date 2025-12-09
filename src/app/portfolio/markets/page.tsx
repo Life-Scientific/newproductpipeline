@@ -10,15 +10,34 @@ export const revalidate = 0;
 export default async function MarketsPage() {
   const supabase = await createClient();
   
-  const [formulations, businessCases, countriesResult, registrationPipeline] = await Promise.all([
+  const [formulations, businessCases, countriesResult] = await Promise.all([
     getFormulations(),
     getBusinessCases(),
     supabase.from("countries").select("*").eq("is_active", true).order("country_name"),
-    supabase.from("vw_registration_pipeline").select("*"),
   ]);
 
   const countries = countriesResult.data || [];
-  const registrations = registrationPipeline.data || [];
+  
+  // Fetch registration pipeline with pagination
+  let registrations: any[] = [];
+  let page = 0;
+  const pageSize = 10000;
+  let hasMore = true;
+  
+  while (hasMore) {
+    const { data: pageData } = await supabase
+      .from("vw_registration_pipeline")
+      .select("*")
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+    
+    if (!pageData || pageData.length === 0) {
+      hasMore = false;
+    } else {
+      registrations = [...registrations, ...pageData];
+      hasMore = pageData.length === pageSize;
+      page++;
+    }
+  }
 
   return (
     <div className="container mx-auto p-4 sm:p-6">

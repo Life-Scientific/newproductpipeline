@@ -38,8 +38,10 @@ export const registrationStatusVariants: Record<string, BadgeVariant> = {
  */
 export const formulationStatusVariants: Record<string, BadgeVariant> = {
   "Selected": "success",
-  "Monitoring": "info",
-  "Not Yet Considered": "muted",
+  "Being Monitored": "info",
+  "Monitoring": "info", // Legacy support
+  "Not Yet Evaluated": "muted",
+  "Not Yet Considered": "muted", // Legacy support
   "Killed": "destructive",
   "Archive": "muted",
 } as const;
