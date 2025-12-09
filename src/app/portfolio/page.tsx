@@ -3,14 +3,17 @@ import {
   getBusinessCasesForChart,
   getActivePortfolio,
   getExchangeRates,
+  getFormulationCountries,
 } from "@/lib/db/queries";
+import { getAllUseGroups } from "@/lib/db/use-groups";
+import { getCountries } from "@/lib/db/countries";
 import { FormulationsList } from "@/components/formulations/FormulationsList";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { CardGrid } from "@/components/layout/CardGrid";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { TimelineCard } from "@/components/relationships/TimelineCard";
 import { BusinessCaseListItem } from "@/components/business-cases/BusinessCaseListItem";
-import { TenYearProjectionChartLazy } from "@/components/charts/TenYearProjectionChartLazy";
+import { DashboardClient } from "./DashboardClient";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
@@ -27,24 +30,33 @@ type StatusHistory = Database["public"]["Tables"]["formulation_status_history"][
 
 export default async function Home() {
   let formulations: any[] = [];
+  let countries: any[] = [];
   let businessCases: any[] = [];
   let activePortfolio: any[] = [];
   let allExchangeRates: any[] = [];
+  let formulationCountries: any[] = [];
+  let useGroups: any[] = [];
   
   try {
-    [formulations, businessCases, activePortfolio, allExchangeRates] = await Promise.all([
+    [formulations, countries, businessCases, activePortfolio, allExchangeRates, formulationCountries, useGroups] = await Promise.all([
       getFormulations(),
+      getCountries(), // Reference data for filter lookups
       getBusinessCasesForChart(), // Lightweight version for chart - only essential columns
       getActivePortfolio(),
       getExchangeRates(),
+      getFormulationCountries(), // For accurate counts
+      getAllUseGroups(), // For use group counts
     ]);
   } catch (error) {
     console.error('Dashboard data fetch error:', error);
     // Set defaults on error
     formulations = [];
+    countries = [];
     businessCases = [];
     activePortfolio = [];
     allExchangeRates = [];
+    formulationCountries = [];
+    useGroups = [];
   }
 
   // Create exchange rate map: country_id -> exchange_rate_to_eur
@@ -70,18 +82,53 @@ export default async function Home() {
 
   const totalFormulations = formulations.length;
   const activeFormulations = formulations.filter((f) => f.status === "Selected").length;
-  const monitoringFormulations = formulations.filter((f) => f.status === "Monitoring").length;
+  const monitoringFormulations = formulations.filter((f) => f.status === "Being Monitored").length;
 
-  // Fetch formulation countries and use groups for status counts
+  // Fetch formulation countries and use groups for status counts (with pagination)
   const supabase = await createClient();
   
-  const [
-    { data: formulationCountries },
-    { data: useGroups },
-  ] = await Promise.all([
-    supabase.from("formulation_country").select("country_status").eq("is_active", true),
-    supabase.from("formulation_country_use_group").select("use_group_status, is_active"),
-  ]);
+  // Fetch formulation country statuses with pagination
+  let formulationCountryStatuses: any[] = [];
+  let fcPage = 0;
+  const fcPageSize = 10000;
+  let fcHasMore = true;
+  
+  while (fcHasMore) {
+    const { data: pageData } = await supabase
+      .from("formulation_country")
+      .select("country_status")
+      .eq("is_active", true)
+      .range(fcPage * fcPageSize, (fcPage + 1) * fcPageSize - 1);
+    
+    if (!pageData || pageData.length === 0) {
+      fcHasMore = false;
+    } else {
+      formulationCountryStatuses = [...formulationCountryStatuses, ...pageData];
+      fcHasMore = pageData.length === fcPageSize;
+      fcPage++;
+    }
+  }
+  
+  // Fetch use group statuses with pagination (for status counts only)
+  let useGroupStatuses: any[] = [];
+  let ugPage = 0;
+  const ugPageSize = 10000;
+  let ugHasMore = true;
+  
+  while (ugHasMore) {
+    const { data: pageData } = await supabase
+      .from("formulation_country_use_group")
+      .select("use_group_status, is_active")
+      .range(ugPage * ugPageSize, (ugPage + 1) * ugPageSize - 1);
+    
+    if (!pageData || pageData.length === 0) {
+      ugHasMore = false;
+    } else {
+      useGroupStatuses = [...useGroupStatuses, ...pageData];
+      ugHasMore = pageData.length === ugPageSize;
+      ugPage++;
+    }
+  }
 
   // Calculate formulation status counts
   const formulationStatusCounts = formulations.reduce((acc, f) => {
@@ -91,21 +138,55 @@ export default async function Home() {
   }, {} as Record<string, number>);
 
   // Calculate country status counts
-  const countryStatusCounts = (formulationCountries || []).reduce((acc, fc) => {
+  const countryStatusCounts = formulationCountryStatuses.reduce((acc, fc) => {
     const status = getCountryStatus(fc) || "Unknown";
     acc[status] = (acc[status] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
   // Calculate use group status counts (use is_active if use_group_status is null)
-  const useGroupStatusCounts = (useGroups || []).reduce((acc, ug) => {
+  const useGroupStatusCounts = useGroupStatuses.reduce((acc, ug) => {
     const status = getUseGroupStatus(ug) || (ug.is_active ? "Active" : "Inactive");
     acc[status] = (acc[status] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  const totalFormulationCountries = formulationCountries?.length || 0;
-  const totalUseGroups = useGroups?.length || 0;
+  const totalFormulationCountries = formulationCountries.length;
+  const totalUseGroups = useGroups.length;
+
+  // Enrich formulation-country data with formulation status for DashboardClient
+  const formulationCodeToStatus = new Map<string, string>();
+  formulations.forEach((f) => {
+    if (f.formulation_code && f.status) {
+      formulationCodeToStatus.set(f.formulation_code, f.status);
+    }
+  });
+
+  const enrichedFormulationCountries = formulationCountries.map((fc: any) => ({
+    ...fc,
+    formulation_status: fc.formulation_code 
+      ? (formulationCodeToStatus.get(fc.formulation_code) || null)
+      : null,
+  }));
+
+  // Build country status lookup map for use groups (formulation_country_id -> country_status)
+  const formulationCountryIdToStatus = new Map<string, string>();
+  formulationCountries.forEach((fc: any) => {
+    if (fc.formulation_country_id && fc.country_status) {
+      formulationCountryIdToStatus.set(fc.formulation_country_id, fc.country_status);
+    }
+  });
+
+  // Enrich use groups with formulation_status and country_status for DashboardClient
+  const enrichedUseGroups = useGroups.map((ug: any) => ({
+    ...ug,
+    formulation_status: ug.formulation_code 
+      ? (formulationCodeToStatus.get(ug.formulation_code) || null)
+      : null,
+    country_status: ug.formulation_country_id
+      ? (formulationCountryIdToStatus.get(ug.formulation_country_id) || null)
+      : null,
+  }));
 
   // Get recent status changes
   const { data: recentStatusChanges } = await supabase
@@ -167,10 +248,13 @@ export default async function Home() {
       description="Navigator overview"
       variant="multi"
     >
-      {/* 10-Year Projection Chart - Lazy loaded to reduce initial bundle */}
-      <TenYearProjectionChartLazy 
+      {/* 10-Year Projection Chart with Global Filters */}
+      <DashboardClient 
         businessCases={businessCases} 
         formulations={formulations}
+        countries={countries}
+        formulationCountries={enrichedFormulationCountries}
+        useGroups={enrichedUseGroups}
       />
 
       {/* Status Overview Cards */}
@@ -193,13 +277,13 @@ export default async function Home() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Being Monitored</span>
-                <Badge variant={getStatusVariant("Monitoring", "formulation")}>
-                  {formulationStatusCounts["Monitoring"] || formulationStatusCounts["Being Monitored"] || 0}
+                <Badge variant={getStatusVariant("Being Monitored", "formulation")}>
+                  {formulationStatusCounts["Being Monitored"] || formulationStatusCounts["Monitoring"] || 0}
                 </Badge>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Not Yet Evaluated</span>
-                <Badge variant={getStatusVariant("Not Yet Considered", "formulation")}>
+                <Badge variant={getStatusVariant("Not Yet Evaluated", "formulation")}>
                   {formulationStatusCounts["Not Yet Evaluated"] || formulationStatusCounts["Not Yet Considered"] || 0}
                 </Badge>
               </div>

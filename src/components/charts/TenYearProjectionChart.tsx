@@ -15,36 +15,15 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import type { Database } from "@/lib/supabase/database.types";
 import { useTheme } from "@/contexts/ThemeContext";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
-
-// MECE (Mutually Exclusive, Collectively Exhaustive) status constants
-const ALL_COUNTRY_STATUSES = [
-  "Not yet evaluated",
-  "Not selected for entry",
-  "Selected for entry",
-  "On hold",
-  "Withdrawn",
-] as const;
-
-const ALL_FORMULATION_STATUSES = [
-  "Not Yet Evaluated",
-  "Selected",
-  "Being Monitored",
-  "Killed",
-] as const;
+import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"] & {
   country_id?: string | null;
@@ -58,189 +37,6 @@ interface TenYearProjectionChartProps {
   formulations: Formulation[];
 }
 
-type FilterType = {
-  countries: string[];
-  formulations: string[];
-  useGroups: string[];
-  formulationStatuses: string[];
-  countryStatuses: string[];
-};
-
-interface FilterMultiSelectProps {
-  label: string;
-  options: string[];
-  selected: string[];
-  onSelectionChange: (selected: string[]) => void;
-  counts?: Map<string, number>; // Map of option -> count
-  disabled?: boolean; // Whether the filter is disabled
-}
-
-// Client-only wrapper to prevent hydration mismatch
-function FilterMultiSelectClient({ label, options, selected, onSelectionChange, counts, disabled = false }: FilterMultiSelectProps) {
-  const [mounted, setMounted] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  const allSelected = selected.length === options.length && options.length > 0;
-  const someSelected = selected.length > 0 && selected.length < options.length;
-  const selectAllId = useId();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const filteredOptions = useMemo(() => {
-    if (!searchValue) return options;
-    return options.filter((opt) =>
-      opt.toLowerCase().includes(searchValue.toLowerCase())
-    );
-  }, [options, searchValue]);
-
-  const handleToggleAll = () => {
-    if (allSelected) {
-      onSelectionChange([]);
-    } else {
-      onSelectionChange([...options]);
-    }
-  };
-
-  const handleToggle = (value: string) => {
-    if (selected.includes(value)) {
-      onSelectionChange(selected.filter((s) => s !== value));
-    } else {
-      onSelectionChange([...selected, value]);
-    }
-  };
-
-  // Render placeholder on server to prevent hydration mismatch
-  if (!mounted) {
-    return (
-      <Button
-        variant="outline"
-        className="justify-between h-9 px-3"
-        disabled
-      >
-        <span className="text-sm">{label}</span>
-        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-      </Button>
-    );
-  }
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          disabled={disabled}
-          className={cn(
-            "justify-between h-9 px-3",
-            selected.length > 0 && "bg-accent border-primary/20",
-            disabled && "opacity-50 cursor-not-allowed"
-          )}
-        >
-          <span className="text-sm whitespace-nowrap">
-            {selected.length === 0
-              ? label
-              : `${label} (${selected.length})`}
-          </span>
-          <ChevronDown className={cn(
-            "ml-2 h-4 w-4 shrink-0",
-            open && "rotate-180"
-          )} />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[320px] p-0" align="start">
-        <div className="p-3 border-b space-y-2">
-          <div className="flex items-center space-x-2 px-2 py-1.5">
-            <Checkbox
-              id={selectAllId}
-              checked={allSelected}
-              onCheckedChange={handleToggleAll}
-            />
-            <label
-              htmlFor={selectAllId}
-              className="text-sm font-medium cursor-pointer flex-1"
-            >
-              {someSelected ? `Selected ${selected.length} of ${options.length}` : "Select all"}
-            </label>
-            {selected.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectionChange([]);
-                }}
-              >
-                Clear
-              </Button>
-            )}
-          </div>
-          <div className="px-2">
-            <Input
-              type="text"
-              placeholder="Search..."
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className="h-8"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        </div>
-        <div className="max-h-[300px] overflow-auto p-1">
-          {filteredOptions.length === 0 ? (
-            <div className="py-6 text-center text-sm text-muted-foreground">
-              No results found
-            </div>
-          ) : (
-            <div className="space-y-0.5">
-              {filteredOptions.map((option, index) => {
-                const isSelected = selected.includes(option);
-                const optionId = `${selectAllId}-option-${index}`;
-                return (
-                  <div
-                    key={option}
-                    className={cn(
-                      "w-full flex items-center space-x-2 px-2 py-1.5 text-sm rounded-sm hover:bg-accent transition-colors cursor-pointer",
-                      isSelected && "bg-accent/50"
-                    )}
-                    onClick={() => handleToggle(option)}
-                  >
-                    <Checkbox 
-                      id={optionId}
-                      checked={isSelected} 
-                      onCheckedChange={() => handleToggle(option)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <label 
-                      htmlFor={optionId} 
-                      className="flex-1 cursor-pointer"
-                      onClick={(e) => {
-                        // Prevent the label's htmlFor from triggering the checkbox
-                        // and handle the toggle directly to avoid double-firing
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleToggle(option);
-                      }}
-                    >
-                      {option}
-                    </label>
-                    {counts && counts.has(option) && (
-                      <span className="text-xs text-muted-foreground ml-auto">
-                        ({counts.get(option)})
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
 // Default year range
 const DEFAULT_YEAR_RANGE = 10;
 
@@ -248,17 +44,10 @@ export function TenYearProjectionChart({
   businessCases,
   formulations,
 }: TenYearProjectionChartProps) {
-  const router = useRouter();
   const { currentTheme } = useTheme();
   const { currencySymbol, preferences, formatCurrencyCompact, convertCurrency } = useDisplayPreferences();
-  // Initialize with default filter states
-  const [filters, setFilters] = useState<FilterType>({
-    countries: [],
-    formulations: [],
-    useGroups: [],
-    formulationStatuses: ["Selected"],
-    countryStatuses: ["Selected for entry"],
-  });
+  // Use global portfolio filters from URL (for display purposes - data is pre-filtered)
+  const { filters, hasActiveFilters } = usePortfolioFilters();
   const [chartType, setChartType] = useState<"line" | "bar">("line");
   const chartId = useId().replace(/:/g, "-");
   
@@ -316,259 +105,15 @@ export function TenYearProjectionChart({
     setMutedColor(colorToHex(muted, "#f4f4f5"));
   }, [currentTheme]);
 
-  // Get unique filter options
-  // Map formulation codes to "Name (Code)" display format
-  const formulationDisplayMap = useMemo(() => {
-    const map = new Map<string, string>(); // code -> display string
-    businessCases.forEach((bc) => {
-      if (bc.formulation_code && !map.has(bc.formulation_code)) {
-        const display = bc.formulation_name 
-          ? `${bc.formulation_name} (${bc.formulation_code})`
-          : bc.formulation_code;
-        map.set(bc.formulation_code, display);
-      }
-    });
-    return map;
-  }, [businessCases]);
-
-  // Create a formulation code -> status lookup map once
-  const formulationStatusMap = useMemo(() => {
-    const map = new Map<string, string>();
-    formulations.forEach((f) => {
-      if (f.formulation_code && f.status) {
-        map.set(f.formulation_code, f.status);
-      }
-    });
-    return map;
-  }, [formulations]);
-
-  // Get available countries and formulations for cascading filters
-  const availableCountriesForFormulations = useMemo(() => {
-    const countryMap = new Map<string, Set<string>>(); // formulation_code -> Set<country_name>
-    businessCases.forEach((bc) => {
-      if (bc.formulation_code && bc.country_name) {
-        if (!countryMap.has(bc.formulation_code)) {
-          countryMap.set(bc.formulation_code, new Set());
-        }
-        countryMap.get(bc.formulation_code)!.add(bc.country_name);
-      }
-    });
-    return countryMap;
-  }, [businessCases]);
-
-  const availableFormulationsForCountries = useMemo(() => {
-    const formulationMap = new Map<string, Set<string>>(); // country_name -> Set<formulation_code>
-    businessCases.forEach((bc) => {
-      if (bc.country_name && bc.formulation_code) {
-        if (!formulationMap.has(bc.country_name)) {
-          formulationMap.set(bc.country_name, new Set());
-        }
-        formulationMap.get(bc.country_name)!.add(bc.formulation_code);
-      }
-    });
-    return formulationMap;
-  }, [businessCases]);
-
-  const filterOptions = useMemo(() => {
-    const countries = new Set<string>();
-    const formulationDisplays = new Set<string>();
-    const useGroups = new Set<string>();
-    const formulationStatusCounts = new Map<string, number>();
-    const countryStatusCounts = new Map<string, number>();
-
-    // Count maps for each filter type - tracking unique groups
-    const countryCounts = new Map<string, Set<string>>(); // country_name -> Set<business_case_group_id>
-    const formulationCounts = new Map<string, Set<string>>(); // formulation_display -> Set<business_case_group_id>
-    const useGroupCounts = new Map<string, Set<string>>(); // use_group_name -> Set<business_case_group_id>
-    const formulationStatusGroupCounts = new Map<string, Set<string>>(); // status -> Set<business_case_group_id>
-    const countryStatusGroupCounts = new Map<string, Set<string>>(); // status -> Set<formulation_country_id>
-
-    // Determine which countries/formulations to show based on cascading filters
-    let filteredBCs = businessCases;
-
-    // If formulations are selected, only show countries for those formulations
-    if (filters.formulations.length > 0) {
-      const selectedFormulationCodes = filters.formulations.map(display => {
-        // Extract code from "Name (Code)" format
-        const match = display.match(/\(([^)]+)\)$/);
-        return match ? match[1] : display;
-      });
-      filteredBCs = filteredBCs.filter(bc => 
-        bc.formulation_code && selectedFormulationCodes.includes(bc.formulation_code)
-      );
-    }
-
-    // If countries are selected, only show formulations for those countries
-    if (filters.countries.length > 0) {
-      filteredBCs = filteredBCs.filter(bc => 
-        bc.country_name && filters.countries.includes(bc.country_name)
-      );
-    }
-
-    filteredBCs.forEach((bc) => {
-      const groupId = bc.business_case_group_id;
-      if (!groupId) return; // Skip if no group ID
-
-      if (bc.country_name) {
-        countries.add(bc.country_name);
-        if (!countryCounts.has(bc.country_name)) {
-          countryCounts.set(bc.country_name, new Set());
-        }
-        countryCounts.get(bc.country_name)!.add(groupId);
-      }
-      if (bc.formulation_code) {
-        const display = formulationDisplayMap.get(bc.formulation_code) || bc.formulation_code;
-        formulationDisplays.add(display);
-        if (!formulationCounts.has(display)) {
-          formulationCounts.set(display, new Set());
-        }
-        formulationCounts.get(display)!.add(groupId);
-        
-        // Count by formulation status (unique groups)
-        const status = formulationStatusMap.get(bc.formulation_code);
-        if (status) {
-          if (!formulationStatusGroupCounts.has(status)) {
-            formulationStatusGroupCounts.set(status, new Set());
-          }
-          formulationStatusGroupCounts.get(status)!.add(groupId);
-        }
-      }
-      if (bc.use_group_name) {
-        useGroups.add(bc.use_group_name);
-        if (!useGroupCounts.has(bc.use_group_name)) {
-          useGroupCounts.set(bc.use_group_name, new Set());
-        }
-        useGroupCounts.get(bc.use_group_name)!.add(groupId);
-      }
-      // Count by country status (unique formulation-country combinations)
-      // Country status is at the formulation-country level, not business case group level
-      // We need formulation_country_id to count, but it should be set by the query for all cases
-      if (bc.formulation_country_id) {
-        // Use the actual country_status value, or "Not yet evaluated" if null/undefined
-        // Note: Database default is "Not yet evaluated", so null means it wasn't fetched
-        const countryStatus = bc.country_status !== null && bc.country_status !== undefined && bc.country_status !== ""
-          ? bc.country_status 
-          : "Not yet evaluated";
-        if (!countryStatusGroupCounts.has(countryStatus)) {
-          countryStatusGroupCounts.set(countryStatus, new Set());
-        }
-        countryStatusGroupCounts.get(countryStatus)!.add(bc.formulation_country_id);
-      } else {
-        // If no formulation_country_id, try to get country_status directly
-        // This shouldn't happen if query is correct, but handle gracefully
-        if (bc.country_status !== null && bc.country_status !== undefined && bc.country_status !== "") {
-          const countryStatus = bc.country_status;
-          if (!countryStatusGroupCounts.has(countryStatus)) {
-            countryStatusGroupCounts.set(countryStatus, new Set());
-          }
-          // Use a composite key since we don't have formulation_country_id
-          const fallbackKey = `${bc.formulation_id || 'unknown'}-${bc.country_id || 'unknown'}`;
-          countryStatusGroupCounts.get(countryStatus)!.add(fallbackKey);
-        }
-      }
-    });
-
-    // Convert Sets to counts
-    const countryCountsFinal = new Map<string, number>();
-    countryCounts.forEach((groups, country) => {
-      countryCountsFinal.set(country, groups.size);
-    });
-
-    const formulationCountsFinal = new Map<string, number>();
-    formulationCounts.forEach((groups, display) => {
-      formulationCountsFinal.set(display, groups.size);
-    });
-
-    const useGroupCountsFinal = new Map<string, number>();
-    useGroupCounts.forEach((groups, useGroup) => {
-      useGroupCountsFinal.set(useGroup, groups.size);
-    });
-
-    const formulationStatusCountsFinal = new Map<string, number>();
-    formulationStatusGroupCounts.forEach((groups, status) => {
-      formulationStatusCountsFinal.set(status, groups.size);
-    });
-
-    const countryStatusCountsFinal = new Map<string, number>();
-    countryStatusGroupCounts.forEach((groups, status) => {
-      countryStatusCountsFinal.set(status, groups.size);
-    });
-
-    // Ensure all country statuses appear in filter (MECE - even with 0 count)
-    ALL_COUNTRY_STATUSES.forEach((status) => {
-      if (!countryStatusCountsFinal.has(status)) {
-        countryStatusCountsFinal.set(status, 0);
-      }
-    });
-
-    // Ensure all formulation statuses appear in filter (MECE - even with 0 count)
-    ALL_FORMULATION_STATUSES.forEach((status) => {
-      if (!formulationStatusCountsFinal.has(status)) {
-        formulationStatusCountsFinal.set(status, 0);
-      }
-    });
-
-    return {
-      countries: Array.from(countries).sort(),
-      formulations: Array.from(formulationDisplays).sort(),
-      useGroups: Array.from(useGroups).sort(),
-      formulationStatuses: Array.from(formulationStatusCountsFinal.keys()).sort(),
-      countryStatuses: Array.from(countryStatusCountsFinal.keys()).sort(),
-      countryCounts: countryCountsFinal,
-      formulationCounts: formulationCountsFinal,
-      useGroupCounts: useGroupCountsFinal,
-      formulationStatusCounts: formulationStatusCountsFinal,
-      countryStatusCounts: countryStatusCountsFinal,
-    };
-  }, [businessCases, formulationDisplayMap, formulationStatusMap, filters.formulations, filters.countries]);
-
-  // Filter business cases based on active filters
-  const filteredBusinessCases = useMemo(() => {
-    return businessCases.filter((bc) => {
-      // Country filter
-      if (filters.countries.length > 0 && !filters.countries.includes(bc.country_name || "")) {
-        return false;
-      }
-      // Formulation filter
-      if (filters.formulations.length > 0) {
-        const bcDisplay = formulationDisplayMap.get(bc.formulation_code || "") || bc.formulation_code || "";
-        if (!filters.formulations.includes(bcDisplay)) {
-          return false;
-        }
-      }
-      // Use Group filter
-      if (filters.useGroups.length > 0 && !filters.useGroups.includes(bc.use_group_name || "")) {
-        return false;
-      }
-      // Formulation Status filter
-      if (filters.formulationStatuses.length > 0) {
-        const status = formulationStatusMap.get(bc.formulation_code || "");
-        if (!status || !filters.formulationStatuses.includes(status)) {
-          return false;
-        }
-      }
-      // Country Status filter - only include if status is in selected list
-      if (filters.countryStatuses.length > 0) {
-        // Treat null/undefined as "Not yet evaluated" for filtering
-        const countryStatus = bc.country_status !== null && bc.country_status !== undefined 
-          ? bc.country_status 
-          : "Not yet evaluated";
-        // Only include if the country status is in the selected list
-        if (!filters.countryStatuses.includes(countryStatus)) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [businessCases, filters, formulationDisplayMap, formulationStatusMap]);
-
+  // NOTE: businessCases are now PRE-FILTERED by DashboardClient for better performance
+  // This component just renders the data it receives
 
   // Calculate available year range from data
   const availableYearRange = useMemo(() => {
     let earliestYear = Infinity;
     let latestYear = -Infinity;
     
-    filteredBusinessCases.forEach((bc) => {
+    businessCases.forEach((bc) => {
       if (bc.fiscal_year) {
         const fyNum = parseInt(bc.fiscal_year.replace("FY", ""), 10);
         if (!isNaN(fyNum)) {
@@ -585,7 +130,7 @@ export function TenYearProjectionChart({
     }
 
     return { minYear: earliestYear, maxYear: latestYear };
-  }, [filteredBusinessCases]);
+  }, [businessCases]);
 
   // Generate year options for dropdowns - show all available years
   const yearOptions = useMemo(() => {
@@ -655,7 +200,7 @@ export function TenYearProjectionChart({
     });
 
     // Aggregate filtered business cases by fiscal year
-    filteredBusinessCases.forEach((bc) => {
+    businessCases.forEach((bc) => {
       const fy = bc.fiscal_year || "";
       const yearIndex = years.findIndex((y) => y.fiscalYear === fy);
       if (yearIndex >= 0) {
@@ -689,35 +234,8 @@ export function TenYearProjectionChart({
       marginEUR: convertCurrency(year.marginEUR) / 1000000,
       cogs: year.cogs / 1000000,
     }));
-  }, [filteredBusinessCases, effectiveStartYear, effectiveEndYear, convertCurrency]);
+  }, [businessCases, effectiveStartYear, effectiveEndYear, convertCurrency]);
 
-  const handleRemoveFilter = (type: keyof FilterType, value: string) => {
-    setFilters((prev) => {
-      const newFilters = { ...prev };
-      if (type === "formulationStatuses") {
-        // Don't allow removing the last "Selected" if it's the only one
-        const filtered = prev.formulationStatuses.filter((v) => v !== value);
-        newFilters.formulationStatuses = filtered.length === 0 ? ["Selected"] : filtered;
-      } else if (type === "countryStatuses") {
-        // Don't allow removing the last "Selected for entry" if it's the only one
-        const filtered = prev.countryStatuses.filter((v) => v !== value);
-        newFilters.countryStatuses = filtered.length === 0 ? ["Selected for entry"] : filtered;
-      } else {
-        newFilters[type] = prev[type].filter((v) => v !== value);
-      }
-      return newFilters;
-    });
-  };
-
-  const handleClearAllFilters = () => {
-    setFilters({
-      countries: [],
-      formulations: [],
-      useGroups: [],
-      formulationStatuses: ["Selected"],
-      countryStatuses: ["Selected for entry"],
-    });
-  };
 
   // Handle year range changes
   const handleStartYearChange = useCallback((value: string) => {
@@ -744,41 +262,47 @@ export function TenYearProjectionChart({
   }, []);
 
   const handleDrillDown = (fiscalYear: string) => {
-    const params = new URLSearchParams();
-    params.set("fiscalYear", fiscalYear);
-    if (filters.countries.length > 0) {
-      params.set("countries", filters.countries.join(","));
-    }
-    if (filters.formulations.length > 0) {
-      params.set("formulations", filters.formulations.join(","));
-    }
-    router.push(`/business-cases?${params.toString()}`);
+    // Filters are now in URL, so they'll persist automatically
+    // Just navigate to business cases page with fiscal year
+    window.location.href = `/portfolio/business-cases?fiscalYear=${fiscalYear}`;
   };
-
-  const hasActiveFilters =
-    filters.countries.length > 0 ||
-    filters.formulations.length > 0 ||
-    filters.useGroups.length > 0 ||
-    (filters.formulationStatuses.length > 0 && filters.formulationStatuses.length !== 1) ||
-    (filters.countryStatuses.length > 0 && filters.countryStatuses.length !== 1) ||
-    (filters.formulationStatuses.length === 1 && filters.formulationStatuses[0] !== "Selected") ||
-    (filters.countryStatuses.length === 1 && filters.countryStatuses[0] !== "Selected for entry");
 
   // Calculate unique formulations in the filtered view
   const uniqueFormulations = useMemo(() => {
     const formulationSet = new Set<string>();
-    filteredBusinessCases.forEach((bc) => {
+    businessCases.forEach((bc) => {
       if (bc.formulation_code) {
         formulationSet.add(bc.formulation_code);
       }
     });
     return formulationSet.size;
-  }, [filteredBusinessCases]);
+  }, [businessCases]);
+
+  // Build code to name lookup from formulations data
+  const formulationCodeToName = useMemo(() => {
+    const map = new Map<string, string>();
+    formulations.forEach((f) => {
+      if (f.formulation_code) {
+        // Use product_name if available, otherwise use the code
+        map.set(f.formulation_code, f.product_name || f.formulation_code);
+      }
+    });
+    return map;
+  }, [formulations]);
+
+  // Get display names for selected formulations (for showing in description)
+  // filters.formulations now contains codes, so look up the names
+  const selectedFormulationNames = useMemo(() => {
+    if (filters.formulations.length === 0) return [];
+    return filters.formulations
+      .map((code) => formulationCodeToName.get(code) || code)
+      .filter(Boolean);
+  }, [filters.formulations, formulationCodeToName]);
 
   // Calculate unique business case groups (multi-year projections)
   const uniqueBusinessCaseGroups = useMemo(() => {
-    return countUniqueBusinessCaseGroups(filteredBusinessCases);
-  }, [filteredBusinessCases]);
+    return countUniqueBusinessCaseGroups(businessCases);
+  }, [businessCases]);
 
   return (
     <motion.div
@@ -797,10 +321,24 @@ export function TenYearProjectionChart({
             >
               <CardTitle className="text-xl font-semibold">Long-Range Revenue and Gross Margin Projection</CardTitle>
               <CardDescription className="text-sm">
-                {hasActiveFilters 
-                  ? <motion.span key="filtered" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{uniqueBusinessCaseGroups} business case group{uniqueBusinessCaseGroups !== 1 ? 's' : ''}, {uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''}</motion.span>
-                  : <span>{uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''} represented</span>
-                }
+                {hasActiveFilters ? (
+                  <motion.span key="filtered" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    {uniqueBusinessCaseGroups} business case group{uniqueBusinessCaseGroups !== 1 ? 's' : ''}
+                    {selectedFormulationNames.length > 0 ? (
+                      <>
+                        {' • '}
+                        {selectedFormulationNames.length <= 3 
+                          ? selectedFormulationNames.join(', ')
+                          : `${selectedFormulationNames.slice(0, 2).join(', ')} +${selectedFormulationNames.length - 2} more`
+                        }
+                      </>
+                    ) : (
+                      <>, {uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''}</>
+                    )}
+                  </motion.span>
+                ) : (
+                  <span>{uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''} represented</span>
+                )}
               </CardDescription>
             </motion.div>
             <motion.div 
@@ -869,228 +407,6 @@ export function TenYearProjectionChart({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-
-        {/* Filters */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-foreground">Filters</h3>
-            {hasActiveFilters && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={handleClearAllFilters} 
-                className="h-7 text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Clear all
-              </Button>
-            )}
-          </div>
-          
-          {/* Filter Multi-Selects - Scrollable on mobile */}
-          <div className="overflow-x-auto -mx-4 px-4 pb-2">
-            <div className="flex gap-6 min-w-max">
-              {/* Scope Filters Group */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Scope</h4>
-                <div className="flex gap-2">
-                  {filterOptions.countries.length > 0 && (
-                    <FilterMultiSelectClient
-                      label="Country"
-                      options={filterOptions.countries}
-                      selected={filters.countries}
-                      onSelectionChange={(selected) => {
-                        setFilters((prev) => ({ ...prev, countries: selected }));
-                      }}
-                      counts={filterOptions.countryCounts}
-                    />
-                  )}
-                  {filterOptions.formulations.length > 0 && (
-                    <FilterMultiSelectClient
-                      label="Formulation"
-                      options={filterOptions.formulations}
-                      selected={filters.formulations}
-                      onSelectionChange={(selected) => {
-                        setFilters((prev) => ({ ...prev, formulations: selected }));
-                      }}
-                      counts={filterOptions.formulationCounts}
-                    />
-                  )}
-                  {filterOptions.useGroups.length > 0 && (
-                    <FilterMultiSelectClient
-                      label="Use Group"
-                      options={filterOptions.useGroups}
-                      selected={filters.useGroups}
-                      onSelectionChange={(selected) => {
-                        setFilters((prev) => ({ ...prev, useGroups: selected }));
-                      }}
-                      counts={filterOptions.useGroupCounts}
-                      disabled={filters.formulations.length === 0 || filters.countries.length === 0}
-                    />
-                  )}
-                </div>
-              </div>
-              
-              {/* Status Filters Group */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status Filters</h4>
-                <div className="flex gap-2">
-                  {filterOptions.formulationStatuses.length > 0 && (
-                    <FilterMultiSelectClient
-                      label="Formulation Status"
-                      options={filterOptions.formulationStatuses}
-                      selected={filters.formulationStatuses}
-                      onSelectionChange={(selected) => {
-                        setFilters((prev) => ({ ...prev, formulationStatuses: selected }));
-                      }}
-                      counts={filterOptions.formulationStatusCounts}
-                    />
-                  )}
-                  {filterOptions.countryStatuses.length > 0 && (
-                    <FilterMultiSelectClient
-                      label="Formulation-Country Status"
-                      options={filterOptions.countryStatuses}
-                      selected={filters.countryStatuses}
-                      onSelectionChange={(selected) => {
-                        setFilters((prev) => ({ ...prev, countryStatuses: selected }));
-                      }}
-                      counts={filterOptions.countryStatusCounts}
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Active Filter Badges */}
-          <AnimatePresence>
-            {hasActiveFilters && (
-              <motion.div 
-                className="flex flex-wrap gap-2 pt-3 border-t"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {filters.countries.map((country, index) => (
-                  <motion.div
-                    key={`country-${country}`}
-                    initial={{ opacity: 0, scale: 0.8, x: -10 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2, delay: index * 0.03 }}
-                  >
-                    <Badge 
-                      variant="secondary" 
-                      className="gap-1.5 pr-1 py-1 px-2 text-xs hover:scale-105 transition-transform"
-                    >
-                      <span className="text-muted-foreground">Country:</span>
-                      <span>{country}</span>
-                      <button
-                        onClick={() => handleRemoveFilter("countries", country)}
-                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  </motion.div>
-                ))}
-                {filters.formulations.map((formulation, index) => (
-                  <motion.div
-                    key={`formulation-${formulation}`}
-                    initial={{ opacity: 0, scale: 0.8, x: -10 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2, delay: (filters.countries.length + index) * 0.03 }}
-                  >
-                    <Badge 
-                      variant="secondary" 
-                      className="gap-1.5 pr-1 py-1 px-2 text-xs hover:scale-105 transition-transform"
-                    >
-                      <span className="text-muted-foreground">Formulation:</span>
-                      <span className="max-w-[150px] truncate">{formulation}</span>
-                      <button
-                        onClick={() => handleRemoveFilter("formulations", formulation)}
-                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  </motion.div>
-                ))}
-                {filters.useGroups.map((useGroup, index) => (
-                  <motion.div
-                    key={`useGroup-${useGroup}`}
-                    initial={{ opacity: 0, scale: 0.8, x: -10 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2, delay: (filters.countries.length + filters.formulations.length + index) * 0.03 }}
-                  >
-                    <Badge 
-                      variant="secondary" 
-                      className="gap-1.5 pr-1 py-1 px-2 text-xs hover:scale-105 transition-transform"
-                    >
-                      <span className="text-muted-foreground">Use Group:</span>
-                      <span>{useGroup}</span>
-                      <button
-                        onClick={() => handleRemoveFilter("useGroups", useGroup)}
-                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  </motion.div>
-                ))}
-                {filters.formulationStatuses.filter(s => s !== "Selected" || filters.formulationStatuses.length > 1).map((status, index) => (
-                  <motion.div
-                    key={`formulation-status-${status}`}
-                    initial={{ opacity: 0, scale: 0.8, x: -10 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2, delay: (filters.countries.length + filters.formulations.length + filters.useGroups.length + index) * 0.03 }}
-                  >
-                    <Badge 
-                      variant="secondary" 
-                      className="gap-1.5 pr-1 py-1 px-2 text-xs hover:scale-105 transition-transform"
-                    >
-                      <span className="text-muted-foreground">Formulation Status:</span>
-                      <span>{status}</span>
-                      <button
-                        onClick={() => handleRemoveFilter("formulationStatuses", status)}
-                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  </motion.div>
-                ))}
-                {filters.countryStatuses.filter(s => s !== "Selected for entry" || filters.countryStatuses.length > 1).map((status, index) => (
-                  <motion.div
-                    key={`country-status-${status}`}
-                    initial={{ opacity: 0, scale: 0.8, x: -10 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.2, delay: (filters.countries.length + filters.formulations.length + filters.useGroups.length + filters.formulationStatuses.length + index) * 0.03 }}
-                  >
-                    <Badge 
-                      variant="secondary" 
-                      className="gap-1.5 pr-1 py-1 px-2 text-xs hover:scale-105 transition-transform"
-                    >
-                      <span className="text-muted-foreground">Formulation-Country Status:</span>
-                      <span>{status}</span>
-                      <button
-                        onClick={() => handleRemoveFilter("countryStatuses", status)}
-                        className="ml-0.5 hover:bg-destructive/20 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
         {/* Chart */}
         <motion.div 
           className="w-full h-[400px] sm:h-[500px] relative"
