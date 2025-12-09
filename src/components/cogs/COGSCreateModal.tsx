@@ -26,8 +26,10 @@ import type { Database } from "@/lib/supabase/database.types";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Loader2 } from "lucide-react";
 
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
-type FormulationCountry = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
+type Formulation =
+  Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type FormulationCountry =
+  Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 
 interface COGSCreateModalProps {
   open: boolean;
@@ -47,9 +49,15 @@ export function COGSCreateModal({
   const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
   const [formulations, setFormulations] = useState<Formulation[]>([]);
-  const [formulationCountries, setFormulationCountries] = useState<FormulationCountry[]>([]);
-  const [selectedFormulationId, setSelectedFormulationId] = useState<string>(defaultFormulationId || "");
-  const [selectedCountryId, setSelectedCountryId] = useState<string | null>(null);
+  const [formulationCountries, setFormulationCountries] = useState<
+    FormulationCountry[]
+  >([]);
+  const [selectedFormulationId, setSelectedFormulationId] = useState<string>(
+    defaultFormulationId || "",
+  );
+  const [selectedCountryId, setSelectedCountryId] = useState<string | null>(
+    null,
+  );
   const [showEditModal, setShowEditModal] = useState(false);
   const [existingGroupId, setExistingGroupId] = useState<string | null>(null);
 
@@ -115,14 +123,18 @@ export function COGSCreateModal({
 
     // Check if COGS already exists
     startTransition(async () => {
-      const result = await checkExistingCOGSGroupAction(selectedFormulationId, selectedCountryId);
+      const result = await checkExistingCOGSGroupAction(
+        selectedFormulationId,
+        selectedCountryId,
+      );
 
       if (result.data) {
         // Existing COGS found - switch to edit mode
         setExistingGroupId(result.data);
         toast({
           title: "Existing COGS Found",
-          description: "Opening existing COGS in edit mode. Updates will create a new version.",
+          description:
+            "Opening existing COGS in edit mode. Updates will create a new version.",
           duration: 5000,
         });
       } else {
@@ -140,9 +152,13 @@ export function COGSCreateModal({
   };
 
   // Get selected formulation details
-  const selectedFormulation = formulations.find((f) => f.formulation_id === selectedFormulationId);
+  const selectedFormulation = formulations.find(
+    (f) => f.formulation_id === selectedFormulationId,
+  );
   const selectedCountryName = selectedCountryId
-    ? formulationCountries.find((fc) => fc.formulation_country_id === selectedCountryId)?.country_name
+    ? formulationCountries.find(
+        (fc) => fc.formulation_country_id === selectedCountryId,
+      )?.country_name
     : null;
 
   return (
@@ -152,7 +168,8 @@ export function COGSCreateModal({
           <DialogHeader>
             <DialogTitle>Create COGS</DialogTitle>
             <DialogDescription>
-              Select a formulation and optionally a country to create or edit COGS data.
+              Select a formulation and optionally a country to create or edit
+              COGS data.
             </DialogDescription>
           </DialogHeader>
 
@@ -161,7 +178,10 @@ export function COGSCreateModal({
               <Label htmlFor="formulation_id">
                 Formulation <span className="text-destructive">*</span>
               </Label>
-              <Select value={selectedFormulationId} onValueChange={setSelectedFormulationId}>
+              <Select
+                value={selectedFormulationId}
+                onValueChange={setSelectedFormulationId}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select formulation" />
                 </SelectTrigger>
@@ -169,8 +189,14 @@ export function COGSCreateModal({
                   {formulations
                     .filter((f) => f.formulation_id)
                     .map((f) => (
-                      <SelectItem key={f.formulation_id!} value={f.formulation_id!}>
-                        {f.formulation_code} - {("formulation_name" in f ? (f as any).formulation_name : f.formulation_code) || f.formulation_code}
+                      <SelectItem
+                        key={f.formulation_id!}
+                        value={f.formulation_id!}
+                      >
+                        {f.formulation_code} -{" "}
+                        {("formulation_name" in f
+                          ? (f as any).formulation_name
+                          : f.formulation_code) || f.formulation_code}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -181,7 +207,9 @@ export function COGSCreateModal({
               <Label htmlFor="country_id">Country (Optional)</Label>
               <Select
                 value={selectedCountryId || "__none__"}
-                onValueChange={(value) => setSelectedCountryId(value === "__none__" ? null : value)}
+                onValueChange={(value) =>
+                  setSelectedCountryId(value === "__none__" ? null : value)
+                }
                 disabled={!selectedFormulationId}
               >
                 <SelectTrigger>
@@ -192,14 +220,18 @@ export function COGSCreateModal({
                   {formulationCountries
                     .filter((fc) => fc.formulation_country_id)
                     .map((fc) => (
-                      <SelectItem key={fc.formulation_country_id!} value={fc.formulation_country_id!}>
+                      <SelectItem
+                        key={fc.formulation_country_id!}
+                        value={fc.formulation_country_id!}
+                      >
                         {fc.country_name}
                       </SelectItem>
                     ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Leave as "Global" for formulation-level COGS, or select a country for country-specific override.
+                Leave as "Global" for formulation-level COGS, or select a
+                country for country-specific override.
               </p>
             </div>
           </div>
@@ -208,9 +240,14 @@ export function COGSCreateModal({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleNext} 
-              disabled={!selectedFormulationId || isPending || permissionsLoading || !canEditCOGS}
+            <Button
+              onClick={handleNext}
+              disabled={
+                !selectedFormulationId ||
+                isPending ||
+                permissionsLoading ||
+                !canEditCOGS
+              }
             >
               {isPending ? (
                 <>
@@ -235,7 +272,11 @@ export function COGSCreateModal({
         <COGSEditModal
           groupId={existingGroupId || undefined}
           formulationId={selectedFormulationId}
-          formulationName={"formulation_name" in (selectedFormulation || {}) ? (selectedFormulation as any).formulation_name : selectedFormulation?.formulation_code || ""}
+          formulationName={
+            "formulation_name" in (selectedFormulation || {})
+              ? (selectedFormulation as any).formulation_name
+              : selectedFormulation?.formulation_code || ""
+          }
           formulationCountryId={selectedCountryId}
           countryName={selectedCountryName}
           open={showEditModal}
@@ -253,4 +294,3 @@ export function COGSCreateModal({
     </>
   );
 }
-

@@ -34,7 +34,14 @@ interface IngredientFormProps {
   onSuccess?: () => void;
 }
 
-const INGREDIENT_TYPES = ["Active", "Safener", "Adjuvant", "Solvent", "Surfactant", "Other"];
+const INGREDIENT_TYPES = [
+  "Active",
+  "Safener",
+  "Adjuvant",
+  "Solvent",
+  "Surfactant",
+  "Other",
+];
 const SUPPLY_RISKS = ["Low", "Medium", "High", "Critical"];
 
 export function IngredientForm({
@@ -50,7 +57,8 @@ export function IngredientForm({
     ingredient_name: ingredient?.ingredient_name || "",
     ingredient_type: ingredient?.ingredient_type || "Active",
     cas_number: ingredient?.cas_number || "",
-    standard_density_g_per_l: ingredient?.standard_density_g_per_l?.toString() || "",
+    standard_density_g_per_l:
+      ingredient?.standard_density_g_per_l?.toString() || "",
     supply_risk: ingredient?.supply_risk || "",
     supply_risk_notes: ingredient?.supply_risk_notes || "",
     is_eu_approved: ingredient?.is_eu_approved || false,
@@ -80,9 +88,11 @@ export function IngredientForm({
       try {
         const action = ingredient
           ? await import("@/lib/actions/ingredients").then((m) =>
-              m.updateIngredient(ingredient.ingredient_id, form)
+              m.updateIngredient(ingredient.ingredient_id, form),
             )
-          : await import("@/lib/actions/ingredients").then((m) => m.createIngredient(form));
+          : await import("@/lib/actions/ingredients").then((m) =>
+              m.createIngredient(form),
+            );
 
         if (action.error) {
           toast({
@@ -93,7 +103,9 @@ export function IngredientForm({
         } else {
           toast({
             title: "Success",
-            description: ingredient ? "Ingredient updated successfully" : "Ingredient created successfully",
+            description: ingredient
+              ? "Ingredient updated successfully"
+              : "Ingredient created successfully",
           });
           onOpenChange(false);
           if (onSuccess) onSuccess();
@@ -113,9 +125,13 @@ export function IngredientForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{ingredient ? "Edit Ingredient" : "Create Ingredient"}</DialogTitle>
+          <DialogTitle>
+            {ingredient ? "Edit Ingredient" : "Create Ingredient"}
+          </DialogTitle>
           <DialogDescription>
-            {ingredient ? "Update ingredient details" : "Add a new ingredient to the database"}
+            {ingredient
+              ? "Update ingredient details"
+              : "Add a new ingredient to the database"}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -127,7 +143,9 @@ export function IngredientForm({
               <Input
                 id="ingredient_name"
                 value={formData.ingredient_name}
-                onChange={(e) => setFormData({ ...formData, ingredient_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, ingredient_name: e.target.value })
+                }
                 required
               />
             </div>
@@ -137,7 +155,9 @@ export function IngredientForm({
               </Label>
               <Select
                 value={formData.ingredient_type}
-                onValueChange={(value) => setFormData({ ...formData, ingredient_type: value })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, ingredient_type: value })
+                }
                 required
               >
                 <SelectTrigger>
@@ -160,18 +180,25 @@ export function IngredientForm({
               <Input
                 id="cas_number"
                 value={formData.cas_number}
-                onChange={(e) => setFormData({ ...formData, cas_number: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, cas_number: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="standard_density_g_per_l">Standard Density (g/L)</Label>
+              <Label htmlFor="standard_density_g_per_l">
+                Standard Density (g/L)
+              </Label>
               <Input
                 id="standard_density_g_per_l"
                 type="number"
                 step="0.01"
                 value={formData.standard_density_g_per_l}
                 onChange={(e) =>
-                  setFormData({ ...formData, standard_density_g_per_l: e.target.value })
+                  setFormData({
+                    ...formData,
+                    standard_density_g_per_l: e.target.value,
+                  })
                 }
               />
             </div>
@@ -181,7 +208,12 @@ export function IngredientForm({
             <Label htmlFor="supply_risk">Supply Risk</Label>
             <Select
               value={formData.supply_risk || "__none__"}
-              onValueChange={(value) => setFormData({ ...formData, supply_risk: value === "__none__" ? "" : value })}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  supply_risk: value === "__none__" ? "" : value,
+                })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select supply risk" />
@@ -202,7 +234,9 @@ export function IngredientForm({
             <Textarea
               id="supply_risk_notes"
               value={formData.supply_risk_notes}
-              onChange={(e) => setFormData({ ...formData, supply_risk_notes: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, supply_risk_notes: e.target.value })
+              }
               rows={2}
             />
           </div>
@@ -211,7 +245,9 @@ export function IngredientForm({
             <Switch
               id="is_eu_approved"
               checked={formData.is_eu_approved}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_eu_approved: checked })}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, is_eu_approved: checked })
+              }
             />
             <Label htmlFor="is_eu_approved">EU Approved</Label>
           </div>
@@ -221,16 +257,27 @@ export function IngredientForm({
             <Textarea
               id="regulatory_notes"
               value={formData.regulatory_notes}
-              onChange={(e) => setFormData({ ...formData, regulatory_notes: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, regulatory_notes: e.target.value })
+              }
               rows={3}
             />
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending} size="lg" className="h-12 px-6">
+            <Button
+              type="submit"
+              disabled={isPending}
+              size="lg"
+              className="h-12 px-6"
+            >
               {isPending ? "Saving..." : ingredient ? "Update" : "Create"}
             </Button>
           </DialogFooter>
@@ -239,4 +286,3 @@ export function IngredientForm({
     </Dialog>
   );
 }
-

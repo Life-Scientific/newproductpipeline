@@ -1,7 +1,10 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnimatedNumber, AnimatedPercentage } from "@/components/ui/animated-number";
+import {
+  AnimatedNumber,
+  AnimatedPercentage,
+} from "@/components/ui/animated-number";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -37,7 +40,9 @@ export function MetricCard({
   const content = (
     <Card interactive={!!href} className={cn(className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {title}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-1">
         <div className="text-2xl font-bold tabular-nums">
@@ -58,12 +63,20 @@ export function MetricCard({
               "text-xs flex items-center gap-1 font-medium",
               trend.direction === "up" && "text-green-600 dark:text-green-400",
               trend.direction === "down" && "text-red-600 dark:text-red-400",
-              trend.direction === "neutral" && "text-muted-foreground"
+              trend.direction === "neutral" && "text-muted-foreground",
             )}
           >
-            <span className="text-base">{trend.direction === "up" ? "↑" : trend.direction === "down" ? "↓" : "→"}</span>
+            <span className="text-base">
+              {trend.direction === "up"
+                ? "↑"
+                : trend.direction === "down"
+                  ? "↓"
+                  : "→"}
+            </span>
             <span>{trend.value}%</span>
-            <span className="text-muted-foreground font-normal">{trend.label}</span>
+            <span className="text-muted-foreground font-normal">
+              {trend.label}
+            </span>
           </div>
         )}
       </CardContent>
@@ -80,4 +93,3 @@ export function MetricCard({
 
   return content;
 }
-

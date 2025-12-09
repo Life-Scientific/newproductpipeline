@@ -2,17 +2,31 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronRight, ChevronDown, Globe, FileText, DollarSign, Building2, AlertCircle } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronDown,
+  Globe,
+  FileText,
+  DollarSign,
+  Building2,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { Database } from "@/lib/supabase/database.types";
 
-type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
-type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
+type FormulationCountryDetail =
+  Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
+type FormulationCountryUseGroup =
+  Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
 interface FormulationTreeViewProps {
@@ -32,13 +46,19 @@ export function FormulationTreeView({
   useGroups,
   businessCases,
 }: FormulationTreeViewProps) {
-  const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
-  const [expandedUseGroups, setExpandedUseGroups] = useState<Set<string>>(new Set());
+  const [expandedCountries, setExpandedCountries] = useState<Set<string>>(
+    new Set(),
+  );
+  const [expandedUseGroups, setExpandedUseGroups] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Auto-expand first country if only one exists
   useEffect(() => {
     if (countries.length === 1) {
-      setExpandedCountries(new Set([countries[0].formulation_country_id || ""]));
+      setExpandedCountries(
+        new Set([countries[0].formulation_country_id || ""]),
+      );
     }
   }, [countries]);
 
@@ -63,44 +83,56 @@ export function FormulationTreeView({
   };
 
   // Group use groups by country ID
-  const useGroupsByCountry = useGroups.reduce((acc, useGroup) => {
-    const countryId = useGroup.formulation_country_id || "";
-    if (!acc[countryId]) {
-      acc[countryId] = [];
-    }
-    acc[countryId].push(useGroup);
-    return acc;
-  }, {} as Record<string, FormulationCountryUseGroup[]>);
-
-  // Group business cases by country ID (where formulation_country_id is not null)
-  const businessCasesByCountry = businessCases.reduce((acc, bc) => {
-    if (bc.formulation_country_id) {
-      const countryId = bc.formulation_country_id;
+  const useGroupsByCountry = useGroups.reduce(
+    (acc, useGroup) => {
+      const countryId = useGroup.formulation_country_id || "";
       if (!acc[countryId]) {
         acc[countryId] = [];
       }
-      acc[countryId].push(bc);
-    }
-    return acc;
-  }, {} as Record<string, BusinessCase[]>);
+      acc[countryId].push(useGroup);
+      return acc;
+    },
+    {} as Record<string, FormulationCountryUseGroup[]>,
+  );
+
+  // Group business cases by country ID (where formulation_country_id is not null)
+  const businessCasesByCountry = businessCases.reduce(
+    (acc, bc) => {
+      if (bc.formulation_country_id) {
+        const countryId = bc.formulation_country_id;
+        if (!acc[countryId]) {
+          acc[countryId] = [];
+        }
+        acc[countryId].push(bc);
+      }
+      return acc;
+    },
+    {} as Record<string, BusinessCase[]>,
+  );
 
   // Group business cases by use group ID (where formulation_country_use_group_id is not null)
-  const businessCasesByUseGroup = businessCases.reduce((acc, bc) => {
-    if (bc.formulation_country_use_group_id) {
-      const useGroupId = bc.formulation_country_use_group_id;
-      if (!acc[useGroupId]) {
-        acc[useGroupId] = [];
+  const businessCasesByUseGroup = businessCases.reduce(
+    (acc, bc) => {
+      if (bc.formulation_country_use_group_id) {
+        const useGroupId = bc.formulation_country_use_group_id;
+        if (!acc[useGroupId]) {
+          acc[useGroupId] = [];
+        }
+        acc[useGroupId].push(bc);
       }
-      acc[useGroupId].push(bc);
-    }
-    return acc;
-  }, {} as Record<string, BusinessCase[]>);
+      return acc;
+    },
+    {} as Record<string, BusinessCase[]>,
+  );
 
   // Use display preferences hook for currency formatting
   const { formatCurrencyCompact } = useDisplayPreferences();
 
   const totalBusinessCaseGroups = countUniqueBusinessCaseGroups(businessCases);
-  const totalRevenue = businessCases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
+  const totalRevenue = businessCases.reduce(
+    (sum, bc) => sum + (bc.total_revenue || 0),
+    0,
+  );
 
   return (
     <div className="space-y-4">
@@ -125,7 +157,9 @@ export function FormulationTreeView({
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Total Revenue</p>
-              <p className="text-lg font-semibold">{formatCurrencyCompact(totalRevenue)}</p>
+              <p className="text-lg font-semibold">
+                {formatCurrencyCompact(totalRevenue)}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -156,7 +190,8 @@ export function FormulationTreeView({
               {countries.map((country) => {
                 const countryId = country.formulation_country_id || "";
                 const countryUseGroups = useGroupsByCountry[countryId] || [];
-                const countryBusinessCases = businessCasesByCountry[countryId] || [];
+                const countryBusinessCases =
+                  businessCasesByCountry[countryId] || [];
                 const isExpanded = expandedCountries.has(countryId);
 
                 return (
@@ -189,9 +224,14 @@ export function FormulationTreeView({
                             className="w-full justify-start h-auto p-2 sm:p-3 hover:bg-muted border rounded-lg text-sm sm:text-base"
                           >
                             <Globe className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-muted-foreground flex-shrink-0" />
-                            <span className="font-medium truncate">{country.country_name}</span>
+                            <span className="font-medium truncate">
+                              {country.country_name}
+                            </span>
                             {country.country_status && (
-                              <Badge variant="outline" className="ml-1 sm:ml-2 text-xs hidden sm:inline-flex">
+                              <Badge
+                                variant="outline"
+                                className="ml-1 sm:ml-2 text-xs hidden sm:inline-flex"
+                              >
                                 {country.country_status}
                               </Badge>
                             )}
@@ -203,7 +243,10 @@ export function FormulationTreeView({
                               )}
                               {countryBusinessCases.length > 0 && (
                                 <Badge variant="default" className="text-xs">
-                                  {countUniqueBusinessCaseGroups(countryBusinessCases)}BC
+                                  {countUniqueBusinessCaseGroups(
+                                    countryBusinessCases,
+                                  )}
+                                  BC
                                 </Badge>
                               )}
                             </div>
@@ -228,14 +271,18 @@ export function FormulationTreeView({
                                   <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                                   <div className="flex-1 min-w-0">
                                     <div className="font-medium text-xs sm:text-sm truncate">
-                                      {bc.display_name || bc.business_case_name || "Business Case"}
+                                      {bc.display_name ||
+                                        bc.business_case_name ||
+                                        "Business Case"}
                                     </div>
                                     <div className="text-xs text-muted-foreground">
                                       {bc.fiscal_year} • Y{bc.year_offset}
                                     </div>
                                   </div>
                                   <div className="text-right flex-shrink-0">
-                                    <div className="text-xs sm:text-sm font-semibold">{formatCurrencyCompact(bc.total_revenue)}</div>
+                                    <div className="text-xs sm:text-sm font-semibold">
+                                      {formatCurrencyCompact(bc.total_revenue)}
+                                    </div>
                                     <div className="text-xs text-muted-foreground">
                                       {bc.margin_percent?.toFixed(1)}%
                                     </div>
@@ -252,15 +299,21 @@ export function FormulationTreeView({
                                 Use Groups
                               </div>
                               {countryUseGroups.map((useGroup) => {
-                                const useGroupId = useGroup.formulation_country_use_group_id || "";
-                                const useGroupBusinessCases = businessCasesByUseGroup[useGroupId] || [];
-                                const isUseGroupExpanded = expandedUseGroups.has(useGroupId);
+                                const useGroupId =
+                                  useGroup.formulation_country_use_group_id ||
+                                  "";
+                                const useGroupBusinessCases =
+                                  businessCasesByUseGroup[useGroupId] || [];
+                                const isUseGroupExpanded =
+                                  expandedUseGroups.has(useGroupId);
 
                                 return (
                                   <Collapsible
                                     key={useGroupId}
                                     open={isUseGroupExpanded}
-                                    onOpenChange={() => toggleUseGroup(useGroupId)}
+                                    onOpenChange={() =>
+                                      toggleUseGroup(useGroupId)
+                                    }
                                   >
                                     <div className="space-y-2">
                                       <div className="flex items-center gap-2">
@@ -287,21 +340,35 @@ export function FormulationTreeView({
                                           >
                                             <FileText className="h-3 w-3 mr-1 sm:mr-2 text-muted-foreground flex-shrink-0" />
                                             <span className="truncate">
-                                              {useGroup.use_group_name || `Use Group ${useGroup.use_group_variant}`}
+                                              {useGroup.use_group_name ||
+                                                `Use Group ${useGroup.use_group_variant}`}
                                             </span>
                                             {useGroup.use_group_variant && (
-                                              <Badge variant="outline" className="text-xs ml-1 sm:ml-2 hidden sm:inline-flex">
+                                              <Badge
+                                                variant="outline"
+                                                className="text-xs ml-1 sm:ml-2 hidden sm:inline-flex"
+                                              >
                                                 {useGroup.use_group_variant}
                                               </Badge>
                                             )}
                                             {useGroup.use_group_status && (
-                                              <Badge variant="secondary" className="text-xs ml-1 sm:ml-2 hidden sm:inline-flex">
+                                              <Badge
+                                                variant="secondary"
+                                                className="text-xs ml-1 sm:ml-2 hidden sm:inline-flex"
+                                              >
                                                 {useGroup.use_group_status}
                                               </Badge>
                                             )}
-                                            {useGroupBusinessCases.length > 0 && (
-                                              <Badge variant="default" className="text-xs ml-auto flex-shrink-0">
-                                                {countUniqueBusinessCaseGroups(useGroupBusinessCases)}BC
+                                            {useGroupBusinessCases.length >
+                                              0 && (
+                                              <Badge
+                                                variant="default"
+                                                className="text-xs ml-auto flex-shrink-0"
+                                              >
+                                                {countUniqueBusinessCaseGroups(
+                                                  useGroupBusinessCases,
+                                                )}
+                                                BC
                                               </Badge>
                                             )}
                                           </Button>
@@ -314,26 +381,50 @@ export function FormulationTreeView({
                                           <div className="p-2 rounded-md bg-muted/30 border text-xs space-y-1">
                                             {useGroup.reference_product_name && (
                                               <div>
-                                                <span className="font-medium">Reference Product: </span>
-                                                <span>{useGroup.reference_product_name}</span>
+                                                <span className="font-medium">
+                                                  Reference Product:{" "}
+                                                </span>
+                                                <span>
+                                                  {
+                                                    useGroup.reference_product_name
+                                                  }
+                                                </span>
                                               </div>
                                             )}
                                             {useGroup.earliest_planned_submission_date && (
                                               <div>
-                                                <span className="font-medium">Earliest Submission: </span>
-                                                <span>{new Date(useGroup.earliest_planned_submission_date).toLocaleDateString()}</span>
+                                                <span className="font-medium">
+                                                  Earliest Submission:{" "}
+                                                </span>
+                                                <span>
+                                                  {new Date(
+                                                    useGroup.earliest_planned_submission_date,
+                                                  ).toLocaleDateString()}
+                                                </span>
                                               </div>
                                             )}
                                             {useGroup.earliest_actual_submission_date && (
                                               <div>
-                                                <span className="font-medium">Actual Submission: </span>
-                                                <span>{new Date(useGroup.earliest_actual_submission_date).toLocaleDateString()}</span>
+                                                <span className="font-medium">
+                                                  Actual Submission:{" "}
+                                                </span>
+                                                <span>
+                                                  {new Date(
+                                                    useGroup.earliest_actual_submission_date,
+                                                  ).toLocaleDateString()}
+                                                </span>
                                               </div>
                                             )}
                                             {useGroup.earliest_actual_approval_date && (
                                               <div>
-                                                <span className="font-medium">Approved: </span>
-                                                <span>{new Date(useGroup.earliest_actual_approval_date).toLocaleDateString()}</span>
+                                                <span className="font-medium">
+                                                  Approved:{" "}
+                                                </span>
+                                                <span>
+                                                  {new Date(
+                                                    useGroup.earliest_actual_approval_date,
+                                                  ).toLocaleDateString()}
+                                                </span>
                                               </div>
                                             )}
                                           </div>
@@ -344,34 +435,48 @@ export function FormulationTreeView({
                                               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                                                 Business Cases
                                               </div>
-                                              {useGroupBusinessCases.map((bc) => (
-                                                <Link
-                                                  key={bc.business_case_id}
-                                                  href={`/portfolio/business-cases/${bc.business_case_id}`}
-                                                  className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors border text-xs sm:text-sm"
-                                                >
-                                                  <DollarSign className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                                  <div className="flex-1 min-w-0">
-                                                    <div className="font-medium truncate">
-                                                      {bc.display_name || bc.business_case_name || "Business Case"}
+                                              {useGroupBusinessCases.map(
+                                                (bc) => (
+                                                  <Link
+                                                    key={bc.business_case_id}
+                                                    href={`/portfolio/business-cases/${bc.business_case_id}`}
+                                                    className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors border text-xs sm:text-sm"
+                                                  >
+                                                    <DollarSign className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                                    <div className="flex-1 min-w-0">
+                                                      <div className="font-medium truncate">
+                                                        {bc.display_name ||
+                                                          bc.business_case_name ||
+                                                          "Business Case"}
+                                                      </div>
+                                                      <div className="text-xs text-muted-foreground">
+                                                        {bc.fiscal_year} • Y
+                                                        {bc.year_offset}
+                                                      </div>
                                                     </div>
-                                                    <div className="text-xs text-muted-foreground">
-                                                      {bc.fiscal_year} • Y{bc.year_offset}
+                                                    <div className="text-right flex-shrink-0">
+                                                      <div className="text-xs font-semibold">
+                                                        {formatCurrencyCompact(
+                                                          bc.total_revenue,
+                                                        )}
+                                                      </div>
+                                                      <div className="text-xs text-muted-foreground">
+                                                        {bc.margin_percent?.toFixed(
+                                                          1,
+                                                        )}
+                                                        %
+                                                      </div>
                                                     </div>
-                                                  </div>
-                                                  <div className="text-right flex-shrink-0">
-                                                    <div className="text-xs font-semibold">{formatCurrencyCompact(bc.total_revenue)}</div>
-                                                    <div className="text-xs text-muted-foreground">
-                                                      {bc.margin_percent?.toFixed(1)}%
-                                                    </div>
-                                                  </div>
-                                                </Link>
-                                              ))}
+                                                  </Link>
+                                                ),
+                                              )}
                                             </div>
                                           )}
-                                          {useGroupBusinessCases.length === 0 && (
+                                          {useGroupBusinessCases.length ===
+                                            0 && (
                                             <div className="text-xs text-muted-foreground p-2 border rounded-md bg-muted/30">
-                                              No business cases for this use group
+                                              No business cases for this use
+                                              group
                                             </div>
                                           )}
                                         </div>
@@ -384,11 +489,12 @@ export function FormulationTreeView({
                           )}
 
                           {/* Show message if no use groups or business cases */}
-                          {countryUseGroups.length === 0 && countryBusinessCases.length === 0 && (
-                            <div className="text-xs text-muted-foreground p-2 border rounded-md bg-muted/30">
-                              No use groups or business cases for this country
-                            </div>
-                          )}
+                          {countryUseGroups.length === 0 &&
+                            countryBusinessCases.length === 0 && (
+                              <div className="text-xs text-muted-foreground p-2 border rounded-md bg-muted/30">
+                                No use groups or business cases for this country
+                              </div>
+                            )}
                         </div>
                       </CollapsibleContent>
                     </div>

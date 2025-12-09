@@ -1,6 +1,10 @@
 "use client";
 
-import { AnimatedPage, AnimatedPageStagger, AnimatedItem } from "@/components/layout/AnimatedPage";
+import {
+  AnimatedPage,
+  AnimatedPageStagger,
+  AnimatedItem,
+} from "@/components/layout/AnimatedPage";
 import { cn } from "@/lib/utils";
 import { Children, type ReactNode } from "react";
 import { triggerEasterEgg } from "@/components/easter-eggs/KonamiCode";
@@ -37,16 +41,24 @@ export function PageLayout({
   const staggeredChildren = shouldStagger ? (
     <AnimatedPageStagger
       className={variant === "multi" ? "flex flex-col" : ""}
-      style={variant === "multi" ? { gap: "24px" } as React.CSSProperties : undefined}
+      style={
+        variant === "multi"
+          ? ({ gap: "24px" } as React.CSSProperties)
+          : undefined
+      }
     >
       {Children.map(children, (child, index) => (
         <AnimatedItem key={index}>{child}</AnimatedItem>
       ))}
     </AnimatedPageStagger>
   ) : (
-    <div 
+    <div
       className={variant === "multi" ? "flex flex-col" : ""}
-      style={variant === "multi" ? { gap: "24px" } as React.CSSProperties : undefined}
+      style={
+        variant === "multi"
+          ? ({ gap: "24px" } as React.CSSProperties)
+          : undefined
+      }
     >
       {children}
     </div>
@@ -60,18 +72,23 @@ export function PageLayout({
             "space-y-2",
             variant === "single" && "mb-6",
             variant === "multi" && "mb-6 sm:mb-8",
-            action && "flex items-center justify-between"
+            action && "flex items-center justify-between",
           )}
         >
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold">{title}</h1>
             {description && (
-              <p 
+              <p
                 className={cn(
                   "text-sm sm:text-base text-muted-foreground",
-                  description.includes("Navigator") && "cursor-pointer hover:text-muted-foreground/80 transition-colors select-none"
+                  description.includes("Navigator") &&
+                    "cursor-pointer hover:text-muted-foreground/80 transition-colors select-none",
                 )}
-                onClick={description.includes("Navigator") ? triggerEasterEgg : undefined}
+                onClick={
+                  description.includes("Navigator")
+                    ? triggerEasterEgg
+                    : undefined
+                }
                 title={description.includes("Navigator") ? "👀" : undefined}
               >
                 {description}
@@ -85,4 +102,3 @@ export function PageLayout({
     </div>
   );
 }
-

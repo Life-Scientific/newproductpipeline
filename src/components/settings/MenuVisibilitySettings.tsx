@@ -1,12 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getAllWorkspaceMenuItems, toggleMenuItemVisibility, type WorkspaceMenuItem } from "@/lib/actions/workspaces";
+import {
+  getAllWorkspaceMenuItems,
+  toggleMenuItemVisibility,
+  type WorkspaceMenuItem,
+} from "@/lib/actions/workspaces";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useToast } from "@/components/ui/use-toast";
 import { AlertCircle } from "lucide-react";
@@ -20,11 +30,13 @@ export function MenuVisibilitySettings() {
 
   useEffect(() => {
     if (!currentWorkspace) return;
-    
+
     const loadMenuItems = async () => {
       try {
         setLoading(true);
-        const items = await getAllWorkspaceMenuItems(currentWorkspace.workspace_id);
+        const items = await getAllWorkspaceMenuItems(
+          currentWorkspace.workspace_id,
+        );
         setMenuItems(items);
       } catch (error) {
         console.error("Failed to load menu items:", error);
@@ -37,7 +49,7 @@ export function MenuVisibilitySettings() {
         setLoading(false);
       }
     };
-    
+
     loadMenuItems();
   }, [currentWorkspace]);
 
@@ -45,16 +57,16 @@ export function MenuVisibilitySettings() {
     try {
       setUpdating((prev) => new Set(prev).add(menuItemId));
       await toggleMenuItemVisibility(menuItemId, !currentValue);
-      
+
       // Update local state
       setMenuItems((prev) =>
         prev.map((item) =>
           item.menu_item_id === menuItemId
             ? { ...item, is_active: !currentValue }
-            : item
-        )
+            : item,
+        ),
       );
-      
+
       toast({
         title: "Success",
         description: "Menu visibility updated",
@@ -63,7 +75,10 @@ export function MenuVisibilitySettings() {
       console.error("Failed to toggle menu item:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update menu visibility",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to update menu visibility",
         variant: "destructive",
       });
     } finally {
@@ -76,13 +91,16 @@ export function MenuVisibilitySettings() {
   };
 
   // Group items by group_name
-  const groupedItems = menuItems.reduce((acc, item) => {
-    if (!acc[item.group_name]) {
-      acc[item.group_name] = [];
-    }
-    acc[item.group_name].push(item);
-    return acc;
-  }, {} as Record<string, WorkspaceMenuItem[]>);
+  const groupedItems = menuItems.reduce(
+    (acc, item) => {
+      if (!acc[item.group_name]) {
+        acc[item.group_name] = [];
+      }
+      acc[item.group_name].push(item);
+      return acc;
+    },
+    {} as Record<string, WorkspaceMenuItem[]>,
+  );
 
   // Sort groups and items within groups
   const sortedGroups = Object.keys(groupedItems).sort();
@@ -95,7 +113,9 @@ export function MenuVisibilitySettings() {
       <Card>
         <CardHeader>
           <CardTitle>Page Visibility</CardTitle>
-          <CardDescription>Control which pages are visible in the sidebar</CardDescription>
+          <CardDescription>
+            Control which pages are visible in the sidebar
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -111,14 +131,15 @@ export function MenuVisibilitySettings() {
       <CardHeader>
         <CardTitle>Page Visibility</CardTitle>
         <CardDescription>
-          Control which pages are visible in the sidebar. Hidden pages are still accessible via direct URL.
+          Control which pages are visible in the sidebar. Hidden pages are still
+          accessible via direct URL.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {sortedGroups.map((groupName) => {
           const items = groupedItems[groupName];
           const activeCount = items.filter((item) => item.is_active).length;
-          
+
           return (
             <div key={groupName} className="space-y-3">
               <div className="flex items-center justify-between">
@@ -130,7 +151,7 @@ export function MenuVisibilitySettings() {
               <div className="space-y-2 pl-4 border-l-2 border-muted">
                 {items.map((item) => {
                   const isUpdating = updating.has(item.menu_item_id);
-                  
+
                   return (
                     <div
                       key={item.menu_item_id}
@@ -157,7 +178,12 @@ export function MenuVisibilitySettings() {
                       <Switch
                         id={`menu-${item.menu_item_id}`}
                         checked={item.is_active ?? true}
-                        onCheckedChange={() => handleToggle(item.menu_item_id, item.is_active ?? true)}
+                        onCheckedChange={() =>
+                          handleToggle(
+                            item.menu_item_id,
+                            item.is_active ?? true,
+                          )
+                        }
                         disabled={isUpdating}
                       />
                     </div>
@@ -167,7 +193,7 @@ export function MenuVisibilitySettings() {
             </div>
           );
         })}
-        
+
         {menuItems.length === 0 && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-8">
             <AlertCircle className="h-4 w-4" />
@@ -178,4 +204,3 @@ export function MenuVisibilitySettings() {
     </Card>
   );
 }
-

@@ -5,7 +5,8 @@ import { MetricCard } from "@/components/layout/MetricCard";
 import { ContentCard } from "@/components/layout/ContentCard";
 import type { Database } from "@/lib/supabase/database.types";
 
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type Formulation =
+  Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
 interface PortfolioMetricsProps {
@@ -22,18 +23,33 @@ export function PortfolioMetrics({
   registrationPipelineCount,
 }: PortfolioMetricsProps) {
   const totalFormulations = formulations.length;
-  const selectedFormulations = formulations.filter((f) => f.status === "Selected").length;
-  const monitoringFormulations = formulations.filter((f) => f.status === "Monitoring").length;
-  const killedFormulations = formulations.filter((f) => f.status === "Killed").length;
+  const selectedFormulations = formulations.filter(
+    (f) => f.status === "Selected",
+  ).length;
+  const monitoringFormulations = formulations.filter(
+    (f) => f.status === "Monitoring",
+  ).length;
+  const killedFormulations = formulations.filter(
+    (f) => f.status === "Killed",
+  ).length;
 
-  const totalRevenue = businessCases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
-  const totalMargin = businessCases.reduce((sum, bc) => sum + (bc.total_margin || 0), 0);
+  const totalRevenue = businessCases.reduce(
+    (sum, bc) => sum + (bc.total_revenue || 0),
+    0,
+  );
+  const totalMargin = businessCases.reduce(
+    (sum, bc) => sum + (bc.total_margin || 0),
+    0,
+  );
   const avgMarginPercent =
     businessCases.length > 0
-      ? businessCases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) / businessCases.length
+      ? businessCases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) /
+        businessCases.length
       : 0;
 
-  const uniqueCountries = new Set(businessCases.map((bc) => bc.country_name).filter(Boolean)).size;
+  const uniqueCountries = new Set(
+    businessCases.map((bc) => bc.country_name).filter(Boolean),
+  ).size;
 
   return (
     <CardGrid columns={{ mobile: 1, tablet: 2, desktop: 4 }} gap="md">

@@ -4,15 +4,26 @@ import { useMemo } from "react";
 import { MarketOverviewDashboard } from "@/components/markets/MarketOverviewDashboard";
 import { GlobalFilterBar } from "@/components/filters/GlobalFilterBar";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
-import { useFilterOptions, type ReferenceFormulation, type ReferenceCountry } from "@/hooks/use-filter-options";
+import {
+  useFilterOptions,
+  type ReferenceFormulation,
+  type ReferenceCountry,
+} from "@/hooks/use-filter-options";
 import { computeFilteredCounts } from "@/lib/utils/filter-counts";
 import type { Database } from "@/lib/supabase/database.types";
 import type { FilterableBusinessCase } from "@/hooks/use-filter-options";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type BusinessCaseBase = Database["public"]["Views"]["vw_business_case"]["Row"];
+// Extended type for enriched business cases (with status fields added by page.tsx)
+type BusinessCase = BusinessCaseBase & {
+  country_status?: string | null;
+  formulation_status?: string | null;
+};
+type Formulation =
+  Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
-type RegistrationPipeline = Database["public"]["Views"]["vw_registration_pipeline"]["Row"];
+type RegistrationPipeline =
+  Database["public"]["Views"]["vw_registration_pipeline"]["Row"];
 
 interface MarketsClientProps {
   businessCases: BusinessCase[];
@@ -34,7 +45,7 @@ export function MarketsClient({
     return formulations.map((f) => ({
       formulation_id: f.formulation_id || "",
       formulation_code: f.formulation_code || "",
-      formulation_name: f.formulation_name || "",
+      formulation_name: f.product_name || "",
       status: f.status || null,
     }));
   }, [formulations]);
@@ -70,7 +81,7 @@ export function MarketsClient({
     referenceCountries,
     filterableBusinessCases,
     null, // No formulation_country data for markets page
-    filters
+    filters,
   );
 
   // Filter business cases based on global filters
@@ -84,13 +95,19 @@ export function MarketsClient({
       }
       // Formulation filter
       if (filters.formulations.length > 0) {
-        if (!bc.formulation_code || !filters.formulations.includes(bc.formulation_code)) {
+        if (
+          !bc.formulation_code ||
+          !filters.formulations.includes(bc.formulation_code)
+        ) {
           return false;
         }
       }
       // Use group filter
       if (filters.useGroups.length > 0) {
-        if (!bc.use_group_name || !filters.useGroups.includes(bc.use_group_name)) {
+        if (
+          !bc.use_group_name ||
+          !filters.useGroups.includes(bc.use_group_name)
+        ) {
           return false;
         }
       }
@@ -124,7 +141,10 @@ export function MarketsClient({
       }
       // Formulation filter
       if (filters.formulations.length > 0) {
-        if (!f.formulation_code || !filters.formulations.includes(f.formulation_code)) {
+        if (
+          !f.formulation_code ||
+          !filters.formulations.includes(f.formulation_code)
+        ) {
           return false;
         }
       }
@@ -148,22 +168,11 @@ export function MarketsClient({
   // Compute filtered counts
   const filteredCounts = useMemo(() => {
     // Create a minimal formulation-country array from business cases for counting
-    const formulationCountryPairs = filteredBusinessCases
-      .filter((bc) => bc.formulation_code && bc.country_code)
-      .map((bc) => ({
-        formulation_country_id: bc.formulation_country_id || null,
-        formulation_id: bc.formulation_id || null,
-        formulation_code: bc.formulation_code || "",
-        country_id: bc.country_id || null,
-        country_code: bc.country_code || "",
-        country_name: bc.country_name || null,
-        country_status: bc.country_status || null,
-        formulation_status: bc.formulation_status || null,
-      }));
-
+    // We pass an empty array since markets page doesn't have proper formulation_country data
+    // The counts will be based on formulations and business cases instead
     return computeFilteredCounts(
       filteredFormulations,
-      formulationCountryPairs,
+      [], // Markets page doesn't have formulation_country junction data
       filters,
       { includeOrphanFormulations: false },
       {
@@ -172,13 +181,17 @@ export function MarketsClient({
           country_code: bc.country_code,
           formulation_code: bc.formulation_code,
         })),
-      }
+      },
     );
   }, [filteredFormulations, filteredBusinessCases, filters]);
 
   return (
     <>
-      <GlobalFilterBar filterOptions={filterOptions} defaultExpanded={true} filteredCounts={filteredCounts} />
+      <GlobalFilterBar
+        filterOptions={filterOptions}
+        defaultExpanded={true}
+        filteredCounts={filteredCounts}
+      />
       <MarketOverviewDashboard
         businessCases={filteredBusinessCases}
         formulations={filteredFormulations}
@@ -188,4 +201,3 @@ export function MarketsClient({
     </>
   );
 }
-

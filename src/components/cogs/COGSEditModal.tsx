@@ -9,7 +9,14 @@ import {
   createCOGSGroupAction,
   getCOGSGroupAction,
 } from "@/lib/actions/cogs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 
 interface COGSYearData {
@@ -51,7 +58,9 @@ export function COGSEditModal({
   const [yearData, setYearData] = useState<COGSYearData[]>([]);
   const [originalValues, setOriginalValues] = useState<Record<string, any>>({});
   const [changedCells, setChangedCells] = useState<Set<string>>(new Set());
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
   const [loading, setLoading] = useState(false);
 
   const isEditMode = !!groupId;
@@ -127,7 +136,7 @@ export function COGSEditModal({
   const handleCellChange = (
     fiscalYear: string,
     field: "total" | "raw" | "mfg" | "pkg" | "other",
-    value: string
+    value: string,
   ) => {
     const numValue = value === "" ? null : parseFloat(value);
 
@@ -149,7 +158,7 @@ export function COGSEditModal({
         }
 
         return updated;
-      })
+      }),
     );
 
     // Update change tracking
@@ -185,7 +194,14 @@ export function COGSEditModal({
     const errors: Record<string, string> = {};
 
     yearData.forEach((year) => {
-      const { fiscal_year, cogs_value, raw_material_cost, manufacturing_cost, packaging_cost, other_costs } = year;
+      const {
+        fiscal_year,
+        cogs_value,
+        raw_material_cost,
+        manufacturing_cost,
+        packaging_cost,
+        other_costs,
+      } = year;
 
       const hasAnyBreakdown =
         raw_material_cost !== null ||
@@ -201,12 +217,18 @@ export function COGSEditModal({
           packaging_cost === null ||
           other_costs === null
         ) {
-          errors[fiscal_year] = "All breakdown fields required when any breakdown is entered";
+          errors[fiscal_year] =
+            "All breakdown fields required when any breakdown is entered";
         } else {
           // Check if they sum to total
-          const sum = raw_material_cost + manufacturing_cost + packaging_cost + other_costs;
+          const sum =
+            raw_material_cost +
+            manufacturing_cost +
+            packaging_cost +
+            other_costs;
           if (cogs_value !== null && Math.abs(sum - cogs_value) > 0.01) {
-            errors[fiscal_year] = `Breakdown (${sum.toFixed(2)}) must equal Total COGS (${cogs_value.toFixed(2)})`;
+            errors[fiscal_year] =
+              `Breakdown (${sum.toFixed(2)}) must equal Total COGS (${cogs_value.toFixed(2)})`;
           }
         }
       }
@@ -220,7 +242,12 @@ export function COGSEditModal({
     const year = yearData.find((y) => y.fiscal_year === fiscalYear);
     if (!year) return;
 
-    const { raw_material_cost, manufacturing_cost, packaging_cost, other_costs } = year;
+    const {
+      raw_material_cost,
+      manufacturing_cost,
+      packaging_cost,
+      other_costs,
+    } = year;
 
     if (
       raw_material_cost !== null &&
@@ -228,7 +255,8 @@ export function COGSEditModal({
       packaging_cost !== null &&
       other_costs !== null
     ) {
-      const total = raw_material_cost + manufacturing_cost + packaging_cost + other_costs;
+      const total =
+        raw_material_cost + manufacturing_cost + packaging_cost + other_costs;
       handleCellChange(fiscalYear, "total", total.toFixed(2));
     }
   };
@@ -239,7 +267,9 @@ export function COGSEditModal({
     const missingData: string[] = [];
     yearData.forEach((year) => {
       if (!year.cogs_value || year.cogs_value <= 0) {
-        missingData.push(`${year.fiscal_year}: Total COGS is required and must be greater than 0`);
+        missingData.push(
+          `${year.fiscal_year}: Total COGS is required and must be greater than 0`,
+        );
       }
     });
 
@@ -286,10 +316,16 @@ export function COGSEditModal({
         const yearNum = index + 1;
         formData.append(`year_${yearNum}_total`, String(year.cogs_value || 0));
         if (year.raw_material_cost !== null) {
-          formData.append(`year_${yearNum}_raw`, String(year.raw_material_cost));
+          formData.append(
+            `year_${yearNum}_raw`,
+            String(year.raw_material_cost),
+          );
         }
         if (year.manufacturing_cost !== null) {
-          formData.append(`year_${yearNum}_mfg`, String(year.manufacturing_cost));
+          formData.append(
+            `year_${yearNum}_mfg`,
+            String(year.manufacturing_cost),
+          );
         }
         if (year.packaging_cost !== null) {
           formData.append(`year_${yearNum}_pkg`, String(year.packaging_cost));
@@ -313,8 +349,13 @@ export function COGSEditModal({
         const successMsg = isEditMode
           ? `COGS updated successfully (${changedCells.size} cells modified)`
           : "COGS created successfully";
-        
-        if (isEditMode && result.data && 'business_cases_updated' in result.data && result.data.business_cases_updated) {
+
+        if (
+          isEditMode &&
+          result.data &&
+          "business_cases_updated" in result.data &&
+          result.data.business_cases_updated
+        ) {
           toast({
             title: "Success",
             description: `${successMsg}. ${result.data.business_cases_updated} business case group(s) updated.`,
@@ -325,7 +366,7 @@ export function COGSEditModal({
             description: successMsg,
           });
         }
-        
+
         onOpenChange(false);
         if (onSuccess) onSuccess();
       }
@@ -347,7 +388,10 @@ export function COGSEditModal({
       title={`${isEditMode ? "Edit COGS" : "Create COGS"} - ${formulationName || ""}`}
       description={
         <div className="flex flex-col gap-1">
-          <span>{countryName || "Global"} | Fiscal Years: {fiscalYearColumns[0]}-{fiscalYearColumns[4]} | Currency: EUR</span>
+          <span>
+            {countryName || "Global"} | Fiscal Years: {fiscalYearColumns[0]}-
+            {fiscalYearColumns[4]} | Currency: EUR
+          </span>
           {changedCells.size > 0 && (
             <div className="text-xs text-blue-600 dark:text-blue-400">
               ℹ️ {changedCells.size} cells changed from original values
@@ -373,7 +417,9 @@ export function COGSEditModal({
               {fiscalYearColumns.map((fy) => (
                 <TableHead key={fy} className="min-w-[140px] text-center">
                   {fy}
-                  {validationErrors[fy] && <span className="text-red-500 ml-1">⚠️</span>}
+                  {validationErrors[fy] && (
+                    <span className="text-red-500 ml-1">⚠️</span>
+                  )}
                 </TableHead>
               ))}
             </TableRow>
@@ -381,7 +427,9 @@ export function COGSEditModal({
           <TableBody>
             {/* Raw Materials row */}
             <TableRow>
-              <TableCell className="font-medium">Raw Materials (EUR/unit)</TableCell>
+              <TableCell className="font-medium">
+                Raw Materials (EUR/unit)
+              </TableCell>
               {fiscalYearColumns.map((fy) => {
                 const year = yearData.find((y) => y.fiscal_year === fy);
                 const cellKey = `${fy}_raw`;
@@ -393,7 +441,9 @@ export function COGSEditModal({
                       type="number"
                       step="0.01"
                       value={year?.raw_material_cost ?? ""}
-                      onChange={(e) => handleCellChange(fy, "raw", e.target.value)}
+                      onChange={(e) =>
+                        handleCellChange(fy, "raw", e.target.value)
+                      }
                       onBlur={() => autoCalculateTotal(fy)}
                       className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
                       placeholder="Optional"
@@ -405,7 +455,9 @@ export function COGSEditModal({
 
             {/* Manufacturing row */}
             <TableRow>
-              <TableCell className="font-medium">Manufacturing (EUR/unit)</TableCell>
+              <TableCell className="font-medium">
+                Manufacturing (EUR/unit)
+              </TableCell>
               {fiscalYearColumns.map((fy) => {
                 const year = yearData.find((y) => y.fiscal_year === fy);
                 const cellKey = `${fy}_mfg`;
@@ -417,7 +469,9 @@ export function COGSEditModal({
                       type="number"
                       step="0.01"
                       value={year?.manufacturing_cost ?? ""}
-                      onChange={(e) => handleCellChange(fy, "mfg", e.target.value)}
+                      onChange={(e) =>
+                        handleCellChange(fy, "mfg", e.target.value)
+                      }
                       onBlur={() => autoCalculateTotal(fy)}
                       className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
                       placeholder="Optional"
@@ -429,7 +483,9 @@ export function COGSEditModal({
 
             {/* Packaging row */}
             <TableRow>
-              <TableCell className="font-medium">Packaging (EUR/unit)</TableCell>
+              <TableCell className="font-medium">
+                Packaging (EUR/unit)
+              </TableCell>
               {fiscalYearColumns.map((fy) => {
                 const year = yearData.find((y) => y.fiscal_year === fy);
                 const cellKey = `${fy}_pkg`;
@@ -441,7 +497,9 @@ export function COGSEditModal({
                       type="number"
                       step="0.01"
                       value={year?.packaging_cost ?? ""}
-                      onChange={(e) => handleCellChange(fy, "pkg", e.target.value)}
+                      onChange={(e) =>
+                        handleCellChange(fy, "pkg", e.target.value)
+                      }
                       onBlur={() => autoCalculateTotal(fy)}
                       className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
                       placeholder="Optional"
@@ -453,7 +511,9 @@ export function COGSEditModal({
 
             {/* Other Costs row */}
             <TableRow>
-              <TableCell className="font-medium">Other Costs (EUR/unit)</TableCell>
+              <TableCell className="font-medium">
+                Other Costs (EUR/unit)
+              </TableCell>
               {fiscalYearColumns.map((fy) => {
                 const year = yearData.find((y) => y.fiscal_year === fy);
                 const cellKey = `${fy}_other`;
@@ -465,7 +525,9 @@ export function COGSEditModal({
                       type="number"
                       step="0.01"
                       value={year?.other_costs ?? ""}
-                      onChange={(e) => handleCellChange(fy, "other", e.target.value)}
+                      onChange={(e) =>
+                        handleCellChange(fy, "other", e.target.value)
+                      }
                       onBlur={() => autoCalculateTotal(fy)}
                       className={`h-9 ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""}`}
                       placeholder="Optional"
@@ -477,7 +539,9 @@ export function COGSEditModal({
 
             {/* Total COGS row (required) */}
             <TableRow className="bg-muted/50">
-              <TableCell className="font-bold">Total COGS (EUR/unit) *</TableCell>
+              <TableCell className="font-bold">
+                Total COGS (EUR/unit) *
+              </TableCell>
               {fiscalYearColumns.map((fy) => {
                 const year = yearData.find((y) => y.fiscal_year === fy);
                 const cellKey = `${fy}_total`;
@@ -489,7 +553,9 @@ export function COGSEditModal({
                       type="number"
                       step="0.01"
                       value={year?.cogs_value ?? ""}
-                      onChange={(e) => handleCellChange(fy, "total", e.target.value)}
+                      onChange={(e) =>
+                        handleCellChange(fy, "total", e.target.value)
+                      }
                       className={`h-9 font-bold ${isChanged ? "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700" : ""} ${validationErrors[fy] ? "border-red-500" : ""}`}
                       placeholder="Required"
                       required
@@ -503,7 +569,8 @@ export function COGSEditModal({
       </div>
 
       <div className="text-xs text-muted-foreground mt-2">
-        * Total COGS is required for all years. Breakdown fields are optional, but if any are entered, all must be entered and sum to Total COGS.
+        * Total COGS is required for all years. Breakdown fields are optional,
+        but if any are entered, all must be entered and sum to Total COGS.
       </div>
     </BaseModal>
   );

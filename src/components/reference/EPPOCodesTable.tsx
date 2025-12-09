@@ -15,7 +15,9 @@ const createColumns = (): ColumnDef<EPPOCode>[] => [
     header: "EPPO Code",
     cell: ({ row }) => {
       return (
-        <span className="font-mono font-medium text-sm">{row.getValue("eppo_code") as string}</span>
+        <span className="font-mono font-medium text-sm">
+          {row.getValue("eppo_code") as string}
+        </span>
       );
     },
   },
@@ -32,7 +34,11 @@ const createColumns = (): ColumnDef<EPPOCode>[] => [
     header: "Latin Name",
     cell: ({ row }) => {
       const name = row.getValue("latin_name") as string | null;
-      return <span className="text-sm italic text-muted-foreground">{name || "—"}</span>;
+      return (
+        <span className="text-sm italic text-muted-foreground">
+          {name || "—"}
+        </span>
+      );
     },
   },
   {
@@ -48,7 +54,11 @@ const createColumns = (): ColumnDef<EPPOCode>[] => [
             : classification === "disease"
               ? "destructive"
               : "outline";
-      return <Badge variant={variant} className="text-xs">{classification}</Badge>;
+      return (
+        <Badge variant={variant} className="text-xs">
+          {classification}
+        </Badge>
+      );
     },
   },
   {
@@ -60,7 +70,9 @@ const createColumns = (): ColumnDef<EPPOCode>[] => [
         .split("_")
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
-      return <span className="text-sm text-muted-foreground">{displayType}</span>;
+      return (
+        <span className="text-sm text-muted-foreground">{displayType}</span>
+      );
     },
   },
   {
@@ -69,7 +81,9 @@ const createColumns = (): ColumnDef<EPPOCode>[] => [
     cell: ({ row }) => {
       const parentCode = row.getValue("parent_eppo_code") as string | null;
       return parentCode ? (
-        <span className="font-mono text-sm text-muted-foreground">{parentCode}</span>
+        <span className="font-mono text-sm text-muted-foreground">
+          {parentCode}
+        </span>
       ) : (
         <span className="text-sm text-muted-foreground">—</span>
       );
@@ -81,7 +95,9 @@ const createColumns = (): ColumnDef<EPPOCode>[] => [
     cell: ({ row }) => {
       const isParent = row.getValue("is_parent") as boolean | null;
       return isParent ? (
-        <Badge variant="outline" className="text-xs">Yes</Badge>
+        <Badge variant="outline" className="text-xs">
+          Yes
+        </Badge>
       ) : (
         <span className="text-sm text-muted-foreground">No</span>
       );
@@ -97,10 +113,13 @@ interface EPPOCodesTableProps {
   classification?: "crop" | "insect" | "disease" | "weed";
 }
 
-export function EPPOCodesTable({ eppoCodes, classification }: EPPOCodesTableProps) {
+export function EPPOCodesTable({
+  eppoCodes,
+  classification,
+}: EPPOCodesTableProps) {
   // Memoize columns to prevent recreation
   const memoizedColumns = useMemo(() => columns, []);
-  
+
   const searchPlaceholder = classification
     ? `Search ${classification}s by name or code...`
     : "Search EPPO codes by name or code...";

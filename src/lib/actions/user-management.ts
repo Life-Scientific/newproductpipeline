@@ -5,7 +5,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { decodeJWT } from "@/lib/utils/jwt";
 import { randomBytes } from "crypto";
-import { PERMISSIONS, type PermissionKey, type Role, type Permission } from "@/lib/permissions";
+import {
+  PERMISSIONS,
+  type PermissionKey,
+  type Role,
+  type Permission,
+} from "@/lib/permissions";
 
 // ============================================================================
 // Types
@@ -52,9 +57,13 @@ export interface InvitationData {
 /**
  * Check if the current user has a specific permission
  */
-export async function hasPermission(permission: PermissionKey): Promise<boolean> {
+export async function hasPermission(
+  permission: PermissionKey,
+): Promise<boolean> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return false;
 
@@ -73,22 +82,28 @@ export async function hasPermission(permission: PermissionKey): Promise<boolean>
   }
 
   // Fallback: use database function
-  const { data, error } = await supabase.rpc('has_permission', { p_key: permission });
-  
+  const { data, error } = await supabase.rpc("has_permission", {
+    p_key: permission,
+  });
+
   if (error) {
     console.error("Error checking permission:", error);
     return false;
   }
-  
+
   return data === true;
 }
 
 /**
  * Check if the current user has any of the specified permissions
  */
-export async function hasAnyPermission(permissions: PermissionKey[]): Promise<boolean> {
+export async function hasAnyPermission(
+  permissions: PermissionKey[],
+): Promise<boolean> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return false;
 
@@ -99,20 +114,22 @@ export async function hasAnyPermission(permissions: PermissionKey[]): Promise<bo
       const token = session.data.session.access_token;
       const payload = decodeJWT(token);
       if (payload?.permissions && Array.isArray(payload.permissions)) {
-        return permissions.some(p => payload.permissions.includes(p));
+        return permissions.some((p) => payload.permissions.includes(p));
       }
     }
   } catch {
     // Fall back to database
   }
 
-  const { data, error } = await supabase.rpc('has_any_permission', { p_keys: permissions });
-  
+  const { data, error } = await supabase.rpc("has_any_permission", {
+    p_keys: permissions,
+  });
+
   if (error) {
     console.error("Error checking permissions:", error);
     return false;
   }
-  
+
   return data === true;
 }
 
@@ -121,7 +138,9 @@ export async function hasAnyPermission(permissions: PermissionKey[]): Promise<bo
  */
 export async function getUserPermissions(): Promise<string[]> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return [];
 
@@ -139,13 +158,13 @@ export async function getUserPermissions(): Promise<string[]> {
     // Fall back to database
   }
 
-  const { data, error } = await supabase.rpc('get_user_permissions');
-  
+  const { data, error } = await supabase.rpc("get_user_permissions");
+
   if (error) {
     console.error("Error getting permissions:", error);
     return [];
   }
-  
+
   return data || [];
 }
 
@@ -154,7 +173,9 @@ export async function getUserPermissions(): Promise<string[]> {
  */
 export async function getUserRoles(): Promise<string[]> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return [];
 
@@ -172,13 +193,13 @@ export async function getUserRoles(): Promise<string[]> {
     // Fall back to database
   }
 
-  const { data, error } = await supabase.rpc('get_user_roles');
-  
+  const { data, error } = await supabase.rpc("get_user_roles");
+
   if (error) {
     console.error("Error getting roles:", error);
     return [];
   }
-  
+
   return data || [];
 }
 
@@ -208,7 +229,9 @@ export async function isAdmin(): Promise<boolean> {
  */
 export async function getUserRoleFromSession(): Promise<string | null> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return null;
 
@@ -226,13 +249,13 @@ export async function getUserRoleFromSession(): Promise<string | null> {
     // Fall back to database
   }
 
-  const { data, error } = await supabase.rpc('get_user_role');
-  
+  const { data, error } = await supabase.rpc("get_user_role");
+
   if (error) {
     console.error("Error getting role:", error);
     return "Viewer";
   }
-  
+
   return data || "Viewer";
 }
 
@@ -284,7 +307,10 @@ export async function getAllUsers(): Promise<UserManagementData[]> {
  * Update a user's roles (replaces all current roles)
  * Requires user.edit_role permission
  */
-export async function updateUserRoles(userId: string, roleIds: string[]): Promise<void> {
+export async function updateUserRoles(
+  userId: string,
+  roleIds: string[],
+): Promise<void> {
   const supabase = await createClient();
 
   // Check permission
@@ -299,8 +325,10 @@ export async function updateUserRoles(userId: string, roleIds: string[]): Promis
   }
 
   // Get current user to prevent self-lockout
-  const { data: { user: currentUser } } = await supabase.auth.getUser();
-  
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
+
   // Check if we're removing admin role from ourselves
   if (currentUser?.id === userId) {
     const { data: adminRole } = await supabase
@@ -308,7 +336,7 @@ export async function updateUserRoles(userId: string, roleIds: string[]): Promis
       .select("role_id")
       .eq("role_name", "Admin")
       .single();
-    
+
     if (adminRole && !roleIds.includes(adminRole.role_id)) {
       // Check if there are other admins
       const { data: otherAdmins } = await supabase
@@ -316,7 +344,7 @@ export async function updateUserRoles(userId: string, roleIds: string[]): Promis
         .select("user_id")
         .eq("role_id", adminRole.role_id)
         .neq("user_id", userId);
-      
+
       if (!otherAdmins || otherAdmins.length === 0) {
         throw new Error("Cannot remove the last admin user");
       }
@@ -334,7 +362,7 @@ export async function updateUserRoles(userId: string, roleIds: string[]): Promis
   }
 
   // Insert new roles
-  const rolesToInsert = roleIds.map(roleId => ({
+  const rolesToInsert = roleIds.map((roleId) => ({
     user_id: userId,
     role_id: roleId,
     assigned_by: currentUser?.id,
@@ -355,7 +383,10 @@ export async function updateUserRoles(userId: string, roleIds: string[]): Promis
  * Add a role to a user
  * Requires user.edit_role permission
  */
-export async function addUserRole(userId: string, roleId: string): Promise<void> {
+export async function addUserRole(
+  userId: string,
+  roleId: string,
+): Promise<void> {
   const supabase = await createClient();
 
   const canEdit = await hasPermission(PERMISSIONS.USER_EDIT_ROLE);
@@ -363,15 +394,15 @@ export async function addUserRole(userId: string, roleId: string): Promise<void>
     throw new Error("Unauthorized: user.edit_role permission required");
   }
 
-  const { data: { user: currentUser } } = await supabase.auth.getUser();
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
 
-  const { error } = await supabase
-    .from("user_roles")
-    .insert({
-      user_id: userId,
-      role_id: roleId,
-      assigned_by: currentUser?.id,
-    });
+  const { error } = await supabase.from("user_roles").insert({
+    user_id: userId,
+    role_id: roleId,
+    assigned_by: currentUser?.id,
+  });
 
   if (error) {
     if (error.code === "23505") {
@@ -388,7 +419,10 @@ export async function addUserRole(userId: string, roleId: string): Promise<void>
  * Remove a role from a user
  * Requires user.edit_role permission
  */
-export async function removeUserRole(userId: string, roleId: string): Promise<void> {
+export async function removeUserRole(
+  userId: string,
+  roleId: string,
+): Promise<void> {
   const supabase = await createClient();
 
   const canEdit = await hasPermission(PERMISSIONS.USER_EDIT_ROLE);
@@ -397,7 +431,9 @@ export async function removeUserRole(userId: string, roleId: string): Promise<vo
   }
 
   // Get current user
-  const { data: { user: currentUser } } = await supabase.auth.getUser();
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
 
   // Check if removing admin role from self and there are no other admins
   if (currentUser?.id === userId) {
@@ -406,14 +442,14 @@ export async function removeUserRole(userId: string, roleId: string): Promise<vo
       .select("role_id")
       .eq("role_name", "Admin")
       .single();
-    
+
     if (adminRole && adminRole.role_id === roleId) {
       const { data: otherAdmins } = await supabase
         .from("user_roles")
         .select("user_id")
         .eq("role_id", roleId)
         .neq("user_id", userId);
-      
+
       if (!otherAdmins || otherAdmins.length === 0) {
         throw new Error("Cannot remove the last admin user");
       }
@@ -495,9 +531,9 @@ export async function getAllPermissions(): Promise<Permission[]> {
  * Requires role.create permission
  */
 export async function createRole(
-  roleName: string, 
-  description: string, 
-  permissionIds: string[]
+  roleName: string,
+  description: string,
+  permissionIds: string[],
 ): Promise<string> {
   const supabase = await createClient();
 
@@ -526,7 +562,7 @@ export async function createRole(
 
   // Assign permissions to the role
   if (permissionIds.length > 0) {
-    const permissionAssignments = permissionIds.map(permId => ({
+    const permissionAssignments = permissionIds.map((permId) => ({
       role_id: roleData.role_id,
       permission_id: permId,
     }));
@@ -550,7 +586,10 @@ export async function createRole(
  * Update a role's permissions
  * Requires role.edit permission
  */
-export async function updateRolePermissions(roleId: string, permissionIds: string[]): Promise<void> {
+export async function updateRolePermissions(
+  roleId: string,
+  permissionIds: string[],
+): Promise<void> {
   const supabase = await createClient();
 
   const canEdit = await hasPermission(PERMISSIONS.ROLE_EDIT);
@@ -570,7 +609,7 @@ export async function updateRolePermissions(roleId: string, permissionIds: strin
 
   // Insert new permissions
   if (permissionIds.length > 0) {
-    const permissionAssignments = permissionIds.map(permId => ({
+    const permissionAssignments = permissionIds.map((permId) => ({
       role_id: roleId,
       permission_id: permId,
     }));
@@ -591,7 +630,11 @@ export async function updateRolePermissions(roleId: string, permissionIds: strin
  * Update a role's details
  * Requires role.edit permission
  */
-export async function updateRole(roleId: string, roleName: string, description: string): Promise<void> {
+export async function updateRole(
+  roleId: string,
+  roleName: string,
+  description: string,
+): Promise<void> {
   const supabase = await createClient();
 
   const canEdit = await hasPermission(PERMISSIONS.ROLE_EDIT);
@@ -663,13 +706,12 @@ export async function deleteRole(roleId: string): Promise<void> {
     .eq("role_id", roleId);
 
   if (usersWithRole && usersWithRole.length > 0) {
-    throw new Error(`Cannot delete role: ${usersWithRole.length} user(s) still have this role`);
+    throw new Error(
+      `Cannot delete role: ${usersWithRole.length} user(s) still have this role`,
+    );
   }
 
-  const { error } = await supabase
-    .from("roles")
-    .delete()
-    .eq("role_id", roleId);
+  const { error } = await supabase.from("roles").delete().eq("role_id", roleId);
 
   if (error) {
     throw new Error(`Failed to delete role: ${error.message}`);
@@ -719,7 +761,7 @@ export async function getAllInvitations(): Promise<InvitationData[]> {
 export async function inviteUserByEmail(
   email: string,
   role: string = "Viewer",
-  redirectTo?: string
+  redirectTo?: string,
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   const adminSupabase = createAdminClient();
@@ -729,7 +771,9 @@ export async function inviteUserByEmail(
     throw new Error("Unauthorized: user.invite permission required");
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     throw new Error("Not authenticated");
   }
@@ -753,7 +797,7 @@ export async function inviteUserByEmail(
 
   // Check if user already exists
   const { data: usersData } = await adminSupabase.auth.admin.listUsers();
-  const existingUser = usersData?.users.find(u => u.email === email);
+  const existingUser = usersData?.users.find((u) => u.email === email);
   if (existingUser) {
     throw new Error("User with this email already exists");
   }
@@ -777,22 +821,24 @@ export async function inviteUserByEmail(
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 7);
 
-  const redirectUrl = redirectTo || `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/accept-invite`;
-  
-  const { error: inviteEmailError } = await adminSupabase.auth.admin.inviteUserByEmail(
-    email.toLowerCase(),
-    {
+  const redirectUrl =
+    redirectTo ||
+    `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/accept-invite`;
+
+  const { error: inviteEmailError } =
+    await adminSupabase.auth.admin.inviteUserByEmail(email.toLowerCase(), {
       data: {
         role,
         invited_by: user.id,
         invitation_token_hash: tokenHash,
       },
       redirectTo: redirectUrl,
-    }
-  );
+    });
 
   if (inviteEmailError) {
-    throw new Error(`Failed to send invitation email: ${inviteEmailError.message}`);
+    throw new Error(
+      `Failed to send invitation email: ${inviteEmailError.message}`,
+    );
   }
 
   const { error: inviteError } = await supabase.from("invitations").insert({
@@ -815,7 +861,9 @@ export async function inviteUserByEmail(
  * Resend an invitation
  * Requires user.invite permission
  */
-export async function resendInvitation(invitationId: string): Promise<{ success: boolean; error?: string }> {
+export async function resendInvitation(
+  invitationId: string,
+): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   const adminSupabase = createAdminClient();
 
@@ -844,17 +892,17 @@ export async function resendInvitation(invitationId: string): Promise<{ success:
   }
 
   const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/accept-invite`;
-  
-  const { error: inviteEmailError } = await adminSupabase.auth.admin.inviteUserByEmail(
-    invitation.email,
-    {
+
+  const { error: inviteEmailError } =
+    await adminSupabase.auth.admin.inviteUserByEmail(invitation.email, {
       data: { role: invitation.role },
       redirectTo: redirectUrl,
-    }
-  );
+    });
 
   if (inviteEmailError) {
-    throw new Error(`Failed to resend invitation email: ${inviteEmailError.message}`);
+    throw new Error(
+      `Failed to resend invitation email: ${inviteEmailError.message}`,
+    );
   }
 
   revalidatePath("/settings");
@@ -873,7 +921,10 @@ export async function cancelInvitation(invitationId: string): Promise<void> {
     throw new Error("Unauthorized: user.invite permission required");
   }
 
-  const { error } = await supabase.from("invitations").delete().eq("id", invitationId);
+  const { error } = await supabase
+    .from("invitations")
+    .delete()
+    .eq("id", invitationId);
 
   if (error) {
     throw new Error(`Failed to cancel invitation: ${error.message}`);
@@ -885,7 +936,9 @@ export async function cancelInvitation(invitationId: string): Promise<void> {
 /**
  * Get invitation by token hash
  */
-export async function getInvitationByToken(tokenHash: string): Promise<InvitationData | null> {
+export async function getInvitationByToken(
+  tokenHash: string,
+): Promise<InvitationData | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -902,8 +955,8 @@ export async function getInvitationByToken(tokenHash: string): Promise<Invitatio
   const status: "pending" | "accepted" | "expired" = data.accepted_at
     ? "accepted"
     : expiresAt <= new Date()
-    ? "expired"
-    : "pending";
+      ? "expired"
+      : "pending";
 
   return {
     id: data.id,
@@ -920,7 +973,10 @@ export async function getInvitationByToken(tokenHash: string): Promise<Invitatio
 /**
  * Mark invitation as accepted and assign role
  */
-export async function markInvitationAsAccepted(userEmail: string, userId: string): Promise<void> {
+export async function markInvitationAsAccepted(
+  userEmail: string,
+  userId: string,
+): Promise<void> {
   const supabase = await createClient();
 
   const { data: invitation, error: fetchError } = await supabase
@@ -952,14 +1008,15 @@ export async function markInvitationAsAccepted(userEmail: string, userId: string
 
   if (roleData) {
     // Assign the role
-    await supabase
-      .from("user_roles")
-      .upsert({
+    await supabase.from("user_roles").upsert(
+      {
         user_id: userId,
         role_id: roleData.role_id,
-      }, {
+      },
+      {
         onConflict: "user_id,role_id",
-      });
+      },
+    );
   }
 
   revalidatePath("/settings");
@@ -978,7 +1035,9 @@ export async function deleteUser(userId: string): Promise<void> {
     throw new Error("Unauthorized: user.delete permission required");
   }
 
-  const { data: { user: currentUser } } = await supabase.auth.getUser();
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
   if (currentUser?.id === userId) {
     throw new Error("Cannot delete your own account");
   }
@@ -1015,7 +1074,8 @@ export async function deleteUser(userId: string): Promise<void> {
   await supabase.from("user_roles").delete().eq("user_id", userId);
 
   // Delete user from auth
-  const { error: deleteError } = await adminSupabase.auth.admin.deleteUser(userId);
+  const { error: deleteError } =
+    await adminSupabase.auth.admin.deleteUser(userId);
 
   if (deleteError) {
     throw new Error(`Failed to delete user: ${deleteError.message}`);
@@ -1032,7 +1092,10 @@ export async function deleteUser(userId: string): Promise<void> {
  * Update a user's role (legacy single-role method)
  * @deprecated Use updateUserRoles() for multi-role support
  */
-export async function updateUserRole(userId: string, roleName: string): Promise<void> {
+export async function updateUserRole(
+  userId: string,
+  roleName: string,
+): Promise<void> {
   const supabase = await createClient();
 
   const canEdit = await hasPermission(PERMISSIONS.USER_EDIT_ROLE);

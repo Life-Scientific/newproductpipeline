@@ -17,11 +17,11 @@ export interface CountingContext {
 
 /**
  * Compute filtered counts for portfolio pages.
- * 
+ *
  * This utility implements the filtering logic from the filtering document:
  * - When formulation filters are active and no country filters: count from formulations table (includes orphans)
  * - When country-related filters are active: count from junction table (intersection only)
- * 
+ *
  * @param formulations - All formulations from the database
  * @param filteredFormulationCountries - Already filtered formulation-country pairs
  * @param filters - Active portfolio filters
@@ -36,38 +36,40 @@ export function computeFilteredCounts(
   filters: PortfolioFilters,
   context: CountingContext,
   additionalData?: {
-    useGroups?: Array<{ formulation_code?: string | null; country_code?: string | null }>;
-    businessCases?: Array<{ 
+    useGroups?: Array<{
+      formulation_code?: string | null;
+      country_code?: string | null;
+    }>;
+    businessCases?: Array<{
       business_case_group_id?: string | null;
       country_code?: string | null;
       formulation_code?: string | null;
     }>;
-  }
+  },
 ): FilteredCounts {
   // Determine filter types
-  const hasCountryRelatedFilters = 
-    filters.countries.length > 0 || 
-    filters.countryStatuses.length > 0 || 
+  const hasCountryRelatedFilters =
+    filters.countries.length > 0 ||
+    filters.countryStatuses.length > 0 ||
     filters.useGroups.length > 0;
-  
-  const hasFormulationFilters = 
-    filters.formulations.length > 0 || 
-    filters.formulationStatuses.length > 0;
-  
+
+  const hasFormulationFilters =
+    filters.formulations.length > 0 || filters.formulationStatuses.length > 0;
+
   const hasAnyFilter = hasCountryRelatedFilters || hasFormulationFilters;
 
   // Compute unique countries and formulations from filtered junction data
   const uniqueCountries = new Set<string>();
   const uniqueFormulations = new Set<string>();
-  
-  filteredFormulationCountries.forEach(fc => {
+
+  filteredFormulationCountries.forEach((fc) => {
     if (fc.country_code) uniqueCountries.add(fc.country_code);
     if (fc.formulation_code) uniqueFormulations.add(fc.formulation_code);
   });
 
   // Also count from business cases if provided (they represent actual relationships)
   if (additionalData?.businessCases) {
-    additionalData.businessCases.forEach(bc => {
+    additionalData.businessCases.forEach((bc) => {
       if (bc.country_code) uniqueCountries.add(bc.country_code);
       if (bc.formulation_code) uniqueFormulations.add(bc.formulation_code);
     });
@@ -75,17 +77,24 @@ export function computeFilteredCounts(
 
   // Determine formulation count
   let formulationCount: number;
-  
+
   if (!hasAnyFilter) {
     // No filters: show totals from formulations table
     formulationCount = formulations.length;
-  } else if (context.includeOrphanFormulations && hasFormulationFilters && !hasCountryRelatedFilters) {
+  } else if (
+    context.includeOrphanFormulations &&
+    hasFormulationFilters &&
+    !hasCountryRelatedFilters
+  ) {
     // PATH A: Formulation-centric (include formulations without country entries)
     // Filter formulations table to get count including orphans
     const filteredFormulations = formulations.filter((f) => {
       // Formulation filter
       if (filters.formulations.length > 0) {
-        if (!f.formulation_code || !filters.formulations.includes(f.formulation_code)) {
+        if (
+          !f.formulation_code ||
+          !filters.formulations.includes(f.formulation_code)
+        ) {
           return false;
         }
       }
@@ -113,7 +122,9 @@ export function computeFilteredCounts(
   // Compute business cases count if provided
   let businessCasesCount: number | undefined;
   if (additionalData?.businessCases) {
-    businessCasesCount = countUniqueBusinessCaseGroups(additionalData.businessCases);
+    businessCasesCount = countUniqueBusinessCaseGroups(
+      additionalData.businessCases,
+    );
   }
 
   return {
@@ -124,4 +135,3 @@ export function computeFilteredCounts(
     businessCases: businessCasesCount,
   };
 }
-

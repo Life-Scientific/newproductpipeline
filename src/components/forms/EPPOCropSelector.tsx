@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Plus, FolderTree, Leaf, ChevronRight, ChevronDown } from "lucide-react";
+import {
+  X,
+  Plus,
+  FolderTree,
+  Leaf,
+  ChevronRight,
+  ChevronDown,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -42,7 +49,10 @@ interface EPPOCropSelectorProps {
   onUpdate?: () => void;
 }
 
-export function EPPOCropSelector({ formulationId, onUpdate }: EPPOCropSelectorProps) {
+export function EPPOCropSelector({
+  formulationId,
+  onUpdate,
+}: EPPOCropSelectorProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [selections, setSelections] = useState<EPPOCropSelection[]>([]);
@@ -214,7 +224,8 @@ export function EPPOCropSelector({ formulationId, onUpdate }: EPPOCropSelectorPr
             EPPO Crops <span className="text-destructive">*</span>
           </Label>
           <p className="text-xs text-muted-foreground mt-1">
-            Select crops or crop groups. Groups can include all children automatically.
+            Select crops or crop groups. Groups can include all children
+            automatically.
           </p>
         </div>
         <Button
@@ -264,9 +275,9 @@ export function EPPOCropSelector({ formulationId, onUpdate }: EPPOCropSelectorPr
                         <div className="font-medium">{code.display_name}</div>
                         <div className="text-xs text-muted-foreground">
                           {code.eppo_code}
-                          {code.latin_name && code.latin_name !== code.display_name && 
-                            ` • ${code.latin_name}`
-                          }
+                          {code.latin_name &&
+                            code.latin_name !== code.display_name &&
+                            ` • ${code.latin_name}`}
                         </div>
                       </div>
                       {code.is_parent && (
@@ -294,7 +305,10 @@ export function EPPOCropSelector({ formulationId, onUpdate }: EPPOCropSelectorPr
                     id="include_children"
                     checked={newSelection.include_children}
                     onCheckedChange={(checked) =>
-                      setNewSelection({ ...newSelection, include_children: !!checked })
+                      setNewSelection({
+                        ...newSelection,
+                        include_children: !!checked,
+                      })
                     }
                   />
                   <Label htmlFor="include_children" className="text-sm">
@@ -353,7 +367,11 @@ export function EPPOCropSelector({ formulationId, onUpdate }: EPPOCropSelectorPr
               {selections.map((selection) => (
                 <TableRow
                   key={selection.eppo_code_id}
-                  className={selection.is_excluded ? "opacity-50 bg-red-50 dark:bg-red-950/20" : ""}
+                  className={
+                    selection.is_excluded
+                      ? "opacity-50 bg-red-50 dark:bg-red-950/20"
+                      : ""
+                  }
                 >
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -363,7 +381,9 @@ export function EPPOCropSelector({ formulationId, onUpdate }: EPPOCropSelectorPr
                         <Leaf className="h-4 w-4 text-green-600" />
                       )}
                       <div>
-                        <div className="font-medium">{selection.display_name}</div>
+                        <div className="font-medium">
+                          {selection.display_name}
+                        </div>
                         {selection.is_excluded && (
                           <Badge variant="destructive" className="mt-1">
                             Excluded
@@ -382,7 +402,9 @@ export function EPPOCropSelector({ formulationId, onUpdate }: EPPOCropSelectorPr
                       <div className="flex items-center gap-2">
                         <Checkbox
                           checked={selection.include_children}
-                          onCheckedChange={() => handleToggleIncludeChildren(selection)}
+                          onCheckedChange={() =>
+                            handleToggleIncludeChildren(selection)
+                          }
                           disabled={isPending}
                         />
                         <span className="text-sm text-muted-foreground">
@@ -432,4 +454,3 @@ export function EPPOCropSelector({ formulationId, onUpdate }: EPPOCropSelectorPr
     </div>
   );
 }
-

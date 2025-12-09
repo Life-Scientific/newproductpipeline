@@ -31,7 +31,7 @@ export default function LandingPage() {
   const handleLogoClick = useCallback(() => {
     const now = Date.now();
     setLastClickTime(now);
-    
+
     const newCount = clickCount + 1;
     setClickCount(newCount);
 
@@ -49,9 +49,7 @@ export default function LandingPage() {
   return (
     <div
       className={`min-h-screen flex flex-col transition-colors duration-700 ${
-        isEightiesMode
-          ? "bg-[#0a0a1a]"
-          : "bg-[#fafafa]"
+        isEightiesMode ? "bg-[#0a0a1a]" : "bg-[#fafafa]"
       }`}
     >
       {/* Flash effect on mode switch */}
@@ -161,7 +159,8 @@ export default function LandingPage() {
             style={{
               bottom: "25%",
               left: "12%",
-              boxShadow: "0 0 15px rgba(255, 0, 255, 0.2), inset 0 0 15px rgba(255, 0, 255, 0.1)",
+              boxShadow:
+                "0 0 15px rgba(255, 0, 255, 0.2), inset 0 0 15px rgba(255, 0, 255, 0.1)",
             }}
           />
         </div>
@@ -283,7 +282,6 @@ export default function LandingPage() {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
-
         </div>
       </main>
 

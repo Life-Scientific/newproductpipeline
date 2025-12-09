@@ -5,10 +5,5 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <SidebarProvider>
-      {children}
-    </SidebarProvider>
-  );
+  return <SidebarProvider>{children}</SidebarProvider>;
 }
-

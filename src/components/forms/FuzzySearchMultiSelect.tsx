@@ -3,7 +3,11 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { X, ChevronDown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverAnchor,
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -59,59 +63,62 @@ export function FuzzySearchMultiSelect({
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Search function
-  const performSearch = useCallback(async (term: string) => {
-    if (!term || term.trim().length < 1) {
-      if (preloadAll && preloadFunction) {
-        setIsSearching(true);
-        try {
-          const result = await preloadFunction();
-          if (result.data) {
-            setAllItems(result.data);
-            setSearchResults(result.data);
-            // Cache items
-            const newCache = new Map(loadedItems);
-            result.data.forEach((item) => {
-              newCache.set(getOptionValue(item), item);
-            });
-            setLoadedItems(newCache);
+  const performSearch = useCallback(
+    async (term: string) => {
+      if (!term || term.trim().length < 1) {
+        if (preloadAll && preloadFunction) {
+          setIsSearching(true);
+          try {
+            const result = await preloadFunction();
+            if (result.data) {
+              setAllItems(result.data);
+              setSearchResults(result.data);
+              // Cache items
+              const newCache = new Map(loadedItems);
+              result.data.forEach((item) => {
+                newCache.set(getOptionValue(item), item);
+              });
+              setLoadedItems(newCache);
+            }
+          } catch (error) {
+            console.error("Error preloading items:", error);
+          } finally {
+            setIsSearching(false);
           }
-        } catch (error) {
-          console.error("Error preloading items:", error);
-        } finally {
+        } else {
+          setSearchResults([]);
           setIsSearching(false);
         }
-      } else {
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const result = await searchFunction(term);
+        if (result.data) {
+          setSearchResults(result.data);
+          // Cache items
+          if (result.data) {
+            setLoadedItems((prev) => {
+              const newCache = new Map(prev);
+              result.data!.forEach((item) => {
+                newCache.set(getOptionValue(item), item);
+              });
+              return newCache;
+            });
+          }
+        } else {
+          setSearchResults([]);
+        }
+      } catch (error) {
+        console.error("Error searching:", error);
         setSearchResults([]);
+      } finally {
         setIsSearching(false);
       }
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const result = await searchFunction(term);
-      if (result.data) {
-        setSearchResults(result.data);
-        // Cache items
-        if (result.data) {
-          setLoadedItems((prev) => {
-            const newCache = new Map(prev);
-            result.data!.forEach((item) => {
-              newCache.set(getOptionValue(item), item);
-            });
-            return newCache;
-          });
-        }
-      } else {
-        setSearchResults([]);
-      }
-    } catch (error) {
-      console.error("Error searching:", error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [searchFunction, getOptionValue, preloadAll, preloadFunction, loadedItems]);
+    },
+    [searchFunction, getOptionValue, preloadAll, preloadFunction, loadedItems],
+  );
 
   // Debounced search effect
   useEffect(() => {
@@ -164,7 +171,7 @@ export function FuzzySearchMultiSelect({
       e.preventDefault();
       e.stopPropagation();
     }
-    
+
     if (selected.includes(itemValue)) {
       handleUnselect(itemValue);
     } else {
@@ -192,14 +199,22 @@ export function FuzzySearchMultiSelect({
   }, [selected, loadedItems]);
 
   const displayOptions = useMemo(() => {
-    const options = searchValue && searchResults.length > 0
-      ? searchResults
-      : preloadAll && allItems.length > 0
-        ? allItems
-        : searchResults;
-    
+    const options =
+      searchValue && searchResults.length > 0
+        ? searchResults
+        : preloadAll && allItems.length > 0
+          ? allItems
+          : searchResults;
+
     return options.filter((item) => !selected.includes(getOptionValue(item)));
-  }, [searchResults, allItems, searchValue, preloadAll, selected, getOptionValue]);
+  }, [
+    searchResults,
+    allItems,
+    searchValue,
+    preloadAll,
+    selected,
+    getOptionValue,
+  ]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -213,7 +228,7 @@ export function FuzzySearchMultiSelect({
             aria-expanded={open}
             className={cn(
               "min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 cursor-pointer",
-              disabled && "cursor-not-allowed opacity-50"
+              disabled && "cursor-not-allowed opacity-50",
             )}
             onClick={(e) => {
               if (!disabled) {
@@ -236,7 +251,11 @@ export function FuzzySearchMultiSelect({
           >
             <div className="flex flex-wrap gap-1 items-center">
               {selectedItemsData.map((item) => (
-                <Badge key={getOptionValue(item)} variant="secondary" className="mr-1 mb-1">
+                <Badge
+                  key={getOptionValue(item)}
+                  variant="secondary"
+                  className="mr-1 mb-1"
+                >
                   {getOptionLabel(item)}
                   <span
                     role="button"
@@ -264,7 +283,9 @@ export function FuzzySearchMultiSelect({
                 </Badge>
               ))}
               {selected.length === 0 && (
-                <span className="text-muted-foreground ml-2">{placeholder}</span>
+                <span className="text-muted-foreground ml-2">
+                  {placeholder}
+                </span>
               )}
             </div>
           </div>
@@ -324,7 +345,7 @@ export function FuzzySearchMultiSelect({
                     aria-selected={isSelected}
                     className={cn(
                       "relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                      isSelected && "bg-accent"
+                      isSelected && "bg-accent",
                     )}
                     onClick={(e) => {
                       e.preventDefault();
@@ -351,9 +372,3 @@ export function FuzzySearchMultiSelect({
     </Popover>
   );
 }
-
-
-
-
-
-

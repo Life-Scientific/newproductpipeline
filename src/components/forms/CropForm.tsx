@@ -31,7 +31,12 @@ interface CropFormProps {
   onSuccess?: () => void;
 }
 
-export function CropForm({ crop, open, onOpenChange, onSuccess }: CropFormProps) {
+export function CropForm({
+  crop,
+  open,
+  onOpenChange,
+  onSuccess,
+}: CropFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -61,7 +66,9 @@ export function CropForm({ crop, open, onOpenChange, onSuccess }: CropFormProps)
     startTransition(async () => {
       try {
         const action = crop
-          ? await import("@/lib/actions/crops").then((m) => m.updateCrop(crop.crop_id, form))
+          ? await import("@/lib/actions/crops").then((m) =>
+              m.updateCrop(crop.crop_id, form),
+            )
           : await import("@/lib/actions/crops").then((m) => m.createCrop(form));
 
         if (action.error) {
@@ -73,7 +80,9 @@ export function CropForm({ crop, open, onOpenChange, onSuccess }: CropFormProps)
         } else {
           toast({
             title: "Success",
-            description: crop ? "Crop updated successfully" : "Crop created successfully",
+            description: crop
+              ? "Crop updated successfully"
+              : "Crop created successfully",
           });
           onOpenChange(false);
           if (onSuccess) onSuccess();
@@ -106,7 +115,9 @@ export function CropForm({ crop, open, onOpenChange, onSuccess }: CropFormProps)
             <Input
               id="crop_name"
               value={formData.crop_name}
-              onChange={(e) => setFormData({ ...formData, crop_name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, crop_name: e.target.value })
+              }
               required
             />
           </div>
@@ -116,7 +127,9 @@ export function CropForm({ crop, open, onOpenChange, onSuccess }: CropFormProps)
             <Input
               id="crop_category"
               value={formData.crop_category}
-              onChange={(e) => setFormData({ ...formData, crop_category: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, crop_category: e.target.value })
+              }
             />
           </div>
 
@@ -124,16 +137,27 @@ export function CropForm({ crop, open, onOpenChange, onSuccess }: CropFormProps)
             <Switch
               id="is_active"
               checked={formData.is_active}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, is_active: checked })
+              }
             />
             <Label htmlFor="is_active">Active</Label>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending} size="lg" className="h-12 px-6">
+            <Button
+              type="submit"
+              disabled={isPending}
+              size="lg"
+              className="h-12 px-6"
+            >
               {isPending ? "Saving..." : crop ? "Update" : "Create"}
             </Button>
           </DialogFooter>
@@ -142,4 +166,3 @@ export function CropForm({ crop, open, onOpenChange, onSuccess }: CropFormProps)
     </Dialog>
   );
 }
-

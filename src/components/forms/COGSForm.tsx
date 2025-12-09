@@ -21,8 +21,10 @@ import { FormulationSelector } from "./FormulationSelector";
 import { FormulationCountrySelector } from "./FormulationCountrySelector";
 
 type COGS = Database["public"]["Tables"]["cogs"]["Row"];
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
-type FormulationCountry = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
+type Formulation =
+  Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type FormulationCountry =
+  Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 
 interface COGSFormProps {
   cogs?: COGS | null;
@@ -45,11 +47,14 @@ export function COGSForm({
   const { toast } = useToast();
   const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
-  const [selectedFormulation, setSelectedFormulation] = useState<Formulation | null>(null);
-  const [selectedFormulationCountry, setSelectedFormulationCountry] = useState<FormulationCountry | null>(null);
+  const [selectedFormulation, setSelectedFormulation] =
+    useState<Formulation | null>(null);
+  const [selectedFormulationCountry, setSelectedFormulationCountry] =
+    useState<FormulationCountry | null>(null);
   const [formData, setFormData] = useState({
     formulation_id: cogs?.formulation_id || defaultFormulationId || "",
-    formulation_country_id: cogs?.formulation_country_id || defaultFormulationCountryId || "",
+    formulation_country_id:
+      cogs?.formulation_country_id || defaultFormulationCountryId || "",
     fiscal_year: cogs?.fiscal_year || "",
     cogs_value: cogs?.cogs_value?.toString() || "",
     raw_material_cost: cogs?.raw_material_cost?.toString() || "",
@@ -75,7 +80,9 @@ export function COGSForm({
       if (cogs.formulation_country_id) {
         supabase
           .from("vw_formulation_country_detail")
-          .select("formulation_country_id, display_name, formulation_code, country_name")
+          .select(
+            "formulation_country_id, display_name, formulation_code, country_name",
+          )
           .eq("formulation_country_id", cogs.formulation_country_id)
           .single()
           .then(({ data }) => {
@@ -108,7 +115,9 @@ export function COGSForm({
       // Load selected formulation country for display
       supabase
         .from("vw_formulation_country_detail")
-        .select("formulation_country_id, display_name, formulation_code, country_name")
+        .select(
+          "formulation_country_id, display_name, formulation_code, country_name",
+        )
         .eq("formulation_country_id", formData.formulation_country_id)
         .single()
         .then(({ data }) => {
@@ -122,7 +131,11 @@ export function COGSForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.formulation_id || !formData.fiscal_year || !formData.cogs_value) {
+    if (
+      !formData.formulation_id ||
+      !formData.fiscal_year ||
+      !formData.cogs_value
+    ) {
       toast({
         title: "Error",
         description: "Formulation, fiscal year, and COGS value are required",
@@ -140,7 +153,7 @@ export function COGSForm({
       try {
         const action = cogs
           ? await import("@/lib/actions/cogs").then((m) =>
-              m.updateCOGS(cogs.cogs_id, form)
+              m.updateCOGS(cogs.cogs_id, form),
             )
           : await import("@/lib/actions/cogs").then((m) => m.createCOGS(form));
 
@@ -153,7 +166,9 @@ export function COGSForm({
         } else {
           toast({
             title: "Success",
-            description: cogs ? "COGS updated successfully" : "COGS created successfully",
+            description: cogs
+              ? "COGS updated successfully"
+              : "COGS created successfully",
           });
           onOpenChange(false);
           if (onSuccess) onSuccess();
@@ -175,7 +190,9 @@ export function COGSForm({
         <DialogHeader>
           <DialogTitle>{cogs ? "Edit COGS" : "Create COGS"}</DialogTitle>
           <DialogDescription>
-            {cogs ? "Update cost of goods sold" : "Add new cost of goods sold entry"}
+            {cogs
+              ? "Update cost of goods sold"
+              : "Add new cost of goods sold entry"}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -187,7 +204,11 @@ export function COGSForm({
               <FormulationSelector
                 value={formData.formulation_id}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, formulation_id: value, formulation_country_id: "" })
+                  setFormData({
+                    ...formData,
+                    formulation_id: value,
+                    formulation_country_id: "",
+                  })
                 }
                 placeholder="Search formulations..."
                 disabled={!!cogs}
@@ -202,12 +223,17 @@ export function COGSForm({
                   <FormulationCountrySelector
                     value={formData.formulation_country_id || ""}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, formulation_country_id: value })
+                      setFormData({
+                        ...formData,
+                        formulation_country_id: value,
+                      })
                     }
                     placeholder="Search countries (optional)..."
                     disabled={!formData.formulation_id}
                     formulationId={formData.formulation_id || undefined}
-                    selectedFormulationCountry={selectedFormulationCountry || undefined}
+                    selectedFormulationCountry={
+                      selectedFormulationCountry || undefined
+                    }
                   />
                 </div>
                 {formData.formulation_country_id && (
@@ -215,14 +241,17 @@ export function COGSForm({
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setFormData({ ...formData, formulation_country_id: "" })}
+                    onClick={() =>
+                      setFormData({ ...formData, formulation_country_id: "" })
+                    }
                   >
                     Clear
                   </Button>
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Leave empty for global COGS, or select a country for country-specific COGS
+                Leave empty for global COGS, or select a country for
+                country-specific COGS
               </p>
             </div>
           </div>
@@ -235,7 +264,9 @@ export function COGSForm({
               <Input
                 id="fiscal_year"
                 value={formData.fiscal_year}
-                onChange={(e) => setFormData({ ...formData, fiscal_year: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, fiscal_year: e.target.value })
+                }
                 placeholder="FY2025"
                 required
               />
@@ -249,14 +280,18 @@ export function COGSForm({
                 type="number"
                 step="0.01"
                 value={formData.cogs_value}
-                onChange={(e) => setFormData({ ...formData, cogs_value: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, cogs_value: e.target.value })
+                }
                 required
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-base font-semibold">Cost Breakdown (Optional)</Label>
+            <Label className="text-base font-semibold">
+              Cost Breakdown (Optional)
+            </Label>
             <p className="text-xs text-muted-foreground">
               Break down the total COGS into components
             </p>
@@ -271,7 +306,10 @@ export function COGSForm({
                 step="0.01"
                 value={formData.raw_material_cost}
                 onChange={(e) =>
-                  setFormData({ ...formData, raw_material_cost: e.target.value })
+                  setFormData({
+                    ...formData,
+                    raw_material_cost: e.target.value,
+                  })
                 }
               />
             </div>
@@ -283,7 +321,10 @@ export function COGSForm({
                 step="0.01"
                 value={formData.manufacturing_cost}
                 onChange={(e) =>
-                  setFormData({ ...formData, manufacturing_cost: e.target.value })
+                  setFormData({
+                    ...formData,
+                    manufacturing_cost: e.target.value,
+                  })
                 }
               />
             </div>
@@ -294,7 +335,9 @@ export function COGSForm({
                 type="number"
                 step="0.01"
                 value={formData.packaging_cost}
-                onChange={(e) => setFormData({ ...formData, packaging_cost: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, packaging_cost: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
@@ -304,7 +347,9 @@ export function COGSForm({
                 type="number"
                 step="0.01"
                 value={formData.other_costs}
-                onChange={(e) => setFormData({ ...formData, other_costs: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, other_costs: e.target.value })
+                }
               />
             </div>
           </div>
@@ -314,16 +359,27 @@ export function COGSForm({
             <Textarea
               id="notes"
               value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
               rows={3}
             />
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending} size="lg" className="h-12 px-6">
+            <Button
+              type="submit"
+              disabled={isPending}
+              size="lg"
+              className="h-12 px-6"
+            >
               {isPending ? "Saving..." : cogs ? "Update" : "Create"}
             </Button>
           </DialogFooter>
@@ -332,4 +388,3 @@ export function COGSForm({
     </Dialog>
   );
 }
-

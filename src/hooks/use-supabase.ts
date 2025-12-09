@@ -26,4 +26,3 @@ function getSupabaseClient(): SupabaseClient<Database> {
 export function useSupabase(): SupabaseClient<Database> {
   return getSupabaseClient();
 }
-

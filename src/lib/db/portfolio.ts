@@ -1,5 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import type { ActivePortfolio, Formulation, FormulationCountryDetail, FormulationCountryUseGroup, BusinessCase } from "./types";
+import type {
+  ActivePortfolio,
+  Formulation,
+  FormulationCountryDetail,
+  FormulationCountryUseGroup,
+  BusinessCase,
+} from "./types";
 
 export async function getActivePortfolio() {
   const supabase = await createClient();
@@ -15,15 +21,19 @@ export async function getActivePortfolio() {
   return data as ActivePortfolio[];
 }
 
-
 /**
  * Get all data needed for Pipeline Tracker
  * Returns formulations, countries, use groups, and business cases for the full state management tree
  */
 export async function getPipelineTrackerData() {
   const supabase = await createClient();
-  
-  const [formulationsResult, countriesResult, useGroupsResult, businessCasesResult] = await Promise.all([
+
+  const [
+    formulationsResult,
+    countriesResult,
+    useGroupsResult,
+    businessCasesResult,
+  ] = await Promise.all([
     supabase
       .from("vw_formulations_with_ingredients")
       .select("*")
@@ -48,16 +58,24 @@ export async function getPipelineTrackerData() {
   ]);
 
   if (formulationsResult.error) {
-    throw new Error(`Failed to fetch formulations: ${formulationsResult.error.message}`);
+    throw new Error(
+      `Failed to fetch formulations: ${formulationsResult.error.message}`,
+    );
   }
   if (countriesResult.error) {
-    throw new Error(`Failed to fetch countries: ${countriesResult.error.message}`);
+    throw new Error(
+      `Failed to fetch countries: ${countriesResult.error.message}`,
+    );
   }
   if (useGroupsResult.error) {
-    throw new Error(`Failed to fetch use groups: ${useGroupsResult.error.message}`);
+    throw new Error(
+      `Failed to fetch use groups: ${useGroupsResult.error.message}`,
+    );
   }
   if (businessCasesResult.error) {
-    throw new Error(`Failed to fetch business cases: ${businessCasesResult.error.message}`);
+    throw new Error(
+      `Failed to fetch business cases: ${businessCasesResult.error.message}`,
+    );
   }
 
   return {
@@ -67,4 +85,3 @@ export async function getPipelineTrackerData() {
     businessCases: businessCasesResult.data as BusinessCase[],
   };
 }
-

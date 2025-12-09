@@ -52,54 +52,62 @@ export function ValidatedInput({
   className,
   ...props
 }: ValidatedInputProps) {
-  const [validationState, setValidationState] = useState<"idle" | "validating" | "valid" | "error">("idle");
+  const [validationState, setValidationState] = useState<
+    "idle" | "validating" | "valid" | "error"
+  >("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const onValidationChangeRef = useRef(onValidationChange);
-  
+
   // Keep callback ref updated
   useEffect(() => {
     onValidationChangeRef.current = onValidationChange;
   });
 
-  const validate = useCallback(async (val: string) => {
-    // No rules = always valid
-    if (rules.length === 0) {
-      setValidationState("idle");
-      return;
-    }
-
-    // Empty value with no required rule = idle
-    if (!val && !rules.some(r => r.message.toLowerCase().includes("required"))) {
-      setValidationState("idle");
-      setErrorMessage(null);
-      return;
-    }
-
-    setValidationState("validating");
-    
-    for (const rule of rules) {
-      try {
-        const result = await rule.validate(val);
-        if (!result) {
-          setValidationState("error");
-          setErrorMessage(rule.message);
-          onValidationChangeRef.current?.(false, rule.message);
-          return;
-        }
-      } catch {
-        setValidationState("error");
-        setErrorMessage("Validation failed");
-        onValidationChangeRef.current?.(false, "Validation failed");
+  const validate = useCallback(
+    async (val: string) => {
+      // No rules = always valid
+      if (rules.length === 0) {
+        setValidationState("idle");
         return;
       }
-    }
 
-    setValidationState("valid");
-    setErrorMessage(null);
-    onValidationChangeRef.current?.(true);
-  }, [rules]);
+      // Empty value with no required rule = idle
+      if (
+        !val &&
+        !rules.some((r) => r.message.toLowerCase().includes("required"))
+      ) {
+        setValidationState("idle");
+        setErrorMessage(null);
+        return;
+      }
+
+      setValidationState("validating");
+
+      for (const rule of rules) {
+        try {
+          const result = await rule.validate(val);
+          if (!result) {
+            setValidationState("error");
+            setErrorMessage(rule.message);
+            onValidationChangeRef.current?.(false, rule.message);
+            return;
+          }
+        } catch {
+          setValidationState("error");
+          setErrorMessage("Validation failed");
+          onValidationChangeRef.current?.(false, "Validation failed");
+          return;
+        }
+      }
+
+      setValidationState("valid");
+      setErrorMessage(null);
+      onValidationChangeRef.current?.(true);
+    },
+    [rules],
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -131,15 +139,20 @@ export function ValidatedInput({
     };
   }, []);
 
-  const showSuccess = validationState === "valid" && touched && showSuccessState;
+  const showSuccess =
+    validationState === "valid" && touched && showSuccessState;
   const showError = validationState === "error" && touched;
 
   const inputClassName = cn(
     className,
     // Add padding-right for the icon
-    touched && (validationState === "valid" || validationState === "error" || validationState === "validating") && "pr-10",
+    touched &&
+      (validationState === "valid" ||
+        validationState === "error" ||
+        validationState === "validating") &&
+      "pr-10",
     showError && "border-destructive focus-visible:ring-destructive/50",
-    showSuccess && "border-success focus-visible:ring-success/50"
+    showSuccess && "border-success focus-visible:ring-success/50",
   );
 
   return (
@@ -158,12 +171,8 @@ export function ValidatedInput({
             {validationState === "validating" && (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             )}
-            {showSuccess && (
-              <Check className="h-4 w-4 text-success" />
-            )}
-            {showError && (
-              <AlertCircle className="h-4 w-4 text-destructive" />
-            )}
+            {showSuccess && <Check className="h-4 w-4 text-success" />}
+            {showError && <AlertCircle className="h-4 w-4 text-destructive" />}
           </div>
         )}
       </div>
@@ -197,32 +206,32 @@ export const ValidationRules = {
     validate: (value) => value.trim().length > 0,
     message,
   }),
-  
+
   minLength: (min: number, message?: string): ValidationRule => ({
     validate: (value) => value.length >= min,
     message: message || `Must be at least ${min} characters`,
   }),
-  
+
   maxLength: (max: number, message?: string): ValidationRule => ({
     validate: (value) => value.length <= max,
     message: message || `Must be at most ${max} characters`,
   }),
-  
+
   pattern: (regex: RegExp, message: string): ValidationRule => ({
     validate: (value) => regex.test(value),
     message,
   }),
-  
+
   email: (message = "Please enter a valid email"): ValidationRule => ({
     validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
     message,
   }),
-  
+
   number: (message = "Must be a valid number"): ValidationRule => ({
     validate: (value) => !isNaN(Number(value)) && value.trim() !== "",
     message,
   }),
-  
+
   positiveNumber: (message = "Must be a positive number"): ValidationRule => ({
     validate: (value) => {
       const num = Number(value);
@@ -230,14 +239,13 @@ export const ValidationRules = {
     },
     message,
   }),
-  
+
   /** Custom async validator */
   async: (
     validateFn: (value: string) => Promise<boolean>,
-    message: string
+    message: string,
   ): ValidationRule => ({
     validate: validateFn,
     message,
   }),
 };
-

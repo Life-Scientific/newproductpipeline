@@ -4,7 +4,8 @@ import { FuzzySearchMultiSelect } from "./FuzzySearchMultiSelect";
 import { searchUseGroups } from "@/lib/actions/search";
 import type { Database } from "@/lib/supabase/database.types";
 
-type UseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
+type UseGroup =
+  Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 
 interface UseGroupMultiSelectProps {
   selected: string[];
@@ -42,7 +43,9 @@ export function UseGroupMultiSelect({
           limit: 200,
         })
       }
-      getOptionValue={(item) => item.formulation_country_use_group_id || item.use_group_variant || ""}
+      getOptionValue={(item) =>
+        item.formulation_country_use_group_id || item.use_group_variant || ""
+      }
       getOptionLabel={(item) => {
         if (item.display_name) return item.display_name;
         if (item.use_group_variant && item.use_group_name) {
@@ -66,9 +69,3 @@ export function UseGroupMultiSelect({
     />
   );
 }
-
-
-
-
-
-

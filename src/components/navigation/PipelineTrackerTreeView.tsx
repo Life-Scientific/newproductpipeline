@@ -2,20 +2,35 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, ChevronDown, Globe, FileText, DollarSign, Building2, FlaskConical } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronDown,
+  Globe,
+  FileText,
+  DollarSign,
+  Building2,
+  FlaskConical,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import type { Database } from "@/lib/supabase/database.types";
 import { getStatusVariant } from "@/lib/design-system";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
-type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
-type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
+type Formulation =
+  Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type FormulationCountryDetail =
+  Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
+type FormulationCountryUseGroup =
+  Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
 interface PipelineTrackerTreeViewProps {
@@ -32,9 +47,15 @@ export function PipelineTrackerTreeView({
   businessCases,
 }: PipelineTrackerTreeViewProps) {
   const { formatCurrencyCompact } = useDisplayPreferences();
-  const [expandedFormulations, setExpandedFormulations] = useState<Set<string>>(new Set());
-  const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
-  const [expandedUseGroups, setExpandedUseGroups] = useState<Set<string>>(new Set());
+  const [expandedFormulations, setExpandedFormulations] = useState<Set<string>>(
+    new Set(),
+  );
+  const [expandedCountries, setExpandedCountries] = useState<Set<string>>(
+    new Set(),
+  );
+  const [expandedUseGroups, setExpandedUseGroups] = useState<Set<string>>(
+    new Set(),
+  );
   const [searchTerm, setSearchTerm] = useState("");
 
   const toggleFormulation = (formulationCode: string) => {
@@ -68,9 +89,15 @@ export function PipelineTrackerTreeView({
   };
 
   const expandAll = () => {
-    setExpandedFormulations(new Set(formulations.map(f => f.formulation_code || "")));
-    setExpandedCountries(new Set(countries.map(c => c.formulation_country_id || "")));
-    setExpandedUseGroups(new Set(useGroups.map(ug => ug.formulation_country_use_group_id || "")));
+    setExpandedFormulations(
+      new Set(formulations.map((f) => f.formulation_code || "")),
+    );
+    setExpandedCountries(
+      new Set(countries.map((c) => c.formulation_country_id || "")),
+    );
+    setExpandedUseGroups(
+      new Set(useGroups.map((ug) => ug.formulation_country_use_group_id || "")),
+    );
   };
 
   const collapseAll = () => {
@@ -80,47 +107,63 @@ export function PipelineTrackerTreeView({
   };
 
   // Group countries by formulation code
-  const countriesByFormulation = countries.reduce((acc, country) => {
-    const code = country.formulation_code || "";
-    if (!acc[code]) {
-      acc[code] = [];
-    }
-    acc[code].push(country);
-    return acc;
-  }, {} as Record<string, FormulationCountryDetail[]>);
+  const countriesByFormulation = countries.reduce(
+    (acc, country) => {
+      const code = country.formulation_code || "";
+      if (!acc[code]) {
+        acc[code] = [];
+      }
+      acc[code].push(country);
+      return acc;
+    },
+    {} as Record<string, FormulationCountryDetail[]>,
+  );
 
   // Group use groups by country ID
-  const useGroupsByCountry = useGroups.reduce((acc, useGroup) => {
-    const countryId = useGroup.formulation_country_id || "";
-    if (!acc[countryId]) {
-      acc[countryId] = [];
-    }
-    acc[countryId].push(useGroup);
-    return acc;
-  }, {} as Record<string, FormulationCountryUseGroup[]>);
+  const useGroupsByCountry = useGroups.reduce(
+    (acc, useGroup) => {
+      const countryId = useGroup.formulation_country_id || "";
+      if (!acc[countryId]) {
+        acc[countryId] = [];
+      }
+      acc[countryId].push(useGroup);
+      return acc;
+    },
+    {} as Record<string, FormulationCountryUseGroup[]>,
+  );
 
   // Group business cases by use group ID
-  const businessCasesByUseGroup = businessCases.reduce((acc, bc) => {
-    if (bc.formulation_country_use_group_id) {
-      const useGroupId = bc.formulation_country_use_group_id;
-      if (!acc[useGroupId]) {
-        acc[useGroupId] = [];
+  const businessCasesByUseGroup = businessCases.reduce(
+    (acc, bc) => {
+      if (bc.formulation_country_use_group_id) {
+        const useGroupId = bc.formulation_country_use_group_id;
+        if (!acc[useGroupId]) {
+          acc[useGroupId] = [];
+        }
+        acc[useGroupId].push(bc);
       }
-      acc[useGroupId].push(bc);
-    }
-    return acc;
-  }, {} as Record<string, BusinessCase[]>);
+      return acc;
+    },
+    {} as Record<string, BusinessCase[]>,
+  );
 
   // Use hook's formatCurrency
   const formatCurrency = formatCurrencyCompact;
 
   // Filter formulations based on search
-  const filteredFormulations = formulations.filter(f => {
+  const filteredFormulations = formulations.filter((f) => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (
       f.formulation_code?.toLowerCase().includes(term) ||
-      ("formulation_name" in f ? (f as any).formulation_name : ("product_name" in f ? f.product_name : null))?.toLowerCase().includes(term)
+      ("formulation_name" in f
+        ? (f as any).formulation_name
+        : "product_name" in f
+          ? f.product_name
+          : null
+      )
+        ?.toLowerCase()
+        .includes(term)
     );
   });
 
@@ -164,7 +207,9 @@ export function PipelineTrackerTreeView({
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Business Cases</p>
-              <p className="text-lg font-semibold">{countUniqueBusinessCaseGroups(businessCases)}</p>
+              <p className="text-lg font-semibold">
+                {countUniqueBusinessCaseGroups(businessCases)}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -181,8 +226,10 @@ export function PipelineTrackerTreeView({
             ) : (
               filteredFormulations.map((formulation) => {
                 const formulationCode = formulation.formulation_code || "";
-                const isFormulationExpanded = expandedFormulations.has(formulationCode);
-                const formulationCountries = countriesByFormulation[formulationCode] || [];
+                const isFormulationExpanded =
+                  expandedFormulations.has(formulationCode);
+                const formulationCountries =
+                  countriesByFormulation[formulationCode] || [];
 
                 return (
                   <Collapsible
@@ -214,21 +261,75 @@ export function PipelineTrackerTreeView({
                             className="w-full justify-start h-auto p-3 hover:bg-muted border rounded-lg"
                           >
                             <FlaskConical className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
-                            <span className="font-semibold truncate">{formulationCode}</span>
-                            {("formulation_name" in formulation ? (formulation as any).formulation_name : ("product_name" in formulation ? formulation.product_name : null)) && (
+                            <span className="font-semibold truncate">
+                              {formulationCode}
+                            </span>
+                            {("formulation_name" in formulation
+                              ? (formulation as any).formulation_name
+                              : "product_name" in formulation
+                                ? formulation.product_name
+                                : null) && (
                               <span className="text-muted-foreground ml-2 truncate hidden sm:inline">
-                                {("formulation_name" in formulation ? (formulation as any).formulation_name : ("product_name" in formulation ? formulation.product_name : null)) as string}
+                                {
+                                  ("formulation_name" in formulation
+                                    ? (formulation as any).formulation_name
+                                    : "product_name" in formulation
+                                      ? formulation.product_name
+                                      : null) as string
+                                }
                               </span>
                             )}
                             <div className="ml-auto flex items-center gap-2 flex-shrink-0">
-                              {("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) && (
-                                <Badge variant={getStatusVariant(("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) as string, 'formulation')} className="text-xs">
-                                  {("formulation_status" in formulation ? (formulation as any).formulation_status : ("status" in formulation ? formulation.status : null)) as string}
+                              {("formulation_status" in formulation
+                                ? (formulation as any).formulation_status
+                                : "status" in formulation
+                                  ? formulation.status
+                                  : null) && (
+                                <Badge
+                                  variant={getStatusVariant(
+                                    ("formulation_status" in formulation
+                                      ? (formulation as any).formulation_status
+                                      : "status" in formulation
+                                        ? formulation.status
+                                        : null) as string,
+                                    "formulation",
+                                  )}
+                                  className="text-xs"
+                                >
+                                  {
+                                    ("formulation_status" in formulation
+                                      ? (formulation as any).formulation_status
+                                      : "status" in formulation
+                                        ? formulation.status
+                                        : null) as string
+                                  }
                                 </Badge>
                               )}
-                              {("formulation_readiness" in formulation ? (formulation as any).formulation_readiness : ("readiness" in formulation ? formulation.readiness : null)) && (
-                                <Badge variant={getStatusVariant(("formulation_readiness" in formulation ? (formulation as any).formulation_readiness : ("readiness" in formulation ? formulation.readiness : null)) as string, 'country')} className="text-xs">
-                                  {("formulation_readiness" in formulation ? (formulation as any).formulation_readiness : ("readiness" in formulation ? formulation.readiness : null)) as string}
+                              {("formulation_readiness" in formulation
+                                ? (formulation as any).formulation_readiness
+                                : "readiness" in formulation
+                                  ? formulation.readiness
+                                  : null) && (
+                                <Badge
+                                  variant={getStatusVariant(
+                                    ("formulation_readiness" in formulation
+                                      ? (formulation as any)
+                                          .formulation_readiness
+                                      : "readiness" in formulation
+                                        ? formulation.readiness
+                                        : null) as string,
+                                    "country",
+                                  )}
+                                  className="text-xs"
+                                >
+                                  {
+                                    ("formulation_readiness" in formulation
+                                      ? (formulation as any)
+                                          .formulation_readiness
+                                      : "readiness" in formulation
+                                        ? formulation.readiness
+                                        : null) as string
+                                  }
                                 </Badge>
                               )}
                               <Badge variant="outline" className="text-xs">
@@ -242,12 +343,17 @@ export function PipelineTrackerTreeView({
                       <CollapsibleContent>
                         <div className="ml-6 space-y-2">
                           {formulationCountries.length === 0 ? (
-                            <div className="text-sm text-muted-foreground ml-4">No countries</div>
+                            <div className="text-sm text-muted-foreground ml-4">
+                              No countries
+                            </div>
                           ) : (
                             formulationCountries.map((country) => {
-                              const countryId = country.formulation_country_id || "";
-                              const isCountryExpanded = expandedCountries.has(countryId);
-                              const countryUseGroups = useGroupsByCountry[countryId] || [];
+                              const countryId =
+                                country.formulation_country_id || "";
+                              const isCountryExpanded =
+                                expandedCountries.has(countryId);
+                              const countryUseGroups =
+                                useGroupsByCountry[countryId] || [];
 
                               return (
                                 <Collapsible
@@ -279,19 +385,36 @@ export function PipelineTrackerTreeView({
                                           className="w-full justify-start h-auto p-2 hover:bg-muted border rounded-lg text-sm"
                                         >
                                           <Globe className="h-3 w-3 mr-1 text-muted-foreground flex-shrink-0" />
-                                          <span className="font-medium truncate">{country.country_name}</span>
+                                          <span className="font-medium truncate">
+                                            {country.country_name}
+                                          </span>
                                           <div className="ml-auto flex items-center gap-1 flex-shrink-0">
                                             {country.country_status && (
-                                              <Badge variant={getStatusVariant(country.country_status, 'country')} className="text-xs">
+                                              <Badge
+                                                variant={getStatusVariant(
+                                                  country.country_status,
+                                                  "country",
+                                                )}
+                                                className="text-xs"
+                                              >
                                                 {country.country_status}
                                               </Badge>
                                             )}
                                             {country.readiness && (
-                                              <Badge variant={getStatusVariant(country.readiness, 'country')} className="text-xs">
+                                              <Badge
+                                                variant={getStatusVariant(
+                                                  country.readiness,
+                                                  "country",
+                                                )}
+                                                className="text-xs"
+                                              >
                                                 {country.readiness}
                                               </Badge>
                                             )}
-                                            <Badge variant="outline" className="text-xs">
+                                            <Badge
+                                              variant="outline"
+                                              className="text-xs"
+                                            >
                                               {countryUseGroups.length} UG
                                             </Badge>
                                           </div>
@@ -302,18 +425,28 @@ export function PipelineTrackerTreeView({
                                     <CollapsibleContent>
                                       <div className="ml-6 space-y-1">
                                         {countryUseGroups.length === 0 ? (
-                                          <div className="text-xs text-muted-foreground ml-4">No use groups</div>
+                                          <div className="text-xs text-muted-foreground ml-4">
+                                            No use groups
+                                          </div>
                                         ) : (
                                           countryUseGroups.map((useGroup) => {
-                                            const useGroupId = useGroup.formulation_country_use_group_id || "";
-                                            const isUseGroupExpanded = expandedUseGroups.has(useGroupId);
-                                            const useGroupBusinessCases = businessCasesByUseGroup[useGroupId] || [];
+                                            const useGroupId =
+                                              useGroup.formulation_country_use_group_id ||
+                                              "";
+                                            const isUseGroupExpanded =
+                                              expandedUseGroups.has(useGroupId);
+                                            const useGroupBusinessCases =
+                                              businessCasesByUseGroup[
+                                                useGroupId
+                                              ] || [];
 
                                             return (
                                               <Collapsible
                                                 key={useGroupId}
                                                 open={isUseGroupExpanded}
-                                                onOpenChange={() => toggleUseGroup(useGroupId)}
+                                                onOpenChange={() =>
+                                                  toggleUseGroup(useGroupId)
+                                                }
                                               >
                                                 <div className="space-y-1">
                                                   <div className="flex items-center gap-1">
@@ -340,16 +473,38 @@ export function PipelineTrackerTreeView({
                                                       >
                                                         <FileText className="h-3 w-3 mr-1 text-muted-foreground flex-shrink-0" />
                                                         <span className="truncate">
-                                                          {useGroup.use_group_variant} - {useGroup.use_group_name}
+                                                          {
+                                                            useGroup.use_group_variant
+                                                          }{" "}
+                                                          -{" "}
+                                                          {
+                                                            useGroup.use_group_name
+                                                          }
                                                         </span>
                                                         <div className="ml-auto flex items-center gap-1 flex-shrink-0">
                                                           {useGroup.use_group_status && (
-                                                            <Badge variant={useGroup.use_group_status === "Active" ? "success" : "outline"} className="text-xs">
-                                                              {useGroup.use_group_status}
+                                                            <Badge
+                                                              variant={
+                                                                useGroup.use_group_status ===
+                                                                "Active"
+                                                                  ? "success"
+                                                                  : "outline"
+                                                              }
+                                                              className="text-xs"
+                                                            >
+                                                              {
+                                                                useGroup.use_group_status
+                                                              }
                                                             </Badge>
                                                           )}
-                                                          <Badge variant="outline" className="text-xs">
-                                                            {countUniqueBusinessCaseGroups(useGroupBusinessCases)} BC
+                                                          <Badge
+                                                            variant="outline"
+                                                            className="text-xs"
+                                                          >
+                                                            {countUniqueBusinessCaseGroups(
+                                                              useGroupBusinessCases,
+                                                            )}{" "}
+                                                            BC
                                                           </Badge>
                                                         </div>
                                                       </Button>
@@ -358,28 +513,44 @@ export function PipelineTrackerTreeView({
 
                                                   <CollapsibleContent>
                                                     <div className="ml-6 space-y-1">
-                                                      {useGroupBusinessCases.length === 0 ? (
-                                                        <div className="text-xs text-muted-foreground ml-4">No business cases</div>
+                                                      {useGroupBusinessCases.length ===
+                                                      0 ? (
+                                                        <div className="text-xs text-muted-foreground ml-4">
+                                                          No business cases
+                                                        </div>
                                                       ) : (
-                                                        useGroupBusinessCases.map((bc) => (
-                                                          <Link
-                                                            key={bc.business_case_id}
-                                                            href={`/portfolio/business-cases/${bc.business_case_id}`}
-                                                          >
-                                                            <Button
-                                                              variant="ghost"
-                                                              className="w-full justify-start h-auto p-2 hover:bg-muted text-xs"
+                                                        useGroupBusinessCases.map(
+                                                          (bc) => (
+                                                            <Link
+                                                              key={
+                                                                bc.business_case_id
+                                                              }
+                                                              href={`/portfolio/business-cases/${bc.business_case_id}`}
                                                             >
-                                                              <DollarSign className="h-3 w-3 mr-1 text-muted-foreground flex-shrink-0" />
-                                                              <span className="truncate">
-                                                                FY{bc.fiscal_year} - Year {bc.year_offset}
-                                                              </span>
-                                                              <span className="ml-auto font-semibold flex-shrink-0">
-                                                                {formatCurrency(bc.total_revenue)}
-                                                              </span>
-                                                            </Button>
-                                                          </Link>
-                                                        ))
+                                                              <Button
+                                                                variant="ghost"
+                                                                className="w-full justify-start h-auto p-2 hover:bg-muted text-xs"
+                                                              >
+                                                                <DollarSign className="h-3 w-3 mr-1 text-muted-foreground flex-shrink-0" />
+                                                                <span className="truncate">
+                                                                  FY
+                                                                  {
+                                                                    bc.fiscal_year
+                                                                  }{" "}
+                                                                  - Year{" "}
+                                                                  {
+                                                                    bc.year_offset
+                                                                  }
+                                                                </span>
+                                                                <span className="ml-auto font-semibold flex-shrink-0">
+                                                                  {formatCurrency(
+                                                                    bc.total_revenue,
+                                                                  )}
+                                                                </span>
+                                                              </Button>
+                                                            </Link>
+                                                          ),
+                                                        )
                                                       )}
                                                     </div>
                                                   </CollapsibleContent>

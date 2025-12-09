@@ -36,4 +36,3 @@ export const AuthGL = ({ hovering = false }: { hovering?: boolean }) => {
     </div>
   );
 };
-

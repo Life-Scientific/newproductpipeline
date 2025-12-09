@@ -4,18 +4,23 @@ import { MarketsClient } from "./MarketsClient";
 import { createClient } from "@/lib/supabase/server";
 
 // Force dynamic rendering
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function MarketsPage() {
   const supabase = await createClient();
-  
-  const [formulations, businessCases, countriesResult, registrationPipeline] = await Promise.all([
-    getFormulations(),
-    getBusinessCases(),
-    supabase.from("countries").select("*").eq("is_active", true).order("country_name"),
-    supabase.from("vw_registration_pipeline").select("*"),
-  ]);
+
+  const [formulations, businessCases, countriesResult, registrationPipeline] =
+    await Promise.all([
+      getFormulations(),
+      getBusinessCases(),
+      supabase
+        .from("countries")
+        .select("*")
+        .eq("is_active", true)
+        .order("country_name"),
+      supabase.from("vw_registration_pipeline").select("*"),
+    ]);
 
   const countries = countriesResult.data || [];
   const registrations = registrationPipeline.data || [];
@@ -42,6 +47,3 @@ export default async function MarketsPage() {
     </div>
   );
 }
-
-
-

@@ -1,6 +1,6 @@
 /**
  * DnD-enabled Table Wrapper
- * 
+ *
  * This component is loaded dynamically only when column reordering is enabled.
  * It wraps the table content with DnD context and sortable functionality.
  */
@@ -58,32 +58,34 @@ const SortableHeaderCell = React.memo(function SortableHeaderCell({
     transform,
     transition,
     isDragging,
-  } = useSortable({ 
+  } = useSortable({
     id: columnId,
     transition: {
       duration: 200,
-      easing: 'ease-in-out',
+      easing: "ease-in-out",
     },
   });
 
   const style = React.useMemo(
     () => ({
       transform: CSS.Transform.toString(transform),
-      transition: isDragging ? 'none' : transition,
+      transition: isDragging ? "none" : transition,
       opacity: isDragging ? 0.6 : 1,
-      backgroundColor: isDragging ? 'hsl(var(--muted))' : undefined,
-      boxShadow: isDragging ? '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' : undefined,
-      borderRadius: isDragging ? '4px' : undefined,
+      backgroundColor: isDragging ? "hsl(var(--muted))" : undefined,
+      boxShadow: isDragging
+        ? "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)"
+        : undefined,
+      borderRadius: isDragging ? "4px" : undefined,
       ...stickyStyle,
     }),
-    [transform, transition, isDragging, stickyStyle]
+    [transform, transition, isDragging, stickyStyle],
   );
 
   return (
-    <TableHead 
-      ref={setNodeRef} 
-      style={style} 
-      className={`relative h-10 ${isDragging ? 'z-50' : ''}`}
+    <TableHead
+      ref={setNodeRef}
+      style={style}
+      className={`relative h-10 ${isDragging ? "z-50" : ""}`}
     >
       <div className="flex items-center gap-2 h-full">
         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -111,42 +113,45 @@ interface MemoizedTableCellProps {
 /**
  * Memoized table cell component
  */
-const MemoizedTableCell = React.memo(function MemoizedTableCell({
-  cell,
-  stickyStyle,
-  align,
-  minWidth,
-}: MemoizedTableCellProps) {
-  return (
-    <TableCell
-      className="py-3"
-      style={{
-        textAlign: align as any,
-        minWidth,
-        ...stickyStyle,
-      }}
-    >
-      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-    </TableCell>
-  );
-}, (prevProps, nextProps) => {
-  if (prevProps.cell.id !== nextProps.cell.id) return false;
-  if (prevProps.align !== nextProps.align) return false;
-  if (prevProps.minWidth !== nextProps.minWidth) return false;
-  if (prevProps.cell.column.id !== nextProps.cell.column.id) return false;
-  
-  const prev = prevProps.stickyStyle;
-  const next = nextProps.stickyStyle;
-  if (!prev && !next) return true;
-  if (!prev || !next) return false;
-  if (prev.position !== next.position) return false;
-  if (prev.left !== next.left) return false;
-  if (prev.right !== next.right) return false;
-  if (prev.zIndex !== next.zIndex) return false;
-  if (prev.backgroundColor !== next.backgroundColor) return false;
-  
-  return true;
-});
+const MemoizedTableCell = React.memo(
+  function MemoizedTableCell({
+    cell,
+    stickyStyle,
+    align,
+    minWidth,
+  }: MemoizedTableCellProps) {
+    return (
+      <TableCell
+        className="py-3"
+        style={{
+          textAlign: align as any,
+          minWidth,
+          ...stickyStyle,
+        }}
+      >
+        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+      </TableCell>
+    );
+  },
+  (prevProps, nextProps) => {
+    if (prevProps.cell.id !== nextProps.cell.id) return false;
+    if (prevProps.align !== nextProps.align) return false;
+    if (prevProps.minWidth !== nextProps.minWidth) return false;
+    if (prevProps.cell.column.id !== nextProps.cell.column.id) return false;
+
+    const prev = prevProps.stickyStyle;
+    const next = nextProps.stickyStyle;
+    if (!prev && !next) return true;
+    if (!prev || !next) return false;
+    if (prev.position !== next.position) return false;
+    if (prev.left !== next.left) return false;
+    if (prev.right !== next.right) return false;
+    if (prev.zIndex !== next.zIndex) return false;
+    if (prev.backgroundColor !== next.backgroundColor) return false;
+
+    return true;
+  },
+);
 
 export interface DndTableProps {
   table: any;
@@ -182,7 +187,7 @@ export function DndTable({
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // Handle column reordering
@@ -197,7 +202,7 @@ export function DndTable({
         onColumnOrderChange(newOrder);
       }
     },
-    [table, onColumnOrderChange]
+    [table, onColumnOrderChange],
   );
 
   return (
@@ -220,15 +225,19 @@ export function DndTable({
                 strategy={horizontalListSortingStrategy}
               >
                 {headerGroup.headers.map((header: any) => {
-                  const columnId = header.column.id || ((header.column.columnDef as any).accessorKey as string);
-                  const meta = header.column.columnDef.meta as {
-                    align?: string;
-                    minWidth?: string;
-                    sticky?: "left" | "right";
-                    enableReordering?: boolean;
-                  } | undefined;
+                  const columnId =
+                    header.column.id ||
+                    ((header.column.columnDef as any).accessorKey as string);
+                  const meta = header.column.columnDef.meta as
+                    | {
+                        align?: string;
+                        minWidth?: string;
+                        sticky?: "left" | "right";
+                        enableReordering?: boolean;
+                      }
+                    | undefined;
                   const stickyStyle = headerStylesMap.get(columnId);
-                  
+
                   // Check if column is reorderable (default true unless explicitly disabled)
                   const isReorderable = meta?.enableReordering !== false;
 
@@ -250,7 +259,10 @@ export function DndTable({
                     >
                       {header.isPlaceholder
                         ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
                   );
                 })}
@@ -261,7 +273,10 @@ export function DndTable({
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center py-6">
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center py-6"
+              >
                 <p className="text-sm text-muted-foreground">Loading...</p>
               </TableCell>
             </TableRow>
@@ -273,12 +288,16 @@ export function DndTable({
                 className={`h-12 hover:bg-muted/30 border-border/40 ${getRowClassName ? getRowClassName(row.original, index) : ""}`}
               >
                 {row.getVisibleCells().map((cell: any) => {
-                  const columnId = cell.column.id || ((cell.column.columnDef as any).accessorKey as string);
-                  const meta = cell.column.columnDef.meta as {
-                    align?: string;
-                    sticky?: "left" | "right";
-                    minWidth?: string;
-                  } | undefined;
+                  const columnId =
+                    cell.column.id ||
+                    ((cell.column.columnDef as any).accessorKey as string);
+                  const meta = cell.column.columnDef.meta as
+                    | {
+                        align?: string;
+                        sticky?: "left" | "right";
+                        minWidth?: string;
+                      }
+                    | undefined;
                   const stickyStyle = columnStylesMap.get(columnId);
 
                   return (
@@ -295,7 +314,10 @@ export function DndTable({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center py-6">
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center py-6"
+              >
                 <p className="text-sm text-muted-foreground">{emptyMessage}</p>
               </TableCell>
             </TableRow>
@@ -305,4 +327,3 @@ export function DndTable({
     </DndContext>
   );
 }
-

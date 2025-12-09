@@ -6,7 +6,12 @@ import { CountryList } from "@/components/countries/CountryList";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
-import { useFilterOptions, type ReferenceFormulation, type ReferenceCountry, type FilterableBusinessCase } from "@/hooks/use-filter-options";
+import {
+  useFilterOptions,
+  type ReferenceFormulation,
+  type ReferenceCountry,
+  type FilterableBusinessCase,
+} from "@/hooks/use-filter-options";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { computeFilteredCounts } from "@/lib/utils/filter-counts";
 import type { CountryWithStats } from "@/lib/db/countries";
@@ -39,9 +44,9 @@ function CountriesContent({
   // since it's focused on geographic data, not formulation selection status
   const { filters } = usePortfolioFilters({
     formulationStatuses: [], // No default formulation status filter for countries page
-    countryStatuses: [],     // No default country status filter - show all countries
+    countryStatuses: [], // No default country status filter - show all countries
   });
-  
+
   // Ensure filters object is fully initialized (defensive check)
   const safeFilters = {
     countries: filters?.countries ?? [],
@@ -69,8 +74,8 @@ function CountriesContent({
     }
     return formulationCountries.map((fc) => ({
       ...fc,
-      formulation_status: fc.formulation_code 
-        ? (formulationStatusMap.get(fc.formulation_code) || null)
+      formulation_status: fc.formulation_code
+        ? formulationStatusMap.get(fc.formulation_code) || null
         : null,
     }));
   }, [formulationCountries, formulationStatusMap]);
@@ -113,7 +118,7 @@ function CountriesContent({
     referenceCountriesData,
     filterableBusinessCases,
     null, // No formulation_country data needed for countries page
-    safeFilters
+    safeFilters,
   );
 
   // Filter business cases based on global filters
@@ -121,21 +126,30 @@ function CountriesContent({
     return businessCases.filter((bc) => {
       // Country filter - safeFilters.countries contains country codes
       if (safeFilters.countries.length > 0) {
-        if (!bc.country_code || !safeFilters.countries.includes(bc.country_code)) {
+        if (
+          !bc.country_code ||
+          !safeFilters.countries.includes(bc.country_code)
+        ) {
           return false;
         }
       }
 
       // Formulation filter - safeFilters.formulations contains codes
       if (safeFilters.formulations.length > 0) {
-        if (!bc.formulation_code || !safeFilters.formulations.includes(bc.formulation_code)) {
+        if (
+          !bc.formulation_code ||
+          !safeFilters.formulations.includes(bc.formulation_code)
+        ) {
           return false;
         }
       }
 
       // Use group filter (by name)
       if (safeFilters.useGroups.length > 0) {
-        if (!bc.use_group_name || !safeFilters.useGroups.includes(bc.use_group_name)) {
+        if (
+          !bc.use_group_name ||
+          !safeFilters.useGroups.includes(bc.use_group_name)
+        ) {
           return false;
         }
       }
@@ -177,16 +191,20 @@ function CountriesContent({
     return countries.filter((country) => {
       // Country filter - direct match
       if (safeFilters.countries.length > 0) {
-        if (!country.country_code || !safeFilters.countries.includes(country.country_code)) {
+        if (
+          !country.country_code ||
+          !safeFilters.countries.includes(country.country_code)
+        ) {
           return false;
         }
       }
 
       // If we have formulation/formulation status/country status/use group filters,
       // only show countries that have matching business cases
-      const hasFormulationFilters = safeFilters.formulations.length > 0 || 
-                                    safeFilters.formulationStatuses.length > 0 ||
-                                    safeFilters.useGroups.length > 0;
+      const hasFormulationFilters =
+        safeFilters.formulations.length > 0 ||
+        safeFilters.formulationStatuses.length > 0 ||
+        safeFilters.useGroups.length > 0;
       const hasCountryStatusFilters = safeFilters.countryStatuses.length > 0;
 
       if (hasFormulationFilters || hasCountryStatusFilters) {
@@ -204,13 +222,19 @@ function CountriesContent({
     return enrichedFormulationCountries.filter((fc) => {
       // Country filter
       if (safeFilters.countries.length > 0) {
-        if (!fc.country_code || !safeFilters.countries.includes(fc.country_code)) {
+        if (
+          !fc.country_code ||
+          !safeFilters.countries.includes(fc.country_code)
+        ) {
           return false;
         }
       }
       // Formulation filter
       if (safeFilters.formulations.length > 0) {
-        if (!fc.formulation_code || !safeFilters.formulations.includes(fc.formulation_code)) {
+        if (
+          !fc.formulation_code ||
+          !safeFilters.formulations.includes(fc.formulation_code)
+        ) {
           return false;
         }
       }
@@ -241,17 +265,29 @@ function CountriesContent({
       { includeOrphanFormulations: false }, // Countries page only shows intersection
       {
         businessCases: filteredBusinessCases,
-      }
+      },
     );
-  }, [formulations, filteredFormulationCountries, safeFilters, filteredBusinessCases]);
+  }, [
+    formulations,
+    filteredFormulationCountries,
+    safeFilters,
+    filteredBusinessCases,
+  ]);
 
   return (
     <>
-      <GlobalFilterBar filterOptions={filterOptions} defaultExpanded={true} filteredCounts={filteredCounts} />
+      <GlobalFilterBar
+        filterOptions={filterOptions}
+        defaultExpanded={true}
+        filteredCounts={filteredCounts}
+      />
       <Card>
         <CardContent className="p-0">
           <div className="p-6">
-            <CountryList countries={filteredCountries} businessCases={filteredBusinessCases} />
+            <CountryList
+              countries={filteredCountries}
+              businessCases={filteredBusinessCases}
+            />
           </div>
         </CardContent>
       </Card>

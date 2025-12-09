@@ -1,8 +1,21 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -14,7 +27,7 @@ interface FormulationCOGSProps {
 
 export function FormulationCOGS({ cogs }: FormulationCOGSProps) {
   const { formatCurrency } = useDisplayPreferences();
-  const formatCurrencyValue = (value: number | null | undefined): string => 
+  const formatCurrencyValue = (value: number | null | undefined): string =>
     formatCurrency(value, { compact: false, decimals: 2 });
   if (cogs.length === 0) {
     return (
@@ -44,11 +57,21 @@ export function FormulationCOGS({ cogs }: FormulationCOGSProps) {
                 <TableHead className="min-w-[100px]">Fiscal Year</TableHead>
                 <TableHead className="min-w-[120px]">Country</TableHead>
                 <TableHead className="w-[120px]">Type</TableHead>
-                <TableHead className="w-[120px] text-right">Total COGS</TableHead>
-                <TableHead className="w-[120px] text-right">Raw Materials</TableHead>
-                <TableHead className="w-[120px] text-right">Manufacturing</TableHead>
-                <TableHead className="w-[120px] text-right">Packaging</TableHead>
-                <TableHead className="w-[120px] text-right">Other Costs</TableHead>
+                <TableHead className="w-[120px] text-right">
+                  Total COGS
+                </TableHead>
+                <TableHead className="w-[120px] text-right">
+                  Raw Materials
+                </TableHead>
+                <TableHead className="w-[120px] text-right">
+                  Manufacturing
+                </TableHead>
+                <TableHead className="w-[120px] text-right">
+                  Packaging
+                </TableHead>
+                <TableHead className="w-[120px] text-right">
+                  Other Costs
+                </TableHead>
                 <TableHead className="w-[120px]">Last Updated</TableHead>
               </TableRow>
             </TableHeader>
@@ -56,41 +79,63 @@ export function FormulationCOGS({ cogs }: FormulationCOGSProps) {
               {cogs.map((cog) => (
                 <TableRow key={cog.cogs_id}>
                   <TableCell>
-                    <span className="font-mono font-medium text-sm">{cog.fiscal_year || "—"}</span>
+                    <span className="font-mono font-medium text-sm">
+                      {cog.fiscal_year || "—"}
+                    </span>
                   </TableCell>
                   <TableCell>
                     {cog.country_name ? (
                       <div>
-                        <div className="text-sm font-medium">{cog.country_name}</div>
+                        <div className="text-sm font-medium">
+                          {cog.country_name}
+                        </div>
                         {cog.country_code && (
-                          <div className="text-xs text-muted-foreground">{cog.country_code}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {cog.country_code}
+                          </div>
                         )}
                       </div>
                     ) : (
-                      <Badge variant="outline" className="text-xs">Global</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        Global
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell>
                     {cog.is_country_specific ? (
-                      <Badge variant="default" className="text-xs">Country-Specific</Badge>
+                      <Badge variant="default" className="text-xs">
+                        Country-Specific
+                      </Badge>
                     ) : (
-                      <Badge variant="secondary" className="text-xs">Global</Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        Global
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className="text-sm font-semibold">{formatCurrencyValue(cog.cogs_value)}</span>
+                    <span className="text-sm font-semibold">
+                      {formatCurrencyValue(cog.cogs_value)}
+                    </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className="text-sm">{formatCurrencyValue(cog.raw_material_cost)}</span>
+                    <span className="text-sm">
+                      {formatCurrencyValue(cog.raw_material_cost)}
+                    </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className="text-sm">{formatCurrencyValue(cog.manufacturing_cost)}</span>
+                    <span className="text-sm">
+                      {formatCurrencyValue(cog.manufacturing_cost)}
+                    </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className="text-sm">{formatCurrencyValue(cog.packaging_cost)}</span>
+                    <span className="text-sm">
+                      {formatCurrencyValue(cog.packaging_cost)}
+                    </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <span className="text-sm">{formatCurrencyValue(cog.other_costs)}</span>
+                    <span className="text-sm">
+                      {formatCurrencyValue(cog.other_costs)}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <span className="text-sm text-muted-foreground">
@@ -115,8 +160,14 @@ export function FormulationCOGS({ cogs }: FormulationCOGSProps) {
             {cogs
               .filter((cog) => cog.notes)
               .map((cog) => (
-                <div key={cog.cogs_id} className="text-sm text-muted-foreground">
-                  <strong className="text-foreground">{cog.fiscal_year}:</strong> {cog.notes}
+                <div
+                  key={cog.cogs_id}
+                  className="text-sm text-muted-foreground"
+                >
+                  <strong className="text-foreground">
+                    {cog.fiscal_year}:
+                  </strong>{" "}
+                  {cog.notes}
                 </div>
               ))}
           </div>

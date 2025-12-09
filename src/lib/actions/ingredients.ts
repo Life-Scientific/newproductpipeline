@@ -9,7 +9,9 @@ export async function createIngredient(formData: FormData) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.INGREDIENT_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage ingredients" };
+    return {
+      error: "Unauthorized: You don't have permission to manage ingredients",
+    };
   }
 
   const supabase = await createClient();
@@ -53,11 +55,16 @@ export async function createIngredient(formData: FormData) {
   return { data, success: true };
 }
 
-export async function updateIngredient(ingredientId: string, formData: FormData) {
+export async function updateIngredient(
+  ingredientId: string,
+  formData: FormData,
+) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.INGREDIENT_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage ingredients" };
+    return {
+      error: "Unauthorized: You don't have permission to manage ingredients",
+    };
   }
 
   const supabase = await createClient();
@@ -80,7 +87,8 @@ export async function updateIngredient(ingredientId: string, formData: FormData)
   if (ingredientName !== null) updateData.ingredient_name = ingredientName;
   if (ingredientType !== null) updateData.ingredient_type = ingredientType;
   if (casNumber !== null) updateData.cas_number = casNumber;
-  if (standardDensity !== null) updateData.standard_density_g_per_l = standardDensity;
+  if (standardDensity !== null)
+    updateData.standard_density_g_per_l = standardDensity;
   if (supplyRisk !== null) updateData.supply_risk = supplyRisk;
   if (supplyRiskNotes !== null) updateData.supply_risk_notes = supplyRiskNotes;
   updateData.is_eu_approved = isEuApproved;
@@ -106,12 +114,17 @@ export async function deleteIngredient(ingredientId: string) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.INGREDIENT_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage ingredients" };
+    return {
+      error: "Unauthorized: You don't have permission to manage ingredients",
+    };
   }
 
   const supabase = await createClient();
 
-  const { error } = await supabase.from("ingredients").delete().eq("ingredient_id", ingredientId);
+  const { error } = await supabase
+    .from("ingredients")
+    .delete()
+    .eq("ingredient_id", ingredientId);
 
   if (error) {
     return { error: error.message };
@@ -121,4 +134,3 @@ export async function deleteIngredient(ingredientId: string) {
   revalidatePath("/ingredients");
   return { success: true };
 }
-

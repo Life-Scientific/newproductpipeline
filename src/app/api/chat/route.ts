@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
 const MODELS = {
@@ -39,41 +39,59 @@ async function getPortfolioData() {
     { data: sampleFormulations, error: formError },
   ] = await Promise.all([
     // Dashboard summary - all metrics pre-calculated in DB
-    supabase.from("vw_dashboard_summary").select("*").single(),
-    
+    supabase
+      .from("vw_dashboard_summary")
+      .select("*")
+      .single(),
+
     // Yearly projections - pre-aggregated
-    supabase.from("vw_chart_data_totals_by_year").select("*").order("fiscal_year"),
-    
+    supabase
+      .from("vw_chart_data_totals_by_year")
+      .select("*")
+      .order("fiscal_year"),
+
     // Get ACCURATE status counts using RPC or grouped query
-    supabase.from("formulations")
+    supabase
+      .from("formulations")
       .select("formulation_status")
       .eq("is_active", true),
-    
+
     // Get ACCURATE category counts
-    supabase.from("formulations")
+    supabase
+      .from("formulations")
       .select("formulation_category")
       .eq("is_active", true),
-    
+
     // Top ingredients by usage (pre-aggregated view)
-    supabase.from("vw_ingredient_usage")
-      .select("ingredient_name, ingredient_type, formulation_count, is_eu_approved")
+    supabase
+      .from("vw_ingredient_usage")
+      .select(
+        "ingredient_name, ingredient_type, formulation_count, is_eu_approved",
+      )
       .order("formulation_count", { ascending: false })
       .limit(30),
-    
+
     // Active countries
-    supabase.from("countries")
+    supabase
+      .from("countries")
       .select("country_name, country_code")
       .eq("is_active", true),
-    
+
     // Top 15 business cases by revenue
-    supabase.from("vw_business_case")
-      .select("formulation_name, country_name, total_revenue_eur, total_margin_eur, margin_percentage")
+    supabase
+      .from("vw_business_case")
+      .select(
+        "formulation_name, country_name, total_revenue_eur, total_margin_eur, margin_percentage",
+      )
       .order("total_revenue_eur", { ascending: false })
       .limit(15),
-    
+
     // Sample of formulations (for name/code context only, NOT for counting)
-    supabase.from("vw_formulations_with_ingredients")
-      .select("formulation_name, formulation_code, formulation_status, formulation_category, ingredient_names")
+    supabase
+      .from("vw_formulations_with_ingredients")
+      .select(
+        "formulation_name, formulation_code, formulation_status, formulation_category, ingredient_names",
+      )
       .limit(30),
   ]);
 
@@ -150,7 +168,10 @@ function formatDataContext(data: Awaited<ReturnType<typeof getPortfolioData>>) {
 ## FORMULATION STATUS BREAKDOWN (accurate count from ${totalFormulationsFromCount} formulations)
 ${Object.entries(statusCounts)
   .sort((a, b) => b[1] - a[1])
-  .map(([status, count]) => `- ${status}: ${count} (${((count / totalFormulationsFromCount) * 100).toFixed(1)}%)`)
+  .map(
+    ([status, count]) =>
+      `- ${status}: ${count} (${((count / totalFormulationsFromCount) * 100).toFixed(1)}%)`,
+  )
   .join("\n")}
 
 ## CATEGORY BREAKDOWN (accurate count)
@@ -160,27 +181,47 @@ ${Object.entries(categoryCounts)
   .join("\n")}
 
 ## YEARLY FINANCIAL PROJECTIONS (from vw_chart_data_totals_by_year)
-${yearly.map((y: Record<string, unknown>) => 
-  `- FY${y.fiscal_year}: Revenue €${Math.round(Number(y.total_revenue_eur) || 0).toLocaleString()}, Margin €${Math.round(Number(y.total_margin_eur) || 0).toLocaleString()}`
-).join("\n") || "No yearly data available"}
+${
+  yearly
+    .map(
+      (y: Record<string, unknown>) =>
+        `- FY${y.fiscal_year}: Revenue €${Math.round(Number(y.total_revenue_eur) || 0).toLocaleString()}, Margin €${Math.round(Number(y.total_margin_eur) || 0).toLocaleString()}`,
+    )
+    .join("\n") || "No yearly data available"
+}
 
 ## TOP 15 BUSINESS CASES BY REVENUE
-${topBusinessCases.map((bc, i) => 
-  `${i + 1}. ${bc.formulation_name} (${bc.country_name}): Revenue €${Math.round(Number(bc.total_revenue_eur) || 0).toLocaleString()}, Margin €${Math.round(Number(bc.total_margin_eur) || 0).toLocaleString()} (${bc.margin_percentage?.toFixed(1)}%)`
-).join("\n") || "No business cases"}
+${
+  topBusinessCases
+    .map(
+      (bc, i) =>
+        `${i + 1}. ${bc.formulation_name} (${bc.country_name}): Revenue €${Math.round(Number(bc.total_revenue_eur) || 0).toLocaleString()}, Margin €${Math.round(Number(bc.total_margin_eur) || 0).toLocaleString()} (${bc.margin_percentage?.toFixed(1)}%)`,
+    )
+    .join("\n") || "No business cases"
+}
 
 ## TOP 30 ACTIVE INGREDIENTS (by formulation count)
-${ingredients.map((i, idx) => 
-  `${idx + 1}. ${i.ingredient_name} (${i.ingredient_type}): used in ${i.formulation_count} formulations${i.is_eu_approved ? " ✓EU" : ""}`
-).join("\n") || "No ingredient data"}
+${
+  ingredients
+    .map(
+      (i, idx) =>
+        `${idx + 1}. ${i.ingredient_name} (${i.ingredient_type}): used in ${i.formulation_count} formulations${i.is_eu_approved ? " ✓EU" : ""}`,
+    )
+    .join("\n") || "No ingredient data"
+}
 
 ## ACTIVE MARKETS (${countries.length} countries)
 ${countries.map((c) => c.country_name).join(", ") || "No countries"}
 
 ## SAMPLE FORMULATIONS (30 examples for context - NOT a complete list)
-${sampleFormulations.map((f) => 
-  `- ${f.formulation_code}: ${f.formulation_name} | ${f.formulation_category} | ${f.formulation_status}`
-).join("\n") || "No formulations"}
+${
+  sampleFormulations
+    .map(
+      (f) =>
+        `- ${f.formulation_code}: ${f.formulation_name} | ${f.formulation_category} | ${f.formulation_status}`,
+    )
+    .join("\n") || "No formulations"
+}
 
 === END OF DATA ===`;
 }
@@ -236,13 +277,19 @@ export async function POST(request: Request) {
     });
 
     return new Response(stream, {
-      headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache" },
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache",
+      },
     });
   } catch (error) {
     console.error("Chat API error:", error);
-    return new Response(JSON.stringify({ error: "Failed to process request" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: "Failed to process request" }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 }

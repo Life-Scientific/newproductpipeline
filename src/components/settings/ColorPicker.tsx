@@ -4,7 +4,13 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface ColorPickerProps {
   colorName: string;
@@ -13,7 +19,12 @@ interface ColorPickerProps {
   label?: string;
 }
 
-export function ColorPicker({ colorName, colorValue, onChange, label }: ColorPickerProps) {
+export function ColorPicker({
+  colorName,
+  colorValue,
+  onChange,
+  label,
+}: ColorPickerProps) {
   const [value, setValue] = useState(colorValue);
 
   const handleChange = (newValue: string) => {
@@ -63,4 +74,3 @@ export function ColorPicker({ colorName, colorValue, onChange, label }: ColorPic
     </div>
   );
 }
-

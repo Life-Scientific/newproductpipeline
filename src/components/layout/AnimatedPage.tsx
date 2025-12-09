@@ -52,7 +52,7 @@ export function AnimatedPage({ children }: { children: ReactNode }) {
 /**
  * Container that staggers the entrance of direct children.
  * Each child gets a subtle slide-up + fade-in animation.
- * 
+ *
  * @example
  * ```tsx
  * <AnimatedPageStagger>
@@ -62,11 +62,11 @@ export function AnimatedPage({ children }: { children: ReactNode }) {
  * </AnimatedPageStagger>
  * ```
  */
-export function AnimatedPageStagger({ 
+export function AnimatedPageStagger({
   children,
   className,
   style,
-}: { 
+}: {
   children: ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -88,10 +88,10 @@ export function AnimatedPageStagger({
  * Wrapper for items inside AnimatedPageStagger.
  * Automatically picks up the stagger timing from parent.
  */
-export function AnimatedItem({ 
+export function AnimatedItem({
   children,
   className,
-}: { 
+}: {
   children: ReactNode;
   className?: string;
 }) {
@@ -106,11 +106,11 @@ export function AnimatedItem({
  * A single animated element that fades/slides in when it enters the viewport.
  * Great for lazy-loading sections or infinite scroll items.
  */
-export function AnimatedOnView({ 
+export function AnimatedOnView({
   children,
   className,
   delay = 0,
-}: { 
+}: {
   children: ReactNode;
   className?: string;
   delay?: number;
@@ -132,4 +132,3 @@ export function AnimatedOnView({
     </motion.div>
   );
 }
-

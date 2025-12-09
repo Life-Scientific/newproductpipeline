@@ -1,7 +1,13 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Clock, User, TrendingUp } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -62,7 +68,7 @@ export function BusinessCaseFieldHistory({
     },
   ];
 
-  const hasAnyUpdates = fields.some(f => f.lastUpdatedAt);
+  const hasAnyUpdates = fields.some((f) => f.lastUpdatedAt);
 
   if (!hasAnyUpdates) {
     return null;
@@ -82,7 +88,7 @@ export function BusinessCaseFieldHistory({
       <CardContent>
         <div className="space-y-3">
           {fields
-            .filter(f => f.lastUpdatedAt)
+            .filter((f) => f.lastUpdatedAt)
             .map((field) => (
               <div
                 key={field.field}
@@ -94,10 +100,10 @@ export function BusinessCaseFieldHistory({
                       {field.field}
                     </Badge>
                     <span className="text-sm font-semibold">
-                      {field.currentValue !== null 
-                        ? field.currentValue.toLocaleString(undefined, { 
+                      {field.currentValue !== null
+                        ? field.currentValue.toLocaleString(undefined, {
                             minimumFractionDigits: 2,
-                            maximumFractionDigits: 2 
+                            maximumFractionDigits: 2,
                           })
                         : "—"}
                     </span>
@@ -111,7 +117,9 @@ export function BusinessCaseFieldHistory({
                       <Clock className="h-3 w-3" />
                       <span>
                         {field.lastUpdatedAt
-                          ? formatDistanceToNow(new Date(field.lastUpdatedAt), { addSuffix: true })
+                          ? formatDistanceToNow(new Date(field.lastUpdatedAt), {
+                              addSuffix: true,
+                            })
                           : "never"}
                       </span>
                     </div>
@@ -120,17 +128,15 @@ export function BusinessCaseFieldHistory({
               </div>
             ))}
         </div>
-        
+
         <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
           <p className="text-xs text-blue-900 dark:text-blue-100">
-            <strong>Git-style tracking:</strong> Each field maintains its own update timestamp and author,
-            allowing you to see who last modified Volume, NSP, or COGS independently.
+            <strong>Git-style tracking:</strong> Each field maintains its own
+            update timestamp and author, allowing you to see who last modified
+            Volume, NSP, or COGS independently.
           </p>
         </div>
       </CardContent>
     </Card>
   );
 }
-
-
-

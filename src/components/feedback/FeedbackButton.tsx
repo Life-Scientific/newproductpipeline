@@ -19,7 +19,7 @@ import {
 
 /**
  * Floating feedback button component
- * 
+ *
  * This component displays a floating button in the bottom right corner
  * that opens a Tally form modal when clicked.
  */
@@ -54,7 +54,7 @@ export function FeedbackButton() {
               We'd love to hear your thoughts and suggestions.
             </DialogDescription>
           </DialogHeader>
-          
+
           {/* Tally form embed */}
           <div className="w-full flex-1 relative min-h-0">
             {open && (
@@ -76,4 +76,3 @@ export function FeedbackButton() {
     </>
   );
 }
-

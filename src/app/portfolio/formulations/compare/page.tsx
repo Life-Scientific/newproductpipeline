@@ -10,7 +10,9 @@ export default async function FormulationComparePage() {
     <div className="container mx-auto p-4 sm:p-6">
       <AnimatedPage>
         <div className="space-y-2 mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold">Compare Formulations</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">
+            Compare Formulations
+          </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
             Compare multiple formulations side-by-side
           </p>
@@ -23,4 +25,3 @@ export default async function FormulationComparePage() {
     </div>
   );
 }
-

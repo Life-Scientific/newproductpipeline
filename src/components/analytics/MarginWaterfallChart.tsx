@@ -1,6 +1,9 @@
 "use client";
 
-import { WaterfallChart, type WaterfallDataPoint } from "@/components/charts/WaterfallChart";
+import {
+  WaterfallChart,
+  type WaterfallDataPoint,
+} from "@/components/charts/WaterfallChart";
 import type { Database } from "@/lib/supabase/database.types";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
@@ -9,11 +12,13 @@ interface MarginWaterfallChartProps {
   businessCases: BusinessCase[];
 }
 
-export function MarginWaterfallChart({ businessCases }: MarginWaterfallChartProps) {
+export function MarginWaterfallChart({
+  businessCases,
+}: MarginWaterfallChartProps) {
   let totalRevenue = 0;
   let totalCOGS = 0;
 
-  businessCases.forEach(bc => {
+  businessCases.forEach((bc) => {
     totalRevenue += bc.total_revenue || 0;
     totalCOGS += bc.total_cogs || 0;
   });
@@ -26,12 +31,5 @@ export function MarginWaterfallChart({ businessCases }: MarginWaterfallChartProp
     { name: "Net Margin", value: totalMargin / 1000000, isTotal: true },
   ];
 
-  return (
-    <WaterfallChart
-      data={data}
-      currencySymbol="€"
-      height={400}
-    />
-  );
+  return <WaterfallChart data={data} currencySymbol="€" height={400} />;
 }
-

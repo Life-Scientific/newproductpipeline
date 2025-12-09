@@ -1,13 +1,37 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { Database } from "@/lib/supabase/database.types";
@@ -41,28 +65,31 @@ function formatNumber(value: number | null | undefined): string {
   return value.toLocaleString();
 }
 
-export function FormulationTimeline({ businessCases }: FormulationTimelineProps) {
+export function FormulationTimeline({
+  businessCases,
+}: FormulationTimelineProps) {
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
   const [cumulativeMode, setCumulativeMode] = useState(false);
-  const { 
-    formatCurrencyCompact, 
-    convertCurrency, 
+  const {
+    formatCurrencyCompact,
+    convertCurrency,
     convertVolume,
     preferences,
     currencySymbol,
-    volumeUnit
+    volumeUnit,
   } = useDisplayPreferences();
 
   // Wrapper for currency formatting
-  const formatCurrency = (value: number | null | undefined): string => formatCurrencyCompact(value);
-  
+  const formatCurrency = (value: number | null | undefined): string =>
+    formatCurrencyCompact(value);
+
   // Convert and format volume based on user preferences
   const formatVolumeDisplay = (liters: number | null | undefined): string => {
     if (!liters || liters === 0) return "—";
     const converted = convertVolume(liters);
     return converted.toLocaleString(undefined, { maximumFractionDigits: 0 });
   };
-  
+
   // Convert and format NSP per unit (EUR/L -> USD/GAL etc.)
   const formatNspPerUnit = (eurPerLiter: number | null | undefined): string => {
     if (!eurPerLiter || eurPerLiter === 0) return "—";
@@ -99,10 +126,14 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
       <Card>
         <CardHeader>
           <CardTitle>10-Year Financial Timeline</CardTitle>
-          <CardDescription>Projected revenue and margin by fiscal year</CardDescription>
+          <CardDescription>
+            Projected revenue and margin by fiscal year
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No business case data available.</p>
+          <p className="text-sm text-muted-foreground">
+            No business case data available.
+          </p>
         </CardContent>
       </Card>
     );
@@ -144,7 +175,7 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
     fyData.margin += margin;
     fyData.volume += volume;
     fyData.cogs += cogs;
-    
+
     // Track unique business case groups per fiscal year
     if (bc.business_case_group_id) {
       groupsByFiscalYear.get(fy)!.add(bc.business_case_group_id);
@@ -179,26 +210,28 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
   });
 
   // Convert to array and calculate final values
-  let timelineData = Array.from(fiscalYearMap.values()).map((data) => {
-    // Calculate weighted average NSP
-    if (data.volume > 0 && data.nsp > 0) {
-      data.nsp = data.nsp / data.volume; // Convert weighted sum to average
-    }
+  let timelineData = Array.from(fiscalYearMap.values())
+    .map((data) => {
+      // Calculate weighted average NSP
+      if (data.volume > 0 && data.nsp > 0) {
+        data.nsp = data.nsp / data.volume; // Convert weighted sum to average
+      }
 
-    // Calculate margin percent from aggregated values
-    if (data.revenue > 0) {
-      data.marginPercent = (data.margin / data.revenue) * 100;
-    }
+      // Calculate margin percent from aggregated values
+      if (data.revenue > 0) {
+        data.marginPercent = (data.margin / data.revenue) * 100;
+      }
 
-    return data;
-  }).sort((a, b) => {
-    // Try to sort by year offset first
-    if (a.yearOffset !== b.yearOffset) {
-      return a.yearOffset - b.yearOffset;
-    }
-    // Fallback to fiscal year string comparison
-    return a.fiscalYear.localeCompare(b.fiscalYear);
-  });
+      return data;
+    })
+    .sort((a, b) => {
+      // Try to sort by year offset first
+      if (a.yearOffset !== b.yearOffset) {
+        return a.yearOffset - b.yearOffset;
+      }
+      // Fallback to fiscal year string comparison
+      return a.fiscalYear.localeCompare(b.fiscalYear);
+    });
 
   // Apply cumulative rollup if enabled
   if (cumulativeMode && timelineData.length > 0) {
@@ -213,19 +246,21 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
       cumulativeMargin += data.margin;
       cumulativeVolume += data.volume;
       cumulativeCogs += data.cogs;
-      
+
       // For NSP, we need to recalculate weighted average with cumulative values
       if (data.volume > 0 && data.nsp > 0) {
         cumulativeNspWeightedSum += data.nsp * data.volume;
       }
 
-      const cumulativeNsp = cumulativeVolume > 0 && cumulativeNspWeightedSum > 0
-        ? cumulativeNspWeightedSum / cumulativeVolume
-        : 0;
+      const cumulativeNsp =
+        cumulativeVolume > 0 && cumulativeNspWeightedSum > 0
+          ? cumulativeNspWeightedSum / cumulativeVolume
+          : 0;
 
-      const cumulativeMarginPercent = cumulativeRevenue > 0
-        ? (cumulativeMargin / cumulativeRevenue) * 100
-        : 0;
+      const cumulativeMarginPercent =
+        cumulativeRevenue > 0
+          ? (cumulativeMargin / cumulativeRevenue) * 100
+          : 0;
 
       return {
         ...data,
@@ -242,7 +277,8 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
   // Calculate totals
   const totalRevenue = timelineData.reduce((sum, d) => sum + d.revenue, 0);
   const totalMargin = timelineData.reduce((sum, d) => sum + d.margin, 0);
-  const totalMarginPercent = totalRevenue > 0 ? (totalMargin / totalRevenue) * 100 : 0;
+  const totalMarginPercent =
+    totalRevenue > 0 ? (totalMargin / totalRevenue) * 100 : 0;
 
   // Calculate trend (comparing last two years)
   let trend: "up" | "down" | "neutral" = "neutral";
@@ -251,7 +287,8 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
     const lastYear = timelineData[timelineData.length - 1];
     const prevYear = timelineData[timelineData.length - 2];
     if (prevYear.revenue > 0) {
-      trendValue = ((lastYear.revenue - prevYear.revenue) / prevYear.revenue) * 100;
+      trendValue =
+        ((lastYear.revenue - prevYear.revenue) / prevYear.revenue) * 100;
       trend = trendValue > 0 ? "up" : trendValue < 0 ? "down" : "neutral";
     }
   }
@@ -262,10 +299,15 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>10-Year Financial Timeline</CardTitle>
-            <CardDescription>Projected revenue and margin by fiscal year</CardDescription>
+            <CardDescription>
+              Projected revenue and margin by fiscal year
+            </CardDescription>
           </div>
           {trend !== "neutral" && (
-            <Badge variant={trend === "up" ? "default" : "destructive"} className="gap-1">
+            <Badge
+              variant={trend === "up" ? "default" : "destructive"}
+              className="gap-1"
+            >
               {trend === "up" ? (
                 <TrendingUp className="h-3 w-3" />
               ) : (
@@ -281,8 +323,13 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
             <div className="flex items-center gap-2">
-              <Label htmlFor="country-filter" className="text-sm font-medium">Country:</Label>
-              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+              <Label htmlFor="country-filter" className="text-sm font-medium">
+                Country:
+              </Label>
+              <Select
+                value={selectedCountry}
+                onValueChange={setSelectedCountry}
+              >
                 <SelectTrigger id="country-filter" className="w-[180px]">
                   <SelectValue placeholder="All Countries" />
                 </SelectTrigger>
@@ -303,9 +350,14 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                     <Checkbox
                       id="cumulative-mode"
                       checked={cumulativeMode}
-                      onCheckedChange={(checked) => setCumulativeMode(checked === true)}
+                      onCheckedChange={(checked) =>
+                        setCumulativeMode(checked === true)
+                      }
                     />
-                    <Label htmlFor="cumulative-mode" className="text-sm font-medium cursor-pointer flex items-center gap-1">
+                    <Label
+                      htmlFor="cumulative-mode"
+                      className="text-sm font-medium cursor-pointer flex items-center gap-1"
+                    >
                       Cumulative Rollup
                       <Info className="h-3.5 w-3.5 text-muted-foreground" />
                     </Label>
@@ -315,7 +367,8 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                   <div className="space-y-2 text-xs">
                     <p className="font-semibold">Cumulative Rollup</p>
                     <p>
-                      When enabled, values accumulate from Year 1 onwards. Each year shows the running total up to that point.
+                      When enabled, values accumulate from Year 1 onwards. Each
+                      year shows the running total up to that point.
                     </p>
                     <div className="pt-1 border-t border-primary/20 space-y-1">
                       <p className="font-medium">Mathematical Formula:</p>
@@ -327,7 +380,8 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                       </p>
                     </div>
                     <p className="text-[10px] opacity-90 pt-1 border-t border-primary/20">
-                      Useful for tracking total performance over time rather than year-by-year values.
+                      Useful for tracking total performance over time rather
+                      than year-by-year values.
                     </p>
                   </div>
                 </TooltipContent>
@@ -337,19 +391,33 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
           {/* Summary Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Total Revenue</p>
-              <p className="text-lg font-semibold">{formatCurrency(totalRevenue)}</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                Total Revenue
+              </p>
+              <p className="text-lg font-semibold">
+                {formatCurrency(totalRevenue)}
+              </p>
             </div>
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Total Margin</p>
-              <p className="text-lg font-semibold">{formatCurrency(totalMargin)}</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                Total Margin
+              </p>
+              <p className="text-lg font-semibold">
+                {formatCurrency(totalMargin)}
+              </p>
             </div>
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Avg Margin %</p>
-              <p className="text-lg font-semibold">{totalMarginPercent.toFixed(1)}%</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                Avg Margin %
+              </p>
+              <p className="text-lg font-semibold">
+                {totalMarginPercent.toFixed(1)}%
+              </p>
             </div>
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Years Covered</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                Years Covered
+              </p>
               <p className="text-lg font-semibold">{timelineData.length}</p>
             </div>
           </div>
@@ -360,9 +428,14 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10 min-w-[120px]">Metric</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10 min-w-[120px]">
+                      Metric
+                    </TableHead>
                     {timelineData.map((data) => (
-                      <TableHead key={data.fiscalYear} className="text-center min-w-[140px]">
+                      <TableHead
+                        key={data.fiscalYear}
+                        className="text-center min-w-[140px]"
+                      >
                         <div className="space-y-1">
                           <div className="font-medium">{data.fiscalYear}</div>
                           {data.yearOffset > 0 && (
@@ -373,56 +446,88 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                         </div>
                       </TableHead>
                     ))}
-                    <TableHead className="text-center font-medium bg-muted min-w-[120px]">Total</TableHead>
+                    <TableHead className="text-center font-medium bg-muted min-w-[120px]">
+                      Total
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">Volume ({volumeUnit})</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">
+                      Volume ({volumeUnit})
+                    </TableCell>
                     {timelineData.map((data) => (
-                      <TableCell key={`volume-${data.fiscalYear}`} className="text-center">
+                      <TableCell
+                        key={`volume-${data.fiscalYear}`}
+                        className="text-center"
+                      >
                         {formatVolumeDisplay(data.volume)}
                       </TableCell>
                     ))}
                     <TableCell className="text-center font-medium bg-muted">
-                      {formatVolumeDisplay(timelineData.reduce((sum, d) => sum + d.volume, 0))}
+                      {formatVolumeDisplay(
+                        timelineData.reduce((sum, d) => sum + d.volume, 0),
+                      )}
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">NSP ({preferences.currency}/{volumeUnit})</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">
+                      NSP ({preferences.currency}/{volumeUnit})
+                    </TableCell>
                     {timelineData.map((data) => (
-                      <TableCell key={`nsp-${data.fiscalYear}`} className="text-center">
+                      <TableCell
+                        key={`nsp-${data.fiscalYear}`}
+                        className="text-center"
+                      >
                         {formatNspPerUnit(data.nsp)}
                       </TableCell>
                     ))}
-                    <TableCell className="text-center font-medium bg-muted">—</TableCell>
+                    <TableCell className="text-center font-medium bg-muted">
+                      —
+                    </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">COGS ({preferences.currency})</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">
+                      COGS ({preferences.currency})
+                    </TableCell>
                     {timelineData.map((data) => (
-                      <TableCell key={`cogs-${data.fiscalYear}`} className="text-center">
+                      <TableCell
+                        key={`cogs-${data.fiscalYear}`}
+                        className="text-center"
+                      >
                         {formatCurrency(data.cogs)}
                       </TableCell>
                     ))}
                     <TableCell className="text-center font-medium bg-muted">
-                      {formatCurrency(totalMargin > 0 ? totalRevenue - totalMargin : 0)}
+                      {formatCurrency(
+                        totalMargin > 0 ? totalRevenue - totalMargin : 0,
+                      )}
                     </TableCell>
                   </TableRow>
                   <TableRow className="bg-muted/30">
-                    <TableCell className="font-semibold sticky left-0 bg-background z-10">Revenue ({preferences.currency})</TableCell>
+                    <TableCell className="font-semibold sticky left-0 bg-background z-10">
+                      Revenue ({preferences.currency})
+                    </TableCell>
                     {timelineData.map((data, index) => {
-                      const prevRevenue = index > 0 ? timelineData[index - 1].revenue : null;
-                      const revenueChange = prevRevenue && prevRevenue > 0
-                        ? ((data.revenue - prevRevenue) / prevRevenue) * 100
-                        : null;
+                      const prevRevenue =
+                        index > 0 ? timelineData[index - 1].revenue : null;
+                      const revenueChange =
+                        prevRevenue && prevRevenue > 0
+                          ? ((data.revenue - prevRevenue) / prevRevenue) * 100
+                          : null;
                       return (
-                        <TableCell key={`revenue-${data.fiscalYear}`} className="text-center font-semibold">
+                        <TableCell
+                          key={`revenue-${data.fiscalYear}`}
+                          className="text-center font-semibold"
+                        >
                           <div className="flex flex-col items-center gap-1">
                             <span>{formatCurrency(data.revenue)}</span>
                             {revenueChange !== null && revenueChange !== 0 && (
                               <span
                                 className={`text-xs ${
-                                  revenueChange > 0 ? "text-green-600" : "text-red-600"
+                                  revenueChange > 0
+                                    ? "text-green-600"
+                                    : "text-red-600"
                                 }`}
                               >
                                 {revenueChange > 0 ? "+" : ""}
@@ -438,9 +543,14 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                     </TableCell>
                   </TableRow>
                   <TableRow className="bg-muted/30">
-                    <TableCell className="font-semibold sticky left-0 bg-background z-10">Margin ({preferences.currency})</TableCell>
+                    <TableCell className="font-semibold sticky left-0 bg-background z-10">
+                      Margin ({preferences.currency})
+                    </TableCell>
                     {timelineData.map((data) => (
-                      <TableCell key={`margin-${data.fiscalYear}`} className="text-center font-semibold">
+                      <TableCell
+                        key={`margin-${data.fiscalYear}`}
+                        className="text-center font-semibold"
+                      >
                         {formatCurrency(data.margin)}
                       </TableCell>
                     ))}
@@ -449,16 +559,21 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">Margin %</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">
+                      Margin %
+                    </TableCell>
                     {timelineData.map((data) => (
-                      <TableCell key={`marginpct-${data.fiscalYear}`} className="text-center">
+                      <TableCell
+                        key={`marginpct-${data.fiscalYear}`}
+                        className="text-center"
+                      >
                         <Badge
                           variant={
                             data.marginPercent >= 50
                               ? "default"
                               : data.marginPercent >= 30
-                              ? "secondary"
-                              : "outline"
+                                ? "secondary"
+                                : "outline"
                           }
                         >
                           {data.marginPercent.toFixed(1)}%
@@ -471,8 +586,8 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                           totalMarginPercent >= 50
                             ? "default"
                             : totalMarginPercent >= 30
-                            ? "secondary"
-                            : "outline"
+                              ? "secondary"
+                              : "outline"
                         }
                       >
                         {totalMarginPercent.toFixed(1)}%
@@ -480,24 +595,42 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">Countries</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">
+                      Countries
+                    </TableCell>
                     {timelineData.map((data) => (
-                      <TableCell key={`countries-${data.fiscalYear}`} className="text-center text-sm text-muted-foreground">
+                      <TableCell
+                        key={`countries-${data.fiscalYear}`}
+                        className="text-center text-sm text-muted-foreground"
+                      >
                         {data.countries.size}
                       </TableCell>
                     ))}
                     <TableCell className="text-center text-sm text-muted-foreground bg-muted">
-                      {new Set(filteredBusinessCases.map((bc) => bc.country_name).filter(Boolean)).size}
+                      {
+                        new Set(
+                          filteredBusinessCases
+                            .map((bc) => bc.country_name)
+                            .filter(Boolean),
+                        ).size
+                      }
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-medium sticky left-0 bg-background z-10">Use Groups</TableCell>
+                    <TableCell className="font-medium sticky left-0 bg-background z-10">
+                      Use Groups
+                    </TableCell>
                     {timelineData.map((data) => (
-                      <TableCell key={`use-groups-${data.fiscalYear}`} className="text-center text-sm text-muted-foreground">
+                      <TableCell
+                        key={`use-groups-${data.fiscalYear}`}
+                        className="text-center text-sm text-muted-foreground"
+                      >
                         {data.useGroups.size}
                       </TableCell>
                     ))}
-                    <TableCell className="text-center text-sm text-muted-foreground bg-muted">—</TableCell>
+                    <TableCell className="text-center text-sm text-muted-foreground bg-muted">
+                      —
+                    </TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
@@ -508,16 +641,18 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
           {timelineData.length > 0 && (
             <div className="text-xs text-muted-foreground space-y-1">
               <p>
-                <strong>Note:</strong> Data aggregated from {filteredBusinessCases.length} business case
+                <strong>Note:</strong> Data aggregated from{" "}
+                {filteredBusinessCases.length} business case
                 {filteredBusinessCases.length !== 1 ? "s" : ""}
                 {selectedCountry !== "all" && ` for ${selectedCountry}`}
-                {selectedCountry === "all" && ` across ${new Set(filteredBusinessCases.map((bc) => bc.country_name).filter(Boolean)).size} countr${new Set(filteredBusinessCases.map((bc) => bc.country_name).filter(Boolean)).size !== 1 ? "ies" : "y"}`}.
-                {cumulativeMode && " Values shown are cumulative from year 1."}
+                {selectedCountry === "all" &&
+                  ` across ${new Set(filteredBusinessCases.map((bc) => bc.country_name).filter(Boolean)).size} countr${new Set(filteredBusinessCases.map((bc) => bc.country_name).filter(Boolean)).size !== 1 ? "ies" : "y"}`}
+                .{cumulativeMode && " Values shown are cumulative from year 1."}
               </p>
               {timelineData.some((d) => d.businessCaseCount > 1) && (
                 <p>
-                  Multiple business cases may exist per fiscal year (e.g., different countries or
-                  use groups).
+                  Multiple business cases may exist per fiscal year (e.g.,
+                  different countries or use groups).
                 </p>
               )}
             </div>
@@ -527,4 +662,3 @@ export function FormulationTimeline({ businessCases }: FormulationTimelineProps)
     </Card>
   );
 }
-

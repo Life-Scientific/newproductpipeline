@@ -8,7 +8,8 @@ import { type ColumnDef } from "@tanstack/react-table";
 import type { Database } from "@/lib/supabase/database.types";
 import { TableUtils } from "@/lib/utils/table-utils";
 
-type IngredientUsage = Database["public"]["Views"]["vw_ingredient_usage"]["Row"];
+type IngredientUsage =
+  Database["public"]["Views"]["vw_ingredient_usage"]["Row"];
 
 // Memoize columns outside component to prevent recreation on every render
 const createColumns = (): ColumnDef<IngredientUsage>[] => [
@@ -20,7 +21,7 @@ const createColumns = (): ColumnDef<IngredientUsage>[] => [
       const name = row.getValue("ingredient_name") as string;
       const id = row.original.ingredient_id;
       const type = row.original.ingredient_type;
-      
+
       // Only link if it's an active ingredient
       if (type === "Active") {
         return TableUtils.renderLink(`/active-ingredients/${id}`, name);
@@ -41,7 +42,11 @@ const createColumns = (): ColumnDef<IngredientUsage>[] => [
     cell: ({ row }) => {
       const density = row.getValue("standard_density_g_per_l") as number | null;
       return density ? (
-        <span className="text-sm">{Number(density).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+        <span className="text-sm">
+          {Number(density).toLocaleString(undefined, {
+            maximumFractionDigits: 2,
+          })}
+        </span>
       ) : (
         <span className="text-sm text-muted-foreground">—</span>
       );
@@ -53,7 +58,11 @@ const createColumns = (): ColumnDef<IngredientUsage>[] => [
     meta: { minWidth: "100px" },
     cell: ({ row }) => {
       const type = row.getValue("ingredient_type") as string | null;
-      return <Badge variant="outline" className="text-xs">{type || "—"}</Badge>;
+      return (
+        <Badge variant="outline" className="text-xs">
+          {type || "—"}
+        </Badge>
+      );
     },
   },
   TableUtils.createNumberColumn("formulation_count", "Formulations", {
@@ -69,7 +78,9 @@ const createColumns = (): ColumnDef<IngredientUsage>[] => [
       return (
         <div className="text-right">
           {count && count > 0 ? (
-            <Badge variant="default" className="text-xs">{count}</Badge>
+            <Badge variant="default" className="text-xs">
+              {count}
+            </Badge>
           ) : (
             <span className="text-sm text-muted-foreground">0</span>
           )}
@@ -81,13 +92,17 @@ const createColumns = (): ColumnDef<IngredientUsage>[] => [
     accessorKey: "supply_risk",
     header: "Supply Risk",
     meta: { minWidth: "120px" },
-    cell: ({ row }) => TableUtils.renderSupplyRisk(row.getValue("supply_risk") as string | null),
+    cell: ({ row }) =>
+      TableUtils.renderSupplyRisk(row.getValue("supply_risk") as string | null),
   },
   {
     accessorKey: "is_eu_approved",
     header: "EU Approved",
     meta: { minWidth: "100px" },
-    cell: ({ row }) => TableUtils.renderBoolean(row.getValue("is_eu_approved") as boolean | null),
+    cell: ({ row }) =>
+      TableUtils.renderBoolean(
+        row.getValue("is_eu_approved") as boolean | null,
+      ),
   },
   {
     accessorKey: "suppliers",
@@ -107,7 +122,9 @@ const createColumns = (): ColumnDef<IngredientUsage>[] => [
     header: "Used In",
     meta: { minWidth: "300px" },
     cell: ({ row }) => {
-      const formulations = row.getValue("formulations_used_in") as string | null;
+      const formulations = row.getValue("formulations_used_in") as
+        | string
+        | null;
       return (
         <span className="text-sm text-muted-foreground max-w-[300px] truncate block">
           {formulations || "—"}
@@ -129,17 +146,21 @@ export function IngredientUsage({ ingredients }: IngredientUsageProps) {
   const memoizedColumns = useMemo(() => columns, []);
 
   // Group by supply risk
-  const byRisk = useMemo(() => ingredients.reduce(
-    (acc, ing) => {
-      const risk = ing.supply_risk || "Unknown";
-      if (!acc[risk]) {
-        acc[risk] = [];
-      }
-      acc[risk].push(ing);
-      return acc;
-    },
-    {} as Record<string, IngredientUsage[]>
-  ), [ingredients]);
+  const byRisk = useMemo(
+    () =>
+      ingredients.reduce(
+        (acc, ing) => {
+          const risk = ing.supply_risk || "Unknown";
+          if (!acc[risk]) {
+            acc[risk] = [];
+          }
+          acc[risk].push(ing);
+          return acc;
+        },
+        {} as Record<string, IngredientUsage[]>,
+      ),
+    [ingredients],
+  );
 
   const criticalIngredients = byRisk["Critical"] || [];
   const highRiskIngredients = byRisk["High"] || [];
@@ -216,4 +237,3 @@ export function IngredientUsage({ ingredients }: IngredientUsageProps) {
     </div>
   );
 }
-

@@ -11,8 +11,20 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Upload, Download, FileText, CheckCircle2, XCircle, AlertCircle, Loader2 } from "lucide-react";
-import { validateBusinessCaseImport, importBusinessCases, generateBusinessCaseImportTemplate } from "@/lib/actions/business-cases";
+import {
+  Upload,
+  Download,
+  FileText,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
+import {
+  validateBusinessCaseImport,
+  importBusinessCases,
+  generateBusinessCaseImportTemplate,
+} from "@/lib/actions/business-cases";
 import type {
   BusinessCaseImportRow,
   BusinessCaseImportRowValidation,
@@ -48,16 +60,19 @@ export function BusinessCaseImportModal({
 }: BusinessCaseImportModalProps) {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [step, setStep] = useState<ImportStep>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [parsedRows, setParsedRows] = useState<BusinessCaseImportRow[]>([]);
   const [skippedRows, setSkippedRows] = useState<SkippedRow[]>([]);
   const [totalCsvLines, setTotalCsvLines] = useState(0);
-  const [validations, setValidations] = useState<BusinessCaseImportRowValidation[]>([]);
+  const [validations, setValidations] = useState<
+    BusinessCaseImportRowValidation[]
+  >([]);
   const [isValidating, setIsValidating] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const [importResult, setImportResult] = useState<BusinessCaseImportResult | null>(null);
+  const [importResult, setImportResult] =
+    useState<BusinessCaseImportResult | null>(null);
 
   // Reset state when modal closes
   const handleClose = useCallback(() => {
@@ -85,7 +100,7 @@ export function BusinessCaseImportModal({
   // Parse CSV file - returns valid rows AND skipped rows with reasons
   const parseCSV = useCallback((csvText: string): ParseResult => {
     const allLines = csvText.split("\n");
-    
+
     // Filter out comment lines but track original line numbers
     const dataLines: { line: string; originalLineNumber: number }[] = [];
     for (let i = 0; i < allLines.length; i++) {
@@ -94,13 +109,15 @@ export function BusinessCaseImportModal({
         dataLines.push({ line: trimmed, originalLineNumber: i + 1 });
       }
     }
-    
+
     if (dataLines.length < 2) {
-      throw new Error("CSV file must have at least a header row and one data row");
+      throw new Error(
+        "CSV file must have at least a header row and one data row",
+      );
     }
 
     const headers = dataLines[0].line.split(",").map((h) => h.trim());
-    
+
     // Only check required headers
     const requiredHeaders = [
       "formulation_code",
@@ -111,18 +128,21 @@ export function BusinessCaseImportModal({
         `year_${i + 1}_nsp`,
       ]).flat(),
     ];
-    
+
     const missingRequired = requiredHeaders.filter(
-      (h) => !headers.some((header) => header.toLowerCase() === h.toLowerCase())
+      (h) =>
+        !headers.some((header) => header.toLowerCase() === h.toLowerCase()),
     );
 
     if (missingRequired.length > 0) {
-      throw new Error(`Missing required headers: ${missingRequired.join(", ")}`);
+      throw new Error(
+        `Missing required headers: ${missingRequired.join(", ")}`,
+      );
     }
 
     const validRows: BusinessCaseImportRow[] = [];
     const skippedRows: SkippedRow[] = [];
-    
+
     for (let i = 1; i < dataLines.length; i++) {
       const { line, originalLineNumber } = dataLines[i];
       if (!line) continue;
@@ -131,7 +151,7 @@ export function BusinessCaseImportModal({
       const values: string[] = [];
       let current = "";
       let inQuotes = false;
-      
+
       for (let j = 0; j < line.length; j++) {
         const char = line[j];
         if (char === '"') {
@@ -147,11 +167,11 @@ export function BusinessCaseImportModal({
 
       const row: Partial<BusinessCaseImportRow> = {};
       const parseErrors: string[] = [];
-      
+
       headers.forEach((header, idx) => {
         const value = values[idx]?.trim() || "";
         const headerLower = header.toLowerCase();
-        
+
         if (headerLower === "formulation_code") {
           row.formulation_code = value;
         } else if (headerLower === "country_code") {
@@ -170,16 +190,21 @@ export function BusinessCaseImportModal({
           if (yearMatch) {
             const yearNum = parseInt(yearMatch[1], 10);
             const field = yearMatch[2];
-            const key = `year_${yearNum}_${field}` as keyof BusinessCaseImportRow;
+            const key =
+              `year_${yearNum}_${field}` as keyof BusinessCaseImportRow;
             if (field === "volume" || field === "nsp") {
               if (!value || value === "") {
                 parseErrors.push(`Year ${yearNum} ${field} is empty`);
               } else {
                 const numValue = parseFloat(value);
                 if (isNaN(numValue)) {
-                  parseErrors.push(`Year ${yearNum} ${field} is not a valid number: "${value}"`);
+                  parseErrors.push(
+                    `Year ${yearNum} ${field} is not a valid number: "${value}"`,
+                  );
                 } else if (numValue <= 0) {
-                  parseErrors.push(`Year ${yearNum} ${field} must be greater than 0 (got ${numValue})`);
+                  parseErrors.push(
+                    `Year ${yearNum} ${field} must be greater than 0 (got ${numValue})`,
+                  );
                 } else {
                   (row as any)[key] = numValue;
                 }
@@ -209,10 +234,16 @@ export function BusinessCaseImportModal({
       for (let year = 1; year <= 10; year++) {
         const volumeKey = `year_${year}_volume` as keyof BusinessCaseImportRow;
         const nspKey = `year_${year}_nsp` as keyof BusinessCaseImportRow;
-        if (row[volumeKey] === undefined && !parseErrors.some(e => e.includes(`Year ${year} volume`))) {
+        if (
+          row[volumeKey] === undefined &&
+          !parseErrors.some((e) => e.includes(`Year ${year} volume`))
+        ) {
           parseErrors.push(`Year ${year} volume is missing`);
         }
-        if (row[nspKey] === undefined && !parseErrors.some(e => e.includes(`Year ${year} nsp`))) {
+        if (
+          row[nspKey] === undefined &&
+          !parseErrors.some((e) => e.includes(`Year ${year} nsp`))
+        ) {
           parseErrors.push(`Year ${year} nsp is missing`);
         }
       }
@@ -222,7 +253,11 @@ export function BusinessCaseImportModal({
         const preview = `${row.formulation_code || "?"} / ${row.country_code || "?"} / ${row.use_group_variant || "?"}`;
         skippedRows.push({
           lineNumber: originalLineNumber,
-          reason: parseErrors.slice(0, 3).join("; ") + (parseErrors.length > 3 ? ` (+${parseErrors.length - 3} more)` : ""),
+          reason:
+            parseErrors.slice(0, 3).join("; ") +
+            (parseErrors.length > 3
+              ? ` (+${parseErrors.length - 3} more)`
+              : ""),
           rawData: preview,
         });
       } else {
@@ -230,10 +265,10 @@ export function BusinessCaseImportModal({
       }
     }
 
-    return { 
-      validRows, 
-      skippedRows, 
-      totalLines: dataLines.length - 1 // Exclude header
+    return {
+      validRows,
+      skippedRows,
+      totalLines: dataLines.length - 1, // Exclude header
     };
   }, []);
 
@@ -252,13 +287,14 @@ export function BusinessCaseImportModal({
       try {
         const text = await selectedFile.text();
         const result = parseCSV(text);
-        
+
         if (result.validRows.length === 0) {
           toast({
             title: "No valid rows found",
-            description: result.skippedRows.length > 0 
-              ? `All ${result.skippedRows.length} rows had parsing errors. Check the skipped rows section for details.`
-              : "The CSV file does not contain any valid data rows.",
+            description:
+              result.skippedRows.length > 0
+                ? `All ${result.skippedRows.length} rows had parsing errors. Check the skipped rows section for details.`
+                : "The CSV file does not contain any valid data rows.",
             variant: "destructive",
           });
           // Still show the file so user can see what went wrong
@@ -277,7 +313,7 @@ export function BusinessCaseImportModal({
         setSkippedRows(result.skippedRows);
         setTotalCsvLines(result.totalLines);
         setStep("validate");
-        
+
         // Notify about skipped rows if any
         if (result.skippedRows.length > 0) {
           toast({
@@ -288,12 +324,13 @@ export function BusinessCaseImportModal({
       } catch (error) {
         toast({
           title: "Error parsing CSV",
-          description: error instanceof Error ? error.message : "Failed to parse CSV file",
+          description:
+            error instanceof Error ? error.message : "Failed to parse CSV file",
           variant: "destructive",
         });
       }
     },
-    [parseCSV, toast]
+    [parseCSV, toast],
   );
 
   // Handle file drop
@@ -305,7 +342,7 @@ export function BusinessCaseImportModal({
         handleFileSelect(droppedFile);
       }
     },
-    [handleFileSelect]
+    [handleFileSelect],
   );
 
   // Validate rows
@@ -322,7 +359,7 @@ export function BusinessCaseImportModal({
     setIsValidating(true);
     try {
       const result = await validateBusinessCaseImport(parsedRows);
-      
+
       if (result.error) {
         toast({
           title: "Validation error",
@@ -335,10 +372,10 @@ export function BusinessCaseImportModal({
 
       setValidations(result.validations);
       setIsValidating(false);
-      
+
       const validCount = result.validations.filter((v) => v.isValid).length;
       const invalidCount = result.validations.length - validCount;
-      
+
       if (invalidCount > 0) {
         toast({
           title: "Validation complete",
@@ -353,7 +390,8 @@ export function BusinessCaseImportModal({
     } catch (error) {
       toast({
         title: "Validation failed",
-        description: error instanceof Error ? error.message : "Failed to validate rows",
+        description:
+          error instanceof Error ? error.message : "Failed to validate rows",
         variant: "destructive",
       });
       setIsValidating(false);
@@ -371,14 +409,13 @@ export function BusinessCaseImportModal({
       return;
     }
 
-    const validRows = validations
-      .filter((v) => v.isValid)
-      .map((v) => v.row);
+    const validRows = validations.filter((v) => v.isValid).map((v) => v.row);
 
     if (validRows.length === 0) {
       toast({
         title: "No valid rows",
-        description: "There are no valid rows to import. Please fix errors first.",
+        description:
+          "There are no valid rows to import. Please fix errors first.",
         variant: "destructive",
       });
       return;
@@ -386,12 +423,12 @@ export function BusinessCaseImportModal({
 
     setIsImporting(true);
     setStep("import");
-    
+
     try {
       const result = await importBusinessCases(validRows);
       setImportResult(result);
       setStep("results");
-      
+
       if (result.error) {
         toast({
           title: "Import failed",
@@ -410,7 +447,10 @@ export function BusinessCaseImportModal({
     } catch (error) {
       toast({
         title: "Import failed",
-        description: error instanceof Error ? error.message : "Failed to import business cases",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to import business cases",
         variant: "destructive",
       });
       setStep("validate");
@@ -432,15 +472,19 @@ export function BusinessCaseImportModal({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       toast({
         title: "Template downloaded",
-        description: "Template includes examples showing the same formulation across multiple countries",
+        description:
+          "Template includes examples showing the same formulation across multiple countries",
       });
     } catch (error) {
       toast({
         title: "Download failed",
-        description: error instanceof Error ? error.message : "Failed to download template",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to download template",
         variant: "destructive",
       });
     }
@@ -459,7 +503,10 @@ export function BusinessCaseImportModal({
             Import Business Cases
           </DialogTitle>
           <DialogDescription>
-            Upload a CSV file to import multiple business cases at once. Each row represents one formulation-country-use_group combination. You can import the same formulation across multiple countries by adding multiple rows.
+            Upload a CSV file to import multiple business cases at once. Each
+            row represents one formulation-country-use_group combination. You
+            can import the same formulation across multiple countries by adding
+            multiple rows.
           </DialogDescription>
         </DialogHeader>
 
@@ -467,7 +514,11 @@ export function BusinessCaseImportModal({
           <div className="space-y-4">
             {/* Download template button */}
             <div className="flex justify-end">
-              <Button variant="outline" onClick={handleDownloadTemplate} size="sm">
+              <Button
+                variant="outline"
+                onClick={handleDownloadTemplate}
+                size="sm"
+              >
                 <Download className="mr-2 h-4 w-4" />
                 Download Template
               </Button>
@@ -480,7 +531,7 @@ export function BusinessCaseImportModal({
               className={cn(
                 "border-2 border-dashed rounded-lg p-12 text-center transition-colors",
                 "hover:border-primary/50 cursor-pointer",
-                file && "border-primary bg-primary/5"
+                file && "border-primary bg-primary/5",
               )}
               onClick={() => fileInputRef.current?.click()}
             >
@@ -496,14 +547,15 @@ export function BusinessCaseImportModal({
                   }
                 }}
               />
-              
+
               {file ? (
                 <div className="space-y-2">
                   <FileText className="h-12 w-12 mx-auto text-primary" />
                   <div>
                     <p className="font-medium">{file.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {parsedRows.length} row{parsedRows.length !== 1 ? "s" : ""} parsed
+                      {parsedRows.length} row
+                      {parsedRows.length !== 1 ? "s" : ""} parsed
                     </p>
                   </div>
                 </div>
@@ -511,7 +563,9 @@ export function BusinessCaseImportModal({
                 <div className="space-y-2">
                   <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
                   <div>
-                    <p className="font-medium">Drop CSV file here or click to browse</p>
+                    <p className="font-medium">
+                      Drop CSV file here or click to browse
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       CSV file with business case data
                     </p>
@@ -527,13 +581,13 @@ export function BusinessCaseImportModal({
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">
-                  {parsedRows.length} of {totalCsvLines} row{totalCsvLines !== 1 ? "s" : ""} ready to validate
+                  {parsedRows.length} of {totalCsvLines} row
+                  {totalCsvLines !== 1 ? "s" : ""} ready to validate
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {skippedRows.length > 0 
+                  {skippedRows.length > 0
                     ? `${skippedRows.length} row${skippedRows.length !== 1 ? "s" : ""} skipped due to parsing errors`
-                    : "Click Validate to check all rows before importing"
-                  }
+                    : "Click Validate to check all rows before importing"}
                 </p>
               </div>
               <Button
@@ -554,16 +608,19 @@ export function BusinessCaseImportModal({
                 <div className="p-3 border-b border-amber-300 dark:border-amber-700">
                   <p className="font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
                     <AlertCircle className="h-4 w-4" />
-                    {skippedRows.length} Row{skippedRows.length !== 1 ? "s" : ""} Skipped (Parsing Errors)
+                    {skippedRows.length} Row
+                    {skippedRows.length !== 1 ? "s" : ""} Skipped (Parsing
+                    Errors)
                   </p>
                   <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
-                    These rows could not be parsed. Fix these issues in your CSV and re-upload.
+                    These rows could not be parsed. Fix these issues in your CSV
+                    and re-upload.
                   </p>
                 </div>
                 <div className="max-h-48 overflow-y-auto p-2">
                   {skippedRows.map((skipped) => (
-                    <div 
-                      key={skipped.lineNumber} 
+                    <div
+                      key={skipped.lineNumber}
                       className="text-sm p-2 border-b border-amber-200 dark:border-amber-800 last:border-0"
                     >
                       <div className="flex items-start gap-2">
@@ -588,12 +645,17 @@ export function BusinessCaseImportModal({
             ) : parsedRows.length > 0 ? (
               <div className="border rounded-lg p-8 text-center text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-                <p>No validation results yet. Click Validate to check the data.</p>
+                <p>
+                  No validation results yet. Click Validate to check the data.
+                </p>
               </div>
             ) : (
               <div className="border rounded-lg p-8 text-center text-muted-foreground">
                 <XCircle className="h-8 w-8 mx-auto mb-2 text-destructive" />
-                <p>No valid rows to validate. Fix the parsing errors above and re-upload.</p>
+                <p>
+                  No valid rows to validate. Fix the parsing errors above and
+                  re-upload.
+                </p>
               </div>
             )}
 
@@ -635,15 +697,21 @@ export function BusinessCaseImportModal({
                 </div>
                 <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-950/20">
                   <p className="text-sm text-muted-foreground">Created</p>
-                  <p className="text-2xl font-bold text-green-600">{importResult.created}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {importResult.created}
+                  </p>
                 </div>
                 <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
                   <p className="text-sm text-muted-foreground">Updated</p>
-                  <p className="text-2xl font-bold text-blue-600">{importResult.updated}</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {importResult.updated}
+                  </p>
                 </div>
                 <div className="p-4 border rounded-lg bg-red-50 dark:bg-red-950/20">
                   <p className="text-sm text-muted-foreground">Errors</p>
-                  <p className="text-2xl font-bold text-red-600">{importResult.errors}</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {importResult.errors}
+                  </p>
                 </div>
               </div>
             </div>
@@ -656,15 +724,21 @@ export function BusinessCaseImportModal({
                     .filter((p) => p.status === "error")
                     .map((p) => (
                       <div key={p.rowIndex} className="text-sm">
-                        <span className="font-medium">Row {p.rowIndex + 1}:</span>{" "}
-                        <span className="text-muted-foreground">{p.message}</span>
+                        <span className="font-medium">
+                          Row {p.rowIndex + 1}:
+                        </span>{" "}
+                        <span className="text-muted-foreground">
+                          {p.message}
+                        </span>
                       </div>
                     ))}
                 </div>
               </div>
             )}
 
-            <BusinessCaseImportPreview validations={importResult.rowValidations} />
+            <BusinessCaseImportPreview
+              validations={importResult.rowValidations}
+            />
           </div>
         )}
 
@@ -675,9 +749,7 @@ export function BusinessCaseImportModal({
                 Cancel
               </Button>
               {parsedRows.length > 0 && (
-                <Button onClick={handleValidate}>
-                  Validate
-                </Button>
+                <Button onClick={handleValidate}>Validate</Button>
               )}
             </>
           )}
@@ -713,11 +785,7 @@ export function BusinessCaseImportModal({
             </Button>
           )}
 
-          {step === "results" && (
-            <Button onClick={handleClose}>
-              Close
-            </Button>
-          )}
+          {step === "results" && <Button onClick={handleClose}>Close</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,4 +1,8 @@
-import { getBusinessCasesForProjectionTable, getFormulations, getFormulationCountries } from "@/lib/db/queries";
+import {
+  getBusinessCasesForProjectionTable,
+  getFormulations,
+  getFormulationCountries,
+} from "@/lib/db/queries";
 import { getCountries } from "@/lib/db/countries";
 import { createClient } from "@/lib/supabase/server";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
@@ -9,12 +13,13 @@ export const dynamic = "force-dynamic";
 
 export default async function BusinessCasesPage() {
   // Fetch business cases, formulations, countries, and formulation-countries in parallel
-  const [businessCases, formulations, countries, formulationCountriesData] = await Promise.all([
-    getBusinessCasesForProjectionTable(),
-    getFormulations(), // Reference data for filter lookups
-    getCountries(), // Reference data for filter lookups
-    getFormulationCountries(), // For accurate filter counts
-  ]);
+  const [businessCases, formulations, countries, formulationCountriesData] =
+    await Promise.all([
+      getBusinessCasesForProjectionTable(),
+      getFormulations(), // Reference data for filter lookups
+      getCountries(), // Reference data for filter lookups
+      getFormulationCountries(), // For accurate filter counts
+    ]);
 
   // Also fetch formulation-country data for country status lookup (with pagination)
   // This is still needed for enriching business cases with country_status
@@ -62,14 +67,17 @@ export default async function BusinessCasesPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
-              <h1 className="text-2xl sm:text-3xl font-bold">Product Portfolio Long Range Plan</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">
+                Product Portfolio Long Range Plan
+              </h1>
               <p className="text-sm sm:text-base text-muted-foreground">
-                10-year revenue and margin projections. Each row represents a formulation registered in a country for a specific use.
+                10-year revenue and margin projections. Each row represents a
+                formulation registered in a country for a specific use.
               </p>
             </div>
           </div>
 
-          <BusinessCasesPageClient 
+          <BusinessCasesPageClient
             initialBusinessCases={businessCases}
             formulationStatuses={formulationStatuses}
             countryStatuses={countryStatuses}
@@ -82,4 +90,3 @@ export default async function BusinessCasesPage() {
     </div>
   );
 }
-

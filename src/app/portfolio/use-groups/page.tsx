@@ -18,14 +18,14 @@ export default async function UseGroupsPage() {
   let page = 0;
   const pageSize = 10000;
   let hasMore = true;
-  
+
   while (hasMore) {
     const { data: pageData } = await supabase
       .from("formulation_country")
       .select("formulation_country_id, country_id, country_status")
       .eq("is_active", true)
       .range(page * pageSize, (page + 1) * pageSize - 1);
-    
+
     if (!pageData || pageData.length === 0) {
       hasMore = false;
     } else {
@@ -42,7 +42,10 @@ export default async function UseGroupsPage() {
       if (fc.country_id) {
         fcIdToCountryId.set(fc.formulation_country_id, fc.country_id);
       }
-      fcIdToCountryStatus.set(fc.formulation_country_id, fc.country_status || "Not yet evaluated");
+      fcIdToCountryStatus.set(
+        fc.formulation_country_id,
+        fc.country_status || "Not yet evaluated",
+      );
     }
   });
 
@@ -63,10 +66,18 @@ export default async function UseGroupsPage() {
   // Enrich use groups with formulation_id, formulation_status, country_id, country_status
   const enrichedUseGroups = useGroups.map((ug) => ({
     ...ug,
-    formulation_id: ug.formulation_code ? formulationCodeToId.get(ug.formulation_code) || null : null,
-    formulation_status: ug.formulation_code ? formulationCodeToStatus.get(ug.formulation_code) || null : null,
-    country_id: ug.formulation_country_id ? fcIdToCountryId.get(ug.formulation_country_id) || null : null,
-    country_status: ug.formulation_country_id ? fcIdToCountryStatus.get(ug.formulation_country_id) || null : null,
+    formulation_id: ug.formulation_code
+      ? formulationCodeToId.get(ug.formulation_code) || null
+      : null,
+    formulation_status: ug.formulation_code
+      ? formulationCodeToStatus.get(ug.formulation_code) || null
+      : null,
+    country_id: ug.formulation_country_id
+      ? fcIdToCountryId.get(ug.formulation_country_id) || null
+      : null,
+    country_status: ug.formulation_country_id
+      ? fcIdToCountryStatus.get(ug.formulation_country_id) || null
+      : null,
   }));
 
   return (
@@ -76,13 +87,15 @@ export default async function UseGroupsPage() {
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold">Use Groups</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Registration applications organized by crop/pest combination. Each use group represents a specific registration pathway for a formulation in a country.
+              Registration applications organized by crop/pest combination. Each
+              use group represents a specific registration pathway for a
+              formulation in a country.
             </p>
           </div>
           <FormulationCountryUseGroupFormButton />
         </div>
 
-        <UseGroupsClient 
+        <UseGroupsClient
           useGroups={enrichedUseGroups}
           formulations={formulations}
           countries={countries}
@@ -91,4 +104,3 @@ export default async function UseGroupsPage() {
     </div>
   );
 }
-

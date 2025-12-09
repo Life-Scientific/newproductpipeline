@@ -15,7 +15,8 @@ const FILTER_PARAM_KEYS = [
   "countryStatuses",
 ] as const;
 
-interface FilterPreservingLinkProps extends Omit<ComponentPropsWithRef<typeof Link>, "href"> {
+interface FilterPreservingLinkProps
+  extends Omit<ComponentPropsWithRef<typeof Link>, "href"> {
   href: string;
   preserveFilters?: boolean;
 }
@@ -23,13 +24,16 @@ interface FilterPreservingLinkProps extends Omit<ComponentPropsWithRef<typeof Li
 /**
  * A Link component that automatically preserves filter query parameters
  * when navigating between portfolio pages.
- * 
+ *
  * Only preserves filters when navigating to other /portfolio/* pages.
  */
 export const FilterPreservingLink = forwardRef<
   HTMLAnchorElement,
   FilterPreservingLinkProps
->(function FilterPreservingLink({ href, preserveFilters = true, children, ...props }, ref) {
+>(function FilterPreservingLink(
+  { href, preserveFilters = true, children, ...props },
+  ref,
+) {
   const searchParams = useSearchParams();
 
   // Build the final href with preserved filter params
@@ -63,7 +67,3 @@ export const FilterPreservingLink = forwardRef<
     </Link>
   );
 });
-
-
-
-

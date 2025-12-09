@@ -2,10 +2,17 @@
 
 import React from "react";
 import { Tooltip } from "@/components/ui/tooltip";
-import { TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useTheme, DARK_THEME_SLUGS } from "@/contexts/ThemeContext";
-import { getHeatmapColorScale, getHeatmapTextColor } from "@/lib/utils/chart-theme";
+import {
+  getHeatmapColorScale,
+  getHeatmapTextColor,
+} from "@/lib/utils/chart-theme";
 
 export interface HeatmapDataPoint {
   x: string;
@@ -42,8 +49,10 @@ export function HeatmapGrid({
   className,
 }: HeatmapGridProps) {
   const { currentTheme } = useTheme();
-  const isDark = currentTheme ? DARK_THEME_SLUGS.includes(currentTheme.slug) : false;
-  
+  const isDark = currentTheme
+    ? DARK_THEME_SLUGS.includes(currentTheme.slug)
+    : false;
+
   // Use provided color scale or theme-aware default
   const getColor = colorScale || getHeatmapColorScale(isDark);
 
@@ -58,13 +67,15 @@ export function HeatmapGrid({
       {(title || description) && (
         <div className="mb-4">
           {title && <h3 className="text-lg font-semibold">{title}</h3>}
-          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+          {description && (
+            <p className="text-sm text-muted-foreground">{description}</p>
+          )}
         </div>
       )}
-      
+
       <div className="relative min-w-[600px]">
         {/* Grid */}
-        <div 
+        <div
           className="grid gap-1"
           style={{
             gridTemplateColumns: `minmax(120px, auto) repeat(${xLabels.length}, minmax(80px, 1fr))`,
@@ -75,7 +86,10 @@ export function HeatmapGrid({
             {/* Empty corner */}
           </div>
           {xLabels.map((xLabel) => (
-            <div key={xLabel} className="p-2 text-center text-xs font-medium text-muted-foreground break-words">
+            <div
+              key={xLabel}
+              className="p-2 text-center text-xs font-medium text-muted-foreground break-words"
+            >
               {xLabel}
             </div>
           ))}
@@ -87,14 +101,18 @@ export function HeatmapGrid({
               <div className="sticky left-0 z-10 bg-background p-2 text-xs font-medium flex items-center">
                 {yLabel}
               </div>
-              
+
               {/* Cells */}
               {xLabels.map((xLabel) => {
                 const point = dataMap.get(`${xLabel}:${yLabel}`);
                 const hasData = !!point;
-                const backgroundColor = hasData ? getColor(point.value) : "transparent";
-                const textColor = hasData ? getHeatmapTextColor(point.value, isDark) : undefined;
-                
+                const backgroundColor = hasData
+                  ? getColor(point.value)
+                  : "transparent";
+                const textColor = hasData
+                  ? getHeatmapTextColor(point.value, isDark)
+                  : undefined;
+
                 return (
                   <TooltipProvider key={`${xLabel}-${yLabel}`}>
                     <Tooltip>
@@ -102,13 +120,13 @@ export function HeatmapGrid({
                         <div
                           className={cn(
                             "h-12 rounded-sm flex items-center justify-center text-xs transition-all border border-transparent hover:border-primary/50",
-                            hasData ? "cursor-pointer" : "bg-muted/20"
+                            hasData ? "cursor-pointer" : "bg-muted/20",
                           )}
                           style={{ backgroundColor }}
                           onClick={() => hasData && onClick?.(point)}
                         >
                           {hasData && (
-                            <span 
+                            <span
                               className="font-medium truncate px-1"
                               style={{ color: textColor }}
                             >
@@ -120,9 +138,15 @@ export function HeatmapGrid({
                       {hasData && (
                         <TooltipContent>
                           <div className="space-y-1">
-                            <p className="font-semibold">{yLabel} - {xLabel}</p>
+                            <p className="font-semibold">
+                              {yLabel} - {xLabel}
+                            </p>
                             <p>Value: {valueFormatter(point.value)}</p>
-                            {point.context && <p className="text-xs text-muted-foreground">{point.context}</p>}
+                            {point.context && (
+                              <p className="text-xs text-muted-foreground">
+                                {point.context}
+                              </p>
+                            )}
                           </div>
                         </TooltipContent>
                       )}

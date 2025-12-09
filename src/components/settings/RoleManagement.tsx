@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +29,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Loader2, RefreshCw, Plus, Shield, Lock, Pencil, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  RefreshCw,
+  Plus,
+  Shield,
+  Lock,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import {
   getAllRoles,
   getAllPermissions,
@@ -32,7 +46,11 @@ import {
   updateRolePermissions,
   deleteRole,
 } from "@/lib/actions/user-management";
-import { type Role, type Permission, groupPermissionsByCategory } from "@/lib/permissions";
+import {
+  type Role,
+  type Permission,
+  groupPermissionsByCategory,
+} from "@/lib/permissions";
 import { useToast } from "@/components/ui/use-toast";
 import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import { type ColumnDef } from "@tanstack/react-table";
@@ -47,24 +65,24 @@ interface RoleFormData {
 
 export function RoleManagement() {
   const { toast } = useToast();
-  const { 
-    canManageRoles, 
-    canCreateRoles, 
-    canDeleteRoles, 
-    isLoading: permissionsLoading 
+  const {
+    canManageRoles,
+    canCreateRoles,
+    canDeleteRoles,
+    isLoading: permissionsLoading,
   } = usePermissions();
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingRole, setDeletingRole] = useState<Role | null>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState<RoleFormData>({
     role_name: "",
@@ -83,7 +101,8 @@ export function RoleManagement() {
       setRoles(rolesData);
       setPermissions(permissionsData);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to load data";
+      const message =
+        err instanceof Error ? err.message : "Failed to load data";
       setError(message);
       toast({
         title: "Error",
@@ -121,7 +140,7 @@ export function RoleManagement() {
     setFormData({
       role_name: role.role_name,
       description: role.description || "",
-      permission_ids: role.permissions.map(p => p.permission_id),
+      permission_ids: role.permissions.map((p) => p.permission_id),
     });
   };
 
@@ -132,23 +151,25 @@ export function RoleManagement() {
   };
 
   const handlePermissionToggle = (permissionId: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       permission_ids: prev.permission_ids.includes(permissionId)
-        ? prev.permission_ids.filter(id => id !== permissionId)
+        ? prev.permission_ids.filter((id) => id !== permissionId)
         : [...prev.permission_ids, permissionId],
     }));
   };
 
   const handleCategoryToggle = (category: string) => {
     const categoryPermissions = permissionsByCategory[category] || [];
-    const categoryIds = categoryPermissions.map(p => p.permission_id);
-    const allSelected = categoryIds.every(id => formData.permission_ids.includes(id));
-    
-    setFormData(prev => ({
+    const categoryIds = categoryPermissions.map((p) => p.permission_id);
+    const allSelected = categoryIds.every((id) =>
+      formData.permission_ids.includes(id),
+    );
+
+    setFormData((prev) => ({
       ...prev,
       permission_ids: allSelected
-        ? prev.permission_ids.filter(id => !categoryIds.includes(id))
+        ? prev.permission_ids.filter((id) => !categoryIds.includes(id))
         : [...new Set([...prev.permission_ids, ...categoryIds])],
     }));
   };
@@ -156,32 +177,44 @@ export function RoleManagement() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      
+
       if (!formData.role_name.trim()) {
         throw new Error("Role name is required");
       }
-      
+
       if (editingRole) {
         // Update existing role
-        await updateRole(editingRole.role_id, formData.role_name, formData.description);
-        await updateRolePermissions(editingRole.role_id, formData.permission_ids);
+        await updateRole(
+          editingRole.role_id,
+          formData.role_name,
+          formData.description,
+        );
+        await updateRolePermissions(
+          editingRole.role_id,
+          formData.permission_ids,
+        );
         toast({
           title: "Success",
           description: "Role updated successfully",
         });
       } else {
         // Create new role
-        await createRole(formData.role_name, formData.description, formData.permission_ids);
+        await createRole(
+          formData.role_name,
+          formData.description,
+          formData.permission_ids,
+        );
         toast({
           title: "Success",
           description: "Role created successfully",
         });
       }
-      
+
       closeDialogs();
       await loadData();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to save role";
+      const message =
+        err instanceof Error ? err.message : "Failed to save role";
       toast({
         title: "Error",
         description: message,
@@ -194,7 +227,7 @@ export function RoleManagement() {
 
   const handleDelete = async () => {
     if (!deletingRole) return;
-    
+
     try {
       await deleteRole(deletingRole.role_id);
       toast({
@@ -205,7 +238,8 @@ export function RoleManagement() {
       setDeletingRole(null);
       await loadData();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to delete role";
+      const message =
+        err instanceof Error ? err.message : "Failed to delete role";
       toast({
         title: "Error",
         description: message,
@@ -216,83 +250,88 @@ export function RoleManagement() {
     }
   };
 
-  const columns = useMemo<ColumnDef<Role>[]>(() => [
-    {
-      accessorKey: "role_name",
-      header: "Role",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          {row.original.is_system_role ? (
-            <Lock className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <Shield className="h-4 w-4 text-muted-foreground" />
-          )}
-          <span className="font-medium">{row.getValue("role_name")}</span>
-          {row.original.is_system_role && (
-            <Badge variant="outline" className="text-xs">System</Badge>
-          )}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "description",
-      header: "Description",
-      cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
-          {row.getValue("description") || "No description"}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "permissions",
-      header: "Permissions",
-      cell: ({ row }) => {
-        const perms = row.original.permissions;
-        return (
-          <Badge variant="secondary">
-            {perms.length} permission{perms.length !== 1 ? "s" : ""}
-          </Badge>
-        );
-      },
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => {
-        const role = row.original;
-        // Don't show actions if user has no role management permissions
-        if (!canManageRoles && !canDeleteRoles) return null;
-        
-        return (
-          <div className="flex items-center justify-end gap-2">
-            {canManageRoles && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => openEditDialog(role)}
-                className="h-8 w-8 p-0"
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
+  const columns = useMemo<ColumnDef<Role>[]>(
+    () => [
+      {
+        accessorKey: "role_name",
+        header: "Role",
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            {row.original.is_system_role ? (
+              <Lock className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Shield className="h-4 w-4 text-muted-foreground" />
             )}
-            {!role.is_system_role && canDeleteRoles && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setDeletingRole(role);
-                  setDeleteDialogOpen(true);
-                }}
-                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+            <span className="font-medium">{row.getValue("role_name")}</span>
+            {row.original.is_system_role && (
+              <Badge variant="outline" className="text-xs">
+                System
+              </Badge>
             )}
           </div>
-        );
+        ),
       },
-    },
-  ], [canManageRoles, canDeleteRoles]);
+      {
+        accessorKey: "description",
+        header: "Description",
+        cell: ({ row }) => (
+          <span className="text-muted-foreground text-sm">
+            {row.getValue("description") || "No description"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "permissions",
+        header: "Permissions",
+        cell: ({ row }) => {
+          const perms = row.original.permissions;
+          return (
+            <Badge variant="secondary">
+              {perms.length} permission{perms.length !== 1 ? "s" : ""}
+            </Badge>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const role = row.original;
+          // Don't show actions if user has no role management permissions
+          if (!canManageRoles && !canDeleteRoles) return null;
+
+          return (
+            <div className="flex items-center justify-end gap-2">
+              {canManageRoles && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => openEditDialog(role)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+              {!role.is_system_role && canDeleteRoles && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setDeletingRole(role);
+                    setDeleteDialogOpen(true);
+                  }}
+                  className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [canManageRoles, canDeleteRoles],
+  );
 
   if (loading || permissionsLoading) {
     return (
@@ -326,7 +365,8 @@ export function RoleManagement() {
             <div>
               <CardTitle>Role Management</CardTitle>
               <CardDescription>
-                Create and manage roles with custom permissions. System roles cannot be deleted.
+                Create and manage roles with custom permissions. System roles
+                cannot be deleted.
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -340,10 +380,7 @@ export function RoleManagement() {
                 Refresh
               </Button>
               {canCreateRoles && (
-                <Button
-                  size="sm"
-                  onClick={openCreateDialog}
-                >
+                <Button size="sm" onClick={openCreateDialog}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Role
                 </Button>
@@ -366,11 +403,16 @@ export function RoleManagement() {
       </Card>
 
       {/* Create/Edit Role Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={(open) => !open && closeDialogs()}>
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={(open) => !open && closeDialogs()}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingRole ? `Edit Role: ${editingRole.role_name}` : "Create New Role"}
+              {editingRole
+                ? `Edit Role: ${editingRole.role_name}`
+                : "Create New Role"}
             </DialogTitle>
             <DialogDescription>
               {editingRole?.is_system_role
@@ -378,7 +420,7 @@ export function RoleManagement() {
                 : "Define the role name, description, and assign permissions."}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6 py-4">
             {/* Role Name */}
             <div className="space-y-2">
@@ -386,7 +428,12 @@ export function RoleManagement() {
               <Input
                 id="role_name"
                 value={formData.role_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, role_name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    role_name: e.target.value,
+                  }))
+                }
                 placeholder="e.g., Regional Manager"
                 disabled={editingRole?.is_system_role}
               />
@@ -398,7 +445,12 @@ export function RoleManagement() {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 placeholder="Describe what this role can do..."
                 rows={2}
               />
@@ -408,68 +460,88 @@ export function RoleManagement() {
             <div className="space-y-2">
               <Label>Permissions</Label>
               <p className="text-sm text-muted-foreground mb-4">
-                Select the permissions this role should have. Click a category header to select/deselect all.
+                Select the permissions this role should have. Click a category
+                header to select/deselect all.
               </p>
-              
+
               <Accordion type="multiple" className="w-full">
-                {Object.entries(permissionsByCategory).map(([category, categoryPermissions]) => {
-                  const categoryIds = categoryPermissions.map(p => p.permission_id);
-                  const selectedCount = categoryIds.filter(id => formData.permission_ids.includes(id)).length;
-                  const allSelected = selectedCount === categoryIds.length;
-                  const someSelected = selectedCount > 0 && selectedCount < categoryIds.length;
-                  
-                  return (
-                    <AccordionItem key={category} value={category}>
-                      <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                          <Checkbox
-                            checked={allSelected}
-                            ref={(el) => {
-                              if (el) {
-                                (el as HTMLButtonElement & { indeterminate: boolean }).indeterminate = someSelected;
+                {Object.entries(permissionsByCategory).map(
+                  ([category, categoryPermissions]) => {
+                    const categoryIds = categoryPermissions.map(
+                      (p) => p.permission_id,
+                    );
+                    const selectedCount = categoryIds.filter((id) =>
+                      formData.permission_ids.includes(id),
+                    ).length;
+                    const allSelected = selectedCount === categoryIds.length;
+                    const someSelected =
+                      selectedCount > 0 && selectedCount < categoryIds.length;
+
+                    return (
+                      <AccordionItem key={category} value={category}>
+                        <AccordionTrigger className="hover:no-underline">
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              checked={allSelected}
+                              ref={(el) => {
+                                if (el) {
+                                  (
+                                    el as HTMLButtonElement & {
+                                      indeterminate: boolean;
+                                    }
+                                  ).indeterminate = someSelected;
+                                }
+                              }}
+                              onCheckedChange={() =>
+                                handleCategoryToggle(category)
                               }
-                            }}
-                            onCheckedChange={() => handleCategoryToggle(category)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                          <span className="font-medium">{category}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {selectedCount}/{categoryIds.length}
-                          </Badge>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-8 pt-2">
-                          {categoryPermissions.map((permission) => (
-                            <div
-                              key={permission.permission_id}
-                              className="flex items-start gap-3 p-2 rounded-md hover:bg-muted/50"
-                            >
-                              <Checkbox
-                                id={permission.permission_id}
-                                checked={formData.permission_ids.includes(permission.permission_id)}
-                                onCheckedChange={() => handlePermissionToggle(permission.permission_id)}
-                              />
-                              <div className="space-y-1">
-                                <Label
-                                  htmlFor={permission.permission_id}
-                                  className="text-sm font-medium cursor-pointer"
-                                >
-                                  {permission.display_name}
-                                </Label>
-                                {permission.description && (
-                                  <p className="text-xs text-muted-foreground">
-                                    {permission.description}
-                                  </p>
-                                )}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <span className="font-medium">{category}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {selectedCount}/{categoryIds.length}
+                            </Badge>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-8 pt-2">
+                            {categoryPermissions.map((permission) => (
+                              <div
+                                key={permission.permission_id}
+                                className="flex items-start gap-3 p-2 rounded-md hover:bg-muted/50"
+                              >
+                                <Checkbox
+                                  id={permission.permission_id}
+                                  checked={formData.permission_ids.includes(
+                                    permission.permission_id,
+                                  )}
+                                  onCheckedChange={() =>
+                                    handlePermissionToggle(
+                                      permission.permission_id,
+                                    )
+                                  }
+                                />
+                                <div className="space-y-1">
+                                  <Label
+                                    htmlFor={permission.permission_id}
+                                    className="text-sm font-medium cursor-pointer"
+                                  >
+                                    {permission.display_name}
+                                  </Label>
+                                  {permission.description && (
+                                    <p className="text-xs text-muted-foreground">
+                                      {permission.description}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  );
-                })}
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  },
+                )}
               </Accordion>
             </div>
           </div>
@@ -506,4 +578,3 @@ export function RoleManagement() {
     </>
   );
 }
-

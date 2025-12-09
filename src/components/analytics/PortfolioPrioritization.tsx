@@ -1,8 +1,21 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Star, AlertCircle, CheckCircle2, Clock } from "lucide-react";
@@ -10,7 +23,8 @@ import Link from "next/link";
 import type { Database } from "@/lib/supabase/database.types";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type Formulation =
+  Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 
 interface PortfolioPrioritizationProps {
   formulations: Formulation[];
@@ -37,20 +51,25 @@ export function PortfolioPrioritization({
   const formatCurrency = formatCurrencyCompact;
 
   // Filter to "Not Yet Considered" products
-  const notYetConsidered = formulations.filter((f) => f.status === "Not Yet Considered");
+  const notYetConsidered = formulations.filter(
+    (f) => f.status === "Not Yet Considered",
+  );
 
   if (notYetConsidered.length === 0) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Portfolio Prioritization</CardTitle>
-          <CardDescription>Review products not yet considered for development</CardDescription>
+          <CardDescription>
+            Review products not yet considered for development
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Alert>
             <CheckCircle2 className="h-4 w-4" />
             <AlertDescription>
-              All formulations have been reviewed. No "Not Yet Considered" products found.
+              All formulations have been reviewed. No "Not Yet Considered"
+              products found.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -59,56 +78,66 @@ export function PortfolioPrioritization({
   }
 
   // Calculate prioritization metrics for each formulation
-  const prioritized: PrioritizationRow[] = notYetConsidered.map((formulation) => {
-    // Get business cases for this formulation
-    const formBusinessCases = businessCases.filter(
-      (bc: any) => bc.formulation_code === formulation.formulation_code
-    );
+  const prioritized: PrioritizationRow[] = notYetConsidered.map(
+    (formulation) => {
+      // Get business cases for this formulation
+      const formBusinessCases = businessCases.filter(
+        (bc: any) => bc.formulation_code === formulation.formulation_code,
+      );
 
-    // Calculate financial metrics
-    const totalRevenue = formBusinessCases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
-    const totalMargin = formBusinessCases.reduce((sum, bc) => sum + (bc.total_margin || 0), 0);
-    const avgMarginPercent = totalRevenue > 0 ? (totalMargin / totalRevenue) * 100 : 0;
+      // Calculate financial metrics
+      const totalRevenue = formBusinessCases.reduce(
+        (sum, bc) => sum + (bc.total_revenue || 0),
+        0,
+      );
+      const totalMargin = formBusinessCases.reduce(
+        (sum, bc) => sum + (bc.total_margin || 0),
+        0,
+      );
+      const avgMarginPercent =
+        totalRevenue > 0 ? (totalMargin / totalRevenue) * 100 : 0;
 
-    // Get protection status
-    const formProtection = protectionStatus.filter(
-      (ps: any) => ps.formulation_code === formulation.formulation_code
-    );
+      // Get protection status
+      const formProtection = protectionStatus.filter(
+        (ps: any) => ps.formulation_code === formulation.formulation_code,
+      );
 
-    // Find earliest protection expiry
-    const expiries = formProtection
-      .flatMap((ps: any) => [
-        ps.earliest_active_patent_expiry,
-        ps.earliest_formulation_patent_expiry,
-      ])
-      .filter((exp: any) => exp)
-      .map((exp: string) => new Date(exp))
-      .sort((a, b) => a.getTime() - b.getTime());
+      // Find earliest protection expiry
+      const expiries = formProtection
+        .flatMap((ps: any) => [
+          ps.earliest_active_patent_expiry,
+          ps.earliest_formulation_patent_expiry,
+        ])
+        .filter((exp: any) => exp)
+        .map((exp: string) => new Date(exp))
+        .sort((a, b) => a.getTime() - b.getTime());
 
-    const earliestProtectionExpiry = expiries.length > 0 ? expiries[0] : null;
-    const canLaunch = !earliestProtectionExpiry || earliestProtectionExpiry < new Date();
+      const earliestProtectionExpiry = expiries.length > 0 ? expiries[0] : null;
+      const canLaunch =
+        !earliestProtectionExpiry || earliestProtectionExpiry < new Date();
 
-    // Count countries (would need to fetch separately, using placeholder)
-    const countriesCount = 0; // TODO: Fetch from formulation_country
+      // Count countries (would need to fetch separately, using placeholder)
+      const countriesCount = 0; // TODO: Fetch from formulation_country
 
-    // Determine priority based on ROI and market potential
-    let priority: "high" | "medium" | "low" = "low";
-    if (avgMarginPercent >= 40 && totalRevenue >= 1000000) {
-      priority = "high";
-    } else if (avgMarginPercent >= 30 && totalRevenue >= 500000) {
-      priority = "medium";
-    }
+      // Determine priority based on ROI and market potential
+      let priority: "high" | "medium" | "low" = "low";
+      if (avgMarginPercent >= 40 && totalRevenue >= 1000000) {
+        priority = "high";
+      } else if (avgMarginPercent >= 30 && totalRevenue >= 500000) {
+        priority = "medium";
+      }
 
-    return {
-      formulation,
-      totalRevenue,
-      avgMarginPercent,
-      countriesCount,
-      earliestProtectionExpiry,
-      canLaunch,
-      priority,
-    };
-  });
+      return {
+        formulation,
+        totalRevenue,
+        avgMarginPercent,
+        countriesCount,
+        earliestProtectionExpiry,
+        canLaunch,
+        priority,
+      };
+    },
+  );
 
   // Sort by priority (high first), then by revenue
   prioritized.sort((a, b) => {
@@ -128,26 +157,41 @@ export function PortfolioPrioritization({
       <CardHeader>
         <CardTitle>Portfolio Prioritization</CardTitle>
         <CardDescription>
-          Review {notYetConsidered.length} "Not Yet Considered" products for potential development
+          Review {notYetConsidered.length} "Not Yet Considered" products for
+          potential development
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Summary Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-3 border rounded-lg">
-            <div className="text-xs font-medium text-muted-foreground">High Priority</div>
-            <div className="text-2xl font-bold text-green-600">{highPriority.length}</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              High Priority
+            </div>
+            <div className="text-2xl font-bold text-green-600">
+              {highPriority.length}
+            </div>
           </div>
           <div className="p-3 border rounded-lg">
-            <div className="text-xs font-medium text-muted-foreground">Medium Priority</div>
-            <div className="text-2xl font-bold text-yellow-600">{mediumPriority.length}</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              Medium Priority
+            </div>
+            <div className="text-2xl font-bold text-yellow-600">
+              {mediumPriority.length}
+            </div>
           </div>
           <div className="p-3 border rounded-lg">
-            <div className="text-xs font-medium text-muted-foreground">Low Priority</div>
-            <div className="text-2xl font-bold text-gray-600">{lowPriority.length}</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              Low Priority
+            </div>
+            <div className="text-2xl font-bold text-gray-600">
+              {lowPriority.length}
+            </div>
           </div>
           <div className="p-3 border rounded-lg">
-            <div className="text-xs font-medium text-muted-foreground">Can Launch</div>
+            <div className="text-xs font-medium text-muted-foreground">
+              Can Launch
+            </div>
             <div className="text-2xl font-bold text-blue-600">
               {prioritized.filter((p) => p.canLaunch).length}
             </div>
@@ -158,8 +202,9 @@ export function PortfolioPrioritization({
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            <strong>Prioritization Logic:</strong> High ROI = Margin ≥40% AND Revenue ≥€1M. Medium ROI = Margin ≥30% AND Revenue ≥€500K.
-            Products are sorted by priority, then by total revenue.
+            <strong>Prioritization Logic:</strong> High ROI = Margin ≥40% AND
+            Revenue ≥€1M. Medium ROI = Margin ≥30% AND Revenue ≥€500K. Products
+            are sorted by priority, then by total revenue.
           </AlertDescription>
         </Alert>
 
@@ -174,7 +219,9 @@ export function PortfolioPrioritization({
                 <TableHead className="min-w-[100px]">Category</TableHead>
                 <TableHead className="min-w-[120px]">Total Revenue</TableHead>
                 <TableHead className="min-w-[100px]">Avg Margin %</TableHead>
-                <TableHead className="min-w-[120px]">Protection Status</TableHead>
+                <TableHead className="min-w-[120px]">
+                  Protection Status
+                </TableHead>
                 <TableHead className="min-w-[100px]">Launch Ready</TableHead>
                 <TableHead className="min-w-[100px]">Actions</TableHead>
               </TableRow>
@@ -188,17 +235,19 @@ export function PortfolioPrioritization({
                         row.priority === "high"
                           ? "default"
                           : row.priority === "medium"
-                          ? "secondary"
-                          : "outline"
+                            ? "secondary"
+                            : "outline"
                       }
                       className="gap-1"
                     >
-                      {row.priority === "high" && <Star className="h-3 w-3 fill-current" />}
+                      {row.priority === "high" && (
+                        <Star className="h-3 w-3 fill-current" />
+                      )}
                       {row.priority === "high"
                         ? "HIGH"
                         : row.priority === "medium"
-                        ? "MEDIUM"
-                        : "LOW"}
+                          ? "MEDIUM"
+                          : "LOW"}
                     </Badge>
                   </TableCell>
                   <TableCell className="font-mono text-sm">
@@ -222,8 +271,8 @@ export function PortfolioPrioritization({
                         row.avgMarginPercent >= 50
                           ? "default"
                           : row.avgMarginPercent >= 30
-                          ? "secondary"
-                          : "outline"
+                            ? "secondary"
+                            : "outline"
                       }
                     >
                       {row.avgMarginPercent.toFixed(1)}%
@@ -232,9 +281,13 @@ export function PortfolioPrioritization({
                   <TableCell className="text-sm">
                     {row.earliestProtectionExpiry ? (
                       <div>
-                        <div>{row.earliestProtectionExpiry.toLocaleDateString()}</div>
+                        <div>
+                          {row.earliestProtectionExpiry.toLocaleDateString()}
+                        </div>
                         <div className="text-xs text-muted-foreground">
-                          {row.earliestProtectionExpiry > new Date() ? "Protected" : "Expired"}
+                          {row.earliestProtectionExpiry > new Date()
+                            ? "Protected"
+                            : "Expired"}
                         </div>
                       </div>
                     ) : (
@@ -256,7 +309,11 @@ export function PortfolioPrioritization({
                   </TableCell>
                   <TableCell>
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/portfolio/formulations/${row.formulation.formulation_id}`}>View</Link>
+                      <Link
+                        href={`/portfolio/formulations/${row.formulation.formulation_id}`}
+                      >
+                        View
+                      </Link>
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -270,7 +327,8 @@ export function PortfolioPrioritization({
           <Alert>
             <Star className="h-4 w-4" />
             <AlertDescription>
-              <strong>Recommendation:</strong> {highPriority.length} product{highPriority.length !== 1 ? "s" : ""} with high ROI potential.
+              <strong>Recommendation:</strong> {highPriority.length} product
+              {highPriority.length !== 1 ? "s" : ""} with high ROI potential.
               Consider moving these to "Selected" status for development.
             </AlertDescription>
           </Alert>
@@ -279,4 +337,3 @@ export function PortfolioPrioritization({
     </Card>
   );
 }
-

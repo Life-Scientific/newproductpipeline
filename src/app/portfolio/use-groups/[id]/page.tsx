@@ -1,5 +1,11 @@
 import { getUseGroupById, getFormulationBusinessCases } from "@/lib/db/queries";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
@@ -38,18 +44,28 @@ export default async function UseGroupDetailPage({
   // Get business cases for this use group
   let businessCases: BusinessCase[] = [];
   if (useGroup.formulation_id) {
-    const allBusinessCases = await getFormulationBusinessCases(useGroup.formulation_id);
+    const allBusinessCases = await getFormulationBusinessCases(
+      useGroup.formulation_id,
+    );
     businessCases = allBusinessCases.filter(
-      (bc) => bc.formulation_country_use_group_id === id
+      (bc) => bc.formulation_country_use_group_id === id,
     );
   }
 
   // Calculate totals
-  const totalRevenue = businessCases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
-  const totalMargin = businessCases.reduce((sum, bc) => sum + (bc.total_margin || 0), 0);
-  const avgMarginPercent = businessCases.length > 0
-    ? businessCases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) / businessCases.length
-    : 0;
+  const totalRevenue = businessCases.reduce(
+    (sum, bc) => sum + (bc.total_revenue || 0),
+    0,
+  );
+  const totalMargin = businessCases.reduce(
+    (sum, bc) => sum + (bc.total_margin || 0),
+    0,
+  );
+  const avgMarginPercent =
+    businessCases.length > 0
+      ? businessCases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) /
+        businessCases.length
+      : 0;
 
   const breadcrumbs = [
     { label: "Use Groups", href: "/use-groups" },
@@ -62,7 +78,9 @@ export default async function UseGroupDetailPage({
         ]
       : []),
     {
-      label: useGroup.use_group_name || `Use Group ${useGroup.use_group_variant || ""}`,
+      label:
+        useGroup.use_group_name ||
+        `Use Group ${useGroup.use_group_variant || ""}`,
     },
   ];
 
@@ -74,7 +92,8 @@ export default async function UseGroupDetailPage({
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold">
-              {useGroup.use_group_name || `Use Group ${useGroup.use_group_variant || ""}`}
+              {useGroup.use_group_name ||
+                `Use Group ${useGroup.use_group_variant || ""}`}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               Use group details and business case information
@@ -96,7 +115,8 @@ export default async function UseGroupDetailPage({
                 <FormattedCurrency value={totalRevenue} />
               </div>
               <p className="text-xs text-muted-foreground">
-                Across {businessCases.length} business case{businessCases.length !== 1 ? "s" : ""}
+                Across {businessCases.length} business case
+                {businessCases.length !== 1 ? "s" : ""}
               </p>
             </CardContent>
           </Card>
@@ -113,7 +133,9 @@ export default async function UseGroupDetailPage({
                 <FormattedCurrency value={totalMargin} />
               </div>
               <p className="text-xs text-muted-foreground">
-                {avgMarginPercent > 0 ? `${avgMarginPercent.toFixed(1)}% avg margin` : "—"}
+                {avgMarginPercent > 0
+                  ? `${avgMarginPercent.toFixed(1)}% avg margin`
+                  : "—"}
               </p>
             </CardContent>
           </Card>
@@ -127,7 +149,9 @@ export default async function UseGroupDetailPage({
             </CardHeader>
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">{businessCases.length}</div>
-              <p className="text-xs text-muted-foreground">Active projections</p>
+              <p className="text-xs text-muted-foreground">
+                Active projections
+              </p>
             </CardContent>
           </Card>
 
@@ -145,8 +169,8 @@ export default async function UseGroupDetailPage({
                     useGroup.use_group_status === "Approved"
                       ? "default"
                       : useGroup.use_group_status === "Submitted"
-                      ? "secondary"
-                      : "outline"
+                        ? "secondary"
+                        : "outline"
                   }
                   className="text-sm"
                 >
@@ -164,30 +188,45 @@ export default async function UseGroupDetailPage({
           <Card>
             <CardHeader className="space-y-1.5">
               <CardTitle>Use Group Information</CardTitle>
-              <CardDescription>Use group details and variant information</CardDescription>
+              <CardDescription>
+                Use group details and variant information
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Use Group Name</p>
-                  <p className="text-sm font-medium">{useGroup.use_group_name || "—"}</p>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Use Group Name
+                  </p>
+                  <p className="text-sm font-medium">
+                    {useGroup.use_group_name || "—"}
+                  </p>
                 </div>
 
                 {useGroup.use_group_variant && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Variant</p>
-                    <Badge variant="secondary">{useGroup.use_group_variant}</Badge>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Variant
+                    </p>
+                    <Badge variant="secondary">
+                      {useGroup.use_group_variant}
+                    </Badge>
                   </div>
                 )}
 
                 {useGroup.formulation_id && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Formulation</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Formulation
+                    </p>
                     <Button variant="link" className="h-auto p-0" asChild>
-                      <Link href={`/portfolio/formulations/${useGroup.formulation_id}`}>
+                      <Link
+                        href={`/portfolio/formulations/${useGroup.formulation_id}`}
+                      >
                         <Package className="mr-2 h-4 w-4" />
                         {useGroup.formulation_code}
-                        {useGroup.formulation_name && ` - ${useGroup.formulation_name}`}
+                        {useGroup.formulation_name &&
+                          ` - ${useGroup.formulation_name}`}
                       </Link>
                     </Button>
                   </div>
@@ -195,12 +234,17 @@ export default async function UseGroupDetailPage({
 
                 {useGroup.formulation_country_id && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Formulation-Country</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Formulation-Country
+                    </p>
                     <Button variant="link" className="h-auto p-0" asChild>
-                      <Link href={`/formulation-countries/${useGroup.formulation_country_id}`}>
+                      <Link
+                        href={`/formulation-countries/${useGroup.formulation_country_id}`}
+                      >
                         <Globe className="mr-2 h-4 w-4" />
                         {useGroup.country_name}
-                        {useGroup.formulation_code && ` - ${useGroup.formulation_code}`}
+                        {useGroup.formulation_code &&
+                          ` - ${useGroup.formulation_code}`}
                       </Link>
                     </Button>
                   </div>
@@ -208,7 +252,9 @@ export default async function UseGroupDetailPage({
 
                 {useGroup.country_name && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Country</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Country
+                    </p>
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4 text-muted-foreground" />
                       <p className="text-sm">{useGroup.country_name}</p>
@@ -223,7 +269,9 @@ export default async function UseGroupDetailPage({
 
                 {useGroup.reference_product_name && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Reference Product</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Reference Product
+                    </p>
                     <p className="text-sm">{useGroup.reference_product_name}</p>
                     {useGroup.reference_manufacturer && (
                       <p className="text-xs text-muted-foreground">
@@ -235,7 +283,9 @@ export default async function UseGroupDetailPage({
 
                 {useGroup.use_group_crops && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Crops</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Crops
+                    </p>
                     <p className="text-sm">{useGroup.use_group_crops}</p>
                   </div>
                 )}
@@ -247,20 +297,24 @@ export default async function UseGroupDetailPage({
           <Card>
             <CardHeader className="space-y-1.5">
               <CardTitle>Registration Timeline</CardTitle>
-              <CardDescription>Submission, approval, and market entry dates</CardDescription>
+              <CardDescription>
+                Submission, approval, and market entry dates
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Registration Status</p>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Registration Status
+                  </p>
                   {useGroup.use_group_status ? (
                     <Badge
                       variant={
                         useGroup.use_group_status === "Approved"
                           ? "default"
                           : useGroup.use_group_status === "Submitted"
-                          ? "secondary"
-                          : "outline"
+                            ? "secondary"
+                            : "outline"
                       }
                     >
                       {useGroup.use_group_status}
@@ -272,51 +326,69 @@ export default async function UseGroupDetailPage({
 
                 {useGroup.earliest_actual_submission_date && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Earliest Submission Date</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Earliest Submission Date
+                    </p>
                     <p className="text-sm flex items-center gap-2">
                       <Calendar className="h-3 w-3" />
-                      {new Date(useGroup.earliest_actual_submission_date).toLocaleDateString()}
+                      {new Date(
+                        useGroup.earliest_actual_submission_date,
+                      ).toLocaleDateString()}
                     </p>
                   </div>
                 )}
 
                 {useGroup.earliest_actual_submission_date && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Actual Submission Date</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Actual Submission Date
+                    </p>
                     <p className="text-sm flex items-center gap-2">
                       <Calendar className="h-3 w-3" />
-                      {new Date(useGroup.earliest_actual_submission_date).toLocaleDateString()}
+                      {new Date(
+                        useGroup.earliest_actual_submission_date,
+                      ).toLocaleDateString()}
                     </p>
                   </div>
                 )}
 
                 {useGroup.earliest_actual_approval_date && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Earliest Approval Date</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Earliest Approval Date
+                    </p>
                     <p className="text-sm flex items-center gap-2">
                       <Calendar className="h-3 w-3" />
-                      {new Date(useGroup.earliest_actual_approval_date).toLocaleDateString()}
+                      {new Date(
+                        useGroup.earliest_actual_approval_date,
+                      ).toLocaleDateString()}
                     </p>
                   </div>
                 )}
 
                 {useGroup.earliest_actual_approval_date && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Actual Approval Date</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Actual Approval Date
+                    </p>
                     <p className="text-sm flex items-center gap-2">
                       <CheckCircle2 className="h-3 w-3 text-green-600" />
-                      {new Date(useGroup.earliest_actual_approval_date).toLocaleDateString()}
+                      {new Date(
+                        useGroup.earliest_actual_approval_date,
+                      ).toLocaleDateString()}
                     </p>
                   </div>
                 )}
 
-{/* earliest_market_entry_date field not available in use group view */}
+                {/* earliest_market_entry_date field not available in use group view */}
 
-{/* actual_market_entry_date field not available in use group view */}
+                {/* actual_market_entry_date field not available in use group view */}
 
                 {useGroup.is_active !== null && (
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Is Active</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Is Active
+                    </p>
                     <Badge variant={useGroup.is_active ? "default" : "outline"}>
                       {useGroup.is_active ? "Yes" : "No"}
                     </Badge>
@@ -332,7 +404,9 @@ export default async function UseGroupDetailPage({
           <Card className="mt-6">
             <CardHeader className="space-y-1.5">
               <CardTitle>Business Cases</CardTitle>
-              <CardDescription>Financial projections for this use group</CardDescription>
+              <CardDescription>
+                Financial projections for this use group
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -346,16 +420,20 @@ export default async function UseGroupDetailPage({
                       <div className="space-y-1 flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className="font-medium">
-                            {bc.display_name || bc.business_case_name || "Business Case"}
+                            {bc.display_name ||
+                              bc.business_case_name ||
+                              "Business Case"}
                           </h4>
-{/* scenario_name field removed from schema */}
+                          {/* scenario_name field removed from schema */}
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {bc.fiscal_year} • Year {bc.year_offset}
                         </p>
                       </div>
                       <div className="text-right space-y-1">
-                        <div className="font-semibold"><FormattedCurrency value={bc.total_revenue} /></div>
+                        <div className="font-semibold">
+                          <FormattedCurrency value={bc.total_revenue} />
+                        </div>
                         {bc.margin_percent !== null && (
                           <div className="text-sm text-muted-foreground">
                             {bc.margin_percent.toFixed(1)}% margin
@@ -373,4 +451,3 @@ export default async function UseGroupDetailPage({
     </div>
   );
 }
-

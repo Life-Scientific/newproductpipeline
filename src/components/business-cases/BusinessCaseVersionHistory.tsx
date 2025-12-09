@@ -1,11 +1,32 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { GitBranch, Clock, User, ChevronDown, ChevronUp, Eye, Archive, MessageSquare, FileText } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  GitBranch,
+  Clock,
+  User,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  Archive,
+  MessageSquare,
+  FileText,
+} from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { getBusinessCaseVersionHistoryAction } from "@/lib/actions/business-cases";
 import type { BusinessCaseVersionHistoryEntry } from "@/lib/db/queries";
@@ -25,11 +46,13 @@ export function BusinessCaseVersionHistory({
   formulationName,
   countryName,
 }: BusinessCaseVersionHistoryProps) {
-  const [versions, setVersions] = useState<BusinessCaseVersionHistoryEntry[]>([]);
+  const [versions, setVersions] = useState<BusinessCaseVersionHistoryEntry[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // All hooks must be called before any early returns (Rules of Hooks)
   const { formatCurrencyCompact } = useDisplayPreferences();
 
@@ -104,7 +127,7 @@ export function BusinessCaseVersionHistory({
           {displayVersions.map((version, index) => {
             const isCurrent = version.business_case_group_id === currentGroupId;
             const isActive = version.status === "active";
-            
+
             return (
               <div
                 key={version.business_case_group_id}
@@ -112,15 +135,17 @@ export function BusinessCaseVersionHistory({
                   isCurrent
                     ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800"
                     : isActive
-                    ? "bg-background"
-                    : "bg-muted/30"
+                      ? "bg-background"
+                      : "bg-muted/30"
                 }`}
               >
                 {/* Version indicator */}
                 <div className="flex flex-col items-center w-12 flex-shrink-0">
-                  <div className={`w-3 h-3 rounded-full ${
-                    isActive ? "bg-green-500" : "bg-gray-400"
-                  }`} />
+                  <div
+                    className={`w-3 h-3 rounded-full ${
+                      isActive ? "bg-green-500" : "bg-gray-400"
+                    }`}
+                  />
                   {index < displayVersions.length - 1 && (
                     <div className="w-0.5 h-6 bg-gray-300 dark:bg-gray-600 mt-1" />
                   )}
@@ -149,32 +174,42 @@ export function BusinessCaseVersionHistory({
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Badge variant="outline" className="text-xs cursor-help">
+                            <Badge
+                              variant="outline"
+                              className="text-xs cursor-help"
+                            >
                               <FileText className="h-3 w-3 mr-1" />
                               Changes
                             </Badge>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="max-w-md">
                             <div className="space-y-1">
-                              <p className="font-medium text-xs">What Changed:</p>
-                              <p className="text-xs">{version.change_summary}</p>
+                              <p className="font-medium text-xs">
+                                What Changed:
+                              </p>
+                              <p className="text-xs">
+                                {version.change_summary}
+                              </p>
                             </div>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     )}
                   </div>
-                  
+
                   {/* Change reason - show if present */}
                   {version.change_reason && (
                     <div className="flex items-start gap-1 mt-1.5 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-md max-w-[400px]">
                       <MessageSquare className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                      <span className="italic truncate" title={version.change_reason}>
+                      <span
+                        className="italic truncate"
+                        title={version.change_reason}
+                      >
                         "{version.change_reason}"
                       </span>
                     </div>
                   )}
-                  
+
                   <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <User className="h-3 w-3" />
@@ -184,13 +219,18 @@ export function BusinessCaseVersionHistory({
                       <Clock className="h-3 w-3" />
                       <span>
                         {version.created_at
-                          ? formatDistanceToNow(new Date(version.created_at), { addSuffix: true })
+                          ? formatDistanceToNow(new Date(version.created_at), {
+                              addSuffix: true,
+                            })
                           : "—"}
                       </span>
                     </div>
                     {version.created_at && (
                       <span className="text-muted-foreground/60">
-                        {format(new Date(version.created_at), "MMM d, yyyy HH:mm")}
+                        {format(
+                          new Date(version.created_at),
+                          "MMM d, yyyy HH:mm",
+                        )}
                       </span>
                     )}
                   </div>
@@ -199,7 +239,9 @@ export function BusinessCaseVersionHistory({
                 {/* Year 1 summary */}
                 <div className="text-right flex-shrink-0">
                   <div className="text-sm font-medium">
-                    {formatCurrencyCompact(version.year_1_summary.total_revenue)}
+                    {formatCurrencyCompact(
+                      version.year_1_summary.total_revenue,
+                    )}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     FY1 Revenue
@@ -233,18 +275,13 @@ export function BusinessCaseVersionHistory({
 
         <div className="mt-4 p-3 bg-muted/50 rounded-lg border">
           <p className="text-xs text-muted-foreground">
-            <strong>Version Control:</strong> Every change creates a new version with automatic diff tracking.
-            Add a reason for your changes to help your team understand the context.
-            Previous versions are preserved for audit tracking and can be referenced.
+            <strong>Version Control:</strong> Every change creates a new version
+            with automatic diff tracking. Add a reason for your changes to help
+            your team understand the context. Previous versions are preserved
+            for audit tracking and can be referenced.
           </p>
         </div>
       </CardContent>
     </Card>
   );
 }
-
-
-
-
-
-

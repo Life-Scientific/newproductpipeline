@@ -51,13 +51,11 @@ export function CardGrid({
   const { mobile = 1, tablet = 2, desktop = 4 } = columns;
 
   const mobileClass =
-    columnClasses.mobile[
-      (mobile as keyof typeof columnClasses.mobile) || 1
-    ] || columnClasses.mobile[1];
+    columnClasses.mobile[(mobile as keyof typeof columnClasses.mobile) || 1] ||
+    columnClasses.mobile[1];
   const tabletClass =
-    columnClasses.tablet[
-      (tablet as keyof typeof columnClasses.tablet) || 2
-    ] || columnClasses.tablet[2];
+    columnClasses.tablet[(tablet as keyof typeof columnClasses.tablet) || 2] ||
+    columnClasses.tablet[2];
   const desktopClass =
     columnClasses.desktop[
       (desktop as keyof typeof columnClasses.desktop) || 4
@@ -80,17 +78,18 @@ export function CardGrid({
         mobileClass,
         tabletClass,
         desktopClass,
-        className
+        className,
       )}
-      style={{
-        "--grid-gap": `${gapValue}px`,
-        gap: `${gapValue}px`,
-        rowGap: `${gapValue}px`,
-        columnGap: `${gapValue}px`,
-      } as React.CSSProperties & { "--grid-gap": string }}
+      style={
+        {
+          "--grid-gap": `${gapValue}px`,
+          gap: `${gapValue}px`,
+          rowGap: `${gapValue}px`,
+          columnGap: `${gapValue}px`,
+        } as React.CSSProperties & { "--grid-gap": string }
+      }
     >
       {children}
     </div>
   );
 }
-

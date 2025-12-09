@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import type { Database } from "@/lib/supabase/database.types";
 
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type Formulation =
+  Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 
 const statusColors: Record<string, string> = {
   "Not Yet Considered": "secondary",
@@ -24,7 +25,7 @@ const columns: ColumnDef<Formulation>[] = [
       const name = row.getValue("product_name") as string;
       const code = row.original.formulation_code;
       const id = row.original.formulation_id;
-      
+
       return (
         <Link
           href={`/portfolio/formulations/${id}`}
@@ -34,9 +35,7 @@ const columns: ColumnDef<Formulation>[] = [
             {name || code || "—"}
           </div>
           {code && name && (
-            <div className="text-xs text-muted-foreground mt-0.5">
-              {code}
-            </div>
+            <div className="text-xs text-muted-foreground mt-0.5">{code}</div>
           )}
         </Link>
       );
@@ -47,7 +46,11 @@ const columns: ColumnDef<Formulation>[] = [
     header: "Short Name",
     cell: ({ row }) => {
       const shortName = row.getValue("short_name") as string | null;
-      return <span className="text-sm text-muted-foreground">{shortName || "—"}</span>;
+      return (
+        <span className="text-sm text-muted-foreground">
+          {shortName || "—"}
+        </span>
+      );
     },
   },
   {
@@ -81,7 +84,7 @@ const columns: ColumnDef<Formulation>[] = [
           className="inline-block"
         >
           <Badge
-            variant={statusColors[status] as any || "secondary"}
+            variant={(statusColors[status] as any) || "secondary"}
             className="hover:opacity-80 transition-opacity cursor-pointer"
           >
             {status}

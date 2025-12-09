@@ -7,7 +7,8 @@ import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import type { Database } from "@/lib/supabase/database.types";
 import { getStatusVariant } from "@/lib/design-system";
 
-type RegistrationPipeline = Database["public"]["Views"]["vw_registration_pipeline"]["Row"];
+type RegistrationPipeline =
+  Database["public"]["Views"]["vw_registration_pipeline"]["Row"];
 
 const columns: ColumnDef<RegistrationPipeline>[] = [
   {
@@ -34,7 +35,9 @@ const columns: ColumnDef<RegistrationPipeline>[] = [
     accessorKey: "likely_registration_pathway",
     header: "Pathway",
     cell: ({ row }) => {
-      const pathway = row.getValue("likely_registration_pathway") as string | null;
+      const pathway = row.getValue("likely_registration_pathway") as
+        | string
+        | null;
       if (!pathway) return "—";
       return (
         <Badge variant={pathway.includes("33") ? "default" : "secondary"}>
@@ -50,7 +53,7 @@ const columns: ColumnDef<RegistrationPipeline>[] = [
       const status = row.getValue("registration_status") as string | null;
       if (!status) return "—";
       return (
-        <Badge variant={getStatusVariant(status, 'registration')}>
+        <Badge variant={getStatusVariant(status, "registration")}>
           {status}
         </Badge>
       );
@@ -62,7 +65,9 @@ const columns: ColumnDef<RegistrationPipeline>[] = [
     cell: ({ row }) => {
       const active = row.getValue("is_in_active_portfolio") as boolean | null;
       return active ? (
-        <Badge variant="success" className="rounded-full px-2">Yes</Badge>
+        <Badge variant="success" className="rounded-full px-2">
+          Yes
+        </Badge>
       ) : (
         <span className="text-muted-foreground text-sm">No</span>
       );
@@ -74,7 +79,9 @@ const columns: ColumnDef<RegistrationPipeline>[] = [
     cell: ({ row }) => {
       const approved = row.getValue("has_approval") as boolean | null;
       return approved ? (
-        <Badge variant="success" className="rounded-full px-2">Yes</Badge>
+        <Badge variant="success" className="rounded-full px-2">
+          Yes
+        </Badge>
       ) : (
         <span className="text-muted-foreground text-sm">No</span>
       );

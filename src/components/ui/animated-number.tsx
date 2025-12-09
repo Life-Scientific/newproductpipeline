@@ -22,7 +22,7 @@ export function AnimatedNumber({
 }: AnimatedNumberProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
-  
+
   const spring = useSpring(0, {
     mass: 0.8,
     stiffness: 75,
@@ -31,7 +31,7 @@ export function AnimatedNumber({
   });
 
   const display = useTransform(spring, (current) =>
-    new Intl.NumberFormat("en-US", formatOptions).format(Math.round(current))
+    new Intl.NumberFormat("en-US", formatOptions).format(Math.round(current)),
   );
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export function AnimatedPercentage({
 }: AnimatedPercentageProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
-  
+
   const spring = useSpring(0, {
     mass: 0.8,
     stiffness: 75,
@@ -73,8 +73,9 @@ export function AnimatedPercentage({
     duration: duration * 1000,
   });
 
-  const display = useTransform(spring, (current) =>
-    `${current.toFixed(decimals)}%`
+  const display = useTransform(
+    spring,
+    (current) => `${current.toFixed(decimals)}%`,
   );
 
   useEffect(() => {
@@ -108,7 +109,7 @@ export function AnimatedCurrency({
 }: AnimatedCurrencyProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
-  
+
   const spring = useSpring(0, {
     mass: 0.8,
     stiffness: 75,
@@ -122,7 +123,7 @@ export function AnimatedCurrency({
       currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(Math.round(current))
+    }).format(Math.round(current)),
   );
 
   useEffect(() => {
@@ -137,4 +138,3 @@ export function AnimatedCurrency({
     </motion.span>
   );
 }
-

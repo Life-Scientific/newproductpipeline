@@ -22,7 +22,9 @@ const createColumns = (): ColumnDef<ExchangeRate>[] => [
     header: "Country",
     cell: ({ row }) => {
       const country = row.original.countries;
-      return <span className="font-medium">{country?.country_name || "—"}</span>;
+      return (
+        <span className="font-medium">{country?.country_name || "—"}</span>
+      );
     },
   },
   {
@@ -30,7 +32,11 @@ const createColumns = (): ColumnDef<ExchangeRate>[] => [
     header: "Currency",
     cell: ({ row }) => {
       const currency = row.getValue("currency_code") as string | null;
-      return <span className="font-mono text-sm text-muted-foreground">{currency || "—"}</span>;
+      return (
+        <span className="font-mono text-sm text-muted-foreground">
+          {currency || "—"}
+        </span>
+      );
     },
   },
   {
@@ -65,9 +71,13 @@ const createColumns = (): ColumnDef<ExchangeRate>[] => [
     cell: ({ row }) => {
       const isActive = row.getValue("is_active") as boolean | null;
       return isActive ? (
-        <Badge variant="default" className="text-xs">Active</Badge>
+        <Badge variant="default" className="text-xs">
+          Active
+        </Badge>
       ) : (
-        <Badge variant="secondary" className="text-xs">Inactive</Badge>
+        <Badge variant="secondary" className="text-xs">
+          Inactive
+        </Badge>
       );
     },
   },

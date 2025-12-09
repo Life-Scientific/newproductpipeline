@@ -4,7 +4,8 @@ import { FuzzySearchSelect } from "./FuzzySearchSelect";
 import { searchFormulations } from "@/lib/actions/search";
 import type { Database } from "@/lib/supabase/database.types";
 
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type Formulation =
+  Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 
 interface FormulationSelectorProps {
   value?: string;
@@ -31,11 +32,18 @@ export function FormulationSelector({
     <FuzzySearchSelect
       value={value}
       onValueChange={onValueChange}
-      searchFunction={(search) => searchFormulations({ search, countryId, limit: 100 })}
+      searchFunction={(search) =>
+        searchFormulations({ search, countryId, limit: 100 })
+      }
       getOptionValue={(item) => item.formulation_id}
       getOptionLabel={(item) => {
         const code = item.formulation_code || "";
-        const name = ("formulation_name" in item ? item.formulation_name : ("product_name" in item ? (item as any).product_name : null)) || "";
+        const name =
+          ("formulation_name" in item
+            ? item.formulation_name
+            : "product_name" in item
+              ? (item as any).product_name
+              : null) || "";
         return name ? `${code} - ${name}` : code;
       }}
       getOptionSubtitle={(item) => item.formulation_code}
@@ -50,9 +58,3 @@ export function FormulationSelector({
     />
   );
 }
-
-
-
-
-
-

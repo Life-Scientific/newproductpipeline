@@ -43,10 +43,13 @@ export default function FormulationsLoading() {
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-4 w-16 ml-auto" />
           </div>
-          
+
           {/* Table rows */}
           {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 p-3 border-b last:border-0">
+            <div
+              key={i}
+              className="flex items-center gap-4 p-3 border-b last:border-0"
+            >
               <Skeleton className="h-5 w-20" />
               <Skeleton className="h-5 w-40" />
               <Skeleton className="h-6 w-20 rounded-full" />
@@ -69,4 +72,3 @@ export default function FormulationsLoading() {
     </div>
   );
 }
-

@@ -61,7 +61,13 @@ export function BaseModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn(maxWidth, "max-h-[90vh] overflow-y-auto flex flex-col", className)}>
+      <DialogContent
+        className={cn(
+          maxWidth,
+          "max-h-[90vh] overflow-y-auto flex flex-col",
+          className,
+        )}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
@@ -72,9 +78,7 @@ export function BaseModal({
           )}
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto py-2">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto py-2">{children}</div>
 
         <DialogFooter className="gap-2 sm:gap-0">
           {footer ? (
@@ -114,4 +118,3 @@ export function BaseModal({
     </Dialog>
   );
 }
-

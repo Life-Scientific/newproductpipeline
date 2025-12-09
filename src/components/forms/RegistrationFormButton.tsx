@@ -15,8 +15,10 @@ import { usePermissions } from "@/hooks/use-permissions";
 
 export function RegistrationFormButton() {
   const [formulationCountryOpen, setFormulationCountryOpen] = useState(false);
-  const [formulationCountryUseGroupOpen, setFormulationCountryUseGroupOpen] = useState(false);
-  const { canCreateFormulationCountries, canCreateUseGroups, isLoading } = usePermissions();
+  const [formulationCountryUseGroupOpen, setFormulationCountryUseGroupOpen] =
+    useState(false);
+  const { canCreateFormulationCountries, canCreateUseGroups, isLoading } =
+    usePermissions();
 
   // Don't render if user doesn't have any registration-related permissions
   if (isLoading || (!canCreateFormulationCountries && !canCreateUseGroups)) {
@@ -39,13 +41,18 @@ export function RegistrationFormButton() {
             </DropdownMenuItem>
           )}
           {canCreateUseGroups && (
-            <DropdownMenuItem onClick={() => setFormulationCountryUseGroupOpen(true)}>
+            <DropdownMenuItem
+              onClick={() => setFormulationCountryUseGroupOpen(true)}
+            >
               Add Use Group Registration
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-      <FormulationCountryForm open={formulationCountryOpen} onOpenChange={setFormulationCountryOpen} />
+      <FormulationCountryForm
+        open={formulationCountryOpen}
+        onOpenChange={setFormulationCountryOpen}
+      />
       <FormulationCountryUseGroupForm
         open={formulationCountryUseGroupOpen}
         onOpenChange={setFormulationCountryUseGroupOpen}
@@ -53,4 +60,3 @@ export function RegistrationFormButton() {
     </>
   );
 }
-

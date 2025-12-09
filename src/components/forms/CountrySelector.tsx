@@ -26,7 +26,6 @@ export function CountrySelector({
   required = false,
   selectedCountry,
 }: CountrySelectorProps) {
-  
   const handleSearch = useCallback((search: string) => {
     return searchCountries({ search, limit: 200 });
   }, []);
@@ -42,7 +41,9 @@ export function CountrySelector({
       searchFunction={handleSearch}
       getOptionValue={(item) => item.country_id}
       getOptionLabel={(item) => item.country_name || ""}
-      getOptionSubtitle={(item) => item.country_code ? `Code: ${item.country_code}` : undefined}
+      getOptionSubtitle={(item) =>
+        item.country_code ? `Code: ${item.country_code}` : undefined
+      }
       placeholder={placeholder}
       searchPlaceholder="Type country name or code..."
       emptyText="No countries found. Try a different search term."

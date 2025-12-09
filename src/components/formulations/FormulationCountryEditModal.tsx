@@ -5,7 +5,13 @@ import { BaseModal } from "@/components/ui/BaseModal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { updateFormulationCountry } from "@/lib/actions/formulation-country";
 import { useToast } from "@/components/ui/use-toast";
@@ -47,11 +53,7 @@ const READINESS_OPTIONS = [
   "Completed Review",
 ];
 
-const PATHWAY_OPTIONS = [
-  "Article 33 - New",
-  "Article 34 - Me-too",
-  "Other",
-];
+const PATHWAY_OPTIONS = ["Article 33 - New", "Article 34 - Me-too", "Other"];
 
 export function FormulationCountryEditModal({
   formulationCountry,
@@ -60,17 +62,32 @@ export function FormulationCountryEditModal({
   onSuccess,
 }: FormulationCountryEditModalProps) {
   const { toast } = useToast();
-  const { canEditFormulationCountries, isLoading: permissionsLoading } = usePermissions();
+  const { canEditFormulationCountries, isLoading: permissionsLoading } =
+    usePermissions();
   const [isPending, startTransition] = useTransition();
-  
-  const [status, setStatus] = useState(formulationCountry.country_status || "Not yet evaluated");
-  const [readiness, setReadiness] = useState(formulationCountry.country_readiness || "Nominated for Review");
-  const [notes, setNotes] = useState(formulationCountry.country_readiness_notes || "");
-  const [pathway, setPathway] = useState(formulationCountry.likely_registration_pathway || "");
-  const [entryDate, setEntryDate] = useState(formulationCountry.earliest_market_entry_date || "");
+
+  const [status, setStatus] = useState(
+    formulationCountry.country_status || "Not yet evaluated",
+  );
+  const [readiness, setReadiness] = useState(
+    formulationCountry.country_readiness || "Nominated for Review",
+  );
+  const [notes, setNotes] = useState(
+    formulationCountry.country_readiness_notes || "",
+  );
+  const [pathway, setPathway] = useState(
+    formulationCountry.likely_registration_pathway || "",
+  );
+  const [entryDate, setEntryDate] = useState(
+    formulationCountry.earliest_market_entry_date || "",
+  );
   const [isNovel, setIsNovel] = useState(formulationCountry.is_novel || false);
-  const [isEuApproved, setIsEuApproved] = useState(formulationCountry.is_eu_approved_formulation || false);
-  const [isActive, setIsActive] = useState(formulationCountry.is_active ?? true);
+  const [isEuApproved, setIsEuApproved] = useState(
+    formulationCountry.is_eu_approved_formulation || false,
+  );
+  const [isActive, setIsActive] = useState(
+    formulationCountry.is_active ?? true,
+  );
 
   const handleSave = () => {
     if (!canEditFormulationCountries) {
@@ -89,7 +106,7 @@ export function FormulationCountryEditModal({
       formData.append("country_readiness_notes", notes);
       if (pathway) formData.append("likely_registration_pathway", pathway);
       if (entryDate) formData.append("earliest_market_entry_date", entryDate);
-      
+
       if (isNovel) formData.append("is_novel", "true");
       if (isEuApproved) formData.append("is_eu_approved_formulation", "true");
       if (isActive) formData.append("is_active", "true");
@@ -98,14 +115,17 @@ export function FormulationCountryEditModal({
       // So we need to append them regardless of value if we want to update them, or just append true/false strings and let action parse
       // My updated action: const isNovel = formData.get("is_novel") === "true"; ... if (formData.has("is_novel")) ...
       // So if I want to set to false, I should append "false" and ensure the action handles it.
-      // Action logic: const isNovel = formData.get("is_novel") === "true"; 
+      // Action logic: const isNovel = formData.get("is_novel") === "true";
       // If I append "false", isNovel becomes false. Then formData.has("is_novel") is true. So it updates to false. Correct.
 
       formData.append("is_novel", String(isNovel));
       formData.append("is_eu_approved_formulation", String(isEuApproved));
       formData.append("is_active", String(isActive));
 
-      const result = await updateFormulationCountry(formulationCountry.formulation_country_id, formData);
+      const result = await updateFormulationCountry(
+        formulationCountry.formulation_country_id,
+        formData,
+      );
 
       if (result.error) {
         toast({
@@ -129,7 +149,11 @@ export function FormulationCountryEditModal({
       open={open}
       onOpenChange={onOpenChange}
       title={`Edit ${formulationCountry.country_name || "Country Details"}`}
-      description={formulationCountry.formulation_name ? `Formulation: ${formulationCountry.formulation_name}` : undefined}
+      description={
+        formulationCountry.formulation_name
+          ? `Formulation: ${formulationCountry.formulation_name}`
+          : undefined
+      }
       onSave={handleSave}
       isSaving={isPending}
       saveDisabled={permissionsLoading || !canEditFormulationCountries}
@@ -137,8 +161,10 @@ export function FormulationCountryEditModal({
       <div className="space-y-6">
         {/* Status & Readiness Section */}
         <div className="space-y-4 border rounded-lg p-4 bg-muted/10">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">Status & Readiness</h3>
-          
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">
+            Status & Readiness
+          </h3>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="status">Country Status</Label>
@@ -150,7 +176,9 @@ export function FormulationCountryEditModal({
                   {COUNTRY_STATUS_OPTIONS.map((opt) => (
                     <SelectItem key={opt} value={opt}>
                       <div className="flex items-center gap-2">
-                        <Badge variant={getStatusVariant(opt, "country")}>{opt}</Badge>
+                        <Badge variant={getStatusVariant(opt, "country")}>
+                          {opt}
+                        </Badge>
                       </div>
                     </SelectItem>
                   ))}
@@ -189,8 +217,10 @@ export function FormulationCountryEditModal({
 
         {/* Registration Details Section */}
         <div className="space-y-4 border rounded-lg p-4 bg-muted/10">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">Registration Details</h3>
-          
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">
+            Registration Details
+          </h3>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="pathway">Registration Pathway</Label>
@@ -222,34 +252,53 @@ export function FormulationCountryEditModal({
 
         {/* Flags Section */}
         <div className="space-y-4 border rounded-lg p-4 bg-muted/10">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">Configuration</h3>
-          
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">
+            Configuration
+          </h3>
+
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="isNovel">Novel Formulation</Label>
-              <div className="text-xs text-muted-foreground">Is this a novel formulation?</div>
+              <div className="text-xs text-muted-foreground">
+                Is this a novel formulation?
+              </div>
             </div>
-            <Switch id="isNovel" checked={isNovel} onCheckedChange={setIsNovel} />
+            <Switch
+              id="isNovel"
+              checked={isNovel}
+              onCheckedChange={setIsNovel}
+            />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="isEuApproved">EU Approved</Label>
-              <div className="text-xs text-muted-foreground">Is this formulation approved in EU?</div>
+              <div className="text-xs text-muted-foreground">
+                Is this formulation approved in EU?
+              </div>
             </div>
-            <Switch id="isEuApproved" checked={isEuApproved} onCheckedChange={setIsEuApproved} />
+            <Switch
+              id="isEuApproved"
+              checked={isEuApproved}
+              onCheckedChange={setIsEuApproved}
+            />
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="isActive">Active</Label>
-              <div className="text-xs text-muted-foreground">Is this country entry active?</div>
+              <div className="text-xs text-muted-foreground">
+                Is this country entry active?
+              </div>
             </div>
-            <Switch id="isActive" checked={isActive} onCheckedChange={setIsActive} />
+            <Switch
+              id="isActive"
+              checked={isActive}
+              onCheckedChange={setIsActive}
+            />
           </div>
         </div>
       </div>
     </BaseModal>
   );
 }
-

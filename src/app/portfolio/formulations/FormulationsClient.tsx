@@ -6,7 +6,12 @@ import { FormulationsPageContent } from "@/components/formulations/FormulationsP
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
-import { useFilterOptions, type ReferenceFormulation, type ReferenceCountry, type FilterableFormulationCountry } from "@/hooks/use-filter-options";
+import {
+  useFilterOptions,
+  type ReferenceFormulation,
+  type ReferenceCountry,
+  type FilterableFormulationCountry,
+} from "@/hooks/use-filter-options";
 import { computeFilteredCounts } from "@/lib/utils/filter-counts";
 import type { FormulationWithNestedData } from "@/lib/db/queries";
 import type { Formulation } from "@/lib/db/types";
@@ -47,8 +52,8 @@ function FormulationsContent({
     }
     return formulationCountries.map((fc) => ({
       ...fc,
-      formulation_status: fc.formulation_code 
-        ? (formulationStatusMap.get(fc.formulation_code) || null)
+      formulation_status: fc.formulation_code
+        ? formulationStatusMap.get(fc.formulation_code) || null
         : null,
     }));
   }, [formulationCountries, formulationStatusMap]);
@@ -76,25 +81,28 @@ function FormulationsContent({
   }, []);
 
   // Convert formulationCountries prop to FilterableFormulationCountry format for useFilterOptions
-  const filterableFormulationCountries: FilterableFormulationCountry[] = useMemo(() => {
-    return enrichedFormulationCountries.map((fc) => ({
-      formulation_country_id: fc.formulation_country_id || null,
-      formulation_id: null, // FormulationCountryDetail doesn't have formulation_id, only formulation_code
-      formulation_code: fc.formulation_code || null,
-      country_id: null, // FormulationCountryDetail doesn't have country_id, only country_code
-      country_code: fc.country_code || null,
-      country_name: fc.country_name || null,
-      country_status: fc.country_status || null,
-    }));
-  }, [enrichedFormulationCountries]);
+  const filterableFormulationCountries: FilterableFormulationCountry[] =
+    useMemo(() => {
+      return enrichedFormulationCountries.map((fc) => ({
+        formulation_country_id: fc.formulation_country_id || null,
+        formulation_id: null, // FormulationCountryDetail doesn't have formulation_id, only formulation_code
+        formulation_code: fc.formulation_code || null,
+        country_id: null, // FormulationCountryDetail doesn't have country_id, only country_code
+        country_code: fc.country_code || null,
+        country_name: fc.country_name || null,
+        country_status: fc.country_status || null,
+      }));
+    }, [enrichedFormulationCountries]);
 
   // Compute filter options with cascading logic
   const filterOptions = useFilterOptions(
     referenceFormulations,
     referenceCountries,
     filterableBusinessCases,
-    filterableFormulationCountries.length > 0 ? filterableFormulationCountries : null,
-    filters
+    filterableFormulationCountries.length > 0
+      ? filterableFormulationCountries
+      : null,
+    filters,
   );
 
   // Filter formulations based on global filters
@@ -102,7 +110,10 @@ function FormulationsContent({
     return formulationsWithNested.filter((f) => {
       // Formulation filter - filters.formulations contains codes
       if (filters.formulations.length > 0) {
-        if (!f.formulation_code || !filters.formulations.includes(f.formulation_code)) {
+        if (
+          !f.formulation_code ||
+          !filters.formulations.includes(f.formulation_code)
+        ) {
           return false;
         }
       }
@@ -120,14 +131,17 @@ function FormulationsContent({
         if (!f.countries_list) {
           return false; // No countries associated
         }
-        
+
         // Parse countries_list and check if any match selected country codes
-        const countryNames = f.countries_list.split(",").map((name) => name.trim()).filter(Boolean);
+        const countryNames = f.countries_list
+          .split(",")
+          .map((name) => name.trim())
+          .filter(Boolean);
         const matchingCountries = countryNames.some((countryName) => {
           const country = countries.find((c) => c.country_name === countryName);
           return country && filters.countries.includes(country.country_code);
         });
-        
+
         if (!matchingCountries) {
           return false;
         }
@@ -136,14 +150,14 @@ function FormulationsContent({
       // Country status filter - now using formulationCountries data
       if (filters.countryStatuses.length > 0) {
         // Check if this formulation has any country entries matching the status
-        const matchingFCs = enrichedFormulationCountries.filter(fc => 
-          fc.formulation_code === f.formulation_code
+        const matchingFCs = enrichedFormulationCountries.filter(
+          (fc) => fc.formulation_code === f.formulation_code,
         );
         if (matchingFCs.length === 0) {
           // No country entries - exclude if country status filter is active
           return false;
         }
-        const hasMatchingStatus = matchingFCs.some(fc => {
+        const hasMatchingStatus = matchingFCs.some((fc) => {
           const countryStatus = fc.country_status || "Not yet evaluated";
           return filters.countryStatuses.includes(countryStatus);
         });
@@ -154,7 +168,12 @@ function FormulationsContent({
 
       return true;
     });
-  }, [formulationsWithNested, filters, countries, enrichedFormulationCountries]);
+  }, [
+    formulationsWithNested,
+    filters,
+    countries,
+    enrichedFormulationCountries,
+  ]);
 
   // Filter formulation-countries based on global filters for accurate counts
   const filteredFormulationCountries = useMemo(() => {
@@ -167,7 +186,10 @@ function FormulationsContent({
       }
       // Formulation filter
       if (filters.formulations.length > 0) {
-        if (!fc.formulation_code || !filters.formulations.includes(fc.formulation_code)) {
+        if (
+          !fc.formulation_code ||
+          !filters.formulations.includes(fc.formulation_code)
+        ) {
           return false;
         }
       }
@@ -201,7 +223,11 @@ function FormulationsContent({
 
   return (
     <>
-      <GlobalFilterBar filterOptions={filterOptions} defaultExpanded={true} filteredCounts={filteredCounts} />
+      <GlobalFilterBar
+        filterOptions={filterOptions}
+        defaultExpanded={true}
+        filteredCounts={filteredCounts}
+      />
       <FormulationsPageContent formulationsWithNested={filteredFormulations} />
     </>
   );

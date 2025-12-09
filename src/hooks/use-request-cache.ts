@@ -44,14 +44,8 @@ export function useRequestCache() {
     <T>(key: string, fetcher: () => Promise<T>): Promise<T> => {
       return cacheRef.current.get(key, fetcher);
     },
-    []
+    [],
   );
 
   return { cachedFetch };
 }
-
-
-
-
-
-

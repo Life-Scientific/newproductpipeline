@@ -3,13 +3,13 @@ import type { FormulationCountryUseGroup } from "./types";
 
 export async function getAllUseGroups() {
   const supabase = await createClient();
-  
+
   // Fetch all use groups with pagination to avoid 10k row limit
   let allUseGroups: any[] = [];
   let page = 0;
   const pageSize = 10000;
   let hasMore = true;
-  
+
   while (hasMore) {
     const { data: useGroups, error } = await supabase
       .from("vw_formulation_country_use_group")
@@ -37,22 +37,29 @@ export async function getAllUseGroups() {
   }
 
   // Get unique formulation_country_ids and fetch formulation_ids (also paginated)
-  const countryIds = [...new Set(allUseGroups.map((ug) => ug.formulation_country_id).filter(Boolean))] as string[];
-  
+  const countryIds = [
+    ...new Set(
+      allUseGroups.map((ug) => ug.formulation_country_id).filter(Boolean),
+    ),
+  ] as string[];
+
   // Fetch in batches to avoid .in() query URL length limits
   const batchSize = 5000;
   const countryIdToFormulationId = new Map<string, string>();
-  
+
   for (let i = 0; i < countryIds.length; i += batchSize) {
     const batch = countryIds.slice(i, i + batchSize);
     const { data: countryData } = await supabase
       .from("formulation_country")
       .select("formulation_country_id, formulation_id")
       .in("formulation_country_id", batch);
-    
+
     countryData?.forEach((fc) => {
       if (fc.formulation_country_id) {
-        countryIdToFormulationId.set(fc.formulation_country_id, fc.formulation_id);
+        countryIdToFormulationId.set(
+          fc.formulation_country_id,
+          fc.formulation_id,
+        );
       }
     });
   }
@@ -65,12 +72,14 @@ export async function getAllUseGroups() {
       : null,
   }));
 
-  return useGroupsWithFormulationId as (FormulationCountryUseGroup & { formulation_id: string | null })[];
+  return useGroupsWithFormulationId as (FormulationCountryUseGroup & {
+    formulation_id: string | null;
+  })[];
 }
 
 export async function getUseGroupById(useGroupId: string) {
   const supabase = await createClient();
-  
+
   const { data, error } = await supabase
     .from("vw_formulation_country_use_group")
     .select("*")
@@ -88,13 +97,15 @@ export async function getUseGroupById(useGroupId: string) {
       .select("formulation_id")
       .eq("formulation_country_id", data.formulation_country_id)
       .single();
-    
+
     if (fcData) {
       (data as any).formulation_id = fcData.formulation_id;
     }
   }
 
-  return data as (FormulationCountryUseGroup & { formulation_id?: string }) | null;
+  return data as
+    | (FormulationCountryUseGroup & { formulation_id?: string })
+    | null;
 }
 
 /**
@@ -102,7 +113,7 @@ export async function getUseGroupById(useGroupId: string) {
  */
 export async function getUseGroupCrops(useGroupId: string) {
   const supabase = await createClient();
-  
+
   const { data, error } = await supabase
     .from("formulation_country_use_group_eppo_crops")
     .select(`
@@ -143,7 +154,7 @@ export async function getUseGroupCrops(useGroupId: string) {
  */
 export async function getUseGroupTargets(useGroupId: string) {
   const supabase = await createClient();
-  
+
   const { data, error } = await supabase
     .from("formulation_country_use_group_eppo_targets")
     .select(`
@@ -180,12 +191,20 @@ export async function getUseGroupTargets(useGroupId: string) {
 }
 
 export async function validateUseGroupTargetEntryConsistency(
-  useGroupIds: string[]
-): Promise<{ isValid: boolean; targetEntry: string | null; error: string | null }> {
+  useGroupIds: string[],
+): Promise<{
+  isValid: boolean;
+  targetEntry: string | null;
+  error: string | null;
+}> {
   const supabase = await createClient();
-  
+
   if (!useGroupIds || useGroupIds.length === 0) {
-    return { isValid: false, targetEntry: null, error: "At least one use group must be selected" };
+    return {
+      isValid: false,
+      targetEntry: null,
+      error: "At least one use group must be selected",
+    };
   }
 
   // Fetch target_market_entry_fy for all selected use groups
@@ -195,7 +214,11 @@ export async function validateUseGroupTargetEntryConsistency(
     .in("formulation_country_use_group_id", useGroupIds);
 
   if (error) {
-    return { isValid: false, targetEntry: null, error: `Failed to fetch use groups: ${error.message}` };
+    return {
+      isValid: false,
+      targetEntry: null,
+      error: `Failed to fetch use groups: ${error.message}`,
+    };
   }
 
   if (!useGroupData || useGroupData.length === 0) {
@@ -204,24 +227,28 @@ export async function validateUseGroupTargetEntryConsistency(
 
   // Get unique non-null target_market_entry_fy values
   const targetEntries = useGroupData
-    .map(ug => ug.target_market_entry_fy)
+    .map((ug) => ug.target_market_entry_fy)
     .filter((entry): entry is string => entry !== null && entry !== undefined);
 
   if (targetEntries.length === 0) {
-    return { isValid: false, targetEntry: null, error: "Selected use groups do not have target market entry fiscal year set" };
+    return {
+      isValid: false,
+      targetEntry: null,
+      error:
+        "Selected use groups do not have target market entry fiscal year set",
+    };
   }
 
   // Check if all values are the same
   const uniqueEntries = Array.from(new Set(targetEntries));
-  
+
   if (uniqueEntries.length > 1) {
     return {
       isValid: false,
       targetEntry: null,
-      error: `All selected use groups must have the same target market entry fiscal year. Found values: ${uniqueEntries.join(", ")}`
+      error: `All selected use groups must have the same target market entry fiscal year. Found values: ${uniqueEntries.join(", ")}`,
     };
   }
 
   return { isValid: true, targetEntry: uniqueEntries[0], error: null };
 }
-

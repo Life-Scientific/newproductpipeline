@@ -10,4 +10,3 @@ export * from "./portfolio";
 
 // Note: formulations.ts and business-cases.ts will be added next
 // For now, they remain in queries.ts to avoid breaking changes
-

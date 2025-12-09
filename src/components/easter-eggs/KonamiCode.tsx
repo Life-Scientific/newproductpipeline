@@ -17,7 +17,23 @@ interface Particle {
   scale: number;
 }
 
-const EMOJIS = ["🌾", "🌿", "🍃", "🌱", "🚜", "🐛", "🦗", "🐝", "🌻", "🌽", "🥬", "🥕", "🍅", "🫑", "💚"];
+const EMOJIS = [
+  "🌾",
+  "🌿",
+  "🍃",
+  "🌱",
+  "🚜",
+  "🐛",
+  "🦗",
+  "🐝",
+  "🌻",
+  "🌽",
+  "🥬",
+  "🥕",
+  "🍅",
+  "🫑",
+  "💚",
+];
 
 function ParticleExplosion({ onComplete }: { onComplete: () => void }) {
   const [particles, setParticles] = useState<Particle[]>([]);
@@ -25,7 +41,7 @@ function ParticleExplosion({ onComplete }: { onComplete: () => void }) {
 
   useEffect(() => {
     setMounted(true);
-    
+
     // Create initial particles
     const initialParticles: Particle[] = [];
     for (let i = 0; i < 50; i++) {
@@ -50,10 +66,10 @@ function ParticleExplosion({ onComplete }: { onComplete: () => void }) {
     // Animation loop
     let frame: number;
     let startTime = Date.now();
-    
+
     const animate = () => {
       const elapsed = Date.now() - startTime;
-      
+
       if (elapsed > 3000) {
         onComplete();
         return;
@@ -69,7 +85,7 @@ function ParticleExplosion({ onComplete }: { onComplete: () => void }) {
             y: p.velocity.y * 0.98 + 0.3, // gravity
           },
           rotation: p.rotation + p.rotationSpeed,
-        }))
+        })),
       );
 
       frame = requestAnimationFrame(animate);
@@ -85,19 +101,19 @@ function ParticleExplosion({ onComplete }: { onComplete: () => void }) {
   if (!mounted) return null;
 
   return createPortal(
-    <div 
+    <div
       className="fixed inset-0 pointer-events-none overflow-hidden"
       style={{ zIndex: 9999 }}
     >
       {/* Flash effect */}
-      <div 
+      <div
         className="absolute inset-0 bg-primary/20 animate-pulse"
         style={{ animationDuration: "0.3s", animationIterationCount: 2 }}
       />
-      
+
       {/* Message */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div 
+        <div
           className="text-center space-y-2 animate-bounce"
           style={{ animationDuration: "0.5s" }}
         >
@@ -127,7 +143,7 @@ function ParticleExplosion({ onComplete }: { onComplete: () => void }) {
         </div>
       ))}
     </div>,
-    document.body
+    document.body,
   );
 }
 
@@ -146,11 +162,11 @@ export function KonamiCode() {
       setActivated(true);
       console.log(
         "%c🌿 SECRET UNLOCKED! 🌿",
-        "font-size: 24px; font-weight: bold; color: #22c55e; text-shadow: 2px 2px #000;"
+        "font-size: 24px; font-weight: bold; color: #22c55e; text-shadow: 2px 2px #000;",
       );
       console.log(
         "%cYou found the secret! You're officially a power user.",
-        "font-size: 14px; color: #888;"
+        "font-size: 14px; color: #888;",
       );
     };
 
@@ -167,8 +183,10 @@ export function KonamiCode() {
       if (e.key.length !== 1) return;
 
       setBuffer((prev) => {
-        const newBuffer = (prev + e.key.toLowerCase()).slice(-SECRET_WORD.length);
-        
+        const newBuffer = (prev + e.key.toLowerCase()).slice(
+          -SECRET_WORD.length,
+        );
+
         // Check if buffer matches secret word
         if (newBuffer === SECRET_WORD) {
           handleTrigger();
@@ -181,7 +199,7 @@ export function KonamiCode() {
 
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("trigger-easter-egg", handleTrigger);
-    
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("trigger-easter-egg", handleTrigger);
@@ -197,4 +215,3 @@ export function KonamiCode() {
 export function triggerEasterEgg() {
   window.dispatchEvent(new CustomEvent("trigger-easter-egg"));
 }
-

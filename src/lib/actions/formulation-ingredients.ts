@@ -13,7 +13,7 @@ export interface IngredientInput {
 
 export async function createFormulationIngredients(
   formulationId: string,
-  ingredients: IngredientInput[]
+  ingredients: IngredientInput[],
 ) {
   const supabase = await createClient();
 
@@ -43,7 +43,7 @@ export async function createFormulationIngredients(
   // to ensure code is assigned immediately
   const { data: signature, error: sigError } = await supabase.rpc(
     "calculate_active_signature_from_table",
-    { p_formulation_id: formulationId }
+    { p_formulation_id: formulationId },
   );
 
   if (sigError) {
@@ -54,7 +54,7 @@ export async function createFormulationIngredients(
   // Check for duplicate before assigning code
   const { data: duplicateId, error: dupError } = await supabase.rpc(
     "check_duplicate_formulation",
-    { p_temp_formulation_id: formulationId }
+    { p_temp_formulation_id: formulationId },
   );
 
   if (dupError) {
@@ -101,7 +101,7 @@ export async function createFormulationIngredients(
 
 export async function updateFormulationIngredients(
   formulationId: string,
-  ingredients: IngredientInput[]
+  ingredients: IngredientInput[],
 ) {
   const supabase = await createClient();
 
@@ -117,7 +117,10 @@ export async function updateFormulationIngredients(
 
   // Insert new ingredients
   if (ingredients.length > 0) {
-    const result = await createFormulationIngredients(formulationId, ingredients);
+    const result = await createFormulationIngredients(
+      formulationId,
+      ingredients,
+    );
     if (result.error) {
       return result;
     }
@@ -165,4 +168,3 @@ export async function deleteFormulationIngredient(ingredientId: string) {
 
   return { success: true };
 }
-

@@ -48,7 +48,12 @@ const PRODUCT_CATEGORIES = [
   "Unknown",
 ];
 
-const STATUS_OPTIONS = ["Not Yet Considered", "Selected", "Monitoring", "Killed"];
+const STATUS_OPTIONS = [
+  "Not Yet Considered",
+  "Selected",
+  "Monitoring",
+  "Killed",
+];
 
 export function FormulationForm({
   formulation,
@@ -61,14 +66,19 @@ export function FormulationForm({
   const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
   const [ingredients, setIngredients] = useState<IngredientInput[]>([]);
-  const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([]);
+  const [availableIngredients, setAvailableIngredients] = useState<
+    Ingredient[]
+  >([]);
   const [formData, setFormData] = useState({
     formulation_name: "", // Will be calculated
     formulation_category: formulation?.formulation_category || "",
     formulation_type: formulation?.formulation_type || "",
     uom: formulation?.uom || "L",
     short_name: formulation?.short_name || "",
-    formulation_status: ("formulation_status" in (formulation || {}) ? (formulation as any).formulation_status : "") || "Not Yet Considered",
+    formulation_status:
+      ("formulation_status" in (formulation || {})
+        ? (formulation as any).formulation_status
+        : "") || "Not Yet Considered",
     status_rationale: formulation?.status_rationale || "",
   });
 
@@ -88,7 +98,10 @@ export function FormulationForm({
         formulation_type: formulation.formulation_type || "",
         uom: formulation.uom || "L",
         short_name: formulation.short_name || "",
-        formulation_status: ("formulation_status" in formulation ? formulation.formulation_status : "") || "Not Yet Considered",
+        formulation_status:
+          ("formulation_status" in formulation
+            ? formulation.formulation_status
+            : "") || "Not Yet Considered",
         status_rationale: formulation.status_rationale || "",
       });
       // Load existing ingredients when editing
@@ -144,7 +157,9 @@ export function FormulationForm({
         return;
       }
 
-      const ingredientInputs: IngredientInput[] = ((existingIngredients || []) as any[]).map((ing: any) => ({
+      const ingredientInputs: IngredientInput[] = (
+        (existingIngredients || []) as any[]
+      ).map((ing: any) => ({
         ingredient_id: ing.ingredient_id,
         quantity: ing.quantity.toString(),
         quantity_unit: ing.quantity_unit,
@@ -157,15 +172,20 @@ export function FormulationForm({
     }
   };
 
-
   // Helper function to get ingredient type
   const getIngredientType = (ingredientId: string): string => {
-    return availableIngredients.find((ing) => ing.ingredient_id === ingredientId)?.ingredient_type || "";
+    return (
+      availableIngredients.find((ing) => ing.ingredient_id === ingredientId)
+        ?.ingredient_type || ""
+    );
   };
 
   // Helper function to get ingredient name
   const getIngredientName = (ingredientId: string): string => {
-    return availableIngredients.find((ing) => ing.ingredient_id === ingredientId)?.ingredient_name || "";
+    return (
+      availableIngredients.find((ing) => ing.ingredient_id === ingredientId)
+        ?.ingredient_name || ""
+    );
   };
 
   // Format concentration based on unit
@@ -203,7 +223,9 @@ export function FormulationForm({
 
     // Combine: "IngredientA/IngredientB ConcentrationA ConcentrationB FormulationType"
     const formulationType = formData.formulation_type || "";
-    const parts = [ingredientNames, concentrations, formulationType].filter(Boolean);
+    const parts = [ingredientNames, concentrations, formulationType].filter(
+      Boolean,
+    );
     return parts.join(" ");
   };
 
@@ -216,7 +238,7 @@ export function FormulationForm({
 
   // Check if there's at least one active ingredient
   const hasActiveIngredients = ingredients.some(
-    (ing) => getIngredientType(ing.ingredient_id) === "Active"
+    (ing) => getIngredientType(ing.ingredient_id) === "Active",
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -233,10 +255,15 @@ export function FormulationForm({
     }
 
     // Validate: Require formulation type, category, and UOM
-    if (!formData.formulation_type || !formData.formulation_category || !formData.uom) {
+    if (
+      !formData.formulation_type ||
+      !formData.formulation_category ||
+      !formData.uom
+    ) {
       toast({
         title: "Validation Error",
-        description: "Formulation Type, Category, and Unit of Measure are required",
+        description:
+          "Formulation Type, Category, and Unit of Measure are required",
         variant: "destructive",
       });
       return;
@@ -255,20 +282,23 @@ export function FormulationForm({
     form.append("uom", formData.uom);
     if (formData.short_name) form.append("short_name", formData.short_name);
     form.append("formulation_status", formData.formulation_status);
-    if (formData.status_rationale) form.append("status_rationale", formData.status_rationale);
+    if (formData.status_rationale)
+      form.append("status_rationale", formData.status_rationale);
 
     // Add ingredients data
     form.append("ingredients", JSON.stringify(ingredients));
-    
+
     // Note: Crops and targets are managed directly by EPPO selectors via server actions
 
     startTransition(async () => {
       try {
         const action = formulation
           ? await import("@/lib/actions/formulations").then((m) =>
-              m.updateFormulation(formulation.formulation_id, form)
+              m.updateFormulation(formulation.formulation_id, form),
             )
-          : await import("@/lib/actions/formulations").then((m) => m.createFormulation(form));
+          : await import("@/lib/actions/formulations").then((m) =>
+              m.createFormulation(form),
+            );
 
         if (action.error) {
           // Check if it's a duplicate error
@@ -293,8 +323,8 @@ export function FormulationForm({
               ? `Formulation updated successfully. Code: ${action.formulationCode}`
               : "Formulation updated successfully"
             : action.formulationCode
-            ? `Formulation created successfully. Assigned code: ${action.formulationCode}`
-            : "Formulation created successfully. Add active ingredients to assign a code.";
+              ? `Formulation created successfully. Assigned code: ${action.formulationCode}`
+              : "Formulation created successfully. Add active ingredients to assign a code.";
 
           toast({
             title: "Success",
@@ -318,7 +348,9 @@ export function FormulationForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{formulation ? "Edit Formulation" : "Create Formulation"}</DialogTitle>
+          <DialogTitle>
+            {formulation ? "Edit Formulation" : "Create Formulation"}
+          </DialogTitle>
           <DialogDescription>
             {formulation
               ? "Update formulation details and ingredients"
@@ -328,12 +360,14 @@ export function FormulationForm({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Section 1: Product Information */}
           <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
-            <h3 className="text-sm font-semibold text-foreground">Product Information</h3>
-            
+            <h3 className="text-sm font-semibold text-foreground">
+              Product Information
+            </h3>
+
             {/* Ingredients Section - Required */}
             <div>
-              <IngredientSelector 
-                ingredients={ingredients} 
+              <IngredientSelector
+                ingredients={ingredients}
                 onChange={setIngredients}
                 availableIngredients={availableIngredients}
                 onAvailableIngredientsChange={setAvailableIngredients}
@@ -341,7 +375,8 @@ export function FormulationForm({
               {!hasActiveIngredients && (
                 <div className="mt-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3">
                   <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    ⚠️ At least one active ingredient is required to create a formulation.
+                    ⚠️ At least one active ingredient is required to create a
+                    formulation.
                   </p>
                 </div>
               )}
@@ -357,7 +392,10 @@ export function FormulationForm({
                   id="formulation_type"
                   value={formData.formulation_type}
                   onChange={(e) =>
-                    setFormData({ ...formData, formulation_type: e.target.value })
+                    setFormData({
+                      ...formData,
+                      formulation_type: e.target.value,
+                    })
                   }
                   required
                   placeholder="e.g., EC, WG, SC"
@@ -365,7 +403,8 @@ export function FormulationForm({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="formulation_category">
-                  Formulation Category <span className="text-destructive">*</span>
+                  Formulation Category{" "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={formData.formulation_category}
@@ -393,7 +432,9 @@ export function FormulationForm({
                 <Input
                   id="uom"
                   value={formData.uom}
-                  onChange={(e) => setFormData({ ...formData, uom: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, uom: e.target.value })
+                  }
                   placeholder="L"
                   required
                 />
@@ -403,7 +444,10 @@ export function FormulationForm({
             {/* Formulation Name - Auto-generated, read-only */}
             <div className="space-y-2">
               <Label htmlFor="formulation_name">
-                Formulation Name <span className="text-muted-foreground text-xs">(Auto-generated)</span>
+                Formulation Name{" "}
+                <span className="text-muted-foreground text-xs">
+                  (Auto-generated)
+                </span>
               </Label>
               <Input
                 id="formulation_name"
@@ -413,7 +457,8 @@ export function FormulationForm({
                 className="bg-muted text-muted-foreground cursor-not-allowed"
               />
               <p className="text-xs text-muted-foreground">
-                Automatically generated from active ingredients and formulation type
+                Automatically generated from active ingredients and formulation
+                type
               </p>
             </div>
 
@@ -423,7 +468,9 @@ export function FormulationForm({
               <Input
                 id="short_name"
                 value={formData.short_name}
-                onChange={(e) => setFormData({ ...formData, short_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, short_name: e.target.value })
+                }
               />
             </div>
           </div>
@@ -431,12 +478,14 @@ export function FormulationForm({
           {/* Section 2: Status */}
           <div className="border rounded-lg p-4 bg-muted/20 space-y-4">
             <h3 className="text-sm font-semibold text-foreground">Status</h3>
-            
+
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.formulation_status}
-                onValueChange={(value) => setFormData({ ...formData, formulation_status: value })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, formulation_status: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -467,11 +516,13 @@ export function FormulationForm({
           {/* Section 3: Crops & Targets (EPPO System) */}
           {formulation && (
             <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">Crops & Targets</h3>
-              
+              <h3 className="text-sm font-semibold text-foreground">
+                Crops & Targets
+              </h3>
+
               {/* EPPO Crops Section */}
               <div>
-                <EPPOCropSelector 
+                <EPPOCropSelector
                   formulationId={formulation.formulation_id}
                   onUpdate={() => router.refresh()}
                 />
@@ -479,18 +530,19 @@ export function FormulationForm({
 
               {/* EPPO Targets Section */}
               <div>
-                <EPPOTargetSelector 
+                <EPPOTargetSelector
                   formulationId={formulation.formulation_id}
                   onUpdate={() => router.refresh()}
                 />
               </div>
             </div>
           )}
-          
+
           {!formulation && (
             <div className="border rounded-lg p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                <strong>Note:</strong> Save the formulation first, then add crops and targets on the edit screen.
+                <strong>Note:</strong> Save the formulation first, then add
+                crops and targets on the edit screen.
               </p>
             </div>
           )}
@@ -500,10 +552,13 @@ export function FormulationForm({
             {formulation?.formulation_code && (
               <div className="mt-4 p-3 bg-muted rounded-lg">
                 <p className="text-sm font-medium">Assigned Code:</p>
-                <p className="text-lg font-mono font-semibold">{formulation.formulation_code}</p>
+                <p className="text-lg font-mono font-semibold">
+                  {formulation.formulation_code}
+                </p>
                 {formulation.base_code && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Base Code: {formulation.base_code} | Variant: {formulation.variant_suffix}
+                    Base Code: {formulation.base_code} | Variant:{" "}
+                    {formulation.variant_suffix}
                   </p>
                 )}
               </div>
@@ -511,20 +566,32 @@ export function FormulationForm({
             {!formulation && ingredients.length > 0 && (
               <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
                 <p className="text-sm text-blue-900 dark:text-blue-100">
-                  <strong>Note:</strong> A formulation code will be automatically assigned when you save this formulation with active ingredients.
+                  <strong>Note:</strong> A formulation code will be
+                  automatically assigned when you save this formulation with
+                  active ingredients.
                 </p>
               </div>
             )}
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={isPending || !hasActiveIngredients || !formData.formulation_type || !formData.formulation_category || !formData.uom} 
-              size="lg" 
+            <Button
+              type="submit"
+              disabled={
+                isPending ||
+                !hasActiveIngredients ||
+                !formData.formulation_type ||
+                !formData.formulation_category ||
+                !formData.uom
+              }
+              size="lg"
               className="h-12 px-6"
             >
               {isPending ? "Saving..." : formulation ? "Update" : "Create"}
@@ -535,4 +602,3 @@ export function FormulationForm({
     </Dialog>
   );
 }
-

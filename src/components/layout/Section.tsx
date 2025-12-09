@@ -26,9 +26,7 @@ export function Section({
     <section className={cn(spacingClasses[spacing], className)}>
       {(title || description) && (
         <div className="space-y-2">
-          {title && (
-            <h2 className="text-xl sm:text-2xl font-bold">{title}</h2>
-          )}
+          {title && <h2 className="text-xl sm:text-2xl font-bold">{title}</h2>}
           {description && (
             <p className="text-sm sm:text-base text-muted-foreground">
               {description}
@@ -40,4 +38,3 @@ export function Section({
     </section>
   );
 }
-

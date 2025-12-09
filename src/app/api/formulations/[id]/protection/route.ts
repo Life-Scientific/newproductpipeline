@@ -4,7 +4,7 @@ import { getFormulationProtectionStatus } from "@/lib/db/queries";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -14,8 +14,7 @@ export async function GET(
     console.error("Error fetching protection status:", error);
     return NextResponse.json(
       { error: "Failed to fetch protection status" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

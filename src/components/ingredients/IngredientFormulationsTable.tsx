@@ -3,7 +3,10 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { EnhancedDataTable, type FilterConfig } from "@/components/ui/enhanced-data-table";
+import {
+  EnhancedDataTable,
+  type FilterConfig,
+} from "@/components/ui/enhanced-data-table";
 import { type ColumnDef } from "@tanstack/react-table";
 import { getStatusVariant } from "@/lib/design-system";
 import { TableUtils } from "@/lib/utils/table-utils";
@@ -77,7 +80,10 @@ const createColumns = (): ColumnDef<FlatFormulation>[] => [
     cell: ({ row }) => {
       const status = row.getValue("formulation_status") as string;
       return (
-        <Badge variant={getStatusVariant(status || "", "formulation")} className="text-xs">
+        <Badge
+          variant={getStatusVariant(status || "", "formulation")}
+          className="text-xs"
+        >
           {status || "—"}
         </Badge>
       );
@@ -91,7 +97,9 @@ const createColumns = (): ColumnDef<FlatFormulation>[] => [
       const qty = row.getValue("quantity") as number | null;
       return (
         <div className="text-right text-sm font-medium">
-          {qty ? qty.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—"}
+          {qty
+            ? qty.toLocaleString(undefined, { maximumFractionDigits: 2 })
+            : "—"}
         </div>
       );
     },
@@ -127,7 +135,9 @@ interface IngredientFormulationsTableProps {
   formulations: FormulationIngredient[];
 }
 
-export function IngredientFormulationsTable({ formulations }: IngredientFormulationsTableProps) {
+export function IngredientFormulationsTable({
+  formulations,
+}: IngredientFormulationsTableProps) {
   // Flatten and filter the data
   const flatData = useMemo(() => {
     return formulations

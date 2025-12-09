@@ -12,12 +12,12 @@ export async function getReferenceProducts() {
     .select("*")
     .eq("is_active", true)
     .order("product_name");
-  
+
   if (error) {
     console.error("Failed to fetch reference products:", error);
     return [];
   }
-  
+
   return data;
 }
 
@@ -25,7 +25,10 @@ export async function createReferenceProduct(formData: FormData) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.REFERENCE_PRODUCT_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage reference products" };
+    return {
+      error:
+        "Unauthorized: You don't have permission to manage reference products",
+    };
   }
 
   const supabase = await createClient();
@@ -33,9 +36,13 @@ export async function createReferenceProduct(formData: FormData) {
   const productName = formData.get("product_name") as string;
   const manufacturer = formData.get("manufacturer") as string | null;
   const supplierId = formData.get("supplier_id") as string | null;
-  const activeIngredientsDescription = formData.get("active_ingredients_description") as string | null;
+  const activeIngredientsDescription = formData.get(
+    "active_ingredients_description",
+  ) as string | null;
   const formulationType = formData.get("formulation_type") as string | null;
-  const registrationNumber = formData.get("registration_number") as string | null;
+  const registrationNumber = formData.get("registration_number") as
+    | string
+    | null;
   const notes = formData.get("notes") as string | null;
 
   if (!productName) {
@@ -64,11 +71,17 @@ export async function createReferenceProduct(formData: FormData) {
   return { data, success: true };
 }
 
-export async function updateReferenceProduct(referenceProductId: string, formData: FormData) {
+export async function updateReferenceProduct(
+  referenceProductId: string,
+  formData: FormData,
+) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.REFERENCE_PRODUCT_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage reference products" };
+    return {
+      error:
+        "Unauthorized: You don't have permission to manage reference products",
+    };
   }
 
   const supabase = await createClient();
@@ -76,9 +89,13 @@ export async function updateReferenceProduct(referenceProductId: string, formDat
   const productName = formData.get("product_name") as string | null;
   const manufacturer = formData.get("manufacturer") as string | null;
   const supplierId = formData.get("supplier_id") as string | null;
-  const activeIngredientsDescription = formData.get("active_ingredients_description") as string | null;
+  const activeIngredientsDescription = formData.get(
+    "active_ingredients_description",
+  ) as string | null;
   const formulationType = formData.get("formulation_type") as string | null;
-  const registrationNumber = formData.get("registration_number") as string | null;
+  const registrationNumber = formData.get("registration_number") as
+    | string
+    | null;
   const notes = formData.get("notes") as string | null;
   const isActive = formData.get("is_active") === "true";
 
@@ -92,7 +109,8 @@ export async function updateReferenceProduct(referenceProductId: string, formDat
   if (activeIngredientsDescription !== null)
     updateData.active_ingredients_description = activeIngredientsDescription;
   if (formulationType !== null) updateData.formulation_type = formulationType;
-  if (registrationNumber !== null) updateData.registration_number = registrationNumber;
+  if (registrationNumber !== null)
+    updateData.registration_number = registrationNumber;
   if (notes !== null) updateData.notes = notes;
   updateData.is_active = isActive;
 
@@ -115,7 +133,10 @@ export async function deleteReferenceProduct(referenceProductId: string) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.REFERENCE_PRODUCT_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage reference products" };
+    return {
+      error:
+        "Unauthorized: You don't have permission to manage reference products",
+    };
   }
 
   const supabase = await createClient();

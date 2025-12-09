@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { createClient } from "@/lib/supabase/client";
 
 // ============================================================================
@@ -37,15 +44,28 @@ interface DisplayPreferencesContextValue {
   toKG: (weight: number) => number;
 
   // Formatters
-  formatCurrency: (eurAmount: number | null | undefined, options?: { compact?: boolean; decimals?: number }) => string;
+  formatCurrency: (
+    eurAmount: number | null | undefined,
+    options?: { compact?: boolean; decimals?: number },
+  ) => string;
   formatCurrencyCompact: (eurAmount: number | null | undefined) => string;
-  formatVolume: (liters: number | null | undefined, options?: { decimals?: number }) => string;
-  formatWeight: (kg: number | null | undefined, options?: { decimals?: number }) => string;
+  formatVolume: (
+    liters: number | null | undefined,
+    options?: { decimals?: number },
+  ) => string;
+  formatWeight: (
+    kg: number | null | undefined,
+    options?: { decimals?: number },
+  ) => string;
 
   // Per-unit helpers (for NSP, COGS that are €/L or €/KG)
   getDisplayUnit: (uom: string) => string; // Returns display unit based on product's UOM and user preference
   convertPerUnit: (eurValue: number, uom: string) => number; // Converts per-unit prices (e.g., €/L → $/GAL)
-  formatPerUnit: (eurValue: number | null | undefined, uom: string, options?: { decimals?: number }) => string;
+  formatPerUnit: (
+    eurValue: number | null | undefined,
+    uom: string,
+    options?: { decimals?: number },
+  ) => string;
   isWetProduct: (uom: string) => boolean;
   isDryProduct: (uom: string) => boolean;
 
@@ -105,16 +125,24 @@ const DEFAULT_EXCHANGE_RATES: Record<CurrencyCode, number> = {
 // Context
 // ============================================================================
 
-const DisplayPreferencesContext = createContext<DisplayPreferencesContextValue | null>(null);
+const DisplayPreferencesContext =
+  createContext<DisplayPreferencesContextValue | null>(null);
 
 // ============================================================================
 // Provider
 // ============================================================================
 
-export function DisplayPreferencesProvider({ children }: { children: React.ReactNode }) {
-  const [preferences, setPreferences] = useState<DisplayPreferences>(DEFAULT_PREFERENCES);
+export function DisplayPreferencesProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [preferences, setPreferences] =
+    useState<DisplayPreferences>(DEFAULT_PREFERENCES);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [exchangeRates, setExchangeRates] = useState<Record<CurrencyCode, number>>(DEFAULT_EXCHANGE_RATES);
+  const [exchangeRates, setExchangeRates] = useState<
+    Record<CurrencyCode, number>
+  >(DEFAULT_EXCHANGE_RATES);
 
   // Load preferences from localStorage and fetch exchange rates on mount
   useEffect(() => {
@@ -144,7 +172,12 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
         }
 
         if (data && data.length > 0) {
-          const rates: Record<CurrencyCode, number> = { EUR: 1, USD: 0.86, GBP: 1.14, CAD: 0.61 };
+          const rates: Record<CurrencyCode, number> = {
+            EUR: 1,
+            USD: 0.86,
+            GBP: 1.14,
+            CAD: 0.61,
+          };
           data.forEach((row) => {
             const code = row.currency_code as CurrencyCode;
             if (code in rates) {
@@ -163,17 +196,20 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
   }, []);
 
   // Update preferences and persist to localStorage
-  const updatePreferences = useCallback((updates: Partial<DisplayPreferences>) => {
-    setPreferences((prev) => {
-      const next = { ...prev, ...updates };
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch (e) {
-        console.warn("Failed to save display preferences:", e);
-      }
-      return next;
-    });
-  }, []);
+  const updatePreferences = useCallback(
+    (updates: Partial<DisplayPreferences>) => {
+      setPreferences((prev) => {
+        const next = { ...prev, ...updates };
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        } catch (e) {
+          console.warn("Failed to save display preferences:", e);
+        }
+        return next;
+      });
+    },
+    [],
+  );
 
   // ============================================================================
   // Currency Conversions
@@ -190,7 +226,7 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
       // 1 USD = 0.86 EUR means €1 = $1.16, so divide by rate
       return eurAmount / rateToEur;
     },
-    [preferences.currency, exchangeRates]
+    [preferences.currency, exchangeRates],
   );
 
   /**
@@ -202,7 +238,7 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
       const rateToEur = exchangeRates[preferences.currency] || 1;
       return localAmount * rateToEur;
     },
-    [preferences.currency, exchangeRates]
+    [preferences.currency, exchangeRates],
   );
 
   // ============================================================================
@@ -214,7 +250,7 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
       if (preferences.volumeUnit === "L") return liters;
       return liters * VOLUME_TO_GAL;
     },
-    [preferences.volumeUnit]
+    [preferences.volumeUnit],
   );
 
   const toLiters = useCallback(
@@ -222,7 +258,7 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
       if (preferences.volumeUnit === "L") return volume;
       return volume / VOLUME_TO_GAL;
     },
-    [preferences.volumeUnit]
+    [preferences.volumeUnit],
   );
 
   // ============================================================================
@@ -234,7 +270,7 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
       if (preferences.weightUnit === "KG") return kg;
       return kg * WEIGHT_TO_LB;
     },
-    [preferences.weightUnit]
+    [preferences.weightUnit],
   );
 
   const toKG = useCallback(
@@ -242,7 +278,7 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
       if (preferences.weightUnit === "KG") return weight;
       return weight / WEIGHT_TO_LB;
     },
-    [preferences.weightUnit]
+    [preferences.weightUnit],
   );
 
   // ============================================================================
@@ -252,7 +288,7 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
   const formatCurrency = useCallback(
     (
       eurAmount: number | null | undefined,
-      options?: { compact?: boolean; decimals?: number }
+      options?: { compact?: boolean; decimals?: number },
     ): string => {
       if (eurAmount === null || eurAmount === undefined) return "—";
 
@@ -275,18 +311,21 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
         maximumFractionDigits: decimals,
       })}`;
     },
-    [convertCurrency, preferences.currency]
+    [convertCurrency, preferences.currency],
   );
 
   const formatCurrencyCompact = useCallback(
     (eurAmount: number | null | undefined): string => {
       return formatCurrency(eurAmount, { compact: true, decimals: 2 });
     },
-    [formatCurrency]
+    [formatCurrency],
   );
 
   const formatVolume = useCallback(
-    (liters: number | null | undefined, options?: { decimals?: number }): string => {
+    (
+      liters: number | null | undefined,
+      options?: { decimals?: number },
+    ): string => {
       if (liters === null || liters === undefined) return "—";
       const converted = convertVolume(liters);
       const decimals = options?.decimals ?? 0;
@@ -295,11 +334,14 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
         maximumFractionDigits: decimals,
       })}`;
     },
-    [convertVolume]
+    [convertVolume],
   );
 
   const formatWeight = useCallback(
-    (kg: number | null | undefined, options?: { decimals?: number }): string => {
+    (
+      kg: number | null | undefined,
+      options?: { decimals?: number },
+    ): string => {
       if (kg === null || kg === undefined) return "—";
       const converted = convertWeight(kg);
       const decimals = options?.decimals ?? 2;
@@ -308,7 +350,7 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
         maximumFractionDigits: decimals,
       })} ${preferences.weightUnit}`;
     },
-    [convertWeight, preferences.weightUnit]
+    [convertWeight, preferences.weightUnit],
   );
 
   // ============================================================================
@@ -320,7 +362,13 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
    */
   const isWetProduct = useCallback((uom: string): boolean => {
     const normalized = uom?.toLowerCase() || "";
-    return normalized === "l" || normalized === "liters" || normalized === "liter" || normalized === "gal" || normalized === "gallons";
+    return (
+      normalized === "l" ||
+      normalized === "liters" ||
+      normalized === "liter" ||
+      normalized === "gal" ||
+      normalized === "gallons"
+    );
   }, []);
 
   /**
@@ -328,7 +376,13 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
    */
   const isDryProduct = useCallback((uom: string): boolean => {
     const normalized = uom?.toLowerCase() || "";
-    return normalized === "kg" || normalized === "kilograms" || normalized === "kilogram" || normalized === "lb" || normalized === "pounds";
+    return (
+      normalized === "kg" ||
+      normalized === "kilograms" ||
+      normalized === "kilogram" ||
+      normalized === "lb" ||
+      normalized === "pounds"
+    );
   }, []);
 
   /**
@@ -340,7 +394,12 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
       if (isDryProduct(uom)) return preferences.weightUnit;
       return uom || "unit"; // Fallback to original UOM
     },
-    [isWetProduct, isDryProduct, preferences.volumeUnit, preferences.weightUnit]
+    [
+      isWetProduct,
+      isDryProduct,
+      preferences.volumeUnit,
+      preferences.weightUnit,
+    ],
   );
 
   /**
@@ -353,7 +412,7 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
     (eurValue: number, uom: string): number => {
       // First convert currency
       const currencyConverted = convertCurrency(eurValue);
-      
+
       // Then apply unit conversion for per-unit prices
       if (isWetProduct(uom) && preferences.volumeUnit === "GAL") {
         return currencyConverted / VOLUME_TO_GAL;
@@ -363,14 +422,24 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
       }
       return currencyConverted;
     },
-    [convertCurrency, isWetProduct, isDryProduct, preferences.volumeUnit, preferences.weightUnit]
+    [
+      convertCurrency,
+      isWetProduct,
+      isDryProduct,
+      preferences.volumeUnit,
+      preferences.weightUnit,
+    ],
   );
 
   /**
    * Format a per-unit value (like NSP or COGS) with proper currency and unit conversion
    */
   const formatPerUnit = useCallback(
-    (eurValue: number | null | undefined, uom: string, options?: { decimals?: number }): string => {
+    (
+      eurValue: number | null | undefined,
+      uom: string,
+      options?: { decimals?: number },
+    ): string => {
       if (eurValue === null || eurValue === undefined) return "—";
       const converted = convertPerUnit(eurValue, uom);
       const symbol = CURRENCY_SYMBOLS[preferences.currency];
@@ -380,7 +449,7 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
         maximumFractionDigits: decimals,
       })}`;
     },
-    [convertPerUnit, preferences.currency]
+    [convertPerUnit, preferences.currency],
   );
 
   // ============================================================================
@@ -412,11 +481,13 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
       currencyName: CURRENCY_NAMES[preferences.currency],
       volumeUnit: preferences.volumeUnit,
       weightUnit: preferences.weightUnit,
-      CURRENCY_OPTIONS: Object.entries(CURRENCY_SYMBOLS).map(([code, symbol]) => ({
-        code: code as CurrencyCode,
-        symbol,
-        name: CURRENCY_NAMES[code as CurrencyCode],
-      })),
+      CURRENCY_OPTIONS: Object.entries(CURRENCY_SYMBOLS).map(
+        ([code, symbol]) => ({
+          code: code as CurrencyCode,
+          symbol,
+          name: CURRENCY_NAMES[code as CurrencyCode],
+        }),
+      ),
       VOLUME_OPTIONS: [
         { code: "L" as VolumeUnit, name: "Liters (L)" },
         { code: "GAL" as VolumeUnit, name: "US Gallons (GAL)" },
@@ -446,7 +517,7 @@ export function DisplayPreferencesProvider({ children }: { children: React.React
       formatPerUnit,
       isWetProduct,
       isDryProduct,
-    ]
+    ],
   );
 
   return (
@@ -471,15 +542,21 @@ const DEFAULT_CONTEXT_VALUE: DisplayPreferencesContextValue = {
   toEUR: (v) => v,
   toLiters: (v) => v,
   toKG: (v) => v,
-  formatCurrency: (v) => v == null ? "—" : `€${v.toLocaleString()}`,
-  formatCurrencyCompact: (v) => v == null ? "—" : `€${v.toLocaleString()}`,
-  formatVolume: (v) => v == null ? "—" : v.toLocaleString(),
-  formatWeight: (v) => v == null ? "—" : `${v.toLocaleString()} KG`,
+  formatCurrency: (v) => (v == null ? "—" : `€${v.toLocaleString()}`),
+  formatCurrencyCompact: (v) => (v == null ? "—" : `€${v.toLocaleString()}`),
+  formatVolume: (v) => (v == null ? "—" : v.toLocaleString()),
+  formatWeight: (v) => (v == null ? "—" : `${v.toLocaleString()} KG`),
   getDisplayUnit: (uom) => uom || "unit",
   convertPerUnit: (v) => v,
-  formatPerUnit: (v) => v == null ? "—" : `€${v.toLocaleString()}`,
-  isWetProduct: (uom) => ["l", "liters", "liter", "gal", "gallons"].includes((uom || "").toLowerCase()),
-  isDryProduct: (uom) => ["kg", "kilograms", "kilogram", "lb", "pounds"].includes((uom || "").toLowerCase()),
+  formatPerUnit: (v) => (v == null ? "—" : `€${v.toLocaleString()}`),
+  isWetProduct: (uom) =>
+    ["l", "liters", "liter", "gal", "gallons"].includes(
+      (uom || "").toLowerCase(),
+    ),
+  isDryProduct: (uom) =>
+    ["kg", "kilograms", "kilogram", "lb", "pounds"].includes(
+      (uom || "").toLowerCase(),
+    ),
   currencySymbol: "€",
   currencyName: "Euro",
   volumeUnit: "L",
@@ -511,10 +588,11 @@ export function useDisplayPreferences(): DisplayPreferencesContextValue {
   if (!context) {
     // In development, log a warning but don't crash
     if (process.env.NODE_ENV === "development") {
-      console.warn("useDisplayPreferences called outside of DisplayPreferencesProvider, using defaults");
+      console.warn(
+        "useDisplayPreferences called outside of DisplayPreferencesProvider, using defaults",
+      );
     }
     return DEFAULT_CONTEXT_VALUE;
   }
   return context;
 }
-

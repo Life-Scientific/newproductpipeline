@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   LineChart,
   Line,
@@ -13,7 +19,13 @@ import {
 } from "recharts";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
-import { chartTheme, chartColors, getAxisProps, getTooltipProps, getLegendFormatter } from "@/lib/utils/chart-theme";
+import {
+  chartTheme,
+  chartColors,
+  getAxisProps,
+  getTooltipProps,
+  getLegendFormatter,
+} from "@/lib/utils/chart-theme";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -22,23 +34,37 @@ interface MarginTrendChartProps {
   onDrillDown?: (yearOffset: number) => void;
 }
 
-export function MarginTrendChart({ businessCases, onDrillDown }: MarginTrendChartProps) {
+export function MarginTrendChart({
+  businessCases,
+  onDrillDown,
+}: MarginTrendChartProps) {
   const router = useRouter();
 
   // Group by year offset
-  const byYearOffset = businessCases.reduce((acc, bc) => {
-    const offset = bc.year_offset || 0;
-    if (!acc[offset]) {
-      acc[offset] = { revenue: 0, margin: 0, count: 0, marginPercents: [] };
-    }
-    acc[offset].revenue += bc.total_revenue || 0;
-    acc[offset].margin += bc.total_margin || 0;
-    acc[offset].count += 1;
-    if (bc.margin_percent !== null && bc.margin_percent !== undefined) {
-      acc[offset].marginPercents.push(bc.margin_percent);
-    }
-    return acc;
-  }, {} as Record<number, { revenue: number; margin: number; count: number; marginPercents: number[] }>);
+  const byYearOffset = businessCases.reduce(
+    (acc, bc) => {
+      const offset = bc.year_offset || 0;
+      if (!acc[offset]) {
+        acc[offset] = { revenue: 0, margin: 0, count: 0, marginPercents: [] };
+      }
+      acc[offset].revenue += bc.total_revenue || 0;
+      acc[offset].margin += bc.total_margin || 0;
+      acc[offset].count += 1;
+      if (bc.margin_percent !== null && bc.margin_percent !== undefined) {
+        acc[offset].marginPercents.push(bc.margin_percent);
+      }
+      return acc;
+    },
+    {} as Record<
+      number,
+      {
+        revenue: number;
+        margin: number;
+        count: number;
+        marginPercents: number[];
+      }
+    >,
+  );
 
   const chartData = Object.entries(byYearOffset)
     .map(([offset, data]) => ({
@@ -46,7 +72,8 @@ export function MarginTrendChart({ businessCases, onDrillDown }: MarginTrendChar
       offset: Number(offset),
       marginPercent:
         data.marginPercents.length > 0
-          ? data.marginPercents.reduce((a, b) => a + b, 0) / data.marginPercents.length
+          ? data.marginPercents.reduce((a, b) => a + b, 0) /
+            data.marginPercents.length
           : data.revenue > 0
             ? (data.margin / data.revenue) * 100
             : 0,
@@ -67,25 +94,30 @@ export function MarginTrendChart({ businessCases, onDrillDown }: MarginTrendChar
     <Card>
       <CardHeader>
         <CardTitle>Margin Trend by Year</CardTitle>
-        <CardDescription>Average margin percentage by year offset</CardDescription>
+        <CardDescription>
+          Average margin percentage by year offset
+        </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
-        <ResponsiveContainer width="100%" height={300} className="min-h-[300px]">
-          <LineChart data={chartData} onClick={handleClick} style={{ cursor: "pointer" }}>
+        <ResponsiveContainer
+          width="100%"
+          height={300}
+          className="min-h-[300px]"
+        >
+          <LineChart
+            data={chartData}
+            onClick={handleClick}
+            style={{ cursor: "pointer" }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis 
-              dataKey="yearOffset" 
-              {...getAxisProps()}
-            />
-            <YAxis 
-              {...getAxisProps("Margin %", true)}
-            />
+            <XAxis dataKey="yearOffset" {...getAxisProps()} />
+            <YAxis {...getAxisProps("Margin %", true)} />
             <Tooltip
               formatter={(value: number) => `${value.toFixed(1)}%`}
               labelFormatter={(label) => label}
               {...getTooltipProps()}
             />
-            <Legend 
+            <Legend
               wrapperStyle={chartTheme.legend.wrapperStyle}
               formatter={getLegendFormatter()}
             />

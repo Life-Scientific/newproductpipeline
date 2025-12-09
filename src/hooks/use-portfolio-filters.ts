@@ -8,11 +8,11 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
  * Uses codes for compact URLs (country codes, formulation codes)
  */
 export interface PortfolioFilters {
-  countries: string[];           // Country codes (e.g., "IE", "FR")
-  formulations: string[];        // Formulation codes (e.g., "312-01", "001-01")
-  useGroups: string[];           // Use group names
+  countries: string[]; // Country codes (e.g., "IE", "FR")
+  formulations: string[]; // Formulation codes (e.g., "312-01", "001-01")
+  useGroups: string[]; // Use group names
   formulationStatuses: string[]; // "Selected", "Monitoring", etc.
-  countryStatuses: string[];     // "Selected for entry", etc.
+  countryStatuses: string[]; // "Selected for entry", etc.
 }
 
 /**
@@ -34,20 +34,20 @@ const PARAM_KEYS = {
 /**
  * Hook to manage global portfolio filters via URL search params.
  * Filters persist across navigation and can be shared across pages.
- * 
+ *
  * @param defaultOverrides - Optional overrides for default filter values per page
  * @returns Filter state and update functions
- * 
+ *
  * @example
  * ```tsx
  * const { filters, setFilters, clearFilters, hasActiveFilters } = usePortfolioFilters();
- * 
+ *
  * // Apply filters using codes
  * setFilters({ ...filters, countries: ["IE", "FR"], formulations: ["001-01", "312-01"] });
  * ```
  */
 export function usePortfolioFilters(
-  defaultOverrides?: Partial<PortfolioFilters>
+  defaultOverrides?: Partial<PortfolioFilters>,
 ) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -60,8 +60,8 @@ export function usePortfolioFilters(
 
   // Check if any filter params exist in URL
   const hasAnyParams = useMemo(() => {
-    return Array.from(Object.values(PARAM_KEYS)).some(
-      (key) => searchParams.has(key)
+    return Array.from(Object.values(PARAM_KEYS)).some((key) =>
+      searchParams.has(key),
     );
   }, [searchParams]);
 
@@ -90,17 +90,25 @@ export function usePortfolioFilters(
   useEffect(() => {
     if (!hasAnyParams && !hasRedirected.current) {
       hasRedirected.current = true;
-      
+
       // Build URL with default params
       const params = new URLSearchParams();
       if (effectiveDefaults.formulationStatuses?.length) {
-        params.set(PARAM_KEYS.formulationStatuses, effectiveDefaults.formulationStatuses.join(","));
+        params.set(
+          PARAM_KEYS.formulationStatuses,
+          effectiveDefaults.formulationStatuses.join(","),
+        );
       }
       if (effectiveDefaults.countryStatuses?.length) {
-        params.set(PARAM_KEYS.countryStatuses, effectiveDefaults.countryStatuses.join(","));
+        params.set(
+          PARAM_KEYS.countryStatuses,
+          effectiveDefaults.countryStatuses.join(","),
+        );
       }
-      
-      const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+
+      const newUrl = params.toString()
+        ? `${pathname}?${params.toString()}`
+        : pathname;
       router.replace(newUrl, { scroll: false });
     }
   }, [hasAnyParams, effectiveDefaults, pathname, router]);
@@ -133,7 +141,7 @@ export function usePortfolioFilters(
       if (newFilters.formulationStatuses !== undefined) {
         updateParam(
           PARAM_KEYS.formulationStatuses,
-          newFilters.formulationStatuses
+          newFilters.formulationStatuses,
         );
       }
       if (newFilters.countryStatuses !== undefined) {
@@ -144,23 +152,20 @@ export function usePortfolioFilters(
       const newUrl = params.toString()
         ? `${pathname}?${params.toString()}`
         : pathname;
-      
+
       // Use push instead of replace for better state synchronization
       // scroll: false prevents jumping to top
       router.push(newUrl, { scroll: false });
     },
-    [searchParams, pathname, router]
+    [searchParams, pathname, router],
   );
 
   // Update a single filter type
   const setFilter = useCallback(
-    <K extends keyof PortfolioFilters>(
-      key: K,
-      value: PortfolioFilters[K]
-    ) => {
+    <K extends keyof PortfolioFilters>(key: K, value: PortfolioFilters[K]) => {
       setFilters({ [key]: value } as Partial<PortfolioFilters>);
     },
-    [setFilters]
+    [setFilters],
   );
 
   // Reset filters to defaults
@@ -168,10 +173,16 @@ export function usePortfolioFilters(
     const params = new URLSearchParams();
     // Set default values explicitly in URL
     if (effectiveDefaults.formulationStatuses?.length) {
-      params.set(PARAM_KEYS.formulationStatuses, effectiveDefaults.formulationStatuses.join(","));
+      params.set(
+        PARAM_KEYS.formulationStatuses,
+        effectiveDefaults.formulationStatuses.join(","),
+      );
     }
     if (effectiveDefaults.countryStatuses?.length) {
-      params.set(PARAM_KEYS.countryStatuses, effectiveDefaults.countryStatuses.join(","));
+      params.set(
+        PARAM_KEYS.countryStatuses,
+        effectiveDefaults.countryStatuses.join(","),
+      );
     }
     const newUrl = params.toString()
       ? `${pathname}?${params.toString()}`
@@ -205,4 +216,3 @@ export function usePortfolioFilters(
     hasActiveFilters,
   };
 }
-

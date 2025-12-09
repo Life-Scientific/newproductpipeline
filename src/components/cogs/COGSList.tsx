@@ -42,7 +42,9 @@ interface COGSListProps {
 export function COGSList({ cogs }: COGSListProps) {
   const { toast } = useToast();
   const { canEditCOGS, isLoading: permissionsLoading } = usePermissions();
-  const [expandedFormulations, setExpandedFormulations] = useState<Set<string>>(new Set());
+  const [expandedFormulations, setExpandedFormulations] = useState<Set<string>>(
+    new Set(),
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFormulation, setSelectedFormulation] = useState<string>("all");
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
@@ -65,13 +67,16 @@ export function COGSList({ cogs }: COGSListProps) {
 
       if (!groupMap.has(groupId)) {
         // Create new group
-        const fiscalYears = [cogsRecord.fiscal_year].filter(Boolean) as string[];
+        const fiscalYears = [cogsRecord.fiscal_year].filter(
+          Boolean,
+        ) as string[];
         groupMap.set(groupId, {
           cogs_group_id: groupId,
           formulation_id: (cogsRecord as any).formulation_id || "",
           formulation_code: cogsRecord.formulation_code || "",
           formulation_name: cogsRecord.formulation_name || "",
-          formulation_country_id: (cogsRecord as any).formulation_country_id || null,
+          formulation_country_id:
+            (cogsRecord as any).formulation_country_id || null,
           country_name: cogsRecord.country_name || null,
           fiscal_year_range: "",
           status: (cogsRecord as any).status || "active",
@@ -88,8 +93,12 @@ export function COGSList({ cogs }: COGSListProps) {
 
     // Calculate fiscal year ranges and sort records
     groupMap.forEach((group) => {
-      group.cogs_records.sort((a, b) => (a.fiscal_year || "").localeCompare(b.fiscal_year || ""));
-      const years = group.cogs_records.map((r) => r.fiscal_year).filter(Boolean);
+      group.cogs_records.sort((a, b) =>
+        (a.fiscal_year || "").localeCompare(b.fiscal_year || ""),
+      );
+      const years = group.cogs_records
+        .map((r) => r.fiscal_year)
+        .filter(Boolean);
       if (years.length > 0) {
         group.fiscal_year_range = `${years[0]}-${years[years.length - 1]}`;
       }
@@ -100,13 +109,17 @@ export function COGSList({ cogs }: COGSListProps) {
 
   // Group by formulation
   const formulationGroups = useMemo(() => {
-    const formMap = new Map<string, { formulation: string; groups: COGSGroup[] }>();
+    const formMap = new Map<
+      string,
+      { formulation: string; groups: COGSGroup[] }
+    >();
 
     cogsGroups.forEach((group) => {
       const key = group.formulation_code || group.formulation_id;
       if (!formMap.has(key)) {
         formMap.set(key, {
-          formulation: group.formulation_name || group.formulation_code || "Unknown",
+          formulation:
+            group.formulation_name || group.formulation_code || "Unknown",
           groups: [],
         });
       }
@@ -122,13 +135,17 @@ export function COGSList({ cogs }: COGSListProps) {
       });
     });
 
-    return Array.from(formMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    return Array.from(formMap.entries()).sort((a, b) =>
+      a[0].localeCompare(b[0]),
+    );
   }, [cogsGroups]);
 
   // Filter options
   const uniqueFormulations = useMemo(() => {
     const formulations = new Set<string>();
-    cogsGroups.forEach((g) => formulations.add(g.formulation_code || g.formulation_id));
+    cogsGroups.forEach((g) =>
+      formulations.add(g.formulation_code || g.formulation_id),
+    );
     return Array.from(formulations).sort();
   }, [cogsGroups]);
 
@@ -150,7 +167,10 @@ export function COGSList({ cogs }: COGSListProps) {
         }
 
         // Filter by search term
-        if (searchTerm && !value.formulation.toLowerCase().includes(searchTerm.toLowerCase())) {
+        if (
+          searchTerm &&
+          !value.formulation.toLowerCase().includes(searchTerm.toLowerCase())
+        ) {
           return null;
         }
 
@@ -161,7 +181,10 @@ export function COGSList({ cogs }: COGSListProps) {
             if (selectedCountry === "global" && group.country_name !== null) {
               return false;
             }
-            if (selectedCountry !== "global" && group.country_name !== selectedCountry) {
+            if (
+              selectedCountry !== "global" &&
+              group.country_name !== selectedCountry
+            ) {
               return false;
             }
           }
@@ -199,7 +222,7 @@ export function COGSList({ cogs }: COGSListProps) {
       });
       return;
     }
-    
+
     setSelectedGroupId(group.cogs_group_id);
     setSelectedGroupInfo({
       formulationId: group.formulation_id,
@@ -231,7 +254,10 @@ export function COGSList({ cogs }: COGSListProps) {
 
             <div className="space-y-2">
               <Label htmlFor="formulation-filter">Formulation</Label>
-              <Select value={selectedFormulation} onValueChange={setSelectedFormulation}>
+              <Select
+                value={selectedFormulation}
+                onValueChange={setSelectedFormulation}
+              >
                 <SelectTrigger id="formulation-filter">
                   <SelectValue placeholder="All Formulations" />
                 </SelectTrigger>
@@ -248,7 +274,10 @@ export function COGSList({ cogs }: COGSListProps) {
 
             <div className="space-y-2">
               <Label htmlFor="country-filter">Country</Label>
-              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+              <Select
+                value={selectedCountry}
+                onValueChange={setSelectedCountry}
+              >
                 <SelectTrigger id="country-filter">
                   <SelectValue placeholder="All Countries" />
                 </SelectTrigger>
@@ -272,80 +301,93 @@ export function COGSList({ cogs }: COGSListProps) {
                 No COGS data found matching the filters.
               </div>
             ) : (
-              filteredFormulationGroups.map(([key, { formulation, groups }]) => {
-                const isExpanded = expandedFormulations.has(key);
+              filteredFormulationGroups.map(
+                ([key, { formulation, groups }]) => {
+                  const isExpanded = expandedFormulations.has(key);
 
-                return (
-                  <div key={key} className="border rounded-lg">
-                    {/* Formulation Header */}
-                    <div
-                      className="flex items-center justify-between p-3 cursor-pointer hover:bg-muted/50"
-                      onClick={() => toggleFormulation(key)}
-                    >
-                      <div className="flex items-center gap-2">
-                        {isExpanded ? (
-                          <ChevronDown className="h-4 w-4" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4" />
-                        )}
-                        <span className="font-medium">{formulation}</span>
-                        <Badge variant="outline">{groups.length} group(s)</Badge>
+                  return (
+                    <div key={key} className="border rounded-lg">
+                      {/* Formulation Header */}
+                      <div
+                        className="flex items-center justify-between p-3 cursor-pointer hover:bg-muted/50"
+                        onClick={() => toggleFormulation(key)}
+                      >
+                        <div className="flex items-center gap-2">
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                          <span className="font-medium">{formulation}</span>
+                          <Badge variant="outline">
+                            {groups.length} group(s)
+                          </Badge>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Country Groups (Expanded) */}
-                    {isExpanded && (
-                      <div className="border-t">
-                        {groups.map((group) => (
-                          <div
-                            key={group.cogs_group_id}
-                            className="flex items-center justify-between p-3 hover:bg-muted/30 border-b last:border-b-0"
-                          >
-                            <div className="flex items-center gap-4 flex-1">
-                              <div className="w-32">
-                                {group.country_name ? (
-                                  <span>{group.country_name}</span>
-                                ) : (
-                                  <Badge variant="outline">Global</Badge>
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <span className="text-sm text-muted-foreground">
-                                  {group.fiscal_year_range}
-                                </span>
-                              </div>
-                              <div>
-                                {group.last_updated_at && (
-                                  <span className="text-xs text-muted-foreground">
-                                    Updated: {new Date(group.last_updated_at).toLocaleDateString()}
+                      {/* Country Groups (Expanded) */}
+                      {isExpanded && (
+                        <div className="border-t">
+                          {groups.map((group) => (
+                            <div
+                              key={group.cogs_group_id}
+                              className="flex items-center justify-between p-3 hover:bg-muted/30 border-b last:border-b-0"
+                            >
+                              <div className="flex items-center gap-4 flex-1">
+                                <div className="w-32">
+                                  {group.country_name ? (
+                                    <span>{group.country_name}</span>
+                                  ) : (
+                                    <Badge variant="outline">Global</Badge>
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <span className="text-sm text-muted-foreground">
+                                    {group.fiscal_year_range}
                                   </span>
-                                )}
+                                </div>
+                                <div>
+                                  {group.last_updated_at && (
+                                    <span className="text-xs text-muted-foreground">
+                                      Updated:{" "}
+                                      {new Date(
+                                        group.last_updated_at,
+                                      ).toLocaleDateString()}
+                                    </span>
+                                  )}
+                                </div>
+                                <div>
+                                  <Badge
+                                    variant={
+                                      group.status === "active"
+                                        ? "default"
+                                        : "secondary"
+                                    }
+                                  >
+                                    {group.status}
+                                  </Badge>
+                                </div>
                               </div>
-                              <div>
-                                <Badge variant={group.status === "active" ? "default" : "secondary"}>
-                                  {group.status}
-                                </Badge>
-                              </div>
+                              {canEditCOGS && !permissionsLoading && (
+                                <div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEdit(group)}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              )}
                             </div>
-                            {canEditCOGS && !permissionsLoading && (
-                              <div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEdit(group)}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                },
+              )
             )}
           </div>
         </CardContent>

@@ -6,7 +6,12 @@ import { UseGroupsList } from "@/components/use-groups/UseGroupsList";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
-import { useFilterOptions, type ReferenceFormulation, type ReferenceCountry, type FilterableFormulationCountry } from "@/hooks/use-filter-options";
+import {
+  useFilterOptions,
+  type ReferenceFormulation,
+  type ReferenceCountry,
+  type FilterableFormulationCountry,
+} from "@/hooks/use-filter-options";
 import type { FormulationCountryUseGroup } from "@/lib/db/types";
 import type { Formulation } from "@/lib/db/types";
 import type { Country } from "@/lib/db/types";
@@ -49,17 +54,18 @@ function UseGroupsContent({
   }, [countries]);
 
   // Convert use groups to filterable formulation-country format for useFilterOptions
-  const filterableFormulationCountries: FilterableFormulationCountry[] = useMemo(() => {
-    return useGroups.map((ug) => ({
-      formulation_country_id: ug.formulation_country_id || null,
-      formulation_id: ug.formulation_id || null,
-      formulation_code: ug.formulation_code || null,
-      country_id: ug.country_id || null,
-      country_code: ug.country_code || null,
-      country_name: ug.country_name || null,
-      country_status: ug.country_status || null,
-    }));
-  }, [useGroups]);
+  const filterableFormulationCountries: FilterableFormulationCountry[] =
+    useMemo(() => {
+      return useGroups.map((ug) => ({
+        formulation_country_id: ug.formulation_country_id || null,
+        formulation_id: ug.formulation_id || null,
+        formulation_code: ug.formulation_code || null,
+        country_id: ug.country_id || null,
+        country_code: ug.country_code || null,
+        country_name: ug.country_name || null,
+        country_status: ug.country_status || null,
+      }));
+    }, [useGroups]);
 
   // Convert to filterable business cases format (empty - not needed for this page)
   const filterableBusinessCases = useMemo(() => {
@@ -72,7 +78,7 @@ function UseGroupsContent({
     referenceCountriesData,
     filterableBusinessCases,
     filterableFormulationCountries,
-    filters
+    filters,
   );
 
   // Filter use groups based on global filters
@@ -87,14 +93,20 @@ function UseGroupsContent({
 
       // Formulation filter - filters.formulations contains codes
       if (filters.formulations.length > 0) {
-        if (!ug.formulation_code || !filters.formulations.includes(ug.formulation_code)) {
+        if (
+          !ug.formulation_code ||
+          !filters.formulations.includes(ug.formulation_code)
+        ) {
           return false;
         }
       }
 
       // Use group filter (by name)
       if (filters.useGroups.length > 0) {
-        if (!ug.use_group_name || !filters.useGroups.includes(ug.use_group_name)) {
+        if (
+          !ug.use_group_name ||
+          !filters.useGroups.includes(ug.use_group_name)
+        ) {
           return false;
         }
       }
@@ -133,7 +145,9 @@ function UseGroupsContent({
         uniqueFormulations.add(ug.formulation_code);
       }
       if (ug.formulation_code && ug.country_code) {
-        uniqueFormulationCountries.add(`${ug.formulation_code}|${ug.country_code}`);
+        uniqueFormulationCountries.add(
+          `${ug.formulation_code}|${ug.country_code}`,
+        );
       }
     });
 
@@ -147,7 +161,11 @@ function UseGroupsContent({
 
   return (
     <>
-      <GlobalFilterBar filterOptions={filterOptions} defaultExpanded={true} filteredCounts={filteredCounts} />
+      <GlobalFilterBar
+        filterOptions={filterOptions}
+        defaultExpanded={true}
+        filteredCounts={filteredCounts}
+      />
       <Card>
         <CardContent className="p-0">
           <div className="p-6">

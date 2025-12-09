@@ -1,4 +1,10 @@
-import { getFormulations, getBusinessCases, getRevenueProjections, getActivePortfolio, getAllProtectionStatus } from "@/lib/db/queries";
+import {
+  getFormulations,
+  getBusinessCases,
+  getRevenueProjections,
+  getActivePortfolio,
+  getAllProtectionStatus,
+} from "@/lib/db/queries";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Section } from "@/components/layout/Section";
 import { CardGrid } from "@/components/layout/CardGrid";
@@ -15,10 +21,17 @@ import { BusinessCaseFormButton } from "@/components/forms/BusinessCaseFormButto
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
-type RegistrationPipeline = Database["public"]["Views"]["vw_registration_pipeline"]["Row"];
+type RegistrationPipeline =
+  Database["public"]["Views"]["vw_registration_pipeline"]["Row"];
 
 export default async function AnalyticsPage() {
-  const [formulations, businessCases, revenueProjections, activePortfolio, protectionStatus] = await Promise.all([
+  const [
+    formulations,
+    businessCases,
+    revenueProjections,
+    activePortfolio,
+    protectionStatus,
+  ] = await Promise.all([
     getFormulations(),
     getBusinessCases(),
     getRevenueProjections(),
@@ -35,23 +48,27 @@ export default async function AnalyticsPage() {
   const registrationPipelineCount = registrationPipeline?.length || 0;
 
   // Count registrations by status
-  const registrationStatusCounts = (registrationPipeline as RegistrationPipeline[] || []).reduce(
+  const registrationStatusCounts = (
+    (registrationPipeline as RegistrationPipeline[]) || []
+  ).reduce(
     (acc, item) => {
       const status = item.country_status || "Unknown";
       acc[status] = (acc[status] || 0) + 1;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 
   // Count by pathway
-  const pathwayCounts = (registrationPipeline as RegistrationPipeline[] || []).reduce(
+  const pathwayCounts = (
+    (registrationPipeline as RegistrationPipeline[]) || []
+  ).reduce(
     (acc, item) => {
       const pathway = item.likely_registration_pathway || "Unknown";
       acc[pathway] = (acc[pathway] || 0) + 1;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 
   return (
@@ -115,15 +132,17 @@ export default async function AnalyticsPage() {
           >
             {Object.keys(registrationStatusCounts).length > 0 ? (
               <div className="space-y-2">
-                {Object.entries(registrationStatusCounts).map(([status, count]) => (
-                  <div
-                    key={status}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <span className="text-sm">{status}</span>
-                    <span className="font-semibold text-sm">{count}</span>
-                  </div>
-                ))}
+                {Object.entries(registrationStatusCounts).map(
+                  ([status, count]) => (
+                    <div
+                      key={status}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <span className="text-sm">{status}</span>
+                      <span className="font-semibold text-sm">{count}</span>
+                    </div>
+                  ),
+                )}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">

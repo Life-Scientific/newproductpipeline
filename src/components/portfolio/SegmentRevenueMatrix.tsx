@@ -1,6 +1,9 @@
 "use client";
 
-import { HeatmapGrid, type HeatmapDataPoint } from "@/components/charts/HeatmapGrid";
+import {
+  HeatmapGrid,
+  type HeatmapDataPoint,
+} from "@/components/charts/HeatmapGrid";
 import type { Database } from "@/lib/supabase/database.types";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
@@ -10,35 +13,47 @@ interface SegmentRevenueMatrixProps {
   businessCases: BusinessCase[];
 }
 
-export function SegmentRevenueMatrix({ businessCases }: SegmentRevenueMatrixProps) {
-  const { formatCurrencyCompact, formatCurrency, currencySymbol, convertCurrency } = useDisplayPreferences();
+export function SegmentRevenueMatrix({
+  businessCases,
+}: SegmentRevenueMatrixProps) {
+  const {
+    formatCurrencyCompact,
+    formatCurrency,
+    currencySymbol,
+    convertCurrency,
+  } = useDisplayPreferences();
   const revenueByCountry: Record<string, number> = {};
   const revenueByCategory: Record<string, number> = {};
   const dataMap: Record<string, number> = {};
-  
-  businessCases.forEach(bc => {
+
+  businessCases.forEach((bc) => {
     const country = bc.country_name || "Unknown";
-    const category = ("formulation_category" in bc ? (bc as any).formulation_category : ("product_category" in bc ? bc.product_category : null)) as string | null || "Other";
+    const category =
+      (("formulation_category" in bc
+        ? (bc as any).formulation_category
+        : "product_category" in bc
+          ? bc.product_category
+          : null) as string | null) || "Other";
     const revenue = bc.total_revenue || 0;
-    
+
     revenueByCountry[country] = (revenueByCountry[country] || 0) + revenue;
     revenueByCategory[category] = (revenueByCategory[category] || 0) + revenue;
-    
+
     const key = `${country}:${category}`;
     dataMap[key] = (dataMap[key] || 0) + revenue;
   });
-  
+
   const topCountries = Object.entries(revenueByCountry)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 15)
-    .map(e => e[0]);
-    
+    .map((e) => e[0]);
+
   const categories = Object.keys(revenueByCategory).sort();
-  
+
   const heatmapData: HeatmapDataPoint[] = [];
-  
-  topCountries.forEach(country => {
-    categories.forEach(cat => {
+
+  topCountries.forEach((country) => {
+    categories.forEach((cat) => {
       const key = `${country}:${cat}`;
       const value = dataMap[key] || 0;
       heatmapData.push({
@@ -46,7 +61,10 @@ export function SegmentRevenueMatrix({ businessCases }: SegmentRevenueMatrixProp
         y: country,
         value: value / 1000,
         label: value > 0 ? formatCurrencyCompact(value) : "",
-        context: value > 0 ? `Revenue: ${formatCurrency(value, { compact: false, decimals: 0 })}` : "No revenue"
+        context:
+          value > 0
+            ? `Revenue: ${formatCurrency(value, { compact: false, decimals: 0 })}`
+            : "No revenue",
       });
     });
   });
@@ -56,9 +74,10 @@ export function SegmentRevenueMatrix({ businessCases }: SegmentRevenueMatrixProp
       data={heatmapData}
       xLabels={categories}
       yLabels={topCountries}
-      valueFormatter={(v) => `${currencySymbol}${convertCurrency(v * 1000).toFixed(0)}K`}
+      valueFormatter={(v) =>
+        `${currencySymbol}${convertCurrency(v * 1000).toFixed(0)}K`
+      }
       height={600}
     />
   );
 }
-

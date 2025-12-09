@@ -20,40 +20,80 @@ import { Pencil, Trash2 } from "lucide-react";
 
 // Cell components that use hooks for proper conversion
 // Note: Not using memo because these need to re-render when display preferences change
-function VolumeCell({ volume, uom }: { volume: number | null; uom: string | null }) {
-  const { isWetProduct, isDryProduct, convertVolume, convertWeight, getDisplayUnit } = useDisplayPreferences();
+function VolumeCell({
+  volume,
+  uom,
+}: {
+  volume: number | null;
+  uom: string | null;
+}) {
+  const {
+    isWetProduct,
+    isDryProduct,
+    convertVolume,
+    convertWeight,
+    getDisplayUnit,
+  } = useDisplayPreferences();
   if (!volume) return <span className="text-muted-foreground">—</span>;
-  
+
   const unitOfMeasure = uom || "L";
   const productIsWet = isWetProduct(unitOfMeasure);
   const productIsDry = isDryProduct(unitOfMeasure);
-  const converted = productIsWet ? convertVolume(volume) : (productIsDry ? convertWeight(volume) : volume);
+  const converted = productIsWet
+    ? convertVolume(volume)
+    : productIsDry
+      ? convertWeight(volume)
+      : volume;
   const displayUnit = getDisplayUnit(unitOfMeasure);
-  
-  return <span>{converted.toLocaleString(undefined, { maximumFractionDigits: 0 })} {displayUnit}</span>;
+
+  return (
+    <span>
+      {converted.toLocaleString(undefined, { maximumFractionDigits: 0 })}{" "}
+      {displayUnit}
+    </span>
+  );
 }
 
-function PerUnitCell({ value, uom }: { value: number | null; uom: string | null }) {
+function PerUnitCell({
+  value,
+  uom,
+}: {
+  value: number | null;
+  uom: string | null;
+}) {
   const { formatPerUnit, getDisplayUnit } = useDisplayPreferences();
   if (!value) return <span className="text-muted-foreground">—</span>;
-  
+
   const unitOfMeasure = uom || "L";
   const displayUnit = getDisplayUnit(unitOfMeasure);
-  
-  return <span>{formatPerUnit(value, unitOfMeasure, { decimals: 2 })}/{displayUnit}</span>;
+
+  return (
+    <span>
+      {formatPerUnit(value, unitOfMeasure, { decimals: 2 })}/{displayUnit}
+    </span>
+  );
 }
 
 type BusinessCaseTable = Database["public"]["Tables"]["business_case"]["Row"];
 
-const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({ businessCase }: { businessCase: EnrichedBusinessCase }) {
+const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({
+  businessCase,
+}: {
+  businessCase: EnrichedBusinessCase;
+}) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [businessCaseData, setBusinessCaseData] = useState<BusinessCaseTable | null>(null);
+  const [businessCaseData, setBusinessCaseData] =
+    useState<BusinessCaseTable | null>(null);
   const router = useRouter();
   const { toast } = useToast();
   const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
-  const { canEditBusinessCases, canDeleteBusinessCases, isLoading: permissionsLoading } = usePermissions();
+  const {
+    canEditBusinessCases,
+    canDeleteBusinessCases,
+    isLoading: permissionsLoading,
+  } = usePermissions();
 
   const handleEdit = async () => {
     if (!canEditBusinessCases) {
@@ -88,7 +128,9 @@ const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({ business
     if (!businessCase.business_case_id) return;
     startTransition(async () => {
       try {
-        const { deleteBusinessCase } = await import("@/lib/actions/business-cases");
+        const { deleteBusinessCase } = await import(
+          "@/lib/actions/business-cases"
+        );
         const result = await deleteBusinessCase(businessCase.business_case_id!);
         if (result.error) {
           toast({
@@ -158,7 +200,11 @@ const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({ business
         onConfirm={handleDelete}
         title="Delete Business Case"
         description="Are you sure you want to delete this business case?"
-        itemName={businessCase.formulation_name || businessCase.business_case_name || undefined}
+        itemName={
+          businessCase.formulation_name ||
+          businessCase.business_case_name ||
+          undefined
+        }
       />
     </>
   );
@@ -294,7 +340,7 @@ interface BusinessCasesListProps {
 
 export function BusinessCasesList({ businessCases }: BusinessCasesListProps) {
   const { preferences } = useDisplayPreferences();
-  
+
   // Memoize columns to prevent recreation
   const memoizedColumns = useMemo(() => columns, []);
 

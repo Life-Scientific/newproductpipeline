@@ -4,7 +4,13 @@ import { useMemo, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,10 +18,10 @@ import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { CountryWithStats } from "@/lib/db/countries";
 import type { Database } from "@/lib/supabase/database.types";
 import { FiscalYearSelector } from "@/components/countries/FiscalYearSelector";
-import { 
-  Globe, 
-  TrendingUp, 
-  Search, 
+import {
+  Globe,
+  TrendingUp,
+  Search,
   ArrowUpDown,
   ChevronRight,
   Package,
@@ -59,7 +65,7 @@ export function CountryList({ countries, businessCases }: CountryListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>("revenue");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-  
+
   // Get selected FY from URL params, default to FY30
   const selectedFY = parseInt(searchParams.get("fy") || "30", 10);
 
@@ -72,25 +78,33 @@ export function CountryList({ countries, businessCases }: CountryListProps) {
 
   // Filter business cases by selected FY and calculate revenue/margin per country
   const countryFinancialsByFY = useMemo(() => {
-    const filteredBCs = businessCases.filter((bc) => matchesFiscalYear(bc, selectedFY));
+    const filteredBCs = businessCases.filter((bc) =>
+      matchesFiscalYear(bc, selectedFY),
+    );
     const financials = new Map<string, { revenue: number; margin: number }>();
-    
+
     filteredBCs.forEach((bc) => {
       if (!bc.country_name) return;
-      const existing = financials.get(bc.country_name) || { revenue: 0, margin: 0 };
+      const existing = financials.get(bc.country_name) || {
+        revenue: 0,
+        margin: 0,
+      };
       financials.set(bc.country_name, {
         revenue: existing.revenue + (bc.total_revenue || 0),
         margin: existing.margin + (bc.total_margin || 0),
       });
     });
-    
+
     return financials;
   }, [businessCases, selectedFY]);
 
   // Merge FY-filtered financials with country data
   const countriesWithFYFilteredStats = useMemo(() => {
     return countries.map((country) => {
-      const financials = countryFinancialsByFY.get(country.country_name) || { revenue: 0, margin: 0 };
+      const financials = countryFinancialsByFY.get(country.country_name) || {
+        revenue: 0,
+        margin: 0,
+      };
       return {
         ...country,
         total_revenue: financials.revenue,
@@ -108,7 +122,7 @@ export function CountryList({ countries, businessCases }: CountryListProps) {
       filtered = countriesWithFYFilteredStats.filter(
         (c) =>
           c.country_name.toLowerCase().includes(term) ||
-          c.country_code.toLowerCase().includes(term)
+          c.country_code.toLowerCase().includes(term),
       );
     }
 
@@ -120,7 +134,8 @@ export function CountryList({ countries, businessCases }: CountryListProps) {
           comparison = a.country_name.localeCompare(b.country_name);
           break;
         case "formulations":
-          comparison = (a.formulations_count || 0) - (b.formulations_count || 0);
+          comparison =
+            (a.formulations_count || 0) - (b.formulations_count || 0);
           break;
         case "revenue":
           comparison = (a.total_revenue || 0) - (b.total_revenue || 0);
@@ -143,12 +158,24 @@ export function CountryList({ countries, businessCases }: CountryListProps) {
   };
 
   // Calculate totals for header (using FY-filtered stats)
-  const totals = useMemo(() => ({
-    countries: countries.length,
-    formulations: countries.reduce((sum, c) => sum + (c.formulations_count || 0), 0),
-    revenue: countriesWithFYFilteredStats.reduce((sum, c) => sum + (c.total_revenue || 0), 0),
-    margin: countriesWithFYFilteredStats.reduce((sum, c) => sum + (c.total_margin || 0), 0),
-  }), [countries, countriesWithFYFilteredStats]);
+  const totals = useMemo(
+    () => ({
+      countries: countries.length,
+      formulations: countries.reduce(
+        (sum, c) => sum + (c.formulations_count || 0),
+        0,
+      ),
+      revenue: countriesWithFYFilteredStats.reduce(
+        (sum, c) => sum + (c.total_revenue || 0),
+        0,
+      ),
+      margin: countriesWithFYFilteredStats.reduce(
+        (sum, c) => sum + (c.total_margin || 0),
+        0,
+      ),
+    }),
+    [countries, countriesWithFYFilteredStats],
+  );
 
   return (
     <div className="space-y-6">
@@ -200,7 +227,9 @@ export function CountryList({ countries, businessCases }: CountryListProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrencyCompact(totals.revenue)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrencyCompact(totals.revenue)}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -211,10 +240,12 @@ export function CountryList({ countries, businessCases }: CountryListProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={cn(
-              "text-2xl font-bold",
-              totals.margin < 0 && "text-destructive"
-            )}>
+            <div
+              className={cn(
+                "text-2xl font-bold",
+                totals.margin < 0 && "text-destructive",
+              )}
+            >
               {formatCurrencyCompact(totals.margin)}
             </div>
           </CardContent>
@@ -271,9 +302,10 @@ export function CountryList({ countries, businessCases }: CountryListProps) {
       {/* Country Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filteredAndSortedCountries.map((country) => {
-          const marginPercent = country.total_revenue > 0
-            ? (country.total_margin / country.total_revenue) * 100
-            : 0;
+          const marginPercent =
+            country.total_revenue > 0
+              ? (country.total_margin / country.total_revenue) * 100
+              : 0;
 
           return (
             <Link
@@ -287,7 +319,10 @@ export function CountryList({ countries, businessCases }: CountryListProps) {
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         {country.country_name}
-                        <Badge variant="outline" className="text-xs font-normal">
+                        <Badge
+                          variant="outline"
+                          className="text-xs font-normal"
+                        >
                           {country.country_code}
                         </Badge>
                       </CardTitle>
@@ -297,33 +332,47 @@ export function CountryList({ countries, businessCases }: CountryListProps) {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Formulations</p>
-                    <p className="font-semibold">{country.formulations_count || 0}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Formulations
+                    </p>
+                    <p className="font-semibold">
+                      {country.formulations_count || 0}
+                    </p>
                   </div>
 
                   <div className="pt-3 border-t">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-muted-foreground">FY{selectedFY} Revenue</p>
+                        <p className="text-xs text-muted-foreground">
+                          FY{selectedFY} Revenue
+                        </p>
                         <p className="font-semibold">
                           {formatCurrencyCompact(country.total_revenue)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs text-muted-foreground">FY{selectedFY} Margin</p>
+                        <p className="text-xs text-muted-foreground">
+                          FY{selectedFY} Margin
+                        </p>
                         <div className="flex items-center gap-2">
-                          <p className={cn(
-                            "font-semibold",
-                            country.total_margin < 0 && "text-destructive"
-                          )}>
+                          <p
+                            className={cn(
+                              "font-semibold",
+                              country.total_margin < 0 && "text-destructive",
+                            )}
+                          >
                             {formatCurrencyCompact(country.total_margin)}
                           </p>
                           {country.total_revenue > 0 && (
                             <Badge
                               variant={
-                                marginPercent >= 40 ? "success" :
-                                marginPercent >= 20 ? "info" :
-                                marginPercent >= 0 ? "warning" : "destructive"
+                                marginPercent >= 40
+                                  ? "success"
+                                  : marginPercent >= 20
+                                    ? "info"
+                                    : marginPercent >= 0
+                                      ? "warning"
+                                      : "destructive"
                               }
                               className="text-xs"
                             >

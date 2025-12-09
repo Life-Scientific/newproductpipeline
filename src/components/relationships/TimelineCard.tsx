@@ -6,7 +6,13 @@ import { statusColors } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
-import { format, isToday, isYesterday, isThisWeek, isThisMonth } from "date-fns";
+import {
+  format,
+  isToday,
+  isYesterday,
+  isThisWeek,
+  isThisMonth,
+} from "date-fns";
 
 export interface TimelineEvent {
   id: string;
@@ -32,7 +38,8 @@ export interface TimelineCardProps {
 function groupTimelineEvents(events: TimelineEvent[]) {
   const groups: Record<string, TimelineEvent[]> = {};
   events.forEach((event) => {
-    const date = typeof event.date === "string" ? new Date(event.date) : event.date;
+    const date =
+      typeof event.date === "string" ? new Date(event.date) : event.date;
     let groupKey: string;
 
     if (isToday(date)) {
@@ -86,7 +93,7 @@ export function TimelineCard({
 
   // Get unique event types for filter
   const eventTypes = Array.from(
-    new Set(sortedEvents.map((e) => e.type))
+    new Set(sortedEvents.map((e) => e.type)),
   ).sort();
 
   const getStatusVariant = (status: string): string => {
@@ -103,7 +110,7 @@ export function TimelineCard({
               "px-3 py-1 text-xs rounded-md border transition-colors",
               filterType === null
                 ? "bg-primary text-primary-foreground border-primary"
-                : "bg-background hover:bg-muted"
+                : "bg-background hover:bg-muted",
             )}
           >
             All
@@ -116,7 +123,7 @@ export function TimelineCard({
                 "px-3 py-1 text-xs rounded-md border transition-colors",
                 filterType === type
                   ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background hover:bg-muted"
+                  : "bg-background hover:bg-muted",
               )}
             >
               {type}
@@ -139,11 +146,17 @@ export function TimelineCard({
               </h3>
               <div className="space-y-3">
                 {eventsInGroup.map((event) => {
-                  const eventDate = typeof event.date === "string" ? new Date(event.date) : event.date;
+                  const eventDate =
+                    typeof event.date === "string"
+                      ? new Date(event.date)
+                      : event.date;
                   const statusVariant = getStatusVariant(event.type);
 
                   return (
-                    <div key={event.id} className="relative flex items-start group">
+                    <div
+                      key={event.id}
+                      className="relative flex items-start group"
+                    >
                       <div className="absolute -left-[19px] sm:-left-[27px] mt-2.5 rounded-full w-2 h-2 bg-primary ring-4 ring-background" />
                       <div className="flex-1 p-3 border rounded-lg transition-colors hover:bg-muted/50">
                         <Link href={event.href || "#"} className="block">
@@ -151,16 +164,24 @@ export function TimelineCard({
                             <span className="font-medium text-primary group-hover:underline">
                               {event.title}
                             </span>
-                            <time dateTime={eventDate.toISOString()} className="text-xs text-muted-foreground">
+                            <time
+                              dateTime={eventDate.toISOString()}
+                              className="text-xs text-muted-foreground"
+                            >
                               {format(eventDate, "MMM d, yyyy")}
                             </time>
                           </div>
                           {event.description && (
-                            <p className="text-sm text-muted-foreground mb-1">{event.description}</p>
+                            <p className="text-sm text-muted-foreground mb-1">
+                              {event.description}
+                            </p>
                           )}
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             {event.user && <span>by {event.user}</span>}
-                            <Badge variant={statusVariant as any} className="ml-auto">
+                            <Badge
+                              variant={statusVariant as any}
+                              className="ml-auto"
+                            >
                               {event.type}
                             </Badge>
                           </div>
@@ -177,4 +198,3 @@ export function TimelineCard({
     </ContentCard>
   );
 }
-

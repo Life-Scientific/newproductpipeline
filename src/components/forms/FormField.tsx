@@ -29,16 +29,16 @@ interface FormFieldProps {
   children: React.ReactNode;
 }
 
-export function FormField({ 
-  label, 
-  required, 
-  error, 
+export function FormField({
+  label,
+  required,
+  error,
   success,
   successMessage,
   validationState = "idle",
   hint,
-  className, 
-  children 
+  className,
+  children,
 }: FormFieldProps) {
   return (
     <div className={cn("space-y-2", className)}>
@@ -103,10 +103,10 @@ export function FormInputField({
   className,
 }: FormInputFieldProps) {
   return (
-    <FormField 
-      label={label} 
-      required={required} 
-      error={error} 
+    <FormField
+      label={label}
+      required={required}
+      error={error}
       success={success}
       successMessage={successMessage}
       validationState={validationState}
@@ -124,7 +124,7 @@ export function FormInputField({
         disabled={disabled}
         className={cn(
           error && "border-destructive focus-visible:ring-destructive/50",
-          success && !error && "border-success focus-visible:ring-success/50"
+          success && !error && "border-success focus-visible:ring-success/50",
         )}
       />
     </FormField>
@@ -159,9 +159,9 @@ export function FormSelectField({
   className,
 }: FormSelectFieldProps) {
   return (
-    <FormField 
-      label={label} 
-      required={required} 
+    <FormField
+      label={label}
+      required={required}
       error={error}
       success={success}
       successMessage={successMessage}
@@ -169,12 +169,16 @@ export function FormSelectField({
       hint={hint}
       className={className}
     >
-      <Select value={value || "__none__"} onValueChange={onValueChange} disabled={disabled}>
-        <SelectTrigger 
+      <Select
+        value={value || "__none__"}
+        onValueChange={onValueChange}
+        disabled={disabled}
+      >
+        <SelectTrigger
           id={id}
           className={cn(
             error && "border-destructive focus-visible:ring-destructive/50",
-            success && !error && "border-success focus-visible:ring-success/50"
+            success && !error && "border-success focus-visible:ring-success/50",
           )}
         >
           <SelectValue placeholder={placeholder} />
@@ -218,9 +222,9 @@ export function FormTextareaField({
   className,
 }: FormTextareaFieldProps) {
   return (
-    <FormField 
-      label={label} 
-      required={required} 
+    <FormField
+      label={label}
+      required={required}
       error={error}
       success={success}
       successMessage={successMessage}
@@ -238,7 +242,7 @@ export function FormTextareaField({
         disabled={disabled}
         className={cn(
           error && "border-destructive focus-visible:ring-destructive/50",
-          success && !error && "border-success focus-visible:ring-success/50"
+          success && !error && "border-success focus-visible:ring-success/50",
         )}
       />
     </FormField>
@@ -265,8 +269,8 @@ export function FormSwitchField({
   className,
 }: FormSwitchFieldProps) {
   return (
-    <FormField 
-      label="" 
+    <FormField
+      label=""
       error={error}
       success={success}
       successMessage={successMessage}
@@ -285,9 +289,3 @@ export function FormSwitchField({
     </FormField>
   );
 }
-
-
-
-
-
-

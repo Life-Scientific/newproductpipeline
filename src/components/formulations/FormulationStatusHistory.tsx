@@ -1,11 +1,25 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { Database } from "@/lib/supabase/database.types";
 
-type StatusHistory = Database["public"]["Tables"]["formulation_status_history"]["Row"];
+type StatusHistory =
+  Database["public"]["Tables"]["formulation_status_history"]["Row"];
 
 interface FormulationStatusHistoryProps {
   history: StatusHistory[];
@@ -18,7 +32,9 @@ const statusColors: Record<string, string> = {
   Killed: "destructive",
 };
 
-export function FormulationStatusHistory({ history }: FormulationStatusHistoryProps) {
+export function FormulationStatusHistory({
+  history,
+}: FormulationStatusHistoryProps) {
   if (history.length === 0) {
     return (
       <Card>
@@ -27,7 +43,9 @@ export function FormulationStatusHistory({ history }: FormulationStatusHistoryPr
           <CardDescription>Audit trail of status changes</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No status history found.</p>
+          <p className="text-sm text-muted-foreground">
+            No status history found.
+          </p>
         </CardContent>
       </Card>
     );
@@ -61,7 +79,11 @@ export function FormulationStatusHistory({ history }: FormulationStatusHistoryPr
                 <TableCell>{entry.changed_by || "—"}</TableCell>
                 <TableCell>
                   {entry.old_status ? (
-                    <Badge variant={(statusColors[entry.old_status] as any) || "secondary"}>
+                    <Badge
+                      variant={
+                        (statusColors[entry.old_status] as any) || "secondary"
+                      }
+                    >
                       {entry.old_status}
                     </Badge>
                   ) : (
@@ -69,7 +91,11 @@ export function FormulationStatusHistory({ history }: FormulationStatusHistoryPr
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={(statusColors[entry.new_status] as any) || "secondary"}>
+                  <Badge
+                    variant={
+                      (statusColors[entry.new_status] as any) || "secondary"
+                    }
+                  >
                     {entry.new_status}
                   </Badge>
                 </TableCell>
@@ -84,4 +110,3 @@ export function FormulationStatusHistory({ history }: FormulationStatusHistoryPr
     </Card>
   );
 }
-

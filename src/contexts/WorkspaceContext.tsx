@@ -1,7 +1,10 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import type { Workspace, WorkspaceWithMenuItems } from "@/lib/actions/workspaces";
+import type {
+  Workspace,
+  WorkspaceWithMenuItems,
+} from "@/lib/actions/workspaces";
 import { getWorkspaceWithMenuBySlug } from "@/lib/actions/workspaces";
 
 interface WorkspaceContextType {
@@ -12,11 +15,16 @@ interface WorkspaceContextType {
   refreshWorkspace: () => Promise<void>;
 }
 
-const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
+const WorkspaceContext = createContext<WorkspaceContextType | undefined>(
+  undefined,
+);
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
-  const [workspaceWithMenu, setWorkspaceWithMenu] = useState<WorkspaceWithMenuItems | null>(null);
+  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(
+    null,
+  );
+  const [workspaceWithMenu, setWorkspaceWithMenu] =
+    useState<WorkspaceWithMenuItems | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   /**
@@ -27,18 +35,21 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       // Determine which slug to try
-      const slugToTry = workspaceSlug 
-        || (typeof window !== "undefined" ? localStorage.getItem("current_workspace") : null)
-        || "portfolio";
-      
+      const slugToTry =
+        workspaceSlug ||
+        (typeof window !== "undefined"
+          ? localStorage.getItem("current_workspace")
+          : null) ||
+        "portfolio";
+
       // Single optimized query for workspace + menu items
       let workspaceData = await getWorkspaceWithMenuBySlug(slugToTry);
-      
+
       // If the slug wasn't "portfolio" and we got nothing, try portfolio as fallback
       if (!workspaceData && slugToTry !== "portfolio") {
         workspaceData = await getWorkspaceWithMenuBySlug("portfolio");
       }
-      
+
       if (workspaceData) {
         setCurrentWorkspace(workspaceData);
         setWorkspaceWithMenu(workspaceData);
@@ -120,4 +131,3 @@ export function useWorkspace() {
   }
   return context;
 }
-

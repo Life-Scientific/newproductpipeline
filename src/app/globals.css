@@ -8,7 +8,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  
+
   /* Accordion animations */
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -60,7 +60,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  
+
   /* Semantic Colors */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
@@ -68,7 +68,7 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
-  
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -109,13 +109,13 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  
+
   /* Semantic Defaults (Light) */
   --success: oklch(0.65 0.18 145);
   --success-foreground: oklch(0.98 0 0);
-  --warning: oklch(0.80 0.15 80);
-  --warning-foreground: oklch(0.20 0.05 80);
-  --info: oklch(0.70 0.15 240);
+  --warning: oklch(0.8 0.15 80);
+  --warning-foreground: oklch(0.2 0.05 80);
+  --info: oklch(0.7 0.15 240);
   --info-foreground: oklch(0.98 0 0);
 }
 
@@ -152,13 +152,13 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-  
+
   /* Semantic Defaults (Dark) */
   --success: oklch(0.65 0.15 145);
   --success-foreground: oklch(0.15 0.05 145);
-  --warning: oklch(0.80 0.15 80);
+  --warning: oklch(0.8 0.15 80);
   --warning-foreground: oklch(0.15 0.05 80);
-  --info: oklch(0.70 0.15 240);
+  --info: oklch(0.7 0.15 240);
   --info-foreground: oklch(0.15 0.05 240);
 }
 
@@ -183,7 +183,8 @@
 }
 
 @keyframes pulse-ring {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(var(--ring-rgb, 59, 130, 246), 0.4);
   }
   50% {
@@ -192,7 +193,8 @@
 }
 
 @keyframes bounce-subtle {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -236,7 +238,8 @@
 }
 
 @keyframes node-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
@@ -247,7 +250,8 @@
 }
 
 @keyframes blob-drift {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
   25% {
@@ -283,7 +287,8 @@
 }
 
 @keyframes gradient-x {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -292,10 +297,19 @@
 }
 
 @keyframes neon-flicker {
-  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+  0%,
+  19%,
+  21%,
+  23%,
+  25%,
+  54%,
+  56%,
+  100% {
     opacity: 1;
   }
-  20%, 24%, 55% {
+  20%,
+  24%,
+  55% {
     opacity: 0.6;
   }
 }
@@ -347,7 +361,8 @@
 
 /* 80s floating shapes */
 @keyframes float-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(0deg);
   }
   50% {
@@ -356,7 +371,8 @@
 }
 
 @keyframes float-medium {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(180deg);
   }
   50% {
@@ -365,7 +381,8 @@
 }
 
 @keyframes float-fast {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(45deg);
   }
   50% {

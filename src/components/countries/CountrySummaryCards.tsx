@@ -40,22 +40,40 @@ function matchesFiscalYear(bc: BusinessCase, selectedFY: number): boolean {
   return effectiveStart + bc.year_offset - 1 === selectedFY;
 }
 
-export function CountrySummaryCards({ stats, businessCases }: CountrySummaryCardsProps) {
+export function CountrySummaryCards({
+  stats,
+  businessCases,
+}: CountrySummaryCardsProps) {
   const searchParams = useSearchParams();
   const { formatCurrencyCompact } = useDisplayPreferences();
-  
+
   // Get selected FY from URL params, default to FY30
   const selectedFY = parseInt(searchParams.get("fy") || "30", 10);
 
   // Filter business cases by selected FY and calculate totals
   const fyFinancials = useMemo(() => {
-    const filteredBCs = businessCases.filter((bc) => matchesFiscalYear(bc, selectedFY));
-    const totalRevenue = filteredBCs.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
-    const totalMargin = filteredBCs.reduce((sum, bc) => sum + (bc.total_margin || 0), 0);
-    const avgMarginPercent = filteredBCs.length > 0
-      ? filteredBCs.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) / filteredBCs.length
-      : 0;
-    return { totalRevenue, totalMargin, avgMarginPercent, count: filteredBCs.length };
+    const filteredBCs = businessCases.filter((bc) =>
+      matchesFiscalYear(bc, selectedFY),
+    );
+    const totalRevenue = filteredBCs.reduce(
+      (sum, bc) => sum + (bc.total_revenue || 0),
+      0,
+    );
+    const totalMargin = filteredBCs.reduce(
+      (sum, bc) => sum + (bc.total_margin || 0),
+      0,
+    );
+    const avgMarginPercent =
+      filteredBCs.length > 0
+        ? filteredBCs.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) /
+          filteredBCs.length
+        : 0;
+    return {
+      totalRevenue,
+      totalMargin,
+      avgMarginPercent,
+      count: filteredBCs.length,
+    };
   }, [businessCases, selectedFY]);
 
   return (
@@ -95,7 +113,9 @@ export function CountrySummaryCards({ stats, businessCases }: CountrySummaryCard
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-1">
-          <div className="text-2xl font-bold">{formatCurrencyCompact(fyFinancials.totalRevenue)}</div>
+          <div className="text-2xl font-bold">
+            {formatCurrencyCompact(fyFinancials.totalRevenue)}
+          </div>
           <p className="text-xs text-muted-foreground">
             {fyFinancials.count} business cases
           </p>
@@ -110,10 +130,12 @@ export function CountrySummaryCards({ stats, businessCases }: CountrySummaryCard
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-1">
-          <div className={cn(
-            "text-2xl font-bold",
-            fyFinancials.totalMargin < 0 && "text-destructive"
-          )}>
+          <div
+            className={cn(
+              "text-2xl font-bold",
+              fyFinancials.totalMargin < 0 && "text-destructive",
+            )}
+          >
             {formatCurrencyCompact(fyFinancials.totalMargin)}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -124,4 +146,3 @@ export function CountrySummaryCards({ stats, businessCases }: CountrySummaryCard
     </div>
   );
 }
-

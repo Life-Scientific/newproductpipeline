@@ -10,7 +10,9 @@ interface FormulationsPageContentProps {
   formulationsWithNested: FormulationWithNestedData[];
 }
 
-export function FormulationsPageContent({ formulationsWithNested }: FormulationsPageContentProps) {
+export function FormulationsPageContent({
+  formulationsWithNested,
+}: FormulationsPageContentProps) {
   const searchParams = useSearchParams();
   const view = searchParams.get("view") === "excel" ? "excel" : "table";
 
@@ -28,7 +30,9 @@ export function FormulationsPageContent({ formulationsWithNested }: Formulations
         <Card>
           <CardContent className="p-0">
             <div className="p-6">
-              <FormulationsListWithActions formulations={formulationsWithNested} />
+              <FormulationsListWithActions
+                formulations={formulationsWithNested}
+              />
             </div>
           </CardContent>
         </Card>

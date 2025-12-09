@@ -36,14 +36,19 @@ export function DeleteConfirmDialog({
           <AlertDialogDescription>
             {description}
             {itemName && (
-              <span className="font-semibold text-foreground block mt-2">{itemName}</span>
+              <span className="font-semibold text-foreground block mt-2">
+                {itemName}
+              </span>
             )}
             This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+          <AlertDialogAction
+            onClick={onConfirm}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -51,4 +56,3 @@ export function DeleteConfirmDialog({
     </AlertDialog>
   );
 }
-

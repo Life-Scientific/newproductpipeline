@@ -222,7 +222,14 @@ export function AppSidebar() {
     isLoading: workspaceLoading,
   } = useWorkspace();
   const { currentTheme, availableThemes, setTheme } = useTheme();
-  const { preferences, updatePreferences, currencySymbol, CURRENCY_OPTIONS, VOLUME_OPTIONS, WEIGHT_OPTIONS } = useDisplayPreferences();
+  const {
+    preferences,
+    updatePreferences,
+    currencySymbol,
+    CURRENCY_OPTIONS,
+    VOLUME_OPTIONS,
+    WEIGHT_OPTIONS,
+  } = useDisplayPreferences();
   const [user, setUser] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [santaHatOpen, setSantaHatOpen] = useState(false);
@@ -493,7 +500,13 @@ export function AppSidebar() {
                           >
                             <defs>
                               <filter id="hat-shadow-footer">
-                                <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#000000" floodOpacity="0.3"/>
+                                <feDropShadow
+                                  dx="0"
+                                  dy="2"
+                                  stdDeviation="2"
+                                  floodColor="#000000"
+                                  floodOpacity="0.3"
+                                />
                               </filter>
                             </defs>
                             {/* Complete hat shape - top triangle */}
@@ -532,14 +545,16 @@ export function AppSidebar() {
                           </svg>
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent 
+                      <PopoverContent
                         className="w-auto p-3 text-center"
                         side={isCollapsed ? "right" : "top"}
                         align="center"
                       >
                         <div className="space-y-2">
                           <div className="text-2xl">🎄</div>
-                          <div className="text-lg font-bold text-primary">Merry Christmas!</div>
+                          <div className="text-lg font-bold text-primary">
+                            Merry Christmas!
+                          </div>
                         </div>
                       </PopoverContent>
                     </Popover>
@@ -568,7 +583,10 @@ export function AppSidebar() {
                         </AvatarFallback>
                       </Avatar>
                       {/* Santa Hat - Clickable */}
-                      <Popover open={santaHatDropdownOpen} onOpenChange={setSantaHatDropdownOpen}>
+                      <Popover
+                        open={santaHatDropdownOpen}
+                        onOpenChange={setSantaHatDropdownOpen}
+                      >
                         <PopoverTrigger asChild>
                           <button
                             type="button"
@@ -587,7 +605,13 @@ export function AppSidebar() {
                             >
                               <defs>
                                 <filter id="hat-shadow-dropdown">
-                                  <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#000000" floodOpacity="0.3"/>
+                                  <feDropShadow
+                                    dx="0"
+                                    dy="2"
+                                    stdDeviation="2"
+                                    floodColor="#000000"
+                                    floodOpacity="0.3"
+                                  />
                                 </filter>
                               </defs>
                               {/* Complete hat shape - top triangle */}
@@ -626,14 +650,16 @@ export function AppSidebar() {
                             </svg>
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent 
+                        <PopoverContent
                           className="w-auto p-3 text-center"
                           side="top"
                           align="center"
                         >
                           <div className="space-y-2">
                             <div className="text-2xl">🎄</div>
-                            <div className="text-lg font-bold text-primary">Merry Christmas!</div>
+                            <div className="text-lg font-bold text-primary">
+                              Merry Christmas!
+                            </div>
                           </div>
                         </PopoverContent>
                       </Popover>
@@ -756,15 +782,23 @@ export function AppSidebar() {
                         return (
                           <DropdownMenuItem
                             key={option.code}
-                            onClick={() => updatePreferences({ currency: option.code })}
+                            onClick={() =>
+                              updatePreferences({ currency: option.code })
+                            }
                             className={cn(
                               "cursor-pointer gap-2 px-2 py-2 transition-colors",
-                              isActive && "bg-accent"
+                              isActive && "bg-accent",
                             )}
                           >
-                            <span className="w-6 text-center font-medium">{option.symbol}</span>
-                            <span className="flex-1 text-sm">{option.name}</span>
-                            {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                            <span className="w-6 text-center font-medium">
+                              {option.symbol}
+                            </span>
+                            <span className="flex-1 text-sm">
+                              {option.name}
+                            </span>
+                            {isActive && (
+                              <Check className="h-4 w-4 text-primary shrink-0" />
+                            )}
                           </DropdownMenuItem>
                         );
                       })}
@@ -780,14 +814,20 @@ export function AppSidebar() {
                         return (
                           <DropdownMenuItem
                             key={option.code}
-                            onClick={() => updatePreferences({ volumeUnit: option.code })}
+                            onClick={() =>
+                              updatePreferences({ volumeUnit: option.code })
+                            }
                             className={cn(
                               "cursor-pointer gap-2 px-2 py-2 transition-colors",
-                              isActive && "bg-accent"
+                              isActive && "bg-accent",
                             )}
                           >
-                            <span className="flex-1 text-sm">{option.name}</span>
-                            {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                            <span className="flex-1 text-sm">
+                              {option.name}
+                            </span>
+                            {isActive && (
+                              <Check className="h-4 w-4 text-primary shrink-0" />
+                            )}
                           </DropdownMenuItem>
                         );
                       })}
@@ -803,14 +843,20 @@ export function AppSidebar() {
                         return (
                           <DropdownMenuItem
                             key={option.code}
-                            onClick={() => updatePreferences({ weightUnit: option.code })}
+                            onClick={() =>
+                              updatePreferences({ weightUnit: option.code })
+                            }
                             className={cn(
                               "cursor-pointer gap-2 px-2 py-2 transition-colors",
-                              isActive && "bg-accent"
+                              isActive && "bg-accent",
                             )}
                           >
-                            <span className="flex-1 text-sm">{option.name}</span>
-                            {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                            <span className="flex-1 text-sm">
+                              {option.name}
+                            </span>
+                            {isActive && (
+                              <Check className="h-4 w-4 text-primary shrink-0" />
+                            )}
                           </DropdownMenuItem>
                         );
                       })}
@@ -833,7 +879,7 @@ export function AppSidebar() {
                   )}
                   <span>Refresh all data</span>
                 </DropdownMenuItem>
-                
+
                 <DropdownMenuItem asChild className="cursor-pointer">
                   <Link
                     href={routes.settings()}

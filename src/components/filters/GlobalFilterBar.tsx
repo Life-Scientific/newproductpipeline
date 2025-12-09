@@ -42,7 +42,8 @@ export function GlobalFilterBar({
   containerClassName,
 }: GlobalFilterBarProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-  const { filters, setFilter, clearAllFilters, hasActiveFilters } = usePortfolioFilters();
+  const { filters, setFilter, clearAllFilters, hasActiveFilters } =
+    usePortfolioFilters();
 
   // Convert country codes to display names for MultiSelect
   const countryOptions = useMemo(() => {
@@ -59,10 +60,11 @@ export function GlobalFilterBar({
   // Include selected formulations even if they're not in the filtered options (to preserve selection)
   const formulationOptions = useMemo(() => {
     const optionsMap = new Map<string, { value: string; label: string }>();
-    
+
     // Add all formulations from filterOptions
     filterOptions.formulations.forEach((displayName) => {
-      const code = filterOptions.displayToFormulationCode.get(displayName) || "";
+      const code =
+        filterOptions.displayToFormulationCode.get(displayName) || "";
       if (code) {
         optionsMap.set(code, {
           value: code,
@@ -70,21 +72,27 @@ export function GlobalFilterBar({
         });
       }
     });
-    
+
     // Also include any selected formulations that might not be in the filtered options
     // This ensures selected values persist even when options are constrained by cascading logic
     filters.formulations.forEach((code) => {
       if (!optionsMap.has(code)) {
-        const displayName = filterOptions.formulationCodeToDisplay.get(code) || code;
+        const displayName =
+          filterOptions.formulationCodeToDisplay.get(code) || code;
         optionsMap.set(code, {
           value: code,
           label: displayName,
         });
       }
     });
-    
+
     return Array.from(optionsMap.values());
-  }, [filterOptions.formulations, filterOptions.displayToFormulationCode, filterOptions.formulationCodeToDisplay, filters.formulations]);
+  }, [
+    filterOptions.formulations,
+    filterOptions.displayToFormulationCode,
+    filterOptions.formulationCodeToDisplay,
+    filters.formulations,
+  ]);
 
   // Use group options
   const useGroupOptions = useMemo(() => {
@@ -137,30 +145,42 @@ export function GlobalFilterBar({
 
   // Count active filters
   const activeFilterCount = useMemo(() => {
-    return filters.countries.length +
-           filters.formulations.length +
-           filters.useGroups.length +
-           filters.formulationStatuses.length +
-           filters.countryStatuses.length;
+    return (
+      filters.countries.length +
+      filters.formulations.length +
+      filters.useGroups.length +
+      filters.formulationStatuses.length +
+      filters.countryStatuses.length
+    );
   }, [filters]);
 
   const content = (
     <>
       {/* Header */}
-      <div className={cn("flex items-center justify-between", inline ? "mb-4" : "mb-4")}>
+      <div
+        className={cn(
+          "flex items-center justify-between",
+          inline ? "mb-4" : "mb-4",
+        )}
+      >
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <div className={cn(
-              "p-1.5 rounded-md transition-colors",
-              hasActiveFilters ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-            )}>
+            <div
+              className={cn(
+                "p-1.5 rounded-md transition-colors",
+                hasActiveFilters
+                  ? "bg-primary/10 text-primary"
+                  : "bg-muted text-muted-foreground",
+              )}
+            >
               <Filter className="h-4 w-4" />
             </div>
             <div>
               <h3 className="text-sm font-semibold">Portfolio Filters</h3>
               {hasActiveFilters && (
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {activeFilterCount} {activeFilterCount === 1 ? "filter" : "filters"} active
+                  {activeFilterCount}{" "}
+                  {activeFilterCount === 1 ? "filter" : "filters"} active
                 </p>
               )}
             </div>
@@ -215,9 +235,16 @@ export function GlobalFilterBar({
             className="flex flex-wrap gap-2 mb-4 pb-4"
           >
             {filters.countries.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
-                <span className="font-semibold">{filters.countries.length}</span>
-                <span>Country{filters.countries.length !== 1 ? "ies" : ""}</span>
+              <Badge
+                variant="secondary"
+                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              >
+                <span className="font-semibold">
+                  {filters.countries.length}
+                </span>
+                <span>
+                  Country{filters.countries.length !== 1 ? "ies" : ""}
+                </span>
                 <button
                   onClick={() => setFilter("countries", [])}
                   className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
@@ -227,9 +254,16 @@ export function GlobalFilterBar({
               </Badge>
             )}
             {filters.formulations.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
-                <span className="font-semibold">{filters.formulations.length}</span>
-                <span>Formulation{filters.formulations.length !== 1 ? "s" : ""}</span>
+              <Badge
+                variant="secondary"
+                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              >
+                <span className="font-semibold">
+                  {filters.formulations.length}
+                </span>
+                <span>
+                  Formulation{filters.formulations.length !== 1 ? "s" : ""}
+                </span>
                 <button
                   onClick={() => setFilter("formulations", [])}
                   className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
@@ -239,9 +273,16 @@ export function GlobalFilterBar({
               </Badge>
             )}
             {filters.useGroups.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
-                <span className="font-semibold">{filters.useGroups.length}</span>
-                <span>Use Group{filters.useGroups.length !== 1 ? "s" : ""}</span>
+              <Badge
+                variant="secondary"
+                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              >
+                <span className="font-semibold">
+                  {filters.useGroups.length}
+                </span>
+                <span>
+                  Use Group{filters.useGroups.length !== 1 ? "s" : ""}
+                </span>
                 <button
                   onClick={() => setFilter("useGroups", [])}
                   className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
@@ -251,9 +292,17 @@ export function GlobalFilterBar({
               </Badge>
             )}
             {filters.formulationStatuses.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
-                <span className="font-semibold">{filters.formulationStatuses.length}</span>
-                <span>Form Status{filters.formulationStatuses.length !== 1 ? "es" : ""}</span>
+              <Badge
+                variant="secondary"
+                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              >
+                <span className="font-semibold">
+                  {filters.formulationStatuses.length}
+                </span>
+                <span>
+                  Form Status
+                  {filters.formulationStatuses.length !== 1 ? "es" : ""}
+                </span>
                 <button
                   onClick={() => setFilter("formulationStatuses", [])}
                   className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
@@ -263,9 +312,17 @@ export function GlobalFilterBar({
               </Badge>
             )}
             {filters.countryStatuses.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
-                <span className="font-semibold">{filters.countryStatuses.length}</span>
-                <span>Country Status{filters.countryStatuses.length !== 1 ? "es" : ""}</span>
+              <Badge
+                variant="secondary"
+                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              >
+                <span className="font-semibold">
+                  {filters.countryStatuses.length}
+                </span>
+                <span>
+                  Country Status
+                  {filters.countryStatuses.length !== 1 ? "es" : ""}
+                </span>
                 <button
                   onClick={() => setFilter("countryStatuses", [])}
                   className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
@@ -288,10 +345,12 @@ export function GlobalFilterBar({
             transition={{ duration: 0.2, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className={cn(
-              "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4",
-              inline && "pb-4"
-            )}>
+            <div
+              className={cn(
+                "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4",
+                inline && "pb-4",
+              )}
+            >
               {/* Country Filter */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -428,47 +487,67 @@ export function GlobalFilterBar({
       </AnimatePresence>
 
       {/* Filtered Results Summary - show always when counts available */}
-      {filteredCounts && (() => {
-        const countItems: Array<{ value: number; label: string }> = [];
-        if (filteredCounts.countries !== undefined) {
-          countItems.push({ value: filteredCounts.countries, label: "countries" });
-        }
-        if (filteredCounts.formulations !== undefined) {
-          countItems.push({ value: filteredCounts.formulations, label: "formulations" });
-        }
-        if (filteredCounts.formulationCountries !== undefined) {
-          countItems.push({ value: filteredCounts.formulationCountries, label: "formulation-countries" });
-        }
-        if (filteredCounts.useGroups !== undefined) {
-          countItems.push({ value: filteredCounts.useGroups, label: "use groups" });
-        }
-        if (filteredCounts.businessCases !== undefined) {
-          countItems.push({ value: filteredCounts.businessCases, label: "business cases" });
-        }
+      {filteredCounts &&
+        (() => {
+          const countItems: Array<{ value: number; label: string }> = [];
+          if (filteredCounts.countries !== undefined) {
+            countItems.push({
+              value: filteredCounts.countries,
+              label: "countries",
+            });
+          }
+          if (filteredCounts.formulations !== undefined) {
+            countItems.push({
+              value: filteredCounts.formulations,
+              label: "formulations",
+            });
+          }
+          if (filteredCounts.formulationCountries !== undefined) {
+            countItems.push({
+              value: filteredCounts.formulationCountries,
+              label: "formulation-countries",
+            });
+          }
+          if (filteredCounts.useGroups !== undefined) {
+            countItems.push({
+              value: filteredCounts.useGroups,
+              label: "use groups",
+            });
+          }
+          if (filteredCounts.businessCases !== undefined) {
+            countItems.push({
+              value: filteredCounts.businessCases,
+              label: "business cases",
+            });
+          }
 
-        if (countItems.length === 0) return null;
+          if (countItems.length === 0) return null;
 
-        return (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className={cn("pt-4", inline && "mt-4")}
-          >
-            <div className="flex items-center gap-2 flex-wrap text-sm">
-              <span className="text-muted-foreground font-medium">{hasActiveFilters ? "Showing:" : "Total:"}</span>
-              {countItems.map((item, index) => (
-                <span key={item.label} className="flex items-center gap-1">
-                  <span className="font-semibold tabular-nums text-foreground">{item.value.toLocaleString()}</span>
-                  <span className="text-muted-foreground"> {item.label}</span>
-                  {index < countItems.length - 1 && (
-                    <span className="text-muted-foreground mx-1">•</span>
-                  )}
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={cn("pt-4", inline && "mt-4")}
+            >
+              <div className="flex items-center gap-2 flex-wrap text-sm">
+                <span className="text-muted-foreground font-medium">
+                  {hasActiveFilters ? "Showing:" : "Total:"}
                 </span>
-              ))}
-            </div>
-          </motion.div>
-        );
-      })()}
+                {countItems.map((item, index) => (
+                  <span key={item.label} className="flex items-center gap-1">
+                    <span className="font-semibold tabular-nums text-foreground">
+                      {item.value.toLocaleString()}
+                    </span>
+                    <span className="text-muted-foreground"> {item.label}</span>
+                    {index < countItems.length - 1 && (
+                      <span className="text-muted-foreground mx-1">•</span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          );
+        })()}
 
       {/* Active Filters Summary (when collapsed) */}
       <AnimatePresence>
@@ -480,33 +559,70 @@ export function GlobalFilterBar({
             className="flex flex-wrap gap-2 mt-3 pt-3"
           >
             {filters.countries.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
-                <span className="font-semibold">{filters.countries.length}</span>
-                <span>Country{filters.countries.length !== 1 ? "ies" : ""}</span>
+              <Badge
+                variant="secondary"
+                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              >
+                <span className="font-semibold">
+                  {filters.countries.length}
+                </span>
+                <span>
+                  Country{filters.countries.length !== 1 ? "ies" : ""}
+                </span>
               </Badge>
             )}
             {filters.formulations.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
-                <span className="font-semibold">{filters.formulations.length}</span>
-                <span>Formulation{filters.formulations.length !== 1 ? "s" : ""}</span>
+              <Badge
+                variant="secondary"
+                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              >
+                <span className="font-semibold">
+                  {filters.formulations.length}
+                </span>
+                <span>
+                  Formulation{filters.formulations.length !== 1 ? "s" : ""}
+                </span>
               </Badge>
             )}
             {filters.useGroups.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
-                <span className="font-semibold">{filters.useGroups.length}</span>
-                <span>Use Group{filters.useGroups.length !== 1 ? "s" : ""}</span>
+              <Badge
+                variant="secondary"
+                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              >
+                <span className="font-semibold">
+                  {filters.useGroups.length}
+                </span>
+                <span>
+                  Use Group{filters.useGroups.length !== 1 ? "s" : ""}
+                </span>
               </Badge>
             )}
             {filters.formulationStatuses.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
-                <span className="font-semibold">{filters.formulationStatuses.length}</span>
-                <span>Form Status{filters.formulationStatuses.length !== 1 ? "es" : ""}</span>
+              <Badge
+                variant="secondary"
+                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              >
+                <span className="font-semibold">
+                  {filters.formulationStatuses.length}
+                </span>
+                <span>
+                  Form Status
+                  {filters.formulationStatuses.length !== 1 ? "es" : ""}
+                </span>
               </Badge>
             )}
             {filters.countryStatuses.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
-                <span className="font-semibold">{filters.countryStatuses.length}</span>
-                <span>Country Status{filters.countryStatuses.length !== 1 ? "es" : ""}</span>
+              <Badge
+                variant="secondary"
+                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              >
+                <span className="font-semibold">
+                  {filters.countryStatuses.length}
+                </span>
+                <span>
+                  Country Status
+                  {filters.countryStatuses.length !== 1 ? "es" : ""}
+                </span>
               </Badge>
             )}
           </motion.div>
@@ -526,9 +642,7 @@ export function GlobalFilterBar({
 
   return (
     <Card className="mb-6">
-      <CardContent className="p-4">
-        {content}
-      </CardContent>
+      <CardContent className="p-4">{content}</CardContent>
     </Card>
   );
 }

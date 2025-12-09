@@ -13,11 +13,7 @@ const columns: ColumnDef<Formulation>[] = [
     header: "Code",
     cell: ({ row }) => {
       const code = row.getValue("formulation_code") as string | null;
-      return (
-        <span className="font-mono font-medium">
-          {code || "—"}
-        </span>
-      );
+      return <span className="font-mono font-medium">{code || "—"}</span>;
     },
   },
   {
@@ -33,7 +29,11 @@ const columns: ColumnDef<Formulation>[] = [
     header: "Base Code",
     cell: ({ row }) => {
       const baseCode = row.getValue("base_code") as string | null;
-      return <span className="font-mono text-sm text-muted-foreground">{baseCode || "—"}</span>;
+      return (
+        <span className="font-mono text-sm text-muted-foreground">
+          {baseCode || "—"}
+        </span>
+      );
     },
   },
   {
@@ -41,7 +41,11 @@ const columns: ColumnDef<Formulation>[] = [
     header: "Variant",
     cell: ({ row }) => {
       const variant = row.getValue("variant_suffix") as string | null;
-      return <span className="font-mono text-sm text-muted-foreground">{variant || "—"}</span>;
+      return (
+        <span className="font-mono text-sm text-muted-foreground">
+          {variant || "—"}
+        </span>
+      );
     },
   },
   {
@@ -77,7 +81,11 @@ const columns: ColumnDef<Formulation>[] = [
     header: "Readiness",
     cell: ({ row }) => {
       const readiness = row.getValue("formulation_readiness") as string | null;
-      return <span className="text-sm text-muted-foreground">{readiness || "—"}</span>;
+      return (
+        <span className="text-sm text-muted-foreground">
+          {readiness || "—"}
+        </span>
+      );
     },
   },
   {
@@ -86,7 +94,10 @@ const columns: ColumnDef<Formulation>[] = [
     cell: ({ row }) => {
       const rationale = row.getValue("status_rationale") as string | null;
       return (
-        <span className="text-sm text-muted-foreground max-w-md truncate block" title={rationale || undefined}>
+        <span
+          className="text-sm text-muted-foreground max-w-md truncate block"
+          title={rationale || undefined}
+        >
           {rationale || "—"}
         </span>
       );
@@ -112,7 +123,9 @@ interface BlacklistedFormulationsListProps {
   formulations: Formulation[];
 }
 
-export function BlacklistedFormulationsList({ formulations }: BlacklistedFormulationsListProps) {
+export function BlacklistedFormulationsList({
+  formulations,
+}: BlacklistedFormulationsListProps) {
   return (
     <DataTable
       columns={columns}
@@ -122,6 +135,3 @@ export function BlacklistedFormulationsList({ formulations }: BlacklistedFormula
     />
   );
 }
-
-
-

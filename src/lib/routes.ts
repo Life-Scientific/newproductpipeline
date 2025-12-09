@@ -1,6 +1,6 @@
 /**
  * Centralized route configuration for the application.
- * 
+ *
  * All internal links should use these helpers to ensure consistency
  * and make workspace/route changes trivial in the future.
  */
@@ -32,7 +32,7 @@ export function route(path: string, id?: string): string {
 export const routes = {
   // Home
   home: () => WORKSPACE_BASE,
-  
+
   // Formulations
   formulations: {
     list: () => route("/formulations"),
@@ -41,43 +41,43 @@ export const routes = {
     compare: () => route("/formulations/compare"),
     blacklisted: () => route("/formulations/blacklisted"),
   },
-  
+
   // Business Cases
   businessCases: {
     list: () => route("/business-cases"),
     detail: (id: string) => route("/business-cases", id),
   },
-  
+
   // Countries
   countries: {
     list: () => route("/countries"),
     detail: (id: string) => route("/countries", id),
   },
-  
+
   // Use Groups
   useGroups: {
     list: () => route("/use-groups"),
     detail: (id: string) => route("/use-groups", id),
   },
-  
+
   // Active Ingredients
   activeIngredients: {
     list: () => route("/active-ingredients"),
     detail: (id: string) => route("/active-ingredients", id),
   },
-  
+
   // Markets
   markets: {
     list: () => route("/markets"),
     detail: (countryId: string) => route("/markets", countryId),
   },
-  
+
   // Formulation Countries
   formulationCountries: {
     list: () => route("/formulation-countries"),
     detail: (id: string) => route("/formulation-countries", id),
   },
-  
+
   // Other pages
   analytics: () => route("/analytics"),
   cogs: () => route("/cogs"),
@@ -130,7 +130,7 @@ export const LEGACY_ROUTES = [
  * Workspace base paths (these are valid workspaces, not legacy routes)
  */
 export const WORKSPACE_PATHS = [
-  WORKSPACE_BASE,        // /portfolio
+  WORKSPACE_BASE, // /portfolio
   SHORTURL_WORKSPACE_BASE, // /shorturl
 ] as const;
 
@@ -140,12 +140,16 @@ export const WORKSPACE_PATHS = [
  */
 export function isLegacyRoute(pathname: string): boolean {
   // Don't redirect if it's a valid workspace path
-  if (WORKSPACE_PATHS.some(wp => pathname === wp || pathname.startsWith(`${wp}/`))) {
+  if (
+    WORKSPACE_PATHS.some(
+      (wp) => pathname === wp || pathname.startsWith(`${wp}/`),
+    )
+  ) {
     return false;
   }
-  
-  return LEGACY_ROUTES.some(route => 
-    pathname === route || pathname.startsWith(`${route}/`)
+
+  return LEGACY_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
 }
 
@@ -155,10 +159,3 @@ export function isLegacyRoute(pathname: string): boolean {
 export function toLegacyRedirect(pathname: string): string {
   return `${WORKSPACE_BASE}${pathname}`;
 }
-
-
-
-
-
-
-

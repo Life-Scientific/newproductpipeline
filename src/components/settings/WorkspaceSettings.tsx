@@ -1,10 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { getWorkspaces, setUserDefaultWorkspace, type Workspace } from "@/lib/actions/workspaces";
+import {
+  getWorkspaces,
+  setUserDefaultWorkspace,
+  type Workspace,
+} from "@/lib/actions/workspaces";
 import { Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -39,7 +49,8 @@ export function WorkspaceSettings() {
     try {
       await setUserDefaultWorkspace(workspaceId);
       await switchWorkspace(
-        workspaces.find((w) => w.workspace_id === workspaceId)?.slug || "portfolio"
+        workspaces.find((w) => w.workspace_id === workspaceId)?.slug ||
+          "portfolio",
       );
       toast({
         title: "Success",
@@ -58,14 +69,18 @@ export function WorkspaceSettings() {
   };
 
   if (isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading workspaces...</div>;
+    return (
+      <div className="text-sm text-muted-foreground">Loading workspaces...</div>
+    );
   }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Workspace Preferences</CardTitle>
-        <CardDescription>Manage your workspace settings and defaults</CardDescription>
+        <CardDescription>
+          Manage your workspace settings and defaults
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -79,7 +94,8 @@ export function WorkspaceSettings() {
           <label className="text-sm font-medium">Available Workspaces</label>
           <div className="space-y-2">
             {workspaces.map((workspace) => {
-              const isCurrent = currentWorkspace?.workspace_id === workspace.workspace_id;
+              const isCurrent =
+                currentWorkspace?.workspace_id === workspace.workspace_id;
               return (
                 <div
                   key={workspace.workspace_id}
@@ -88,7 +104,9 @@ export function WorkspaceSettings() {
                   <div>
                     <p className="text-sm font-medium">{workspace.name}</p>
                     {workspace.description && (
-                      <p className="text-xs text-muted-foreground">{workspace.description}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {workspace.description}
+                      </p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -116,4 +134,3 @@ export function WorkspaceSettings() {
     </Card>
   );
 }
-

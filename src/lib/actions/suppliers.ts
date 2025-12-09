@@ -9,7 +9,9 @@ export async function createSupplier(formData: FormData) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.SUPPLIER_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage suppliers" };
+    return {
+      error: "Unauthorized: You don't have permission to manage suppliers",
+    };
   }
 
   const supabase = await createClient();
@@ -46,7 +48,9 @@ export async function updateSupplier(supplierId: string, formData: FormData) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.SUPPLIER_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage suppliers" };
+    return {
+      error: "Unauthorized: You don't have permission to manage suppliers",
+    };
   }
 
   const supabase = await createClient();
@@ -84,12 +88,17 @@ export async function deleteSupplier(supplierId: string) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.SUPPLIER_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage suppliers" };
+    return {
+      error: "Unauthorized: You don't have permission to manage suppliers",
+    };
   }
 
   const supabase = await createClient();
 
-  const { error } = await supabase.from("suppliers").delete().eq("supplier_id", supplierId);
+  const { error } = await supabase
+    .from("suppliers")
+    .delete()
+    .eq("supplier_id", supplierId);
 
   if (error) {
     return { error: error.message };
@@ -98,4 +107,3 @@ export async function deleteSupplier(supplierId: string) {
   revalidatePath("/reference");
   return { success: true };
 }
-

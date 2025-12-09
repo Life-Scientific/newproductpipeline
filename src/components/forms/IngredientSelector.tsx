@@ -55,14 +55,15 @@ const INGREDIENT_ROLES = [
 
 const QUANTITY_UNITS = ["g/L", "kg/L", "mL/L", "%", "g/kg", "kg/kg"];
 
-export function IngredientSelector({ 
-  ingredients, 
-  onChange, 
+export function IngredientSelector({
+  ingredients,
+  onChange,
   availableIngredients: propAvailableIngredients,
-  onAvailableIngredientsChange 
+  onAvailableIngredientsChange,
 }: IngredientSelectorProps) {
   const supabase = useSupabase();
-  const [internalAvailableIngredients, setInternalAvailableIngredients] = useState<Ingredient[]>([]);
+  const [internalAvailableIngredients, setInternalAvailableIngredients] =
+    useState<Ingredient[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newIngredient, setNewIngredient] = useState<IngredientInput>({
     ingredient_id: "",
@@ -71,11 +72,14 @@ export function IngredientSelector({
     ingredient_role: "Active",
     notes: "",
   });
-  const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
+  const [selectedIngredient, setSelectedIngredient] =
+    useState<Ingredient | null>(null);
 
   // Use prop if provided, otherwise use internal state
-  const availableIngredients = propAvailableIngredients || internalAvailableIngredients;
-  const setAvailableIngredients = onAvailableIngredientsChange || setInternalAvailableIngredients;
+  const availableIngredients =
+    propAvailableIngredients || internalAvailableIngredients;
+  const setAvailableIngredients =
+    onAvailableIngredientsChange || setInternalAvailableIngredients;
 
   useEffect(() => {
     if (!propAvailableIngredients) {
@@ -100,7 +104,7 @@ export function IngredientSelector({
     if (newIngredient.ingredient_id) {
       // First try to find in available ingredients
       const ingredient = availableIngredients.find(
-        (ing) => ing.ingredient_id === newIngredient.ingredient_id
+        (ing) => ing.ingredient_id === newIngredient.ingredient_id,
       );
       if (ingredient) {
         setSelectedIngredient(ingredient);
@@ -127,7 +131,12 @@ export function IngredientSelector({
       ingredient_role: newIngredient.ingredient_role || "Active",
     };
 
-    if (!ingredientToAdd.ingredient_id || !ingredientToAdd.quantity || !ingredientToAdd.quantity_unit || !ingredientToAdd.ingredient_role) {
+    if (
+      !ingredientToAdd.ingredient_id ||
+      !ingredientToAdd.quantity ||
+      !ingredientToAdd.quantity_unit ||
+      !ingredientToAdd.ingredient_role
+    ) {
       console.log("Validation failed:", {
         ingredient_id: ingredientToAdd.ingredient_id,
         quantity: ingredientToAdd.quantity,
@@ -138,7 +147,11 @@ export function IngredientSelector({
     }
 
     // Check if ingredient already added
-    if (ingredients.some((ing) => ing.ingredient_id === ingredientToAdd.ingredient_id)) {
+    if (
+      ingredients.some(
+        (ing) => ing.ingredient_id === ingredientToAdd.ingredient_id,
+      )
+    ) {
       return;
     }
 
@@ -158,22 +171,32 @@ export function IngredientSelector({
     onChange(ingredients.filter((_, i) => i !== index));
   };
 
-  const handleUpdateIngredient = (index: number, field: keyof IngredientInput, value: string) => {
+  const handleUpdateIngredient = (
+    index: number,
+    field: keyof IngredientInput,
+    value: string,
+  ) => {
     const updated = [...ingredients];
     updated[index] = { ...updated[index], [field]: value };
     onChange(updated);
   };
 
   const getIngredientName = (ingredientId: string) => {
-    return availableIngredients.find((ing) => ing.ingredient_id === ingredientId)?.ingredient_name || "";
+    return (
+      availableIngredients.find((ing) => ing.ingredient_id === ingredientId)
+        ?.ingredient_name || ""
+    );
   };
 
   const getIngredientType = (ingredientId: string) => {
-    return availableIngredients.find((ing) => ing.ingredient_id === ingredientId)?.ingredient_type || "";
+    return (
+      availableIngredients.find((ing) => ing.ingredient_id === ingredientId)
+        ?.ingredient_type || ""
+    );
   };
 
   const hasActiveIngredients = ingredients.some(
-    (ing) => getIngredientType(ing.ingredient_id) === "Active"
+    (ing) => getIngredientType(ing.ingredient_id) === "Active",
   );
 
   return (
@@ -207,7 +230,9 @@ export function IngredientSelector({
               onValueChange={(value) =>
                 setNewIngredient({ ...newIngredient, ingredient_id: value })
               }
-              searchFunction={(search) => searchIngredients({ search, limit: 100 })}
+              searchFunction={(search) =>
+                searchIngredients({ search, limit: 100 })
+              }
               getOptionValue={(item) => item.ingredient_id}
               getOptionLabel={(item) => item.ingredient_name || ""}
               getOptionSubtitle={(item) => {
@@ -234,7 +259,12 @@ export function IngredientSelector({
                 type="number"
                 step="0.01"
                 value={newIngredient.quantity}
-                onChange={(e) => setNewIngredient({ ...newIngredient, quantity: e.target.value })}
+                onChange={(e) =>
+                  setNewIngredient({
+                    ...newIngredient,
+                    quantity: e.target.value,
+                  })
+                }
                 placeholder="200"
               />
             </div>
@@ -290,13 +320,19 @@ export function IngredientSelector({
             <Textarea
               id="ingredient_notes"
               value={newIngredient.notes}
-              onChange={(e) => setNewIngredient({ ...newIngredient, notes: e.target.value })}
+              onChange={(e) =>
+                setNewIngredient({ ...newIngredient, notes: e.target.value })
+              }
               rows={2}
             />
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowAddForm(false)}
+            >
               Cancel
             </Button>
             <button
@@ -335,7 +371,9 @@ export function IngredientSelector({
                     {getIngredientName(ing.ingredient_id)}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{getIngredientType(ing.ingredient_id)}</Badge>
+                    <Badge variant="outline">
+                      {getIngredientType(ing.ingredient_id)}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     {ing.quantity} {ing.quantity_unit}
@@ -364,17 +402,19 @@ export function IngredientSelector({
       {!hasActiveIngredients && ingredients.length > 0 && (
         <div className="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3">
           <p className="text-sm text-yellow-800 dark:text-yellow-200">
-            ⚠️ No active ingredients added. Formulation code will not be generated until at least one active ingredient is added.
+            ⚠️ No active ingredients added. Formulation code will not be
+            generated until at least one active ingredient is added.
           </p>
         </div>
       )}
 
       {ingredients.length === 0 && (
         <div className="border-2 border-dashed rounded-lg p-8 text-center text-muted-foreground">
-          <p>No ingredients added yet. Click "Add Ingredient" to get started.</p>
+          <p>
+            No ingredients added yet. Click "Add Ingredient" to get started.
+          </p>
         </div>
       )}
     </div>
   );
 }
-

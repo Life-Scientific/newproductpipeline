@@ -55,10 +55,13 @@ export default function BusinessCasesLoading() {
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-4 w-20" />
           </div>
-          
+
           {/* Table rows */}
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 p-3 border-b last:border-0">
+            <div
+              key={i}
+              className="flex items-center gap-4 p-3 border-b last:border-0"
+            >
               <Skeleton className="h-5 w-16" />
               <Skeleton className="h-5 w-32" />
               <Skeleton className="h-5 w-20" />
@@ -72,4 +75,3 @@ export default function BusinessCasesLoading() {
     </div>
   );
 }
-

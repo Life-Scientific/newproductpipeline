@@ -30,7 +30,11 @@ interface InviteUserModalProps {
   onSuccess?: () => void;
 }
 
-export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserModalProps) {
+export function InviteUserModal({
+  open,
+  onOpenChange,
+  onSuccess,
+}: InviteUserModalProps) {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState("Viewer");
@@ -45,7 +49,7 @@ export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserMod
         const rolesData = await getAllRoles();
         setRoles(rolesData);
         // Default to Viewer if available
-        const viewerRole = rolesData.find(r => r.role_name === "Viewer");
+        const viewerRole = rolesData.find((r) => r.role_name === "Viewer");
         if (viewerRole) {
           setSelectedRole(viewerRole.role_name);
         } else if (rolesData.length > 0) {
@@ -57,7 +61,7 @@ export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserMod
         setLoadingRoles(false);
       }
     }
-    
+
     if (open) {
       fetchRoles();
     }
@@ -65,7 +69,7 @@ export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserMod
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email.trim()) {
       toast({
         title: "Error",
@@ -89,7 +93,8 @@ export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserMod
         onSuccess?.();
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to send invitation";
+      const message =
+        error instanceof Error ? error.message : "Failed to send invitation";
       toast({
         title: "Error",
         description: message,
@@ -100,7 +105,7 @@ export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserMod
     }
   };
 
-  const selectedRoleData = roles.find(r => r.role_name === selectedRole);
+  const selectedRoleData = roles.find((r) => r.role_name === selectedRole);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -108,7 +113,8 @@ export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserMod
         <DialogHeader>
           <DialogTitle>Invite User</DialogTitle>
           <DialogDescription>
-            Send an invitation email to a new user. They will receive a link to create their account.
+            Send an invitation email to a new user. They will receive a link to
+            create their account.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -127,9 +133,9 @@ export function InviteUserModal({ open, onOpenChange, onSuccess }: InviteUserMod
             </div>
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
-              <Select 
-                value={selectedRole} 
-                onValueChange={setSelectedRole} 
+              <Select
+                value={selectedRole}
+                onValueChange={setSelectedRole}
                 disabled={loading || loadingRoles}
               >
                 <SelectTrigger>

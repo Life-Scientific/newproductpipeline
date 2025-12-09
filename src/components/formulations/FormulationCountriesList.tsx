@@ -66,12 +66,12 @@ const createColumns = (
       const code = row.getValue("formulation_code") as string;
       const productName = row.original.product_name;
       const id = row.original.formulation_country_id;
-      
+
       // Only show on first row of group
       if (!isFirst) {
         return <span className="text-muted-foreground/30">│</span>;
       }
-      
+
       return (
         <div className="space-y-0.5">
           <Link
@@ -118,11 +118,14 @@ const createColumns = (
     cell: ({ row }) => {
       const status = row.getValue("country_status") as string | null;
       const readiness = row.original.readiness as string | null;
-      
+
       return (
         <div className="flex flex-col gap-1">
           {status ? (
-            <Badge variant={getStatusVariant(status, "country")} className="w-fit text-xs">
+            <Badge
+              variant={getStatusVariant(status, "country")}
+              className="w-fit text-xs"
+            >
               {status}
             </Badge>
           ) : (
@@ -150,7 +153,8 @@ const createColumns = (
     header: "Category",
     cell: ({ row }) => {
       const category = row.original.product_category as string | null;
-      if (!category) return <span className="text-xs text-muted-foreground">—</span>;
+      if (!category)
+        return <span className="text-xs text-muted-foreground">—</span>;
       return <span className="text-xs">{category}</span>;
     },
   },
@@ -185,7 +189,11 @@ const createColumns = (
         {
           id: "actions",
           header: "",
-          cell: ({ row }: { row: { original: FormulationCountryWithGroup } }) => {
+          cell: ({
+            row,
+          }: {
+            row: { original: FormulationCountryWithGroup };
+          }) => {
             return (
               <FormulationCountryActionCell
                 countryId={row.original.formulation_country_id || ""}
@@ -202,11 +210,13 @@ const createColumns = (
 ];
 
 // Build a lookup map for formulation code -> product name for better filter labels
-function buildFormulationLabelMap(data: FormulationCountryDetail[]): Map<string, string> {
+function buildFormulationLabelMap(
+  data: FormulationCountryDetail[],
+): Map<string, string> {
   const map = new Map<string, string>();
   data.forEach((row) => {
     if (row.formulation_code) {
-      const label = row.product_name 
+      const label = row.product_name
         ? `${row.formulation_code} - ${row.product_name}`
         : row.formulation_code;
       map.set(row.formulation_code, label);
@@ -218,7 +228,7 @@ function buildFormulationLabelMap(data: FormulationCountryDetail[]): Map<string,
 // Filter configurations for the formulation-countries table
 // Note: getLabel is set dynamically in the component to include formulation names
 const createFilterConfigs = (
-  formulationLabelMap: Map<string, string>
+  formulationLabelMap: Map<string, string>,
 ): FilterConfig<FormulationCountryWithGroup>[] => [
   {
     columnKey: "formulation_code",
@@ -244,7 +254,9 @@ const createFilterConfigs = (
 ];
 
 // Add grouping metadata to rows
-function addGroupingInfo(data: FormulationCountryDetail[]): FormulationCountryWithGroup[] {
+function addGroupingInfo(
+  data: FormulationCountryDetail[],
+): FormulationCountryWithGroup[] {
   // Sort by formulation_code first to ensure groups are together
   const sorted = [...data].sort((a, b) => {
     const codeA = a.formulation_code || "";
@@ -255,25 +267,25 @@ function addGroupingInfo(data: FormulationCountryDetail[]): FormulationCountryWi
     const countryB = b.country_name || "";
     return countryA.localeCompare(countryB);
   });
-  
+
   // Count group sizes
   const groupCounts = new Map<string, number>();
   sorted.forEach((row) => {
     const code = row.formulation_code || "";
     groupCounts.set(code, (groupCounts.get(code) || 0) + 1);
   });
-  
+
   // Mark first and last in each group
   const seenCodes = new Set<string>();
   return sorted.map((row, index) => {
     const code = row.formulation_code || "";
     const isFirst = !seenCodes.has(code);
     seenCodes.add(code);
-    
+
     // Check if this is the last row in its group
     const nextRow = sorted[index + 1];
     const isLast = !nextRow || nextRow.formulation_code !== code;
-    
+
     return {
       ...row,
       _isFirstInGroup: isFirst,
@@ -300,13 +312,13 @@ export function FormulationCountriesList({
   // Build formulation label map for filter display (includes product names)
   const formulationLabelMap = useMemo(
     () => buildFormulationLabelMap(countries),
-    [countries]
+    [countries],
   );
 
   // Create filter configs with dynamic labels
   const filterConfigs = useMemo(
     () => createFilterConfigs(formulationLabelMap),
-    [formulationLabelMap]
+    [formulationLabelMap],
   );
 
   // Memoize the edit handler
@@ -334,14 +346,17 @@ export function FormulationCountriesList({
   };
 
   // Row class function to remove borders between grouped rows
-  const getRowClassName = useCallback((row: FormulationCountryWithGroup, index: number) => {
-    // Remove bottom border if not the last in group
-    if (!row._isLastInGroup) {
-      return "border-b-0";
-    }
-    // Add thicker border for group separator
-    return "border-b-2 border-border/60";
-  }, []);
+  const getRowClassName = useCallback(
+    (row: FormulationCountryWithGroup, index: number) => {
+      // Remove bottom border if not the last in group
+      if (!row._isLastInGroup) {
+        return "border-b-0";
+      }
+      // Add thicker border for group separator
+      return "border-b-2 border-border/60";
+    },
+    [],
+  );
 
   return (
     <>

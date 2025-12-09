@@ -1,15 +1,31 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { Database } from "@/lib/supabase/database.types";
 
-type FormulationIngredient = Database["public"]["Tables"]["formulation_ingredients"]["Row"];
+type FormulationIngredient =
+  Database["public"]["Tables"]["formulation_ingredients"]["Row"];
 type Ingredient = Database["public"]["Tables"]["ingredients"]["Row"];
 
 interface FormulationIngredientsProps {
-  ingredients: Array<FormulationIngredient & { ingredients: Ingredient | null }>;
+  ingredients: Array<
+    FormulationIngredient & { ingredients: Ingredient | null }
+  >;
 }
 
 const supplyRiskColors: Record<string, string> = {
@@ -19,12 +35,14 @@ const supplyRiskColors: Record<string, string> = {
   Critical: "destructive",
 };
 
-export function FormulationIngredients({ ingredients }: FormulationIngredientsProps) {
+export function FormulationIngredients({
+  ingredients,
+}: FormulationIngredientsProps) {
   const activeIngredients = ingredients.filter(
-    (ing) => ing.ingredients?.ingredient_type === "Active"
+    (ing) => ing.ingredients?.ingredient_type === "Active",
   );
   const otherIngredients = ingredients.filter(
-    (ing) => ing.ingredients?.ingredient_type !== "Active"
+    (ing) => ing.ingredients?.ingredient_type !== "Active",
   );
 
   if (ingredients.length === 0) {
@@ -41,7 +59,10 @@ export function FormulationIngredients({ ingredients }: FormulationIngredientsPr
     );
   }
 
-  const renderIngredientTable = (ingredientList: typeof ingredients, title: string) => {
+  const renderIngredientTable = (
+    ingredientList: typeof ingredients,
+    title: string,
+  ) => {
     if (ingredientList.length === 0) return null;
 
     return (
@@ -73,11 +94,18 @@ export function FormulationIngredients({ ingredients }: FormulationIngredientsPr
                   </TableCell>
                   <TableCell>
                     <span className="text-sm">
-                      {ing.quantity ? ing.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—"} {ing.quantity_unit || ""}
+                      {ing.quantity
+                        ? ing.quantity.toLocaleString(undefined, {
+                            maximumFractionDigits: 2,
+                          })
+                        : "—"}{" "}
+                      {ing.quantity_unit || ""}
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className="text-sm text-muted-foreground">{ing.ingredient_role || "—"}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {ing.ingredient_role || "—"}
+                    </span>
                   </TableCell>
                   <TableCell>
                     {ing.ingredients?.cas_number ? (
@@ -92,7 +120,9 @@ export function FormulationIngredients({ ingredients }: FormulationIngredientsPr
                     {ing.ingredients?.supply_risk ? (
                       <Badge
                         variant={
-                          (supplyRiskColors[ing.ingredients.supply_risk] as any) || "outline"
+                          (supplyRiskColors[
+                            ing.ingredients.supply_risk
+                          ] as any) || "outline"
                         }
                         className="text-xs"
                       >
@@ -104,9 +134,13 @@ export function FormulationIngredients({ ingredients }: FormulationIngredientsPr
                   </TableCell>
                   <TableCell>
                     {ing.ingredients?.is_eu_approved ? (
-                      <Badge variant="default" className="text-xs">Yes</Badge>
+                      <Badge variant="default" className="text-xs">
+                        Yes
+                      </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-xs">No</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        No
+                      </Badge>
                     )}
                   </TableCell>
                 </TableRow>

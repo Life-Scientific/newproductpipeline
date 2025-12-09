@@ -46,11 +46,11 @@ interface Connection {
 }
 
 // Node component
-function EntityNodeComponent({ 
-  node, 
+function EntityNodeComponent({
+  node,
   isSelected,
   onSelect,
-}: { 
+}: {
   node: EntityNode;
   isSelected: boolean;
   onSelect: (id: string | null) => void;
@@ -63,7 +63,7 @@ function EntityNodeComponent({
   };
 
   return (
-    <g 
+    <g
       transform={`translate(${node.x}, ${node.y})`}
       onClick={() => onSelect(isSelected ? null : node.id)}
       className="cursor-pointer"
@@ -77,20 +77,23 @@ function EntityNodeComponent({
         rx={8}
         className={`fill-background stroke-2 transition-all ${statusColors[node.status]} ${isSelected ? "stroke-primary stroke-[3px]" : ""}`}
       />
-      
+
       {/* Status indicator */}
       <circle
         cx={55}
         cy={-10}
         r={8}
         className={`${
-          node.status === "complete" ? "fill-green-500" :
-          node.status === "partial" ? "fill-yellow-500" :
-          node.status === "critical" ? "fill-destructive" :
-          "fill-red-500"
+          node.status === "complete"
+            ? "fill-green-500"
+            : node.status === "partial"
+              ? "fill-yellow-500"
+              : node.status === "critical"
+                ? "fill-destructive"
+                : "fill-red-500"
         }`}
       />
-      
+
       {/* Node name */}
       <text
         x={0}
@@ -100,7 +103,7 @@ function EntityNodeComponent({
       >
         {node.shortName || node.name}
       </text>
-      
+
       {/* Row count */}
       {node.rowCount !== undefined && (
         <text
@@ -117,32 +120,32 @@ function EntityNodeComponent({
 }
 
 // Connection line component
-function ConnectionLine({ 
-  from, 
-  to, 
+function ConnectionLine({
+  from,
+  to,
   nodes,
   label,
-}: { 
-  from: string; 
-  to: string; 
+}: {
+  from: string;
+  to: string;
   nodes: EntityNode[];
   label?: string;
 }) {
-  const fromNode = nodes.find(n => n.id === from);
-  const toNode = nodes.find(n => n.id === to);
-  
+  const fromNode = nodes.find((n) => n.id === from);
+  const toNode = nodes.find((n) => n.id === to);
+
   if (!fromNode || !toNode) return null;
-  
+
   const startX = fromNode.x;
   const startY = fromNode.y + 25;
   const endX = toNode.x;
   const endY = toNode.y - 25;
-  
+
   // Calculate control points for curved line
   const midY = (startY + endY) / 2;
-  
+
   const path = `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`;
-  
+
   return (
     <g>
       <path
@@ -167,15 +170,21 @@ function ConnectionLine({
 }
 
 // Detail panel for selected node
-function NodeDetailPanel({ node, onClose }: { node: EntityNode; onClose: () => void }) {
+function NodeDetailPanel({
+  node,
+  onClose,
+}: {
+  node: EntityNode;
+  onClose: () => void;
+}) {
   const canLink = node.listPage && !node.listPage.includes("[");
-  
+
   return (
     <Card className="absolute top-4 right-4 w-72 shadow-lg z-10">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <CardTitle className="text-base">{node.name}</CardTitle>
-          <button 
+          <button
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground"
           >
@@ -183,7 +192,9 @@ function NodeDetailPanel({ node, onClose }: { node: EntityNode; onClose: () => v
           </button>
         </div>
         {node.description && (
-          <CardDescription className="text-xs">{node.description}</CardDescription>
+          <CardDescription className="text-xs">
+            {node.description}
+          </CardDescription>
         )}
       </CardHeader>
       <CardContent className="space-y-3">
@@ -199,13 +210,16 @@ function NodeDetailPanel({ node, onClose }: { node: EntityNode; onClose: () => v
             </Badge>
           )}
         </div>
-        
+
         <div className="space-y-1 text-xs">
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">List Page:</span>
             {node.listPage ? (
               canLink ? (
-                <Link href={node.listPage} className="text-primary hover:underline">
+                <Link
+                  href={node.listPage}
+                  className="text-primary hover:underline"
+                >
                   View →
                 </Link>
               ) : (
@@ -230,7 +244,7 @@ function NodeDetailPanel({ node, onClose }: { node: EntityNode; onClose: () => v
             </div>
           )}
         </div>
-        
+
         {node.status === "critical" && (
           <div className="p-2 bg-destructive/10 rounded text-xs text-destructive">
             ⚠️ Critical gap - needs UI implementation
@@ -281,7 +295,7 @@ export default function EntityMapPage() {
       y: 60,
       description: "Core product formulations with ingredients",
     },
-    
+
     // Second level
     {
       id: "formulation-countries",
@@ -308,7 +322,7 @@ export default function EntityMapPage() {
       y: 160,
       description: "Junction table - shown in formulation detail",
     },
-    
+
     // Third level
     {
       id: "use-groups",
@@ -337,7 +351,7 @@ export default function EntityMapPage() {
       y: 260,
       description: "Cost of Goods Sold - missing detail view",
     },
-    
+
     // Fourth level - Business Cases
     {
       id: "business-cases",
@@ -353,7 +367,7 @@ export default function EntityMapPage() {
       y: 360,
       description: "10-year financial projections",
     },
-    
+
     // Countries branch (right side)
     {
       id: "countries",
@@ -381,7 +395,7 @@ export default function EntityMapPage() {
       y: 360,
       description: "Portfolio view by country",
     },
-    
+
     // Active Ingredients branch
     {
       id: "active-ingredients",
@@ -408,7 +422,7 @@ export default function EntityMapPage() {
       y: 360,
       description: "Ingredient suppliers - needs pages",
     },
-    
+
     // Patents branch (critical gap - bottom)
     {
       id: "patents",
@@ -432,7 +446,7 @@ export default function EntityMapPage() {
       y: 480,
       description: "Patent relevance assessments - no UI",
     },
-    
+
     // Reference Products
     {
       id: "reference-products",
@@ -463,14 +477,16 @@ export default function EntityMapPage() {
     { from: "use-groups", to: "reference-products", label: "vs" },
   ];
 
-  const selectedNodeData = selectedNode ? nodes.find(n => n.id === selectedNode) : null;
-  
+  const selectedNodeData = selectedNode
+    ? nodes.find((n) => n.id === selectedNode)
+    : null;
+
   // Calculate stats
   const stats = {
-    complete: nodes.filter(n => n.status === "complete").length,
-    partial: nodes.filter(n => n.status === "partial").length,
-    missing: nodes.filter(n => n.status === "missing").length,
-    critical: nodes.filter(n => n.status === "critical").length,
+    complete: nodes.filter((n) => n.status === "complete").length,
+    partial: nodes.filter((n) => n.status === "partial").length,
+    missing: nodes.filter((n) => n.status === "missing").length,
+    critical: nodes.filter((n) => n.status === "critical").length,
   };
 
   if (loading) {
@@ -487,22 +503,27 @@ export default function EntityMapPage() {
         <AnimatedPage>
           {/* Header */}
           <div className="space-y-2 mb-6">
-            <Link 
-              href="/dev" 
+            <Link
+              href="/dev"
               className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-2"
             >
               <ArrowLeft className="h-4 w-4" />
               Dev Tools
             </Link>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-bold">Entity Hierarchy</h1>
-              <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/30">
+              <h1 className="text-2xl sm:text-3xl font-bold">
+                Entity Hierarchy
+              </h1>
+              <Badge
+                variant="outline"
+                className="bg-yellow-500/10 text-yellow-600 border-yellow-500/30"
+              >
                 Dev Tool
               </Badge>
             </div>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Interactive node diagram showing database entities and their relationships.
-              Click nodes for details.
+              Interactive node diagram showing database entities and their
+              relationships. Click nodes for details.
             </p>
           </div>
 
@@ -540,9 +561,9 @@ export default function EntityMapPage() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
-                <svg 
-                  width="800" 
-                  height="550" 
+                <svg
+                  width="800"
+                  height="550"
                   viewBox="0 0 800 550"
                   className="w-full min-w-[600px]"
                 >
@@ -562,20 +583,20 @@ export default function EntityMapPage() {
                       />
                     </marker>
                   </defs>
-                  
+
                   {/* Connection lines */}
                   {connections.map((conn, i) => (
-                    <ConnectionLine 
-                      key={i} 
-                      from={conn.from} 
-                      to={conn.to} 
+                    <ConnectionLine
+                      key={i}
+                      from={conn.from}
+                      to={conn.to}
                       nodes={nodes}
                       label={conn.label}
                     />
                   ))}
-                  
+
                   {/* Nodes */}
-                  {nodes.map(node => (
+                  {nodes.map((node) => (
                     <EntityNodeComponent
                       key={node.id}
                       node={node}
@@ -585,12 +606,12 @@ export default function EntityMapPage() {
                   ))}
                 </svg>
               </div>
-              
+
               {/* Detail panel */}
               {selectedNodeData && (
-                <NodeDetailPanel 
-                  node={selectedNodeData} 
-                  onClose={() => setSelectedNode(null)} 
+                <NodeDetailPanel
+                  node={selectedNodeData}
+                  onClose={() => setSelectedNode(null)}
                 />
               )}
             </CardContent>
@@ -626,7 +647,8 @@ export default function EntityMapPage() {
                   Partial Coverage
                 </div>
                 <code className="text-xs text-muted-foreground">
-                  COGS (list only), Suppliers (no pages), Reference Products (form only)
+                  COGS (list only), Suppliers (no pages), Reference Products
+                  (form only)
                 </code>
               </div>
             </CardContent>
@@ -636,7 +658,3 @@ export default function EntityMapPage() {
     </div>
   );
 }
-
-
-
-

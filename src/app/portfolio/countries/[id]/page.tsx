@@ -32,7 +32,8 @@ export default async function CountryDetailPage({
     notFound();
   }
 
-  const { country, formulations, businessCases, useGroups, stats } = countryData;
+  const { country, formulations, businessCases, useGroups, stats } =
+    countryData;
 
   const breadcrumbs = [
     { label: "Countries", href: "/portfolio/countries" },
@@ -47,7 +48,9 @@ export default async function CountryDetailPage({
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-bold">{country.country_name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">
+                {country.country_name}
+              </h1>
               <Badge variant="outline" className="text-sm">
                 {country.country_code}
               </Badge>
@@ -56,10 +59,7 @@ export default async function CountryDetailPage({
         </div>
 
         {/* Summary Cards */}
-        <CountrySummaryCards
-          stats={stats}
-          businessCases={businessCases}
-        />
+        <CountrySummaryCards stats={stats} businessCases={businessCases} />
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
@@ -82,22 +82,32 @@ export default async function CountryDetailPage({
 
           {/* Formulations Tab */}
           <TabsContent value="formulations" className="space-y-4 sm:space-y-6">
-            <CountryFormulationsTable formulations={formulations} countryName={country.country_name} />
+            <CountryFormulationsTable
+              formulations={formulations}
+              countryName={country.country_name}
+            />
           </TabsContent>
 
           {/* Business Cases Tab */}
-          <TabsContent value="business-cases" className="space-y-4 sm:space-y-6">
-            <CountryBusinessCases businessCases={businessCases} countryName={country.country_name} />
+          <TabsContent
+            value="business-cases"
+            className="space-y-4 sm:space-y-6"
+          >
+            <CountryBusinessCases
+              businessCases={businessCases}
+              countryName={country.country_name}
+            />
           </TabsContent>
 
           {/* Use Groups Tab */}
           <TabsContent value="use-groups" className="space-y-4 sm:space-y-6">
-            <CountryUseGroups useGroups={useGroups} countryName={country.country_name} />
+            <CountryUseGroups
+              useGroups={useGroups}
+              countryName={country.country_name}
+            />
           </TabsContent>
         </Tabs>
       </AnimatedPage>
     </div>
   );
 }
-
-

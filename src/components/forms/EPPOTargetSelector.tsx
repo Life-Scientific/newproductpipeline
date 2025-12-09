@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Plus, FolderTree, Bug, Leaf as Disease, Sprout } from "lucide-react";
+import {
+  X,
+  Plus,
+  FolderTree,
+  Bug,
+  Leaf as Disease,
+  Sprout,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -60,7 +67,10 @@ const classificationLabels = {
   weed: "Weed",
 };
 
-export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelectorProps) {
+export function EPPOTargetSelector({
+  formulationId,
+  onUpdate,
+}: EPPOTargetSelectorProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [selections, setSelections] = useState<EPPOTargetSelection[]>([]);
@@ -191,7 +201,9 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
     });
   };
 
-  const handleToggleIncludeChildren = async (selection: EPPOTargetSelection) => {
+  const handleToggleIncludeChildren = async (
+    selection: EPPOTargetSelection,
+  ) => {
     startTransition(async () => {
       const result = await updateFormulationTarget({
         formulationId,
@@ -215,12 +227,18 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
   };
 
   const getClassificationIcon = (classification: string) => {
-    const Icon = classificationIcons[classification as keyof typeof classificationIcons] || Bug;
+    const Icon =
+      classificationIcons[classification as keyof typeof classificationIcons] ||
+      Bug;
     return Icon;
   };
 
   const getClassificationColor = (classification: string) => {
-    return classificationColors[classification as keyof typeof classificationColors] || "text-gray-600";
+    return (
+      classificationColors[
+        classification as keyof typeof classificationColors
+      ] || "text-gray-600"
+    );
   };
 
   return (
@@ -263,7 +281,9 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
               <div className="divide-y">
                 {searchResults.map((code) => {
                   const Icon = getClassificationIcon(code.classification);
-                  const colorClass = getClassificationColor(code.classification);
+                  const colorClass = getClassificationColor(
+                    code.classification,
+                  );
                   return (
                     <div
                       key={code.eppo_code_id}
@@ -284,19 +304,20 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
                           <div className="font-medium">{code.display_name}</div>
                           <div className="text-xs text-muted-foreground">
                             {code.eppo_code}
-                            {code.latin_name && code.latin_name !== code.display_name && 
-                              ` • ${code.latin_name}`
-                            }
+                            {code.latin_name &&
+                              code.latin_name !== code.display_name &&
+                              ` • ${code.latin_name}`}
                           </div>
                         </div>
-                        <Badge 
+                        <Badge
                           variant={code.is_parent ? "secondary" : "outline"}
                           className={!code.is_parent ? colorClass : ""}
                         >
-                          {code.is_parent 
-                            ? "Group" 
-                            : classificationLabels[code.classification as keyof typeof classificationLabels]
-                          }
+                          {code.is_parent
+                            ? "Group"
+                            : classificationLabels[
+                                code.classification as keyof typeof classificationLabels
+                              ]}
                         </Badge>
                       </div>
                     </div>
@@ -311,16 +332,19 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
               <div className="bg-primary/5 rounded-lg p-3">
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
-                    <div className="font-medium">{selectedCode.display_name}</div>
+                    <div className="font-medium">
+                      {selectedCode.display_name}
+                    </div>
                     <div className="text-sm text-muted-foreground">
                       {selectedCode.eppo_code}
                     </div>
                   </div>
                   <Badge variant="outline">
-                    {selectedCode.is_parent 
-                      ? "Group" 
-                      : classificationLabels[selectedCode.classification as keyof typeof classificationLabels]
-                    }
+                    {selectedCode.is_parent
+                      ? "Group"
+                      : classificationLabels[
+                          selectedCode.classification as keyof typeof classificationLabels
+                        ]}
                   </Badge>
                 </div>
               </div>
@@ -331,7 +355,10 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
                     id="include_children"
                     checked={newSelection.include_children}
                     onCheckedChange={(checked) =>
-                      setNewSelection({ ...newSelection, include_children: !!checked })
+                      setNewSelection({
+                        ...newSelection,
+                        include_children: !!checked,
+                      })
                     }
                   />
                   <Label htmlFor="include_children" className="text-sm">
@@ -390,11 +417,17 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
             <TableBody>
               {selections.map((selection) => {
                 const Icon = getClassificationIcon(selection.classification);
-                const colorClass = getClassificationColor(selection.classification);
+                const colorClass = getClassificationColor(
+                  selection.classification,
+                );
                 return (
                   <TableRow
                     key={selection.eppo_code_id}
-                    className={selection.is_excluded ? "opacity-50 bg-red-50 dark:bg-red-950/20" : ""}
+                    className={
+                      selection.is_excluded
+                        ? "opacity-50 bg-red-50 dark:bg-red-950/20"
+                        : ""
+                    }
                   >
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -404,7 +437,9 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
                           <Icon className={`h-4 w-4 ${colorClass}`} />
                         )}
                         <div>
-                          <div className="font-medium">{selection.display_name}</div>
+                          <div className="font-medium">
+                            {selection.display_name}
+                          </div>
                           {selection.is_excluded && (
                             <Badge variant="destructive" className="mt-1">
                               Excluded
@@ -414,11 +449,10 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge 
-                        variant="outline"
-                        className={colorClass}
-                      >
-                        {classificationLabels[selection.classification as keyof typeof classificationLabels] || selection.classification}
+                      <Badge variant="outline" className={colorClass}>
+                        {classificationLabels[
+                          selection.classification as keyof typeof classificationLabels
+                        ] || selection.classification}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -431,7 +465,9 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
                         <div className="flex items-center gap-2">
                           <Checkbox
                             checked={selection.include_children}
-                            onCheckedChange={() => handleToggleIncludeChildren(selection)}
+                            onCheckedChange={() =>
+                              handleToggleIncludeChildren(selection)
+                            }
                             disabled={isPending}
                           />
                           <span className="text-sm text-muted-foreground">
@@ -482,4 +518,3 @@ export function EPPOTargetSelector({ formulationId, onUpdate }: EPPOTargetSelect
     </div>
   );
 }
-

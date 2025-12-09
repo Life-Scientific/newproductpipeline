@@ -14,7 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 import { useSupabase } from "@/hooks/use-supabase";
 import type { Database } from "@/lib/supabase/database.types";
@@ -23,9 +28,11 @@ import { CountrySelector } from "./CountrySelector";
 import { UseGroupMultiSelect } from "./UseGroupMultiSelect";
 
 type BusinessCase = Database["public"]["Tables"]["business_case"]["Row"];
-type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type Formulation =
+  Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
-type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
+type FormulationCountryUseGroup =
+  Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 
 interface BusinessCaseFormProps {
   businessCase?: BusinessCase | null;
@@ -48,11 +55,14 @@ export function BusinessCaseForm({
   const { toast } = useToast();
   const supabase = useSupabase();
   const [isPending, startTransition] = useTransition();
-  const [selectedFormulation, setSelectedFormulation] = useState<Formulation | null>(null);
+  const [selectedFormulation, setSelectedFormulation] =
+    useState<Formulation | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
-  const [selectedUseGroups, setSelectedUseGroups] = useState<FormulationCountryUseGroup[]>([]);
+  const [selectedUseGroups, setSelectedUseGroups] = useState<
+    FormulationCountryUseGroup[]
+  >([]);
   const [selectedUseGroupIds, setSelectedUseGroupIds] = useState<string[]>([]);
-  
+
   const [formData, setFormData] = useState({
     formulation_id: "",
     country_id: "",
@@ -61,7 +71,10 @@ export function BusinessCaseForm({
     volume: businessCase?.volume?.toString() || "",
     nsp: businessCase?.nsp?.toString() || "",
     cogs_per_unit: businessCase?.cogs_per_unit?.toString() || "",
-    fiscal_year: ("fiscal_year" in (businessCase || {}) ? (businessCase as any).fiscal_year : "") || "",
+    fiscal_year:
+      ("fiscal_year" in (businessCase || {})
+        ? (businessCase as any).fiscal_year
+        : "") || "",
     assumptions: businessCase?.assumptions || "",
   });
 
@@ -72,7 +85,10 @@ export function BusinessCaseForm({
     } else if (open) {
       // Set defaults for new business case
       if (defaultFormulationId) {
-        setFormData((prev) => ({ ...prev, formulation_id: defaultFormulationId }));
+        setFormData((prev) => ({
+          ...prev,
+          formulation_id: defaultFormulationId,
+        }));
       }
       if (defaultCountryId) {
         setFormData((prev) => ({ ...prev, country_id: defaultCountryId }));
@@ -87,7 +103,10 @@ export function BusinessCaseForm({
     } else if (open) {
       // Set defaults for new business case
       if (defaultFormulationId) {
-        setFormData((prev) => ({ ...prev, formulation_id: defaultFormulationId }));
+        setFormData((prev) => ({
+          ...prev,
+          formulation_id: defaultFormulationId,
+        }));
       }
       if (defaultCountryId) {
         setFormData((prev) => ({ ...prev, country_id: defaultCountryId }));
@@ -139,7 +158,7 @@ export function BusinessCaseForm({
 
   const loadExistingBusinessCaseData = async () => {
     if (!businessCase) return;
-    
+
     // Get use groups for this business case from junction table
     const { data: junctionData } = await supabase
       .from("business_case_use_groups")
@@ -163,22 +182,27 @@ export function BusinessCaseForm({
     if (junctionData && junctionData.length > 0) {
       const junctionDataTyped = junctionData as any[];
       // Get first use group to determine formulation and country
-      const firstUseGroup = junctionDataTyped[0]?.formulation_country_use_group as any;
+      const firstUseGroup = junctionDataTyped[0]
+        ?.formulation_country_use_group as any;
       const fc = firstUseGroup?.formulation_country;
-      
+
       if (fc) {
         setFormData((prev) => ({
           ...prev,
           formulation_id: fc.formulation_id || "",
           country_id: fc.country_id || "",
         }));
-        
+
         // Set selected use group IDs (using formulation_country_use_group_id)
         const useGroupIds = junctionDataTyped
-          .map((j) => (j.formulation_country_use_group as any)?.formulation_country_use_group_id)
+          .map(
+            (j) =>
+              (j.formulation_country_use_group as any)
+                ?.formulation_country_use_group_id,
+          )
           .filter((id): id is string => Boolean(id));
         setSelectedUseGroupIds(useGroupIds);
-        
+
         // Set selected use groups for display
         const useGroups = junctionDataTyped
           .map((j) => j.formulation_country_use_group as any)
@@ -207,14 +231,16 @@ export function BusinessCaseForm({
     // Load use groups for that formulation_country
     const { data } = await supabase
       .from("vw_formulation_country_use_group")
-      .select("formulation_country_use_group_id, use_group_variant, use_group_name, display_name, formulation_code, country_name")
+      .select(
+        "formulation_country_use_group_id, use_group_variant, use_group_name, display_name, formulation_code, country_name",
+      )
       .eq("formulation_country_id", fcDataTyped.formulation_country_id)
       .order("use_group_variant");
-    
+
     if (data) {
       const useGroups = data as FormulationCountryUseGroup[];
       setSelectedUseGroups(useGroups);
-      
+
       // If editing and we have selected IDs, match them to the loaded use groups
       if (businessCase && selectedUseGroupIds.length > 0) {
         // Keep existing selection - IDs should match
@@ -253,7 +279,8 @@ export function BusinessCaseForm({
     form.append("year_offset", formData.year_offset);
     if (formData.volume) form.append("volume", formData.volume);
     if (formData.nsp) form.append("nsp", formData.nsp);
-    if (formData.cogs_per_unit) form.append("cogs_per_unit", formData.cogs_per_unit);
+    if (formData.cogs_per_unit)
+      form.append("cogs_per_unit", formData.cogs_per_unit);
     if (formData.fiscal_year) form.append("fiscal_year", formData.fiscal_year);
     if (formData.assumptions) form.append("assumptions", formData.assumptions);
 
@@ -261,9 +288,11 @@ export function BusinessCaseForm({
       try {
         const action = businessCase
           ? await import("@/lib/actions/business-cases").then((m) =>
-              m.updateBusinessCase(businessCase.business_case_id, form)
+              m.updateBusinessCase(businessCase.business_case_id, form),
             )
-          : await import("@/lib/actions/business-cases").then((m) => m.createBusinessCase(form));
+          : await import("@/lib/actions/business-cases").then((m) =>
+              m.createBusinessCase(form),
+            );
 
         if (action.error) {
           toast({
@@ -296,9 +325,7 @@ export function BusinessCaseForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            Create/Update Business Case
-          </DialogTitle>
+          <DialogTitle>Create/Update Business Case</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4 border-b pb-4">
@@ -311,7 +338,11 @@ export function BusinessCaseForm({
                 <FormulationSelector
                   value={formData.formulation_id}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, formulation_id: value, country_id: "" })
+                    setFormData({
+                      ...formData,
+                      formulation_id: value,
+                      country_id: "",
+                    })
                   }
                   placeholder="Search formulations..."
                   required
@@ -363,7 +394,10 @@ export function BusinessCaseForm({
                 id="business_case_name"
                 value={formData.business_case_name}
                 onChange={(e) =>
-                  setFormData({ ...formData, business_case_name: e.target.value })
+                  setFormData({
+                    ...formData,
+                    business_case_name: e.target.value,
+                  })
                 }
               />
             </div>
@@ -394,7 +428,10 @@ export function BusinessCaseForm({
                     <Info className="h-4 w-4 text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Auto-calculated from target market entry FY + year offset, but can be overridden</p>
+                    <p>
+                      Auto-calculated from target market entry FY + year offset,
+                      but can be overridden
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -417,7 +454,9 @@ export function BusinessCaseForm({
                 type="number"
                 step="0.01"
                 value={formData.volume}
-                onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, volume: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
@@ -427,7 +466,9 @@ export function BusinessCaseForm({
                 type="number"
                 step="0.01"
                 value={formData.nsp}
-                onChange={(e) => setFormData({ ...formData, nsp: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, nsp: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
@@ -439,7 +480,10 @@ export function BusinessCaseForm({
                       <Info className="h-4 w-4 text-muted-foreground" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Auto-populated from COGS table based on fiscal year, but can be overridden</p>
+                      <p>
+                        Auto-populated from COGS table based on fiscal year, but
+                        can be overridden
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -461,13 +505,19 @@ export function BusinessCaseForm({
             <Textarea
               id="assumptions"
               value={formData.assumptions}
-              onChange={(e) => setFormData({ ...formData, assumptions: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, assumptions: e.target.value })
+              }
               rows={3}
             />
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isPending}>

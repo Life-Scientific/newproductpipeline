@@ -3,12 +3,12 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
     const supabase = await createClient();
-    
+
     // Get formulation to find formulation_code
     const { data: formulation } = await supabase
       .from("formulations")
@@ -34,7 +34,9 @@ export async function GET(
 
     // Fetch crops for each use group using EPPO codes
     if (useGroups && useGroups.length > 0) {
-      const useGroupIds = useGroups.map((ug: any) => ug.formulation_country_use_group_id);
+      const useGroupIds = useGroups.map(
+        (ug: any) => ug.formulation_country_use_group_id,
+      );
       const { data: useGroupCrops } = await supabase
         .from("formulation_country_use_group_eppo_crops")
         .select(`
@@ -64,7 +66,8 @@ export async function GET(
       // Add crops array to each use group
       const useGroupsWithCrops = useGroups.map((useGroup: any) => ({
         ...useGroup,
-        crops: cropsByUseGroup.get(useGroup.formulation_country_use_group_id) || [],
+        crops:
+          cropsByUseGroup.get(useGroup.formulation_country_use_group_id) || [],
       }));
 
       return NextResponse.json(useGroupsWithCrops);
@@ -73,9 +76,11 @@ export async function GET(
     return NextResponse.json(useGroups || []);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch use groups" },
-      { status: 500 }
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to fetch use groups",
+      },
+      { status: 500 },
     );
   }
 }
-

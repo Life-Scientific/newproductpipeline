@@ -28,7 +28,7 @@ export function FilterContainer({
           "-mx-4 sm:-mx-6 px-4 sm:px-6",
           "bg-muted/20 -mt-4 sm:-mt-6 pt-4 sm:pt-6",
           "rounded-t-lg",
-          className
+          className,
         )}
       >
         {children}
@@ -38,4 +38,3 @@ export function FilterContainer({
 
   return <div className={cn("w-full", className)}>{children}</div>;
 }
-

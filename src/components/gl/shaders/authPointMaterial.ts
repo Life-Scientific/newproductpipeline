@@ -1,5 +1,5 @@
-import * as THREE from 'three'
-import { periodicNoiseGLSL } from './utils'
+import * as THREE from "three";
+import { periodicNoiseGLSL } from "./utils";
 
 // Inverted color version for light backgrounds
 export class AuthDofPointsMaterial extends THREE.ShaderMaterial {
@@ -117,18 +117,10 @@ export class AuthDofPointsMaterial extends THREE.ShaderMaterial {
         uPointSize: { value: 2.0 },
         uOpacity: { value: 1.0 },
         uRevealFactor: { value: 0.0 },
-        uRevealProgress: { value: 0.0 }
+        uRevealProgress: { value: 0.0 },
       },
       transparent: true,
-      depthWrite: false
-    })
+      depthWrite: false,
+    });
   }
 }
-
-
-
-
-
-
-
-

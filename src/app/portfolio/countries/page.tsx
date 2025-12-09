@@ -1,11 +1,22 @@
-import { getCountriesWithStats, getBusinessCasesForChart, getFormulations, getFormulationCountries } from "@/lib/db/queries";
+import {
+  getCountriesWithStats,
+  getBusinessCasesForChart,
+  getFormulations,
+  getFormulationCountries,
+} from "@/lib/db/queries";
 import { getCountries } from "@/lib/db/countries";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import type { CountryWithStats } from "@/lib/db/countries";
 import { CountriesClient } from "./CountriesClient";
 
 export default async function CountriesPage() {
-  const [countriesWithStats, businessCases, formulations, referenceCountries, formulationCountries] = await Promise.all([
+  const [
+    countriesWithStats,
+    businessCases,
+    formulations,
+    referenceCountries,
+    formulationCountries,
+  ] = await Promise.all([
     getCountriesWithStats() as Promise<CountryWithStats[]>,
     getBusinessCasesForChart(), // Use enriched version with country_status
     getFormulations(), // Reference data for filter lookups
@@ -24,7 +35,9 @@ export default async function CountriesPage() {
   // Enrich business cases with formulation_status
   const enrichedBusinessCases = businessCases.map((bc) => ({
     ...bc,
-    formulation_status: bc.formulation_code ? formulationStatusMap.get(bc.formulation_code) || null : null,
+    formulation_status: bc.formulation_code
+      ? formulationStatusMap.get(bc.formulation_code) || null
+      : null,
   }));
 
   return (
@@ -39,8 +52,8 @@ export default async function CountriesPage() {
           </div>
         </div>
 
-        <CountriesClient 
-          countries={countriesWithStats} 
+        <CountriesClient
+          countries={countriesWithStats}
           businessCases={enrichedBusinessCases}
           formulations={formulations}
           referenceCountries={referenceCountries}
@@ -50,4 +63,3 @@ export default async function CountriesPage() {
     </div>
   );
 }
-

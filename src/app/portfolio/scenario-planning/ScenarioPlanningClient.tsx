@@ -3,18 +3,27 @@
 import * as React from "react";
 import { useState, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
-import { 
-  Plus, 
-  Minus, 
-  X, 
-  Trash2, 
+import {
+  MultiSelect,
+  type MultiSelectOption,
+} from "@/components/ui/multi-select";
+import {
+  Plus,
+  Minus,
+  X,
+  Trash2,
   Copy,
   TrendingUp,
   DollarSign,
@@ -55,14 +64,18 @@ const SCENARIO_COLORS = [
 
 const ADJUSTMENT_STEP = 5;
 
-export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClientProps) {
+export function ScenarioPlanningClient({
+  businessCases,
+}: ScenarioPlanningClientProps) {
   const { formatCurrencyCompact } = useDisplayPreferences();
-  
+
   // Filter state
   const [selectedCountryIds, setSelectedCountryIds] = useState<string[]>([]);
-  const [selectedFormulationIds, setSelectedFormulationIds] = useState<string[]>([]);
+  const [selectedFormulationIds, setSelectedFormulationIds] = useState<
+    string[]
+  >([]);
   const [selectedUseGroupIds, setSelectedUseGroupIds] = useState<string[]>([]);
-  
+
   // Scenario state
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [activeTab, setActiveTab] = useState<"table" | "chart">("table");
@@ -81,15 +94,17 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
         countries.set(bc.country_id, bc.country_name);
       }
       if (bc.formulation_id && bc.formulation_name) {
-        const display = bc.formulation_code 
+        const display = bc.formulation_code
           ? `${bc.formulation_name} (${bc.formulation_code})`
           : bc.formulation_name;
         formulations.set(bc.formulation_id, display);
       }
-      const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
-      const useGroupDisplay = bc.use_group_name 
-        ? `${bc.use_group_name}${bc.use_group_variant ? ` (${bc.use_group_variant})` : ''}`
-        : bc.use_group_variant || 'Unknown';
+      const useGroupKey =
+        bc.use_group_id ||
+        `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+      const useGroupDisplay = bc.use_group_name
+        ? `${bc.use_group_name}${bc.use_group_variant ? ` (${bc.use_group_variant})` : ""}`
+        : bc.use_group_variant || "Unknown";
       if (useGroupKey) {
         useGroups.set(useGroupKey, useGroupDisplay);
       }
@@ -115,11 +130,11 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
     }
 
     const filteredFormulations = new Map<string, string>();
-    
+
     businessCases.forEach((bc) => {
       if (selectedCountryIds.includes(bc.country_id)) {
         if (bc.formulation_id && bc.formulation_name) {
-          const display = bc.formulation_code 
+          const display = bc.formulation_code
             ? `${bc.formulation_name} (${bc.formulation_code})`
             : bc.formulation_name;
           filteredFormulations.set(bc.formulation_id, display);
@@ -134,21 +149,30 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
 
   // Available use groups based on selected countries AND formulations
   const availableUseGroups = useMemo(() => {
-    if (selectedCountryIds.length === 0 && selectedFormulationIds.length === 0) {
+    if (
+      selectedCountryIds.length === 0 &&
+      selectedFormulationIds.length === 0
+    ) {
       return allFilterOptions.useGroups;
     }
 
     const filteredUseGroups = new Map<string, string>();
-    
+
     businessCases.forEach((bc) => {
-      const matchesCountry = selectedCountryIds.length === 0 || selectedCountryIds.includes(bc.country_id);
-      const matchesFormulation = selectedFormulationIds.length === 0 || selectedFormulationIds.includes(bc.formulation_id);
-      
+      const matchesCountry =
+        selectedCountryIds.length === 0 ||
+        selectedCountryIds.includes(bc.country_id);
+      const matchesFormulation =
+        selectedFormulationIds.length === 0 ||
+        selectedFormulationIds.includes(bc.formulation_id);
+
       if (matchesCountry && matchesFormulation) {
-        const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
-        const useGroupDisplay = bc.use_group_name 
-          ? `${bc.use_group_name}${bc.use_group_variant ? ` (${bc.use_group_variant})` : ''}`
-          : bc.use_group_variant || 'Unknown';
+        const useGroupKey =
+          bc.use_group_id ||
+          `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+        const useGroupDisplay = bc.use_group_name
+          ? `${bc.use_group_name}${bc.use_group_variant ? ` (${bc.use_group_variant})` : ""}`
+          : bc.use_group_variant || "Unknown";
         if (useGroupKey) {
           filteredUseGroups.set(useGroupKey, useGroupDisplay);
         }
@@ -158,81 +182,101 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
     return Array.from(filteredUseGroups.entries())
       .map(([value, label]) => ({ value, label }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [businessCases, selectedCountryIds, selectedFormulationIds, allFilterOptions.useGroups]);
+  }, [
+    businessCases,
+    selectedCountryIds,
+    selectedFormulationIds,
+    allFilterOptions.useGroups,
+  ]);
 
   // Handle country selection change with cascading updates
-  const handleCountryChange = useCallback((newCountryIds: string[]) => {
-    isAutoSelecting.current = true;
-    
-    setSelectedCountryIds(newCountryIds);
-    
-    // Filter out formulations that are no longer available
-    if (newCountryIds.length > 0) {
-      const validFormulationIds = new Set<string>();
-      businessCases.forEach((bc) => {
-        if (newCountryIds.includes(bc.country_id) && bc.formulation_id) {
-          validFormulationIds.add(bc.formulation_id);
-        }
-      });
-      
-      setSelectedFormulationIds(prev => {
-        const filtered = prev.filter(id => validFormulationIds.has(id));
-        // Auto-select if only one formulation available
-        if (filtered.length === 0 && validFormulationIds.size === 1) {
-          return Array.from(validFormulationIds);
+  const handleCountryChange = useCallback(
+    (newCountryIds: string[]) => {
+      isAutoSelecting.current = true;
+
+      setSelectedCountryIds(newCountryIds);
+
+      // Filter out formulations that are no longer available
+      if (newCountryIds.length > 0) {
+        const validFormulationIds = new Set<string>();
+        businessCases.forEach((bc) => {
+          if (newCountryIds.includes(bc.country_id) && bc.formulation_id) {
+            validFormulationIds.add(bc.formulation_id);
+          }
+        });
+
+        setSelectedFormulationIds((prev) => {
+          const filtered = prev.filter((id) => validFormulationIds.has(id));
+          // Auto-select if only one formulation available
+          if (filtered.length === 0 && validFormulationIds.size === 1) {
+            return Array.from(validFormulationIds);
+          }
+          return filtered;
+        });
+      }
+
+      // Filter out use groups that are no longer available
+      setSelectedUseGroupIds((prev) => {
+        const validUseGroupIds = new Set<string>();
+        businessCases.forEach((bc) => {
+          const matchesCountry =
+            newCountryIds.length === 0 || newCountryIds.includes(bc.country_id);
+          if (matchesCountry) {
+            const useGroupKey =
+              bc.use_group_id ||
+              `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+            if (useGroupKey) validUseGroupIds.add(useGroupKey);
+          }
+        });
+        const filtered = prev.filter((id) => validUseGroupIds.has(id));
+        // Auto-select if only one use group available
+        if (filtered.length === 0 && validUseGroupIds.size === 1) {
+          return Array.from(validUseGroupIds);
         }
         return filtered;
       });
-    }
-    
-    // Filter out use groups that are no longer available
-    setSelectedUseGroupIds(prev => {
-      const validUseGroupIds = new Set<string>();
-      businessCases.forEach((bc) => {
-        const matchesCountry = newCountryIds.length === 0 || newCountryIds.includes(bc.country_id);
-        if (matchesCountry) {
-          const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
-          if (useGroupKey) validUseGroupIds.add(useGroupKey);
-        }
-      });
-      const filtered = prev.filter(id => validUseGroupIds.has(id));
-      // Auto-select if only one use group available
-      if (filtered.length === 0 && validUseGroupIds.size === 1) {
-        return Array.from(validUseGroupIds);
-      }
-      return filtered;
-    });
-    
-    isAutoSelecting.current = false;
-  }, [businessCases]);
+
+      isAutoSelecting.current = false;
+    },
+    [businessCases],
+  );
 
   // Handle formulation selection change with cascading updates
-  const handleFormulationChange = useCallback((newFormulationIds: string[]) => {
-    isAutoSelecting.current = true;
-    
-    setSelectedFormulationIds(newFormulationIds);
-    
-    // Filter out use groups that are no longer available
-    setSelectedUseGroupIds(prev => {
-      const validUseGroupIds = new Set<string>();
-      businessCases.forEach((bc) => {
-        const matchesCountry = selectedCountryIds.length === 0 || selectedCountryIds.includes(bc.country_id);
-        const matchesFormulation = newFormulationIds.length === 0 || newFormulationIds.includes(bc.formulation_id);
-        if (matchesCountry && matchesFormulation) {
-          const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
-          if (useGroupKey) validUseGroupIds.add(useGroupKey);
+  const handleFormulationChange = useCallback(
+    (newFormulationIds: string[]) => {
+      isAutoSelecting.current = true;
+
+      setSelectedFormulationIds(newFormulationIds);
+
+      // Filter out use groups that are no longer available
+      setSelectedUseGroupIds((prev) => {
+        const validUseGroupIds = new Set<string>();
+        businessCases.forEach((bc) => {
+          const matchesCountry =
+            selectedCountryIds.length === 0 ||
+            selectedCountryIds.includes(bc.country_id);
+          const matchesFormulation =
+            newFormulationIds.length === 0 ||
+            newFormulationIds.includes(bc.formulation_id);
+          if (matchesCountry && matchesFormulation) {
+            const useGroupKey =
+              bc.use_group_id ||
+              `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+            if (useGroupKey) validUseGroupIds.add(useGroupKey);
+          }
+        });
+        const filtered = prev.filter((id) => validUseGroupIds.has(id));
+        // Auto-select if only one use group available
+        if (filtered.length === 0 && validUseGroupIds.size === 1) {
+          return Array.from(validUseGroupIds);
         }
+        return filtered;
       });
-      const filtered = prev.filter(id => validUseGroupIds.has(id));
-      // Auto-select if only one use group available
-      if (filtered.length === 0 && validUseGroupIds.size === 1) {
-        return Array.from(validUseGroupIds);
-      }
-      return filtered;
-    });
-    
-    isAutoSelecting.current = false;
-  }, [businessCases, selectedCountryIds]);
+
+      isAutoSelecting.current = false;
+    },
+    [businessCases, selectedCountryIds],
+  );
 
   // Handle use group selection change
   const handleUseGroupChange = useCallback((newUseGroupIds: string[]) => {
@@ -242,21 +286,35 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
   // Filter business cases based on selections
   const selectedBusinessCases = useMemo(() => {
     return businessCases.filter((bc) => {
-      const matchesCountry = selectedCountryIds.length === 0 || selectedCountryIds.includes(bc.country_id);
-      const matchesFormulation = selectedFormulationIds.length === 0 || selectedFormulationIds.includes(bc.formulation_id);
-      
+      const matchesCountry =
+        selectedCountryIds.length === 0 ||
+        selectedCountryIds.includes(bc.country_id);
+      const matchesFormulation =
+        selectedFormulationIds.length === 0 ||
+        selectedFormulationIds.includes(bc.formulation_id);
+
       let matchesUseGroup = true;
       if (selectedUseGroupIds.length > 0) {
-        const useGroupKey = bc.use_group_id || `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
+        const useGroupKey =
+          bc.use_group_id ||
+          `${bc.formulation_id}-${bc.country_id}-${bc.use_group_variant}`;
         matchesUseGroup = selectedUseGroupIds.includes(useGroupKey);
       }
-      
+
       return matchesCountry && matchesFormulation && matchesUseGroup;
     });
-  }, [businessCases, selectedCountryIds, selectedFormulationIds, selectedUseGroupIds]);
+  }, [
+    businessCases,
+    selectedCountryIds,
+    selectedFormulationIds,
+    selectedUseGroupIds,
+  ]);
 
   // Check if any filters are active
-  const hasActiveFilters = selectedCountryIds.length > 0 || selectedFormulationIds.length > 0 || selectedUseGroupIds.length > 0;
+  const hasActiveFilters =
+    selectedCountryIds.length > 0 ||
+    selectedFormulationIds.length > 0 ||
+    selectedUseGroupIds.length > 0;
 
   // Calculate scenario results
   const scenarioResults = useMemo(() => {
@@ -265,18 +323,20 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
     return scenarios.map((scenario) => {
       const adjustedCases = selectedBusinessCases.map((bc) => {
         const adjustedYearsData: typeof bc.years_data = {};
-        
+
         Object.entries(bc.years_data).forEach(([fy, data]) => {
-          const cogsMultiplier = 1 + (scenario.adjustments.cogsPercent / 100);
-          const nspMultiplier = 1 + (scenario.adjustments.nspPercent / 100);
-          const volumeMultiplier = 1 + (scenario.adjustments.volumePercent / 100);
+          const cogsMultiplier = 1 + scenario.adjustments.cogsPercent / 100;
+          const nspMultiplier = 1 + scenario.adjustments.nspPercent / 100;
+          const volumeMultiplier = 1 + scenario.adjustments.volumePercent / 100;
 
           const adjustedVolume = (data.volume ?? 0) * volumeMultiplier;
           const adjustedNsp = (data.nsp ?? 0) * nspMultiplier;
           const adjustedCogs = (data.cogs_per_unit ?? 0) * cogsMultiplier;
           const adjustedRevenue = adjustedVolume * adjustedNsp;
-          const adjustedMargin = adjustedRevenue - (adjustedVolume * adjustedCogs);
-          const marginPercent = adjustedRevenue > 0 ? (adjustedMargin / adjustedRevenue) * 100 : 0;
+          const adjustedMargin =
+            adjustedRevenue - adjustedVolume * adjustedCogs;
+          const marginPercent =
+            adjustedRevenue > 0 ? (adjustedMargin / adjustedRevenue) * 100 : 0;
 
           adjustedYearsData[fy] = {
             volume: adjustedVolume,
@@ -302,7 +362,7 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
     const aggregateYearData = (cases: BusinessCaseGroupData[]) => {
       let totalRevenue = 0;
       let totalMargin = 0;
-      
+
       cases.forEach((bc) => {
         // Data is already in EUR - no conversion needed
         Object.values(bc.years_data).forEach((data) => {
@@ -311,15 +371,22 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
         });
       });
 
-      return { totalRevenue, totalMargin, marginPercent: totalRevenue > 0 ? (totalMargin / totalRevenue) * 100 : 0 };
+      return {
+        totalRevenue,
+        totalMargin,
+        marginPercent:
+          totalRevenue > 0 ? (totalMargin / totalRevenue) * 100 : 0,
+      };
     };
 
     const baseline = aggregateYearData(selectedBusinessCases);
-    
-    const scenarioTotals = scenarioResults.map(({ scenario, adjustedCases }) => ({
-      scenario,
-      ...aggregateYearData(adjustedCases),
-    }));
+
+    const scenarioTotals = scenarioResults.map(
+      ({ scenario, adjustedCases }) => ({
+        scenario,
+        ...aggregateYearData(adjustedCases),
+      }),
+    );
 
     return { baseline, scenarioTotals };
   }, [selectedBusinessCases, scenarioResults]);
@@ -352,47 +419,60 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
   }, []);
 
   // Update scenario adjustment
-  const updateScenarioAdjustment = useCallback((id: string, key: keyof Scenario["adjustments"], delta: number) => {
-    setScenarios((prev) =>
-      prev.map((s) =>
-        s.id === id
-          ? { ...s, adjustments: { ...s.adjustments, [key]: s.adjustments[key] + delta } }
-          : s
-      )
-    );
-  }, []);
+  const updateScenarioAdjustment = useCallback(
+    (id: string, key: keyof Scenario["adjustments"], delta: number) => {
+      setScenarios((prev) =>
+        prev.map((s) =>
+          s.id === id
+            ? {
+                ...s,
+                adjustments: {
+                  ...s.adjustments,
+                  [key]: s.adjustments[key] + delta,
+                },
+              }
+            : s,
+        ),
+      );
+    },
+    [],
+  );
 
   // Set scenario adjustment directly
-  const setScenarioAdjustment = useCallback((id: string, key: keyof Scenario["adjustments"], value: number) => {
-    setScenarios((prev) =>
-      prev.map((s) =>
-        s.id === id
-          ? { ...s, adjustments: { ...s.adjustments, [key]: value } }
-          : s
-      )
-    );
-  }, []);
+  const setScenarioAdjustment = useCallback(
+    (id: string, key: keyof Scenario["adjustments"], value: number) => {
+      setScenarios((prev) =>
+        prev.map((s) =>
+          s.id === id
+            ? { ...s, adjustments: { ...s.adjustments, [key]: value } }
+            : s,
+        ),
+      );
+    },
+    [],
+  );
 
   // Update scenario name
   const updateScenarioName = useCallback((id: string, name: string) => {
-    setScenarios((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, name } : s))
-    );
+    setScenarios((prev) => prev.map((s) => (s.id === id ? { ...s, name } : s)));
   }, []);
 
   // Duplicate scenario
-  const duplicateScenario = useCallback((scenario: Scenario) => {
-    const colorIndex = scenarios.length % SCENARIO_COLORS.length;
-    setScenarios((prev) => [
-      ...prev,
-      {
-        ...scenario,
-        id: `scenario-${Date.now()}`,
-        name: `${scenario.name} (Copy)`,
-        color: SCENARIO_COLORS[colorIndex],
-      },
-    ]);
-  }, [scenarios.length]);
+  const duplicateScenario = useCallback(
+    (scenario: Scenario) => {
+      const colorIndex = scenarios.length % SCENARIO_COLORS.length;
+      setScenarios((prev) => [
+        ...prev,
+        {
+          ...scenario,
+          id: `scenario-${Date.now()}`,
+          name: `${scenario.name} (Copy)`,
+          color: SCENARIO_COLORS[colorIndex],
+        },
+      ]);
+    },
+    [scenarios.length],
+  );
 
   // Format currency - use hook's formatCurrencyCompact
   const formatCurrency = formatCurrencyCompact;
@@ -416,11 +496,17 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
                 Step 1: Select Business Cases
               </CardTitle>
               <CardDescription>
-                Filter by country, formulation, and use group. Selections cascade and auto-select when only one option.
+                Filter by country, formulation, and use group. Selections
+                cascade and auto-select when only one option.
               </CardDescription>
             </div>
             {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="gap-2"
+              >
                 <X className="h-4 w-4" />
                 Clear Filters
               </Button>
@@ -485,10 +571,14 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
           </div>
 
           {/* Selection Summary */}
-          <div className={cn(
-            "flex items-center gap-3 p-4 rounded-lg border transition-colors",
-            hasActiveFilters ? "bg-primary/5 border-primary/20" : "bg-muted/50"
-          )}>
+          <div
+            className={cn(
+              "flex items-center gap-3 p-4 rounded-lg border transition-colors",
+              hasActiveFilters
+                ? "bg-primary/5 border-primary/20"
+                : "bg-muted/50",
+            )}
+          >
             {hasActiveFilters ? (
               <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
             ) : (
@@ -496,33 +586,38 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
             )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">
-                {hasActiveFilters 
+                {hasActiveFilters
                   ? `${selectedBusinessCases.length.toLocaleString()} business cases selected`
-                  : `${businessCases.length.toLocaleString()} total business cases available`
-                }
+                  : `${businessCases.length.toLocaleString()} total business cases available`}
               </p>
               <p className="text-xs text-muted-foreground">
-                {hasActiveFilters 
+                {hasActiveFilters
                   ? "These will be used as the baseline for your scenarios"
-                  : "Start by selecting a country to narrow down your selection"
-                }
+                  : "Start by selecting a country to narrow down your selection"}
               </p>
             </div>
             {hasActiveFilters && selectedBusinessCases.length > 0 && (
               <div className="flex gap-2 flex-wrap shrink-0">
                 {selectedCountryIds.length > 0 && (
                   <Badge variant="secondary" className="text-xs">
-                    {selectedCountryIds.length} {selectedCountryIds.length === 1 ? "country" : "countries"}
+                    {selectedCountryIds.length}{" "}
+                    {selectedCountryIds.length === 1 ? "country" : "countries"}
                   </Badge>
                 )}
                 {selectedFormulationIds.length > 0 && (
                   <Badge variant="secondary" className="text-xs">
-                    {selectedFormulationIds.length} {selectedFormulationIds.length === 1 ? "formulation" : "formulations"}
+                    {selectedFormulationIds.length}{" "}
+                    {selectedFormulationIds.length === 1
+                      ? "formulation"
+                      : "formulations"}
                   </Badge>
                 )}
                 {selectedUseGroupIds.length > 0 && (
                   <Badge variant="secondary" className="text-xs">
-                    {selectedUseGroupIds.length} {selectedUseGroupIds.length === 1 ? "use group" : "use groups"}
+                    {selectedUseGroupIds.length}{" "}
+                    {selectedUseGroupIds.length === 1
+                      ? "use group"
+                      : "use groups"}
                   </Badge>
                 )}
               </div>
@@ -541,7 +636,8 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
                 Step 2: Define Scenarios
               </CardTitle>
               <CardDescription>
-                Create &ldquo;what-if&rdquo; scenarios with different assumptions
+                Create &ldquo;what-if&rdquo; scenarios with different
+                assumptions
               </CardDescription>
             </div>
             <Button onClick={addScenario} size="sm" className="gap-2">
@@ -554,7 +650,9 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
           {scenarios.length === 0 ? (
             <div className="text-center py-8 border-2 border-dashed rounded-lg">
               <Sparkles className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground mb-4">No scenarios created yet</p>
+              <p className="text-muted-foreground mb-4">
+                No scenarios created yet
+              </p>
               <Button onClick={addScenario} variant="outline" className="gap-2">
                 <Plus className="h-4 w-4" />
                 Create Your First Scenario
@@ -569,9 +667,15 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
                     scenario={scenario}
                     onRemove={() => removeScenario(scenario.id)}
                     onDuplicate={() => duplicateScenario(scenario)}
-                    onUpdateAdjustment={(key, delta) => updateScenarioAdjustment(scenario.id, key, delta)}
-                    onSetAdjustment={(key, value) => setScenarioAdjustment(scenario.id, key, value)}
-                    onUpdateName={(name) => updateScenarioName(scenario.id, name)}
+                    onUpdateAdjustment={(key, delta) =>
+                      updateScenarioAdjustment(scenario.id, key, delta)
+                    }
+                    onSetAdjustment={(key, value) =>
+                      setScenarioAdjustment(scenario.id, key, value)
+                    }
+                    onUpdateName={(name) =>
+                      updateScenarioName(scenario.id, name)
+                    }
                   />
                 ))}
               </AnimatePresence>
@@ -581,47 +685,56 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
       </Card>
 
       {/* Step 3: Compare Results */}
-      {hasActiveFilters && selectedBusinessCases.length > 0 && scenarios.length > 0 && aggregatedComparison && (
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Step 3: Compare Results
-            </CardTitle>
-            <CardDescription>
-              View the impact of your scenarios against the baseline ({selectedBusinessCases.length.toLocaleString()} business cases)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "table" | "chart")}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="table">Summary Table</TabsTrigger>
-                <TabsTrigger value="chart">By Year</TabsTrigger>
-              </TabsList>
+      {hasActiveFilters &&
+        selectedBusinessCases.length > 0 &&
+        scenarios.length > 0 &&
+        aggregatedComparison && (
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Step 3: Compare Results
+              </CardTitle>
+              <CardDescription>
+                View the impact of your scenarios against the baseline (
+                {selectedBusinessCases.length.toLocaleString()} business cases)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs
+                value={activeTab}
+                onValueChange={(v) => setActiveTab(v as "table" | "chart")}
+              >
+                <TabsList className="mb-4">
+                  <TabsTrigger value="table">Summary Table</TabsTrigger>
+                  <TabsTrigger value="chart">By Year</TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="table">
-                <ComparisonSummaryTable
-                  baseline={aggregatedComparison.baseline}
-                  scenarioTotals={aggregatedComparison.scenarioTotals}
-                  formatCurrency={formatCurrency}
-                  formatChange={formatChange}
-                />
-              </TabsContent>
+                <TabsContent value="table">
+                  <ComparisonSummaryTable
+                    baseline={aggregatedComparison.baseline}
+                    scenarioTotals={aggregatedComparison.scenarioTotals}
+                    formatCurrency={formatCurrency}
+                    formatChange={formatChange}
+                  />
+                </TabsContent>
 
-              <TabsContent value="chart">
-                <ComparisonByYear
-                  selectedBusinessCases={selectedBusinessCases}
-                  scenarioResults={scenarioResults}
-                  formatCurrency={formatCurrency}
-                />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      )}
+                <TabsContent value="chart">
+                  <ComparisonByYear
+                    selectedBusinessCases={selectedBusinessCases}
+                    scenarioResults={scenarioResults}
+                    formatCurrency={formatCurrency}
+                  />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        )}
 
       {/* Empty state guidance */}
-      {(!hasActiveFilters || selectedBusinessCases.length === 0 || scenarios.length === 0) && (
+      {(!hasActiveFilters ||
+        selectedBusinessCases.length === 0 ||
+        scenarios.length === 0) && (
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
             <div className="space-y-2">
@@ -636,7 +749,8 @@ export function ScenarioPlanningClient({ businessCases }: ScenarioPlanningClient
                 <>
                   <AlertCircle className="h-10 w-10 mx-auto text-muted-foreground/50" />
                   <p className="text-muted-foreground">
-                    No business cases match your current filters. Try adjusting your selection.
+                    No business cases match your current filters. Try adjusting
+                    your selection.
                   </p>
                 </>
               ) : (
@@ -660,18 +774,21 @@ interface ScenarioCardProps {
   scenario: Scenario;
   onRemove: () => void;
   onDuplicate: () => void;
-  onUpdateAdjustment: (key: keyof Scenario["adjustments"], delta: number) => void;
+  onUpdateAdjustment: (
+    key: keyof Scenario["adjustments"],
+    delta: number,
+  ) => void;
   onSetAdjustment: (key: keyof Scenario["adjustments"], value: number) => void;
   onUpdateName: (name: string) => void;
 }
 
-function ScenarioCard({ 
-  scenario, 
-  onRemove, 
+function ScenarioCard({
+  scenario,
+  onRemove,
   onDuplicate,
-  onUpdateAdjustment, 
+  onUpdateAdjustment,
   onSetAdjustment,
-  onUpdateName 
+  onUpdateName,
 }: ScenarioCardProps) {
   return (
     <motion.div
@@ -691,10 +808,22 @@ function ScenarioCard({
             className="h-8 font-medium border-none p-0 focus-visible:ring-0 bg-transparent flex-1"
           />
           <div className="flex items-center gap-1 shrink-0">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onDuplicate} title="Duplicate">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={onDuplicate}
+              title="Duplicate"
+            >
               <Copy className="h-3.5 w-3.5" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={onRemove} title="Delete">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-destructive hover:text-destructive"
+              onClick={onRemove}
+              title="Delete"
+            >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -738,14 +867,20 @@ interface AdjustmentControlProps {
   icon: React.ReactNode;
 }
 
-function AdjustmentControl({ label, value, onChange, onSet, icon }: AdjustmentControlProps) {
+function AdjustmentControl({
+  label,
+  value,
+  onChange,
+  onSet,
+  icon,
+}: AdjustmentControlProps) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex items-center gap-1.5 w-20 text-sm text-muted-foreground">
         {icon}
         <span>{label}</span>
       </div>
-      
+
       <div className="flex items-center gap-1 flex-1">
         <Button
           variant="outline"
@@ -755,7 +890,7 @@ function AdjustmentControl({ label, value, onChange, onSet, icon }: AdjustmentCo
         >
           <Minus className="h-3 w-3" />
         </Button>
-        
+
         <div className="flex-1 relative min-w-[80px]">
           <Input
             type="number"
@@ -763,9 +898,11 @@ function AdjustmentControl({ label, value, onChange, onSet, icon }: AdjustmentCo
             onChange={(e) => onSet(parseFloat(e.target.value) || 0)}
             className="h-7 text-center pr-6 text-sm"
           />
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">%</span>
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
+            %
+          </span>
         </div>
-        
+
         <Button
           variant="outline"
           size="icon"
@@ -779,14 +916,17 @@ function AdjustmentControl({ label, value, onChange, onSet, icon }: AdjustmentCo
       {/* Visual indicator */}
       <div className="w-14 flex items-center justify-end shrink-0">
         {value !== 0 && (
-          <Badge 
+          <Badge
             variant="secondary"
             className={cn(
               "text-xs font-medium",
-              value > 0 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+              value > 0
+                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
             )}
           >
-            {value > 0 ? "+" : ""}{value}%
+            {value > 0 ? "+" : ""}
+            {value}%
           </Badge>
         )}
       </div>
@@ -796,7 +936,11 @@ function AdjustmentControl({ label, value, onChange, onSet, icon }: AdjustmentCo
 
 // Comparison Summary Table
 interface ComparisonSummaryTableProps {
-  baseline: { totalRevenue: number; totalMargin: number; marginPercent: number };
+  baseline: {
+    totalRevenue: number;
+    totalMargin: number;
+    marginPercent: number;
+  };
   scenarioTotals: Array<{
     scenario: Scenario;
     totalRevenue: number;
@@ -807,7 +951,12 @@ interface ComparisonSummaryTableProps {
   formatChange: (baseline: number, scenario: number) => string;
 }
 
-function ComparisonSummaryTable({ baseline, scenarioTotals, formatCurrency, formatChange }: ComparisonSummaryTableProps) {
+function ComparisonSummaryTable({
+  baseline,
+  scenarioTotals,
+  formatCurrency,
+  formatChange,
+}: ComparisonSummaryTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -821,9 +970,15 @@ function ComparisonSummaryTable({ baseline, scenarioTotals, formatCurrency, form
               </div>
             </th>
             {scenarioTotals.map(({ scenario }) => (
-              <th key={scenario.id} className="text-right py-3 px-4 font-medium text-sm">
+              <th
+                key={scenario.id}
+                className="text-right py-3 px-4 font-medium text-sm"
+              >
                 <div className="flex items-center justify-end gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: scenario.color }} />
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: scenario.color }}
+                  />
                   {scenario.name}
                 </div>
               </th>
@@ -839,15 +994,23 @@ function ComparisonSummaryTable({ baseline, scenarioTotals, formatCurrency, form
                 Total Revenue (10yr)
               </div>
             </td>
-            <td className="text-right py-3 px-4 font-medium">{formatCurrency(baseline.totalRevenue)}</td>
+            <td className="text-right py-3 px-4 font-medium">
+              {formatCurrency(baseline.totalRevenue)}
+            </td>
             {scenarioTotals.map(({ scenario, totalRevenue }) => (
               <td key={scenario.id} className="text-right py-3 px-4">
                 <div className="flex flex-col items-end">
-                  <span className="font-medium">{formatCurrency(totalRevenue)}</span>
-                  <span className={cn(
-                    "text-xs font-medium",
-                    totalRevenue >= baseline.totalRevenue ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-                  )}>
+                  <span className="font-medium">
+                    {formatCurrency(totalRevenue)}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs font-medium",
+                      totalRevenue >= baseline.totalRevenue
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400",
+                    )}
+                  >
                     {formatChange(baseline.totalRevenue, totalRevenue)}
                   </span>
                 </div>
@@ -863,15 +1026,23 @@ function ComparisonSummaryTable({ baseline, scenarioTotals, formatCurrency, form
                 Total Gross Margin (10yr)
               </div>
             </td>
-            <td className="text-right py-3 px-4 font-medium">{formatCurrency(baseline.totalMargin)}</td>
+            <td className="text-right py-3 px-4 font-medium">
+              {formatCurrency(baseline.totalMargin)}
+            </td>
             {scenarioTotals.map(({ scenario, totalMargin }) => (
               <td key={scenario.id} className="text-right py-3 px-4">
                 <div className="flex flex-col items-end">
-                  <span className="font-medium">{formatCurrency(totalMargin)}</span>
-                  <span className={cn(
-                    "text-xs font-medium",
-                    totalMargin >= baseline.totalMargin ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-                  )}>
+                  <span className="font-medium">
+                    {formatCurrency(totalMargin)}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs font-medium",
+                      totalMargin >= baseline.totalMargin
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400",
+                    )}
+                  >
                     {formatChange(baseline.totalMargin, totalMargin)}
                   </span>
                 </div>
@@ -887,16 +1058,24 @@ function ComparisonSummaryTable({ baseline, scenarioTotals, formatCurrency, form
                 Margin %
               </div>
             </td>
-            <td className="text-right py-3 px-4 font-medium">{baseline.marginPercent.toFixed(1)}%</td>
+            <td className="text-right py-3 px-4 font-medium">
+              {baseline.marginPercent.toFixed(1)}%
+            </td>
             {scenarioTotals.map(({ scenario, marginPercent }) => (
               <td key={scenario.id} className="text-right py-3 px-4">
                 <div className="flex flex-col items-end">
-                  <span className="font-medium">{marginPercent.toFixed(1)}%</span>
-                  <span className={cn(
-                    "text-xs font-medium",
-                    marginPercent >= baseline.marginPercent ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-                  )}>
-                    {(marginPercent - baseline.marginPercent) >= 0 ? "+" : ""}
+                  <span className="font-medium">
+                    {marginPercent.toFixed(1)}%
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs font-medium",
+                      marginPercent >= baseline.marginPercent
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400",
+                    )}
+                  >
+                    {marginPercent - baseline.marginPercent >= 0 ? "+" : ""}
                     {(marginPercent - baseline.marginPercent).toFixed(1)}pp
                   </span>
                 </div>
@@ -919,10 +1098,10 @@ interface ComparisonByYearProps {
   formatCurrency: (value: number) => string;
 }
 
-function ComparisonByYear({ 
-  selectedBusinessCases, 
-  scenarioResults, 
-  formatCurrency 
+function ComparisonByYear({
+  selectedBusinessCases,
+  scenarioResults,
+  formatCurrency,
 }: ComparisonByYearProps) {
   // Get all fiscal years across all selected cases
   const allYears = useMemo(() => {
@@ -980,9 +1159,16 @@ function ComparisonByYear({
               </div>
             </th>
             {scenarioResults.map(({ scenario }) => (
-              <th key={scenario.id} className="text-right py-2 px-3 font-medium" colSpan={2}>
+              <th
+                key={scenario.id}
+                className="text-right py-2 px-3 font-medium"
+                colSpan={2}
+              >
                 <div className="flex items-center justify-end gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: scenario.color }} />
+                  <div
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: scenario.color }}
+                  />
                   {scenario.name}
                 </div>
               </th>
@@ -990,37 +1176,60 @@ function ComparisonByYear({
           </tr>
           <tr className="border-b bg-muted/30">
             <th className="py-1 px-3" />
-            <th className="text-right py-1 px-3 text-xs text-muted-foreground font-normal">Revenue</th>
-            <th className="text-right py-1 px-3 text-xs text-muted-foreground font-normal">Margin</th>
+            <th className="text-right py-1 px-3 text-xs text-muted-foreground font-normal">
+              Revenue
+            </th>
+            <th className="text-right py-1 px-3 text-xs text-muted-foreground font-normal">
+              Margin
+            </th>
             {scenarioResults.map(({ scenario }) => (
               <React.Fragment key={`header-${scenario.id}`}>
-                <th className="text-right py-1 px-3 text-xs text-muted-foreground font-normal">Revenue</th>
-                <th className="text-right py-1 px-3 text-xs text-muted-foreground font-normal">Margin</th>
+                <th className="text-right py-1 px-3 text-xs text-muted-foreground font-normal">
+                  Revenue
+                </th>
+                <th className="text-right py-1 px-3 text-xs text-muted-foreground font-normal">
+                  Margin
+                </th>
               </React.Fragment>
             ))}
           </tr>
         </thead>
         <tbody>
           {yearlyData.map(({ fiscalYear, baseline, scenarios }) => (
-            <tr key={fiscalYear} className="border-b hover:bg-muted/30 transition-colors">
+            <tr
+              key={fiscalYear}
+              className="border-b hover:bg-muted/30 transition-colors"
+            >
               <td className="py-2 px-3 font-medium">{fiscalYear}</td>
-              <td className="text-right py-2 px-3">{formatCurrency(baseline.revenue)}</td>
-              <td className="text-right py-2 px-3">{formatCurrency(baseline.margin)}</td>
+              <td className="text-right py-2 px-3">
+                {formatCurrency(baseline.revenue)}
+              </td>
+              <td className="text-right py-2 px-3">
+                {formatCurrency(baseline.margin)}
+              </td>
               {scenarios.map(({ scenario, revenue, margin }) => (
                 <React.Fragment key={`data-${fiscalYear}-${scenario.id}`}>
                   <td className="text-right py-2 px-3">
-                    <span className={cn(
-                      revenue > baseline.revenue && "text-green-600 dark:text-green-400",
-                      revenue < baseline.revenue && "text-red-600 dark:text-red-400"
-                    )}>
+                    <span
+                      className={cn(
+                        revenue > baseline.revenue &&
+                          "text-green-600 dark:text-green-400",
+                        revenue < baseline.revenue &&
+                          "text-red-600 dark:text-red-400",
+                      )}
+                    >
                       {formatCurrency(revenue)}
                     </span>
                   </td>
                   <td className="text-right py-2 px-3">
-                    <span className={cn(
-                      margin > baseline.margin && "text-green-600 dark:text-green-400",
-                      margin < baseline.margin && "text-red-600 dark:text-red-400"
-                    )}>
+                    <span
+                      className={cn(
+                        margin > baseline.margin &&
+                          "text-green-600 dark:text-green-400",
+                        margin < baseline.margin &&
+                          "text-red-600 dark:text-red-400",
+                      )}
+                    >
                       {formatCurrency(margin)}
                     </span>
                   </td>

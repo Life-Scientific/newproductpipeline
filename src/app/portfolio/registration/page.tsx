@@ -1,11 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { RegistrationPipelineList } from "@/components/registration/RegistrationPipelineList";
 import { RegistrationFormButton } from "@/components/forms/RegistrationFormButton";
 import type { Database } from "@/lib/supabase/database.types";
 
-type RegistrationPipeline = Database["public"]["Views"]["vw_registration_pipeline"]["Row"];
+type RegistrationPipeline =
+  Database["public"]["Views"]["vw_registration_pipeline"]["Row"];
 
 export default async function RegistrationPipelinePage() {
   const supabase = await createClient();
@@ -24,7 +31,9 @@ export default async function RegistrationPipelinePage() {
       <AnimatedPage>
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl font-bold">Registration Pipeline</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">
+              Registration Pipeline
+            </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               Track regulatory submissions and approvals
             </p>
@@ -41,7 +50,9 @@ export default async function RegistrationPipelinePage() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="p-6 pt-0">
-              <RegistrationPipelineList pipeline={pipeline as RegistrationPipeline[]} />
+              <RegistrationPipelineList
+                pipeline={pipeline as RegistrationPipeline[]}
+              />
             </div>
           </CardContent>
         </Card>
@@ -49,4 +60,3 @@ export default async function RegistrationPipelinePage() {
     </div>
   );
 }
-

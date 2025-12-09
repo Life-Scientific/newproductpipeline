@@ -25,9 +25,3 @@ export function ExchangeRateFormButton() {
     </>
   );
 }
-
-
-
-
-
-

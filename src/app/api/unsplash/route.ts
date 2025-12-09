@@ -9,8 +9,8 @@ export async function GET() {
     // Generate daily seed based on current date
     const today = new Date();
     const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
     const dailySeed = `${year}${month}${day}`;
 
     // Use Unsplash Source API with daily seed
@@ -24,15 +24,7 @@ export async function GET() {
     // Return a fallback gradient color
     return NextResponse.json(
       { error: "Failed to fetch image", fallback: true },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
-
-
-
-
-
-
-

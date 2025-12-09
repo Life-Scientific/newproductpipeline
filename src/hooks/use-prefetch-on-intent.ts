@@ -2,10 +2,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ForesightManager,
-  type ForesightRegisterOptions,
-} from "js.foresight";
+import { ForesightManager, type ForesightRegisterOptions } from "js.foresight";
 
 // Track if ForesightManager has been initialized
 let isInitialized = false;
@@ -53,7 +50,7 @@ export function initializeForesight() {
  */
 export function usePrefetchOnIntent(
   href: string,
-  options?: Omit<ForesightRegisterOptions, "element" | "callback">
+  options?: Omit<ForesightRegisterOptions, "element" | "callback">,
 ) {
   const router = useRouter();
   const elementRef = useRef<Element | null>(null);
@@ -62,7 +59,7 @@ export function usePrefetchOnIntent(
   // Prefetch callback - memoized to avoid re-registration
   const prefetchCallback = useCallback(() => {
     if (prefetchedRef.current) return;
-    
+
     // Prefetch the route
     router.prefetch(href);
     prefetchedRef.current = true;
@@ -116,11 +113,3 @@ export function useForesightInit() {
     initializeForesight();
   }, []);
 }
-
-
-
-
-
-
-
-

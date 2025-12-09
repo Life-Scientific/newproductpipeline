@@ -30,7 +30,9 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
  * @param currencyCode ISO 4217 currency code (e.g., "USD", "EUR")
  * @returns Currency symbol (e.g., "$", "€") or "$" as default
  */
-export function getCurrencySymbol(currencyCode: string | null | undefined): string {
+export function getCurrencySymbol(
+  currencyCode: string | null | undefined,
+): string {
   if (!currencyCode) return "$"; // Default to USD
   return CURRENCY_SYMBOLS[currencyCode.toUpperCase()] || currencyCode; // Fallback to code if symbol not found
 }
@@ -41,9 +43,11 @@ export function getCurrencySymbol(currencyCode: string | null | undefined): stri
  * @param value Amount to format
  * @returns Formatted string (e.g., "€1,274.8M" or "€906.2K")
  */
-export function formatCurrencyCompact(value: number | null | undefined): string {
+export function formatCurrencyCompact(
+  value: number | null | undefined,
+): string {
   if (!value || value === 0) return "—";
-  
+
   if (value >= 1000000) {
     const millions = value / 1000000;
     // Format with 1 decimal and commas
@@ -53,7 +57,7 @@ export function formatCurrencyCompact(value: number | null | undefined): string 
     });
     return `€${formatted}M`;
   }
-  
+
   if (value >= 1000) {
     const thousands = value / 1000;
     // Format with 1 decimal and commas
@@ -63,7 +67,7 @@ export function formatCurrencyCompact(value: number | null | undefined): string 
     });
     return `€${formatted}K`;
   }
-  
+
   // For values less than 1000, format with 1 decimal and commas
   const formatted = value.toLocaleString(undefined, {
     minimumFractionDigits: 1,
@@ -122,10 +126,11 @@ export function parseFormattedNumber(value: string): number {
  * @param allowDecimals Whether to allow decimal points
  * @returns True if valid input
  */
-export function isValidNumberInput(value: string, allowDecimals: boolean = true): boolean {
+export function isValidNumberInput(
+  value: string,
+  allowDecimals: boolean = true,
+): boolean {
   if (!value || value.trim() === "") return true;
-  const pattern = allowDecimals 
-    ? /^-?[\d,]*\.?\d*$/
-    : /^-?[\d,]*$/;
+  const pattern = allowDecimals ? /^-?[\d,]*\.?\d*$/ : /^-?[\d,]*$/;
   return pattern.test(value);
 }

@@ -37,7 +37,7 @@ export function ExchangeRateForm({
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  
+
   // Initialize state with default values to avoid null issues
   const [formData, setFormData] = useState({
     country_id: "",
@@ -47,7 +47,7 @@ export function ExchangeRateForm({
     is_active: true,
     notes: "",
   });
-  
+
   const [selectedCountryId, setSelectedCountryId] = useState<string>("");
 
   // Reset or populate form when modal opens or exchange rate changes
@@ -58,7 +58,8 @@ export function ExchangeRateForm({
       setFormData({
         country_id: exchangeRate.country_id,
         currency_code: exchangeRate.currency_code || "",
-        exchange_rate_to_eur: exchangeRate.exchange_rate_to_eur?.toString() || "",
+        exchange_rate_to_eur:
+          exchangeRate.exchange_rate_to_eur?.toString() || "",
         effective_date: exchangeRate.effective_date
           ? new Date(exchangeRate.effective_date).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
@@ -125,10 +126,10 @@ export function ExchangeRateForm({
       try {
         const action = exchangeRate
           ? await import("@/lib/actions/exchange-rates").then((m) =>
-              m.updateExchangeRate(exchangeRate.exchange_rate_id, form)
+              m.updateExchangeRate(exchangeRate.exchange_rate_id, form),
             )
           : await import("@/lib/actions/exchange-rates").then((m) =>
-              m.createExchangeRate(form)
+              m.createExchangeRate(form),
             );
 
         if (action.error) {
@@ -188,7 +189,10 @@ export function ExchangeRateForm({
               id="currency_code"
               value={formData.currency_code}
               onChange={(e) =>
-                setFormData({ ...formData, currency_code: e.target.value.toUpperCase() })
+                setFormData({
+                  ...formData,
+                  currency_code: e.target.value.toUpperCase(),
+                })
               }
               placeholder="USD, EUR, GBP, etc."
               maxLength={3}
@@ -206,14 +210,17 @@ export function ExchangeRateForm({
               step="0.000001"
               value={formData.exchange_rate_to_eur}
               onChange={(e) =>
-                setFormData({ ...formData, exchange_rate_to_eur: e.target.value })
+                setFormData({
+                  ...formData,
+                  exchange_rate_to_eur: e.target.value,
+                })
               }
               placeholder="1.10"
               required
             />
             <p className="text-xs text-muted-foreground">
-              Multiplier to convert from local currency to EUR. Example: 1.10 means 1 EUR = 1.10
-              USD
+              Multiplier to convert from local currency to EUR. Example: 1.10
+              means 1 EUR = 1.10 USD
             </p>
           </div>
 
@@ -246,7 +253,9 @@ export function ExchangeRateForm({
             <Textarea
               id="notes"
               value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
               placeholder="Optional notes about this exchange rate..."
               rows={3}
             />

@@ -10,7 +10,7 @@ const AuthGL = dynamic(
   {
     ssr: false,
     loading: () => null,
-  }
+  },
 );
 
 interface AuthLayoutProps {

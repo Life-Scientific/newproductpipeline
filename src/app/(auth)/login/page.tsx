@@ -6,7 +6,14 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -17,11 +24,15 @@ import { WORKSPACE_BASE } from "@/lib/routes";
 // Microsoft logo SVG component
 function MicrosoftLogo({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
-      <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
-      <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-      <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+    <svg
+      className={className}
+      viewBox="0 0 21 21"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+      <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
+      <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
+      <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
     </svg>
   );
 }
@@ -61,11 +72,12 @@ function LoginContent() {
     } else {
       // Use window.location for full page reload to ensure cookies are set
       const nextUrl = searchParams.get("next");
-      const redirectUrl = nextUrl && nextUrl.startsWith("http") 
-        ? nextUrl 
-        : nextUrl && nextUrl.startsWith("/")
-        ? `${window.location.origin}${nextUrl}`
-        : WORKSPACE_BASE;
+      const redirectUrl =
+        nextUrl && nextUrl.startsWith("http")
+          ? nextUrl
+          : nextUrl && nextUrl.startsWith("/")
+            ? `${window.location.origin}${nextUrl}`
+            : WORKSPACE_BASE;
       window.location.href = redirectUrl;
     }
   };
@@ -75,7 +87,7 @@ function LoginContent() {
     setSsoLoading(true);
 
     const nextUrl = searchParams.get("next");
-    const callbackUrl = nextUrl 
+    const callbackUrl = nextUrl
       ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`
       : `${window.location.origin}/auth/callback`;
 
@@ -114,7 +126,7 @@ function LoginContent() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             {/* Azure SSO Button */}
             <Button
               type="button"
@@ -160,7 +172,11 @@ function LoginContent() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading || ssoLoading}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading || ssoLoading}
+              >
                 {loading ? "Signing in..." : "Sign In with Email"}
               </Button>
             </form>

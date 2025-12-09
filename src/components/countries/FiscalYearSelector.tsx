@@ -1,6 +1,12 @@
 "use client";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
 interface FiscalYearSelectorProps {
@@ -22,7 +28,10 @@ export function FiscalYearSelector({
   maxFY = 35,
   className,
 }: FiscalYearSelectorProps) {
-  const yearOptions = Array.from({ length: maxFY - minFY + 1 }, (_, i) => minFY + i);
+  const yearOptions = Array.from(
+    { length: maxFY - minFY + 1 },
+    (_, i) => minFY + i,
+  );
 
   return (
     <div className={className}>
@@ -49,4 +58,3 @@ export function FiscalYearSelector({
     </div>
   );
 }
-

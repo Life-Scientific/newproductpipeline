@@ -94,24 +94,61 @@ export function AnimatedGrid({ isEightiesMode = false }: AnimatedGridProps) {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <linearGradient id={`pulse-h-${isEightiesMode ? '80s' : 'normal'}`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <linearGradient
+            id={`pulse-h-${isEightiesMode ? "80s" : "normal"}`}
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="0%"
+          >
             <stop offset="0%" stopColor={colors.pulseStart} stopOpacity="0" />
-            <stop offset="30%" stopColor={colors.pulseStart} stopOpacity="0.8" />
+            <stop
+              offset="30%"
+              stopColor={colors.pulseStart}
+              stopOpacity="0.8"
+            />
             <stop offset="50%" stopColor={colors.pulseEnd} stopOpacity="1" />
-            <stop offset="70%" stopColor={colors.pulseStart} stopOpacity="0.8" />
+            <stop
+              offset="70%"
+              stopColor={colors.pulseStart}
+              stopOpacity="0.8"
+            />
             <stop offset="100%" stopColor={colors.pulseStart} stopOpacity="0" />
           </linearGradient>
 
-          <linearGradient id={`pulse-v-${isEightiesMode ? '80s' : 'normal'}`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient
+            id={`pulse-v-${isEightiesMode ? "80s" : "normal"}`}
+            x1="0%"
+            y1="0%"
+            x2="0%"
+            y2="100%"
+          >
             <stop offset="0%" stopColor={colors.pulseStart} stopOpacity="0" />
-            <stop offset="30%" stopColor={colors.pulseStart} stopOpacity="0.8" />
+            <stop
+              offset="30%"
+              stopColor={colors.pulseStart}
+              stopOpacity="0.8"
+            />
             <stop offset="50%" stopColor={colors.pulseEnd} stopOpacity="1" />
-            <stop offset="70%" stopColor={colors.pulseStart} stopOpacity="0.8" />
+            <stop
+              offset="70%"
+              stopColor={colors.pulseStart}
+              stopOpacity="0.8"
+            />
             <stop offset="100%" stopColor={colors.pulseStart} stopOpacity="0" />
           </linearGradient>
 
-          <filter id={`glow-${isEightiesMode ? '80s' : 'normal'}`} x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation={isEightiesMode ? "6" : "4"} result="blur" />
+          <filter
+            id={`glow-${isEightiesMode ? "80s" : "normal"}`}
+            x="-100%"
+            y="-100%"
+            width="300%"
+            height="300%"
+          >
+            <feGaussianBlur
+              stdDeviation={isEightiesMode ? "6" : "4"}
+              result="blur"
+            />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -127,8 +164,8 @@ export function AnimatedGrid({ isEightiesMode = false }: AnimatedGridProps) {
                 y={`${pulse.position}%`}
                 width="150"
                 height={isEightiesMode ? "3" : "2"}
-                fill={`url(#pulse-h-${isEightiesMode ? '80s' : 'normal'})`}
-                filter={`url(#glow-${isEightiesMode ? '80s' : 'normal'})`}
+                fill={`url(#pulse-h-${isEightiesMode ? "80s" : "normal"})`}
+                filter={`url(#glow-${isEightiesMode ? "80s" : "normal"})`}
                 style={{
                   animation: `pulse-horizontal ${pulse.speed}s linear infinite`,
                   animationDelay: `${pulse.delay}s`,
@@ -140,8 +177,8 @@ export function AnimatedGrid({ isEightiesMode = false }: AnimatedGridProps) {
                 y="-150"
                 width={isEightiesMode ? "3" : "2"}
                 height="150"
-                fill={`url(#pulse-v-${isEightiesMode ? '80s' : 'normal'})`}
-                filter={`url(#glow-${isEightiesMode ? '80s' : 'normal'})`}
+                fill={`url(#pulse-v-${isEightiesMode ? "80s" : "normal"})`}
+                filter={`url(#glow-${isEightiesMode ? "80s" : "normal"})`}
                 style={{
                   animation: `pulse-vertical ${pulse.speed}s linear infinite`,
                   animationDelay: `${pulse.delay}s`,
@@ -166,7 +203,7 @@ export function AnimatedGrid({ isEightiesMode = false }: AnimatedGridProps) {
             left: `${pos.x}%`,
             top: `${pos.y}%`,
             backgroundColor: colors.nodeColor,
-            boxShadow: `0 0 ${isEightiesMode ? '12px 4px' : '8px 2px'} ${colors.nodeShadow}`,
+            boxShadow: `0 0 ${isEightiesMode ? "12px 4px" : "8px 2px"} ${colors.nodeShadow}`,
             animation: `node-pulse ${3 + i * 0.5}s ease-in-out infinite`,
             animationDelay: `${i * 0.7}s`,
           }}

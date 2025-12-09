@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   BarChart,
   Bar,
@@ -13,7 +19,13 @@ import {
 } from "recharts";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
-import { chartTheme, chartColors, getAxisProps, getTooltipProps, getLegendFormatter } from "@/lib/utils/chart-theme";
+import {
+  chartTheme,
+  chartColors,
+  getAxisProps,
+  getTooltipProps,
+  getLegendFormatter,
+} from "@/lib/utils/chart-theme";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
@@ -31,31 +43,43 @@ export function CountryMarginChart({
   const { currencySymbol } = useDisplayPreferences();
 
   // Group by country and calculate average margin percentage
-  const byCountry = businessCases.reduce((acc, bc) => {
-    const country = bc.country_name || "Unknown";
-    if (!acc[country]) {
-      acc[country] = {
-        revenue: 0,
-        margin: 0,
-        marginPercents: [] as number[],
-        count: 0,
-      };
-    }
-    acc[country].revenue += bc.total_revenue || 0;
-    acc[country].margin += bc.total_margin || 0;
-    acc[country].count += 1;
-    if (bc.margin_percent !== null && bc.margin_percent !== undefined) {
-      acc[country].marginPercents.push(bc.margin_percent);
-    }
-    return acc;
-  }, {} as Record<string, { revenue: number; margin: number; marginPercents: number[]; count: number }>);
+  const byCountry = businessCases.reduce(
+    (acc, bc) => {
+      const country = bc.country_name || "Unknown";
+      if (!acc[country]) {
+        acc[country] = {
+          revenue: 0,
+          margin: 0,
+          marginPercents: [] as number[],
+          count: 0,
+        };
+      }
+      acc[country].revenue += bc.total_revenue || 0;
+      acc[country].margin += bc.total_margin || 0;
+      acc[country].count += 1;
+      if (bc.margin_percent !== null && bc.margin_percent !== undefined) {
+        acc[country].marginPercents.push(bc.margin_percent);
+      }
+      return acc;
+    },
+    {} as Record<
+      string,
+      {
+        revenue: number;
+        margin: number;
+        marginPercents: number[];
+        count: number;
+      }
+    >,
+  );
 
   const chartData = Object.entries(byCountry)
     .map(([country, data]) => ({
       country,
       marginPercent:
         data.marginPercents.length > 0
-          ? data.marginPercents.reduce((a, b) => a + b, 0) / data.marginPercents.length
+          ? data.marginPercents.reduce((a, b) => a + b, 0) /
+            data.marginPercents.length
           : data.revenue > 0
             ? (data.margin / data.revenue) * 100
             : 0,
@@ -70,7 +94,9 @@ export function CountryMarginChart({
     if (onDrillDown) {
       onDrillDown(data.country);
     } else {
-      router.push(`/business-cases?country=${encodeURIComponent(data.country)}`);
+      router.push(
+        `/business-cases?country=${encodeURIComponent(data.country)}`,
+      );
     }
   };
 
@@ -78,10 +104,16 @@ export function CountryMarginChart({
     <Card>
       <CardHeader>
         <CardTitle>Margin % by Country</CardTitle>
-        <CardDescription>Average margin percentage by country (top 15)</CardDescription>
+        <CardDescription>
+          Average margin percentage by country (top 15)
+        </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
-        <ResponsiveContainer width="100%" height={300} className="min-h-[300px]">
+        <ResponsiveContainer
+          width="100%"
+          height={300}
+          className="min-h-[300px]"
+        >
           <BarChart
             data={chartData}
             layout="vertical"
@@ -89,13 +121,10 @@ export function CountryMarginChart({
             style={{ cursor: "pointer" }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis 
-              type="number" 
-              {...getAxisProps("Margin %")}
-            />
-            <YAxis 
-              dataKey="country" 
-              type="category" 
+            <XAxis type="number" {...getAxisProps("Margin %")} />
+            <YAxis
+              dataKey="country"
+              type="category"
               width={120}
               tick={chartTheme.tick}
               axisLine={chartTheme.axis}
@@ -111,13 +140,13 @@ export function CountryMarginChart({
               {...getTooltipProps()}
               cursor={{ fill: "var(--color-muted)", opacity: 0.1 }}
             />
-            <Legend 
+            <Legend
               wrapperStyle={chartTheme.legend.wrapperStyle}
               formatter={getLegendFormatter()}
             />
-            <Bar 
-              dataKey="marginPercent" 
-              fill={chartColors.success} 
+            <Bar
+              dataKey="marginPercent"
+              fill={chartColors.success}
               name="Margin %"
               radius={[0, 4, 4, 0]}
             />

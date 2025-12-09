@@ -2,7 +2,13 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { AlertTriangle, RefreshCw, ArrowLeft, Bug } from "lucide-react";
 import Link from "next/link";
 
@@ -19,9 +25,10 @@ export default function PortfolioError({
   }, [error]);
 
   // Determine if it's a data fetch error
-  const isDataError = error.message.toLowerCase().includes("fetch") || 
-                      error.message.toLowerCase().includes("network") ||
-                      error.message.toLowerCase().includes("supabase");
+  const isDataError =
+    error.message.toLowerCase().includes("fetch") ||
+    error.message.toLowerCase().includes("network") ||
+    error.message.toLowerCase().includes("supabase");
 
   return (
     <div className="flex items-center justify-center min-h-[60vh] p-4">
@@ -34,13 +41,12 @@ export default function PortfolioError({
             {isDataError ? "Failed to load data" : "Something went wrong"}
           </CardTitle>
           <CardDescription>
-            {isDataError 
+            {isDataError
               ? "We couldn't fetch the portfolio data. Please check your connection and try again."
-              : "An unexpected error occurred while loading this page."
-            }
+              : "An unexpected error occurred while loading this page."}
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-4">
           {process.env.NODE_ENV === "development" && (
             <div className="p-3 bg-muted rounded-md">
@@ -76,4 +82,3 @@ export default function PortfolioError({
     </div>
   );
 }
-

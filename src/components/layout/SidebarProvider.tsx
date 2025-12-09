@@ -1,7 +1,10 @@
 "use client";
 
 import { AppSidebar } from "./AppSidebar";
-import { SidebarInset, SidebarProvider as UISidebarProvider } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider as UISidebarProvider,
+} from "@/components/ui/sidebar";
 import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {

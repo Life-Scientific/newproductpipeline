@@ -23,7 +23,7 @@ export default function GlobalError({
         <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
           <AlertTriangle className="w-8 h-8 text-destructive" />
         </div>
-        
+
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-foreground">
             Something went wrong
@@ -62,4 +62,3 @@ export default function GlobalError({
     </div>
   );
 }
-

@@ -35,7 +35,12 @@ interface TargetFormProps {
 
 const TARGET_TYPES = ["Disease", "Pest", "Weed", "Other"];
 
-export function TargetForm({ target, open, onOpenChange, onSuccess }: TargetFormProps) {
+export function TargetForm({
+  target,
+  open,
+  onOpenChange,
+  onSuccess,
+}: TargetFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -66,8 +71,12 @@ export function TargetForm({ target, open, onOpenChange, onSuccess }: TargetForm
     startTransition(async () => {
       try {
         const action = target
-          ? await import("@/lib/actions/targets").then((m) => m.updateTarget(target.target_id, form))
-          : await import("@/lib/actions/targets").then((m) => m.createTarget(form));
+          ? await import("@/lib/actions/targets").then((m) =>
+              m.updateTarget(target.target_id, form),
+            )
+          : await import("@/lib/actions/targets").then((m) =>
+              m.createTarget(form),
+            );
 
         if (action.error) {
           toast({
@@ -78,7 +87,9 @@ export function TargetForm({ target, open, onOpenChange, onSuccess }: TargetForm
         } else {
           toast({
             title: "Success",
-            description: target ? "Target updated successfully" : "Target created successfully",
+            description: target
+              ? "Target updated successfully"
+              : "Target created successfully",
           });
           onOpenChange(false);
           if (onSuccess) onSuccess();
@@ -100,7 +111,9 @@ export function TargetForm({ target, open, onOpenChange, onSuccess }: TargetForm
         <DialogHeader>
           <DialogTitle>{target ? "Edit Target" : "Create Target"}</DialogTitle>
           <DialogDescription>
-            {target ? "Update target details" : "Add a new target (disease, pest, weed) to the database"}
+            {target
+              ? "Update target details"
+              : "Add a new target (disease, pest, weed) to the database"}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -112,7 +125,9 @@ export function TargetForm({ target, open, onOpenChange, onSuccess }: TargetForm
               <Input
                 id="target_name"
                 value={formData.target_name}
-                onChange={(e) => setFormData({ ...formData, target_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, target_name: e.target.value })
+                }
                 required
               />
             </div>
@@ -122,7 +137,9 @@ export function TargetForm({ target, open, onOpenChange, onSuccess }: TargetForm
               </Label>
               <Select
                 value={formData.target_type}
-                onValueChange={(value) => setFormData({ ...formData, target_type: value })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, target_type: value })
+                }
                 required
               >
                 <SelectTrigger>
@@ -144,7 +161,9 @@ export function TargetForm({ target, open, onOpenChange, onSuccess }: TargetForm
             <Input
               id="target_category"
               value={formData.target_category}
-              onChange={(e) => setFormData({ ...formData, target_category: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, target_category: e.target.value })
+              }
             />
           </div>
 
@@ -152,16 +171,27 @@ export function TargetForm({ target, open, onOpenChange, onSuccess }: TargetForm
             <Switch
               id="is_active"
               checked={formData.is_active}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, is_active: checked })
+              }
             />
             <Label htmlFor="is_active">Active</Label>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending} size="lg" className="h-12 px-6">
+            <Button
+              type="submit"
+              disabled={isPending}
+              size="lg"
+              className="h-12 px-6"
+            >
               {isPending ? "Saving..." : target ? "Update" : "Create"}
             </Button>
           </DialogFooter>
@@ -170,4 +200,3 @@ export function TargetForm({ target, open, onOpenChange, onSuccess }: TargetForm
     </Dialog>
   );
 }
-

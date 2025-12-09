@@ -16,7 +16,9 @@ export async function createFormulation(formData: FormData) {
   // Permission check
   const canCreate = await hasPermission(PERMISSIONS.FORMULATION_CREATE);
   if (!canCreate) {
-    return { error: "Unauthorized: You don't have permission to create formulations" };
+    return {
+      error: "Unauthorized: You don't have permission to create formulations",
+    };
   }
 
   const supabase = await createClient();
@@ -31,7 +33,10 @@ export async function createFormulation(formData: FormData) {
   const statusRationale = formData.get("status_rationale") as string | null;
 
   if (!formulationName || !formulationCategory || !formulationType || !uom) {
-    return { error: "Formulation name, category, type, and unit of measure are required" };
+    return {
+      error:
+        "Formulation name, category, type, and unit of measure are required",
+    };
   }
 
   const { data, error } = await supabase
@@ -70,7 +75,7 @@ export async function createFormulation(formData: FormData) {
   if (data?.formulation_id) {
     try {
       const ingredients: IngredientInput[] = JSON.parse(ingredientsJson);
-      
+
       // Validate: Require at least one ingredient
       if (ingredients.length === 0) {
         await supabase
@@ -79,17 +84,17 @@ export async function createFormulation(formData: FormData) {
           .eq("formulation_id", data.formulation_id);
         return { error: "At least one ingredient is required" };
       }
-      
+
       // Validate: Require at least one active ingredient
       // Fetch ingredient types to check for active ingredients
-      const ingredientIds = ingredients.map(ing => ing.ingredient_id);
+      const ingredientIds = ingredients.map((ing) => ing.ingredient_id);
       const { data: ingredientData } = await supabase
         .from("ingredients")
         .select("ingredient_id, ingredient_type")
         .in("ingredient_id", ingredientIds);
 
       const hasActiveIngredient = ingredientData?.some(
-        (ing) => ing.ingredient_type === "Active"
+        (ing) => ing.ingredient_type === "Active",
       );
 
       if (!hasActiveIngredient) {
@@ -98,16 +103,16 @@ export async function createFormulation(formData: FormData) {
           .from("formulations")
           .delete()
           .eq("formulation_id", data.formulation_id);
-        
+
         return { error: "At least one active ingredient is required" };
       }
 
       // Add ingredients
       const ingredientResult = await createFormulationIngredients(
         data.formulation_id,
-        ingredients
+        ingredients,
       );
-      
+
       if (ingredientResult.error) {
         // If duplicate detected, we should delete the formulation and return error
         if (ingredientResult.duplicateFormulationId) {
@@ -115,14 +120,14 @@ export async function createFormulation(formData: FormData) {
             .from("formulations")
             .delete()
             .eq("formulation_id", data.formulation_id);
-          
+
           return {
             error: ingredientResult.error,
             duplicateFormulationId: ingredientResult.duplicateFormulationId,
             duplicateFormulationCode: ingredientResult.duplicateFormulationCode,
           };
         }
-        
+
         // Other errors - formulation is already created
         return {
           error: `Formulation created but failed to add ingredients: ${ingredientResult.error}`,
@@ -161,11 +166,16 @@ export async function createFormulation(formData: FormData) {
   };
 }
 
-export async function updateFormulation(formulationId: string, formData: FormData) {
+export async function updateFormulation(
+  formulationId: string,
+  formData: FormData,
+) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.FORMULATION_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to edit formulations" };
+    return {
+      error: "Unauthorized: You don't have permission to edit formulations",
+    };
   }
 
   const formulationName = formData.get("formulation_name") as string;
@@ -176,8 +186,17 @@ export async function updateFormulation(formulationId: string, formData: FormDat
   const status = formData.get("status") as string;
   const statusRationale = formData.get("status_rationale") as string | null;
 
-  if (!formulationName || !formulationCategory || !formulationType || !uom || !status) {
-    return { error: "Formulation name, category, type, unit of measure, and status are required" };
+  if (
+    !formulationName ||
+    !formulationCategory ||
+    !formulationType ||
+    !uom ||
+    !status
+  ) {
+    return {
+      error:
+        "Formulation name, category, type, unit of measure, and status are required",
+    };
   }
 
   // Update with user context for triggers
@@ -233,36 +252,44 @@ export async function updateFormulation(formulationId: string, formData: FormDat
   if (ingredientsJson) {
     try {
       const ingredients: IngredientInput[] = JSON.parse(ingredientsJson);
-      
+
       // Validate: Require at least one active ingredient
       if (ingredients.length > 0) {
         // Fetch ingredient types to check for active ingredients
-        const ingredientIds = ingredients.map(ing => ing.ingredient_id);
+        const ingredientIds = ingredients.map((ing) => ing.ingredient_id);
         const { data: ingredientData } = await supabase
           .from("ingredients")
           .select("ingredient_id, ingredient_type")
           .in("ingredient_id", ingredientIds);
 
         const hasActiveIngredient = ingredientData?.some(
-          (ing) => ing.ingredient_type === "Active"
+          (ing) => ing.ingredient_type === "Active",
         );
 
         if (!hasActiveIngredient) {
           return { error: "At least one active ingredient is required" };
         }
       }
-      
-      const ingredientResult = await updateFormulationIngredients(formulationId, ingredients);
+
+      const ingredientResult = await updateFormulationIngredients(
+        formulationId,
+        ingredients,
+      );
       if (ingredientResult.error) {
         // Check if it's a duplicate error
-        if (ingredientResult.duplicateFormulationId && ingredientResult.duplicateFormulationId !== formulationId) {
+        if (
+          ingredientResult.duplicateFormulationId &&
+          ingredientResult.duplicateFormulationId !== formulationId
+        ) {
           return {
             error: ingredientResult.error,
             duplicateFormulationId: ingredientResult.duplicateFormulationId,
             duplicateFormulationCode: ingredientResult.duplicateFormulationCode,
           };
         }
-        return { error: `Formulation updated but failed to update ingredients: ${ingredientResult.error}` };
+        return {
+          error: `Formulation updated but failed to update ingredients: ${ingredientResult.error}`,
+        };
       }
       assignedCode = ingredientResult.formulationCode || null;
     } catch (parseError) {
@@ -286,7 +313,7 @@ export async function updateFormulation(formulationId: string, formData: FormDat
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
-  
+
   return {
     data: updatedFormulation || data,
     success: true,
@@ -298,7 +325,9 @@ export async function deleteFormulation(formulationId: string) {
   // Permission check
   const canDelete = await hasPermission(PERMISSIONS.FORMULATION_DELETE);
   if (!canDelete) {
-    return { error: "Unauthorized: You don't have permission to delete formulations" };
+    return {
+      error: "Unauthorized: You don't have permission to delete formulations",
+    };
   }
 
   const supabase = await createClient();
@@ -312,11 +341,15 @@ export async function deleteFormulation(formulationId: string) {
 
   if (countryDetails && countryDetails.length > 0) {
     return {
-      error: "Cannot delete formulation with existing country registrations. Please remove registrations first.",
+      error:
+        "Cannot delete formulation with existing country registrations. Please remove registrations first.",
     };
   }
 
-  const { error } = await supabase.from("formulations").delete().eq("formulation_id", formulationId);
+  const { error } = await supabase
+    .from("formulations")
+    .delete()
+    .eq("formulation_id", formulationId);
 
   if (error) {
     return { error: error.message };
@@ -338,23 +371,23 @@ export async function deleteFormulation(formulationId: string) {
 export async function addFormulationCrop(
   formulationId: string,
   cropId: string, // Now expects eppo_code_id
-  notes?: string | null
+  notes?: string | null,
 ) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.FORMULATION_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to modify formulations" };
+    return {
+      error: "Unauthorized: You don't have permission to modify formulations",
+    };
   }
 
   const supabase = await createClient();
 
-  const { error } = await supabase
-    .from("formulation_eppo_crops")
-    .insert({
-      formulation_id: formulationId,
-      eppo_code_id: cropId,
-      notes: notes || null,
-    });
+  const { error } = await supabase.from("formulation_eppo_crops").insert({
+    formulation_id: formulationId,
+    eppo_code_id: cropId,
+    notes: notes || null,
+  });
 
   if (error) {
     return { error: error.message };
@@ -369,11 +402,16 @@ export async function addFormulationCrop(
  * Remove a crop from a formulation
  * Validates that crop is not used in any child use group first
  */
-export async function removeFormulationCrop(formulationId: string, cropId: string) {
+export async function removeFormulationCrop(
+  formulationId: string,
+  cropId: string,
+) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.FORMULATION_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to modify formulations" };
+    return {
+      error: "Unauthorized: You don't have permission to modify formulations",
+    };
   }
 
   const supabase = await createClient();
@@ -402,14 +440,16 @@ export async function removeFormulationCrop(formulationId: string, cropId: strin
     return { success: true };
   }
 
-  const fcIds = fcRecords.map(fc => fc.formulation_country_id);
+  const fcIds = fcRecords.map((fc) => fc.formulation_country_id);
   const { data: useGroups } = await supabase
     .from("formulation_country_use_group")
     .select("formulation_country_use_group_id")
     .in("formulation_country_id", fcIds);
 
   if (useGroups && useGroups.length > 0) {
-    const useGroupIds = useGroups.map(ug => ug.formulation_country_use_group_id);
+    const useGroupIds = useGroups.map(
+      (ug) => ug.formulation_country_use_group_id,
+    );
     const { data: usedInGroups } = await supabase
       .from("formulation_country_use_group_eppo_crops")
       .select("formulation_country_use_group_id")
@@ -418,7 +458,8 @@ export async function removeFormulationCrop(formulationId: string, cropId: strin
 
     if (usedInGroups && usedInGroups.length > 0) {
       return {
-        error: "Cannot remove crop because it is used in one or more use groups. Please remove it from all use groups first.",
+        error:
+          "Cannot remove crop because it is used in one or more use groups. Please remove it from all use groups first.",
       };
     }
   }
@@ -446,23 +487,23 @@ export async function removeFormulationCrop(formulationId: string, cropId: strin
 export async function addFormulationTarget(
   formulationId: string,
   targetId: string, // Now expects eppo_code_id
-  notes?: string | null
+  notes?: string | null,
 ) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.FORMULATION_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to modify formulations" };
+    return {
+      error: "Unauthorized: You don't have permission to modify formulations",
+    };
   }
 
   const supabase = await createClient();
 
-  const { error } = await supabase
-    .from("formulation_eppo_targets")
-    .insert({
-      formulation_id: formulationId,
-      eppo_code_id: targetId,
-      notes: notes || null,
-    });
+  const { error } = await supabase.from("formulation_eppo_targets").insert({
+    formulation_id: formulationId,
+    eppo_code_id: targetId,
+    notes: notes || null,
+  });
 
   if (error) {
     return { error: error.message };
@@ -477,11 +518,16 @@ export async function addFormulationTarget(
  * Remove a target from a formulation
  * Validates that target is not used in any child use group first
  */
-export async function removeFormulationTarget(formulationId: string, targetId: string) {
+export async function removeFormulationTarget(
+  formulationId: string,
+  targetId: string,
+) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.FORMULATION_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to modify formulations" };
+    return {
+      error: "Unauthorized: You don't have permission to modify formulations",
+    };
   }
 
   const supabase = await createClient();
@@ -510,14 +556,16 @@ export async function removeFormulationTarget(formulationId: string, targetId: s
     return { success: true };
   }
 
-  const fcIds = fcRecords.map(fc => fc.formulation_country_id);
+  const fcIds = fcRecords.map((fc) => fc.formulation_country_id);
   const { data: useGroups } = await supabase
     .from("formulation_country_use_group")
     .select("formulation_country_use_group_id")
     .in("formulation_country_id", fcIds);
 
   if (useGroups && useGroups.length > 0) {
-    const useGroupIds = useGroups.map(ug => ug.formulation_country_use_group_id);
+    const useGroupIds = useGroups.map(
+      (ug) => ug.formulation_country_use_group_id,
+    );
     const { data: usedInGroups } = await supabase
       .from("formulation_country_use_group_eppo_targets")
       .select("formulation_country_use_group_id")
@@ -526,7 +574,8 @@ export async function removeFormulationTarget(formulationId: string, targetId: s
 
     if (usedInGroups && usedInGroups.length > 0) {
       return {
-        error: "Cannot remove target because it is used in one or more use groups. Please remove it from all use groups first.",
+        error:
+          "Cannot remove target because it is used in one or more use groups. Please remove it from all use groups first.",
       };
     }
   }
@@ -545,4 +594,3 @@ export async function removeFormulationTarget(formulationId: string, targetId: s
   revalidatePath("/formulations");
   return { success: true };
 }
-

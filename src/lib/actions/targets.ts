@@ -65,7 +65,10 @@ export async function updateTarget(targetId: string, formData: FormData) {
 export async function deleteTarget(targetId: string) {
   const supabase = await createClient();
 
-  const { error } = await supabase.from("targets").delete().eq("target_id", targetId);
+  const { error } = await supabase
+    .from("targets")
+    .delete()
+    .eq("target_id", targetId);
 
   if (error) {
     return { error: error.message };
@@ -74,4 +77,3 @@ export async function deleteTarget(targetId: string) {
   revalidatePath("/reference");
   return { success: true };
 }
-

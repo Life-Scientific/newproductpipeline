@@ -30,7 +30,12 @@ interface SupplierFormProps {
   onSuccess?: () => void;
 }
 
-export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: SupplierFormProps) {
+export function SupplierForm({
+  supplier,
+  open,
+  onOpenChange,
+  onSuccess,
+}: SupplierFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const supabase = useSupabase();
@@ -82,9 +87,11 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
       try {
         const action = supplier
           ? await import("@/lib/actions/suppliers").then((m) =>
-              m.updateSupplier(supplier.supplier_id, form)
+              m.updateSupplier(supplier.supplier_id, form),
             )
-          : await import("@/lib/actions/suppliers").then((m) => m.createSupplier(form));
+          : await import("@/lib/actions/suppliers").then((m) =>
+              m.createSupplier(form),
+            );
 
         if (action.error) {
           toast({
@@ -95,7 +102,9 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
         } else {
           toast({
             title: "Success",
-            description: supplier ? "Supplier updated successfully" : "Supplier created successfully",
+            description: supplier
+              ? "Supplier updated successfully"
+              : "Supplier created successfully",
           });
           onOpenChange(false);
           if (onSuccess) onSuccess();
@@ -115,9 +124,13 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{supplier ? "Edit Supplier" : "Create Supplier"}</DialogTitle>
+          <DialogTitle>
+            {supplier ? "Edit Supplier" : "Create Supplier"}
+          </DialogTitle>
           <DialogDescription>
-            {supplier ? "Update supplier details" : "Add a new supplier to the database"}
+            {supplier
+              ? "Update supplier details"
+              : "Add a new supplier to the database"}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -129,7 +142,9 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
               <Input
                 id="supplier_name"
                 value={formData.supplier_name}
-                onChange={(e) => setFormData({ ...formData, supplier_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, supplier_name: e.target.value })
+                }
                 required
               />
             </div>
@@ -138,7 +153,9 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
               <Input
                 id="supplier_code"
                 value={formData.supplier_code}
-                onChange={(e) => setFormData({ ...formData, supplier_code: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, supplier_code: e.target.value })
+                }
               />
             </div>
           </div>
@@ -147,9 +164,11 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
             <Label htmlFor="country_id">Country</Label>
             <CountrySelector
               value={formData.country_id || ""}
-              onValueChange={(value) => setFormData({ ...formData, country_id: value || "" })}
+              onValueChange={(value) =>
+                setFormData({ ...formData, country_id: value || "" })
+              }
               placeholder="Search countries..."
-                selectedCountry={selectedCountry || undefined}
+              selectedCountry={selectedCountry || undefined}
             />
           </div>
 
@@ -158,7 +177,9 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
             <Textarea
               id="address"
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
               rows={3}
             />
           </div>
@@ -167,16 +188,27 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
             <Switch
               id="is_active"
               checked={formData.is_active}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, is_active: checked })
+              }
             />
             <Label htmlFor="is_active">Active</Label>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending} size="lg" className="h-12 px-6">
+            <Button
+              type="submit"
+              disabled={isPending}
+              size="lg"
+              className="h-12 px-6"
+            >
               {isPending ? "Saving..." : supplier ? "Update" : "Create"}
             </Button>
           </DialogFooter>
@@ -185,4 +217,3 @@ export function SupplierForm({ supplier, open, onOpenChange, onSuccess }: Suppli
     </Dialog>
   );
 }
-

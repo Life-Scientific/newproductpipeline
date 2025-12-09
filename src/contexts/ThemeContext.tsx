@@ -2,10 +2,21 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { ThemeWithColors, Theme } from "@/lib/actions/themes";
-import { getUserTheme, setUserTheme as setUserThemeAction, getThemes, getThemeWithColors } from "@/lib/actions/themes";
+import {
+  getUserTheme,
+  setUserTheme as setUserThemeAction,
+  getThemes,
+  getThemeWithColors,
+} from "@/lib/actions/themes";
 
 // Dark themes list for UI display
-export const DARK_THEME_SLUGS = ["dark", "dark-exec", "joshs-theme", "high-contrast", "bloomberg"];
+export const DARK_THEME_SLUGS = [
+  "dark",
+  "dark-exec",
+  "joshs-theme",
+  "high-contrast",
+  "bloomberg",
+];
 
 interface ThemeContextType {
   currentTheme: ThemeWithColors | null;
@@ -20,47 +31,49 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [currentTheme, setCurrentTheme] = useState<ThemeWithColors | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<ThemeWithColors | null>(
+    null,
+  );
   const [availableThemes, setAvailableThemes] = useState<Theme[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const applyThemeToDOM = (theme: ThemeWithColors) => {
     // Apply CSS variables to document root
     theme.colors.forEach((color) => {
-      document.documentElement.style.setProperty(`--${color.color_name}`, color.color_value);
+      document.documentElement.style.setProperty(
+        `--${color.color_name}`,
+        color.color_value,
+      );
     });
-    
+
     // Apply dark class if needed
     if (DARK_THEME_SLUGS.includes(theme.slug)) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
-    
+
     // Set data-theme attribute
-    document.documentElement.setAttribute('data-theme', theme.slug);
-    
+    document.documentElement.setAttribute("data-theme", theme.slug);
+
     // Persist to localStorage for the inline script to use on next page load
     // This prevents theme flash (FOUC) by letting the blocking script apply theme immediately
     try {
-      localStorage.setItem('ls-portfolio-theme', theme.slug);
-      localStorage.setItem('ls-portfolio-theme-data', JSON.stringify(theme));
+      localStorage.setItem("ls-portfolio-theme", theme.slug);
+      localStorage.setItem("ls-portfolio-theme-data", JSON.stringify(theme));
     } catch (e) {
       // localStorage might be unavailable (private browsing, etc.)
-      console.warn('Failed to persist theme to localStorage:', e);
+      console.warn("Failed to persist theme to localStorage:", e);
     }
   };
 
   const loadTheme = async () => {
     setIsLoading(true);
     try {
-      const [theme, themes] = await Promise.all([
-        getUserTheme(),
-        getThemes()
-      ]);
-      
+      const [theme, themes] = await Promise.all([getUserTheme(), getThemes()]);
+
       setAvailableThemes(themes);
-      
+
       if (theme) {
         setCurrentTheme(theme);
         applyThemeToDOM(theme);
@@ -80,7 +93,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Set theme by slug (for ThemeSelector)
   const setTheme = async (slug: string) => {
     try {
-      const theme = availableThemes.find(t => t.slug === slug);
+      const theme = availableThemes.find((t) => t.slug === slug);
       if (theme) {
         await setUserThemeAction(theme.theme_id);
         await loadTheme();
@@ -134,4 +147,3 @@ export function useTheme() {
   }
   return context;
 }
-

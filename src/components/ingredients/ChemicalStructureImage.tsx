@@ -9,10 +9,10 @@ interface ChemicalStructureImageProps {
   className?: string;
 }
 
-export function ChemicalStructureImage({ 
-  casNumber, 
+export function ChemicalStructureImage({
+  casNumber,
   ingredientName,
-  className = ""
+  className = "",
 }: ChemicalStructureImageProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +23,7 @@ export function ChemicalStructureImage({
   useEffect(() => {
     mountedRef.current = true;
     setImageLoaded(false);
-    
+
     if (!casNumber) {
       setIsLoading(false);
       return;
@@ -49,7 +49,7 @@ export function ChemicalStructureImage({
           try {
             const cidResponse = await fetch(
               `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(query)}/cids/JSON`,
-              { signal: createTimeoutSignal(5000) }
+              { signal: createTimeoutSignal(5000) },
             );
 
             if (cidResponse.ok) {
@@ -70,14 +70,16 @@ export function ChemicalStructureImage({
 
         // Use PNG endpoint with maximum size (500x500) for best quality
         const structureUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/PNG?image_size=500x500`;
-        
+
         if (mountedRef.current) {
           setImageUrl(structureUrl);
           setIsLoading(false);
         }
       } catch (err) {
         if (mountedRef.current) {
-          setError(err instanceof Error ? err.message : "Failed to fetch structure");
+          setError(
+            err instanceof Error ? err.message : "Failed to fetch structure",
+          );
           setIsLoading(false);
         }
       }
@@ -96,7 +98,10 @@ export function ChemicalStructureImage({
 
   if (isLoading) {
     return (
-      <div className={`flex items-center justify-center ${className}`} style={{ minHeight: '120px' }}>
+      <div
+        className={`flex items-center justify-center ${className}`}
+        style={{ minHeight: "120px" }}
+      >
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground/40" />
       </div>
     );
@@ -114,8 +119,8 @@ export function ChemicalStructureImage({
       <img
         src={imageUrl}
         alt={`Chemical structure of ${ingredientName}`}
-        className={`w-full h-full object-contain p-4 transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-        style={{ maxHeight: '100%' }}
+        className={`w-full h-full object-contain p-4 transition-opacity duration-200 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+        style={{ maxHeight: "100%" }}
         onLoad={() => setImageLoaded(true)}
         onError={() => setError("Failed to load image")}
       />

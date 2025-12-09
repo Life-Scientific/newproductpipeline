@@ -49,7 +49,9 @@ export async function getIngredientFormulations(ingredientId: string) {
     .eq("formulations.is_active", true);
 
   if (error) {
-    throw new Error(`Failed to fetch ingredient formulations: ${error.message}`);
+    throw new Error(
+      `Failed to fetch ingredient formulations: ${error.message}`,
+    );
   }
 
   // Filter out any formulations that aren't active (as a safety check)
@@ -70,4 +72,3 @@ export async function getIngredientSuppliers(ingredientId: string) {
 
   return data || [];
 }
-

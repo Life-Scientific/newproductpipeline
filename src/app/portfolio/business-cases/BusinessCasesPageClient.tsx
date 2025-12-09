@@ -1,6 +1,13 @@
 "use client";
 
-import { GitBranch, Plus, Upload, Download, ChevronDown, FileSpreadsheet } from "lucide-react";
+import {
+  GitBranch,
+  Plus,
+  Upload,
+  Download,
+  ChevronDown,
+  FileSpreadsheet,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { BusinessCaseModal } from "@/components/business-cases/BusinessCaseModal";
@@ -25,11 +32,18 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePermissions } from "@/hooks/use-permissions";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
-import { useFilterOptions, type ReferenceFormulation, type ReferenceCountry } from "@/hooks/use-filter-options";
+import {
+  useFilterOptions,
+  type ReferenceFormulation,
+  type ReferenceCountry,
+} from "@/hooks/use-filter-options";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { computeFilteredCounts } from "@/lib/utils/filter-counts";
 import type { BusinessCaseGroupData } from "@/lib/db/queries";
-import { exportBusinessCasesToCSV, generateBusinessCaseImportTemplate } from "@/lib/actions/business-cases";
+import {
+  exportBusinessCasesToCSV,
+  generateBusinessCaseImportTemplate,
+} from "@/lib/actions/business-cases";
 import { useToast } from "@/components/ui/use-toast";
 import type { Country } from "@/lib/db/types";
 import type { Formulation } from "@/lib/db/types";
@@ -90,8 +104,8 @@ function BusinessCasesContent({
     }
     return formulationCountries.map((fc) => ({
       ...fc,
-      formulation_status: fc.formulation_code 
-        ? (formulationStatusMap.get(fc.formulation_code) || null)
+      formulation_status: fc.formulation_code
+        ? formulationStatusMap.get(fc.formulation_code) || null
         : null,
     }));
   }, [formulationCountries, formulationStatusMap]);
@@ -117,7 +131,8 @@ function BusinessCasesContent({
     return initialBusinessCases.map((bc) => ({
       ...bc,
       formulation_status: formulationStatuses?.get(bc.formulation_id) || null,
-      country_status: countryStatuses?.get(`${bc.formulation_id}-${bc.country_id}`) || null,
+      country_status:
+        countryStatuses?.get(`${bc.formulation_id}-${bc.country_id}`) || null,
     }));
   }, [initialBusinessCases, formulationStatuses, countryStatuses]);
 
@@ -142,16 +157,18 @@ function BusinessCasesContent({
     referenceFormulations,
     referenceCountries,
     filterableBusinessCases,
-    enrichedFormulationCountries.length > 0 ? enrichedFormulationCountries.map((fc) => ({
-      formulation_country_id: fc.formulation_country_id || null,
-      formulation_id: null,
-      formulation_code: fc.formulation_code || null,
-      country_id: null,
-      country_code: fc.country_code || null,
-      country_name: fc.country_name || null,
-      country_status: fc.country_status || null,
-    })) : null,
-    filters
+    enrichedFormulationCountries.length > 0
+      ? enrichedFormulationCountries.map((fc) => ({
+          formulation_country_id: fc.formulation_country_id || null,
+          formulation_id: null,
+          formulation_code: fc.formulation_code || null,
+          country_id: null,
+          country_code: fc.country_code || null,
+          country_name: fc.country_name || null,
+          country_status: fc.country_status || null,
+        }))
+      : null,
+    filters,
   );
 
   // filters.formulations now contains codes directly
@@ -168,13 +185,19 @@ function BusinessCasesContent({
       }
       // Formulation filter - filters.formulations now contains codes
       if (selectedFormulationCodes.length > 0) {
-        if (!bc.formulation_code || !selectedFormulationCodes.includes(bc.formulation_code)) {
+        if (
+          !bc.formulation_code ||
+          !selectedFormulationCodes.includes(bc.formulation_code)
+        ) {
           return false;
         }
       }
       // Use group filter (by name)
       if (filters.useGroups.length > 0) {
-        if (!bc.use_group_name || !filters.useGroups.includes(bc.use_group_name)) {
+        if (
+          !bc.use_group_name ||
+          !filters.useGroups.includes(bc.use_group_name)
+        ) {
           return false;
         }
       }
@@ -207,7 +230,10 @@ function BusinessCasesContent({
       }
       // Formulation filter
       if (selectedFormulationCodes.length > 0) {
-        if (!fc.formulation_code || !selectedFormulationCodes.includes(fc.formulation_code)) {
+        if (
+          !fc.formulation_code ||
+          !selectedFormulationCodes.includes(fc.formulation_code)
+        ) {
           return false;
         }
       }
@@ -237,14 +263,19 @@ function BusinessCasesContent({
       filters,
       { includeOrphanFormulations: false }, // Business Cases page only shows intersection
       {
-        businessCases: filteredBusinessCases.map(bc => ({
+        businessCases: filteredBusinessCases.map((bc) => ({
           business_case_group_id: bc.business_case_group_id,
           country_code: bc.country_code,
           formulation_code: bc.formulation_code,
         })),
-      }
+      },
     );
-  }, [formulations, filteredFormulationCountries, filters, filteredBusinessCases]);
+  }, [
+    formulations,
+    filteredFormulationCountries,
+    filters,
+    filteredBusinessCases,
+  ]);
 
   // Handle export to CSV
   const handleExport = async () => {
@@ -259,7 +290,7 @@ function BusinessCasesContent({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       toast({
         title: "Export successful",
         description: `Exported ${filteredBusinessCases.length} business case${filteredBusinessCases.length !== 1 ? "s" : ""} to CSV`,
@@ -267,7 +298,10 @@ function BusinessCasesContent({
     } catch (error) {
       toast({
         title: "Export failed",
-        description: error instanceof Error ? error.message : "Failed to export business cases",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to export business cases",
         variant: "destructive",
       });
     }
@@ -286,15 +320,19 @@ function BusinessCasesContent({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       toast({
         title: "Template downloaded",
-        description: "Template includes examples showing the same formulation across multiple countries",
+        description:
+          "Template includes examples showing the same formulation across multiple countries",
       });
     } catch (error) {
       toast({
         title: "Download failed",
-        description: error instanceof Error ? error.message : "Failed to download template",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to download template",
         variant: "destructive",
       });
     }
@@ -305,9 +343,9 @@ function BusinessCasesContent({
       <Card className="overflow-hidden">
         <CardContent className="p-4 sm:p-6 space-y-6">
           {/* Integrated Filters */}
-          <GlobalFilterBar 
-            filterOptions={filterOptions} 
-            defaultExpanded={true} 
+          <GlobalFilterBar
+            filterOptions={filterOptions}
+            defaultExpanded={true}
             filteredCounts={filteredCounts}
             inline={true}
             integrated={true}
@@ -353,7 +391,9 @@ function BusinessCasesContent({
                         <Download className="mr-2 h-4 w-4" />
                         Download Template
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setImportModalOpen(true)}>
+                      <DropdownMenuItem
+                        onClick={() => setImportModalOpen(true)}
+                      >
                         <Upload className="mr-2 h-4 w-4" />
                         Import CSV
                       </DropdownMenuItem>
@@ -369,17 +409,19 @@ function BusinessCasesContent({
                   </Button>
                 </>
               )}
-              {!canCreateBusinessCases && !permissionsLoading && filteredBusinessCases.length > 0 && (
-                <Button
-                  variant="outline"
-                  onClick={handleExport}
-                  size="lg"
-                  className="h-12 px-6"
-                >
-                  <Download className="mr-2 h-5 w-5" />
-                  Export
-                </Button>
-              )}
+              {!canCreateBusinessCases &&
+                !permissionsLoading &&
+                filteredBusinessCases.length > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={handleExport}
+                    size="lg"
+                    className="h-12 px-6"
+                  >
+                    <Download className="mr-2 h-5 w-5" />
+                    Export
+                  </Button>
+                )}
             </div>
           </div>
 
@@ -451,7 +493,7 @@ export function BusinessCasesPageClient({
 }: BusinessCasesPageClientProps) {
   return (
     <Suspense fallback={<BusinessCasesSkeleton />}>
-      <BusinessCasesContent 
+      <BusinessCasesContent
         initialBusinessCases={initialBusinessCases}
         formulationStatuses={formulationStatuses}
         countryStatuses={countryStatuses}

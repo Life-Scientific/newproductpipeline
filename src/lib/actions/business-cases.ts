@@ -3,13 +3,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
-import { 
-  checkExistingBusinessCase, 
-  validateUseGroupTargetEntryConsistency, 
+import {
+  checkExistingBusinessCase,
+  validateUseGroupTargetEntryConsistency,
   getBusinessCaseGroup,
   getFormulations,
   getCountries,
-  getBusinessCaseVersionHistory
+  getBusinessCaseVersionHistory,
 } from "@/lib/db/queries";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { lookupCOGSWithCarryForward } from "./cogs";
@@ -22,7 +22,9 @@ export async function createBusinessCase(formData: FormData) {
   // Permission check
   const canCreate = await hasPermission(PERMISSIONS.BUSINESS_CASE_CREATE);
   if (!canCreate) {
-    return { error: "Unauthorized: You don't have permission to create business cases" };
+    return {
+      error: "Unauthorized: You don't have permission to create business cases",
+    };
   }
 
   const supabase = await createClient();
@@ -35,7 +37,9 @@ export async function createBusinessCase(formData: FormData) {
   const yearOffset = Number(formData.get("year_offset"));
   const volume = formData.get("volume") ? Number(formData.get("volume")) : null;
   const nsp = formData.get("nsp") ? Number(formData.get("nsp")) : null;
-  const cogsPerUnit = formData.get("cogs_per_unit") ? Number(formData.get("cogs_per_unit")) : null;
+  const cogsPerUnit = formData.get("cogs_per_unit")
+    ? Number(formData.get("cogs_per_unit"))
+    : null;
   const assumptions = formData.get("assumptions") as string | null;
   // Note: fiscal_year is no longer stored - it's calculated from target_market_entry_fy + year_offset
 
@@ -71,7 +75,10 @@ export async function createBusinessCase(formData: FormData) {
     .in("use_group_variant", useGroupIds);
 
   if (ugError || !useGroups || useGroups.length === 0) {
-    return { error: "Selected use groups not found for this formulation-country combination" };
+    return {
+      error:
+        "Selected use groups not found for this formulation-country combination",
+    };
   }
 
   // Create business case
@@ -126,21 +133,30 @@ export async function createBusinessCase(formData: FormData) {
   return { data: businessCase, success: true };
 }
 
-export async function updateBusinessCase(businessCaseId: string, formData: FormData) {
+export async function updateBusinessCase(
+  businessCaseId: string,
+  formData: FormData,
+) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.BUSINESS_CASE_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to edit business cases" };
+    return {
+      error: "Unauthorized: You don't have permission to edit business cases",
+    };
   }
 
   const formulationId = formData.get("formulation_id") as string | null;
   const countryId = formData.get("country_id") as string | null;
   const useGroupIds = formData.getAll("use_group_ids") as string[];
   const businessCaseName = formData.get("business_case_name") as string | null;
-  const yearOffset = formData.get("year_offset") ? Number(formData.get("year_offset")) : null;
+  const yearOffset = formData.get("year_offset")
+    ? Number(formData.get("year_offset"))
+    : null;
   const volume = formData.get("volume") ? Number(formData.get("volume")) : null;
   const nsp = formData.get("nsp") ? Number(formData.get("nsp")) : null;
-  const cogsPerUnit = formData.get("cogs_per_unit") ? Number(formData.get("cogs_per_unit")) : null;
+  const cogsPerUnit = formData.get("cogs_per_unit")
+    ? Number(formData.get("cogs_per_unit"))
+    : null;
   const assumptions = formData.get("assumptions") as string | null;
 
   if (yearOffset && (yearOffset < 1 || yearOffset > 10)) {
@@ -154,7 +170,8 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
       updated_at: new Date().toISOString(),
     };
 
-    if (businessCaseName !== null) updateData.business_case_name = businessCaseName;
+    if (businessCaseName !== null)
+      updateData.business_case_name = businessCaseName;
     if (yearOffset !== null) updateData.year_offset = yearOffset;
     if (volume !== null) updateData.volume = volume;
     if (nsp !== null) updateData.nsp = nsp;
@@ -204,7 +221,10 @@ export async function updateBusinessCase(businessCaseId: string, formData: FormD
         .in("use_group_variant", useGroupIds);
 
       if (ugError || !useGroups || useGroups.length === 0) {
-        return { error: "Selected use groups not found for this formulation-country combination" };
+        return {
+          error:
+            "Selected use groups not found for this formulation-country combination",
+        };
       }
 
       // Delete existing junction entries
@@ -256,7 +276,9 @@ export async function deleteBusinessCase(businessCaseId: string) {
   // Permission check
   const canDelete = await hasPermission(PERMISSIONS.BUSINESS_CASE_DELETE);
   if (!canDelete) {
-    return { error: "Unauthorized: You don't have permission to delete business cases" };
+    return {
+      error: "Unauthorized: You don't have permission to delete business cases",
+    };
   }
 
   const supabase = await createClient();
@@ -290,7 +312,9 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
   // Permission check
   const canCreate = await hasPermission(PERMISSIONS.BUSINESS_CASE_CREATE);
   if (!canCreate) {
-    return { error: "Unauthorized: You don't have permission to create business cases" };
+    return {
+      error: "Unauthorized: You don't have permission to create business cases",
+    };
   }
 
   const supabase = await createClient();
@@ -316,20 +340,26 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
 
   const targetMarketEntry = validation.targetEntry;
   if (!targetMarketEntry) {
-    return { error: "Selected use groups do not have target market entry fiscal year set" };
+    return {
+      error:
+        "Selected use groups do not have target market entry fiscal year set",
+    };
   }
 
   // Parse target market entry (e.g., "FY26" -> 26)
   const targetYearMatch = targetMarketEntry.match(/FY(\d{2})/);
   if (!targetYearMatch) {
-    return { error: "Invalid target market entry format. Expected format: FY26" };
+    return {
+      error: "Invalid target market entry format. Expected format: FY26",
+    };
   }
   const targetYear = parseInt(targetYearMatch[1], 10);
 
   // Determine effective start fiscal year at creation time
   // If target_market_entry is in the past, start from current fiscal year
   // This preserves the fiscal year context when data was entered
-  const effectiveStartYear = targetYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : targetYear;
+  const effectiveStartYear =
+    targetYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : targetYear;
   const effectiveStartFiscalYear = `FY${String(effectiveStartYear).padStart(2, "0")}`;
 
   // Get change reason from form data
@@ -340,33 +370,41 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
   const existingGroupId = await checkExistingBusinessCase(
     formulationId,
     countryId,
-    useGroupIds[0]
+    useGroupIds[0],
   );
 
   // If existing business case found, preserve its effective_start_fiscal_year
   let finalEffectiveStartFiscalYear = effectiveStartFiscalYear;
   let previousGroupId: string | null = null;
-  let existingYearData: Array<{ year_offset: number; volume: number | null; nsp: number | null; cogs_per_unit: number | null }> = [];
-  
+  let existingYearData: Array<{
+    year_offset: number;
+    volume: number | null;
+    nsp: number | null;
+    cogs_per_unit: number | null;
+  }> = [];
+
   if (existingGroupId) {
     previousGroupId = existingGroupId;
-    
+
     // Get the existing business case data for diff computation
     const { data: existingCases } = await supabase
       .from("business_case")
-      .select("year_offset, volume, nsp, cogs_per_unit, effective_start_fiscal_year")
+      .select(
+        "year_offset, volume, nsp, cogs_per_unit, effective_start_fiscal_year",
+      )
       .eq("business_case_group_id", existingGroupId)
       .eq("status", "active")
       .order("year_offset", { ascending: true });
-    
+
     if (existingCases && existingCases.length > 0) {
       existingYearData = existingCases;
       // Preserve the original effective start fiscal year
       if (existingCases[0]?.effective_start_fiscal_year) {
-        finalEffectiveStartFiscalYear = existingCases[0].effective_start_fiscal_year;
+        finalEffectiveStartFiscalYear =
+          existingCases[0].effective_start_fiscal_year;
       }
     }
-    
+
     // Mark old business cases as superseded (archived)
     // Update ALL records in the old group that aren't already superseded
     // This handles edge cases where records might be in "active" or "inactive" status
@@ -378,14 +416,18 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
       .select();
 
     if (deactivateError) {
-      return { error: `Failed to archive old version: ${deactivateError.message}` };
+      return {
+        error: `Failed to archive old version: ${deactivateError.message}`,
+      };
     }
 
     // Verify that we actually updated some records
     // If no records were updated, it might mean the old group was already superseded
     // or doesn't exist, which is fine - we'll still create the new version
     if (deactivatedData && deactivatedData.length === 0) {
-      console.warn(`No records found to supersede for group ${existingGroupId} - may already be superseded or not exist`);
+      console.warn(
+        `No records found to supersede for group ${existingGroupId} - may already be superseded or not exist`,
+      );
     }
   }
 
@@ -403,29 +445,37 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
   const formulationCountryId = fcData?.formulation_country_id || null;
 
   // Extract year data (10 years: year_1_volume, year_1_nsp, year_2_volume, etc.)
-  const yearData: Array<{ 
-    year_offset: number; 
-    volume: number; 
-    nsp: number; 
+  const yearData: Array<{
+    year_offset: number;
+    volume: number;
+    nsp: number;
     fiscal_year: string;
     cogs_per_unit: number | null;
   }> = [];
-  
+
   // Parse the final effective start year for fiscal year calculations
   const finalStartYearMatch = finalEffectiveStartFiscalYear.match(/FY(\d{2})/);
-  const finalEffectiveStartYear = finalStartYearMatch ? parseInt(finalStartYearMatch[1], 10) : effectiveStartYear;
-  
+  const finalEffectiveStartYear = finalStartYearMatch
+    ? parseInt(finalStartYearMatch[1], 10)
+    : effectiveStartYear;
+
   for (let yearOffset = 1; yearOffset <= 10; yearOffset++) {
     const volumeKey = `year_${yearOffset}_volume`;
     const nspKey = `year_${yearOffset}_nsp`;
     const cogsKey = `year_${yearOffset}_cogs`;
-    
-    const volume = formData.get(volumeKey) ? Number(formData.get(volumeKey)) : null;
+
+    const volume = formData.get(volumeKey)
+      ? Number(formData.get(volumeKey))
+      : null;
     const nsp = formData.get(nspKey) ? Number(formData.get(nspKey)) : null;
-    const cogsOverride = formData.get(cogsKey) ? Number(formData.get(cogsKey)) : null;
+    const cogsOverride = formData.get(cogsKey)
+      ? Number(formData.get(cogsKey))
+      : null;
 
     if (volume === null || nsp === null || volume <= 0 || nsp <= 0) {
-      return { error: `Year ${yearOffset}: Volume and NSP are required and must be greater than 0` };
+      return {
+        error: `Year ${yearOffset}: Volume and NSP are required and must be greater than 0`,
+      };
     }
 
     // Calculate fiscal year for this business case year (use preserved effective start year)
@@ -440,7 +490,7 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
       cogsValue = await lookupCOGSWithCarryForward(
         formulationId,
         formulationCountryId,
-        fiscalYear
+        fiscalYear,
       );
     }
 
@@ -462,7 +512,11 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
       nsp: y.nsp,
       cogs_per_unit: y.cogs_per_unit,
     }));
-    changeSummary = computeBusinessCaseDiff(existingYearData, newYearDataForDiff, finalEffectiveStartYear);
+    changeSummary = computeBusinessCaseDiff(
+      existingYearData,
+      newYearDataForDiff,
+      finalEffectiveStartYear,
+    );
   }
 
   // Create 10 business case rows
@@ -490,7 +544,9 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     .select();
 
   if (bcError || !businessCases || businessCases.length !== 10) {
-    return { error: bcError?.message || "Failed to create business case group" };
+    return {
+      error: bcError?.message || "Failed to create business case group",
+    };
   }
 
   // Link all business cases to the selected use groups via junction table
@@ -543,17 +599,19 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
  */
 export async function updateBusinessCaseGroupAction(
   oldGroupId: string,
-  formData: FormData
+  formData: FormData,
 ) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.BUSINESS_CASE_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to edit business cases" };
+    return {
+      error: "Unauthorized: You don't have permission to edit business cases",
+    };
   }
 
   const supabase = await createClient();
   const userName = await getCurrentUserName();
-  
+
   // Get change reason from form data
   const changeReason = formData.get("change_reason") as string | null;
 
@@ -568,11 +626,15 @@ export async function updateBusinessCaseGroupAction(
     const volumeKey = `year_${yearOffset}_volume`;
     const nspKey = `year_${yearOffset}_nsp`;
 
-    const volume = formData.get(volumeKey) ? Number(formData.get(volumeKey)) : null;
+    const volume = formData.get(volumeKey)
+      ? Number(formData.get(volumeKey))
+      : null;
     const nsp = formData.get(nspKey) ? Number(formData.get(nspKey)) : null;
 
     if (volume === null || nsp === null || volume <= 0 || nsp <= 0) {
-      return { error: `Year ${yearOffset}: Volume and NSP are required and must be greater than 0` };
+      return {
+        error: `Year ${yearOffset}: Volume and NSP are required and must be greater than 0`,
+      };
     }
 
     yearData.push({
@@ -595,9 +657,11 @@ export async function updateBusinessCaseGroupAction(
 
   // Get the common data from the first existing case
   const firstCase = existingCases[0];
-  const businessCaseName = (formData.get("business_case_name") as string | null) ?? firstCase.business_case_name;
+  const businessCaseName =
+    (formData.get("business_case_name") as string | null) ??
+    firstCase.business_case_name;
   const effectiveStartFiscalYear = firstCase.effective_start_fiscal_year;
-  
+
   // Prepare existing data for diff computation
   const existingYearData = existingCases.map((c) => ({
     year_offset: c.year_offset,
@@ -610,9 +674,16 @@ export async function updateBusinessCaseGroupAction(
   const { data: useGroupLinks } = await supabase
     .from("business_case_use_groups")
     .select("formulation_country_use_group_id")
-    .in("business_case_id", existingCases.map(c => c.business_case_id));
+    .in(
+      "business_case_id",
+      existingCases.map((c) => c.business_case_id),
+    );
 
-  const useGroupIds = [...new Set(useGroupLinks?.map(l => l.formulation_country_use_group_id) || [])];
+  const useGroupIds = [
+    ...new Set(
+      useGroupLinks?.map((l) => l.formulation_country_use_group_id) || [],
+    ),
+  ];
 
   if (useGroupIds.length === 0) {
     return { error: "No use groups linked to existing business case" };
@@ -625,7 +696,8 @@ export async function updateBusinessCaseGroupAction(
     .eq("formulation_country_use_group_id", useGroupIds[0])
     .single();
 
-  const formulationId = (useGroupData?.formulation_country as any)?.formulation_id;
+  const formulationId = (useGroupData?.formulation_country as any)
+    ?.formulation_id;
   const formulationCountryId = useGroupData?.formulation_country_id;
 
   // Generate new group ID for the new version
@@ -633,7 +705,9 @@ export async function updateBusinessCaseGroupAction(
 
   // Parse effective start year for diff computation
   const effectiveMatch = effectiveStartFiscalYear?.match(/FY(\d{2})/);
-  const effectiveStartYear = effectiveMatch ? parseInt(effectiveMatch[1], 10) : CURRENT_FISCAL_YEAR;
+  const effectiveStartYear = effectiveMatch
+    ? parseInt(effectiveMatch[1], 10)
+    : CURRENT_FISCAL_YEAR;
 
   // Create new business case records (new version)
   const newBusinessCaseInsertsPromises = yearData.map(async (year) => {
@@ -643,14 +717,20 @@ export async function updateBusinessCaseGroupAction(
 
     // Check for COGS override from form data
     const cogsOverrideKey = `year_${year.year_offset}_cogs`;
-    const cogsOverride = formData.get(cogsOverrideKey) ? Number(formData.get(cogsOverrideKey)) : null;
+    const cogsOverride = formData.get(cogsOverrideKey)
+      ? Number(formData.get(cogsOverrideKey))
+      : null;
 
     // Use override if provided and valid, otherwise lookup COGS
     let cogsValue: number | null = null;
     if (cogsOverride !== null && cogsOverride > 0) {
       cogsValue = cogsOverride;
     } else if (formulationId) {
-      cogsValue = await lookupCOGSWithCarryForward(formulationId, formulationCountryId || null, fiscalYear);
+      cogsValue = await lookupCOGSWithCarryForward(
+        formulationId,
+        formulationCountryId || null,
+        fiscalYear,
+      );
     }
 
     return {
@@ -664,7 +744,11 @@ export async function updateBusinessCaseGroupAction(
   const newYearDataWithCogs = await Promise.all(newBusinessCaseInsertsPromises);
 
   // Compute change summary
-  const changeSummary = computeBusinessCaseDiff(existingYearData, newYearDataWithCogs, effectiveStartYear);
+  const changeSummary = computeBusinessCaseDiff(
+    existingYearData,
+    newYearDataWithCogs,
+    effectiveStartYear,
+  );
 
   // Build the final insert objects
   const newBusinessCaseInserts = newYearDataWithCogs.map((year) => ({
@@ -696,14 +780,18 @@ export async function updateBusinessCaseGroupAction(
       .select();
 
     if (deactivateError) {
-      return { error: `Failed to archive old version: ${deactivateError.message}` };
+      return {
+        error: `Failed to archive old version: ${deactivateError.message}`,
+      };
     }
 
     // Verify that we actually updated some records
     // If no records were updated, it might mean the old group was already superseded
     // or doesn't exist, which is fine - we'll still create the new version
     if (deactivatedData && deactivatedData.length === 0) {
-      console.warn(`No records found to supersede for group ${oldGroupId} - may already be superseded or not exist`);
+      console.warn(
+        `No records found to supersede for group ${oldGroupId} - may already be superseded or not exist`,
+      );
     }
 
     // Create new business case records
@@ -718,7 +806,9 @@ export async function updateBusinessCaseGroupAction(
         .from("business_case")
         .update({ status: "active" })
         .eq("business_case_group_id", oldGroupId);
-      return { error: `Failed to create new version: ${insertError?.message || "Unknown error"}` };
+      return {
+        error: `Failed to create new version: ${insertError?.message || "Unknown error"}`,
+      };
     }
 
     // Link new business cases to the same use groups
@@ -782,7 +872,13 @@ export async function getBusinessCaseGroupAction(groupId: string) {
     return { data, error: null };
   } catch (error) {
     console.error("getBusinessCaseGroupAction error:", error);
-    return { data: null, error: error instanceof Error ? error.message : "Failed to fetch business case group" };
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch business case group",
+    };
   }
 }
 
@@ -792,13 +888,23 @@ export async function getBusinessCaseGroupAction(groupId: string) {
 export async function checkExistingBusinessCaseAction(
   formulationId: string,
   countryId: string,
-  useGroupId: string
+  useGroupId: string,
 ) {
   try {
-    const groupId = await checkExistingBusinessCase(formulationId, countryId, useGroupId);
+    const groupId = await checkExistingBusinessCase(
+      formulationId,
+      countryId,
+      useGroupId,
+    );
     return { data: groupId, error: null };
   } catch (error) {
-    return { data: null, error: error instanceof Error ? error.message : "Failed to check existing business case" };
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to check existing business case",
+    };
   }
 }
 
@@ -810,7 +916,11 @@ export async function getFormulationsAction() {
     const data = await getFormulations();
     return { data, error: null };
   } catch (error) {
-    return { data: null, error: error instanceof Error ? error.message : "Failed to fetch formulations" };
+    return {
+      data: null,
+      error:
+        error instanceof Error ? error.message : "Failed to fetch formulations",
+    };
   }
 }
 
@@ -822,7 +932,11 @@ export async function getCountriesAction() {
     const data = await getCountries();
     return { data, error: null };
   } catch (error) {
-    return { data: null, error: error instanceof Error ? error.message : "Failed to fetch countries" };
+    return {
+      data: null,
+      error:
+        error instanceof Error ? error.message : "Failed to fetch countries",
+    };
   }
 }
 
@@ -834,7 +948,13 @@ export async function getBusinessCaseVersionHistoryAction(useGroupId: string) {
     const data = await getBusinessCaseVersionHistory(useGroupId);
     return { data, error: null };
   } catch (error) {
-    return { data: null, error: error instanceof Error ? error.message : "Failed to fetch version history" };
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch version history",
+    };
   }
 }
 
@@ -855,7 +975,7 @@ import type {
 async function validateImportRow(
   row: BusinessCaseImportRow,
   rowIndex: number,
-  supabase: Awaited<ReturnType<typeof createClient>>
+  supabase: Awaited<ReturnType<typeof createClient>>,
 ): Promise<BusinessCaseImportRowValidation> {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -912,20 +1032,26 @@ async function validateImportRow(
     .single();
 
   if (fcError || !formCountry) {
-    errors.push(`Formulation "${row.formulation_code}" is not registered in country "${row.country_code}"`);
+    errors.push(
+      `Formulation "${row.formulation_code}" is not registered in country "${row.country_code}"`,
+    );
     return { rowIndex, row, isValid: false, errors, warnings };
   }
 
   // Lookup use group
   const { data: useGroup, error: ugError } = await supabase
     .from("formulation_country_use_group")
-    .select("formulation_country_use_group_id, target_market_entry_fy, is_active")
+    .select(
+      "formulation_country_use_group_id, target_market_entry_fy, is_active",
+    )
     .eq("formulation_country_id", formCountry.formulation_country_id)
     .eq("use_group_variant", row.use_group_variant.trim())
     .single();
 
   if (ugError || !useGroup) {
-    errors.push(`Use group variant "${row.use_group_variant}" not found for this formulation-country combination`);
+    errors.push(
+      `Use group variant "${row.use_group_variant}" not found for this formulation-country combination`,
+    );
     return { rowIndex, row, isValid: false, errors, warnings };
   }
 
@@ -934,31 +1060,43 @@ async function validateImportRow(
   }
 
   // Check target_market_entry_fy
-  const targetMarketEntry = row.effective_start_fiscal_year?.trim() || useGroup.target_market_entry_fy;
+  const targetMarketEntry =
+    row.effective_start_fiscal_year?.trim() || useGroup.target_market_entry_fy;
   if (!targetMarketEntry) {
-    errors.push("No effective_start_fiscal_year provided and use group has no target_market_entry_fy set");
+    errors.push(
+      "No effective_start_fiscal_year provided and use group has no target_market_entry_fy set",
+    );
     return { rowIndex, row, isValid: false, errors, warnings };
   }
 
   // Validate fiscal year format
-  if (row.effective_start_fiscal_year && !/^FY\d{2}$/.test(row.effective_start_fiscal_year.trim())) {
-    errors.push(`Invalid effective_start_fiscal_year format: "${row.effective_start_fiscal_year}". Expected format: FY## (e.g., FY26)`);
+  if (
+    row.effective_start_fiscal_year &&
+    !/^FY\d{2}$/.test(row.effective_start_fiscal_year.trim())
+  ) {
+    errors.push(
+      `Invalid effective_start_fiscal_year format: "${row.effective_start_fiscal_year}". Expected format: FY## (e.g., FY26)`,
+    );
   }
 
   // Validate year data (10 years of volume and nsp required)
   for (let year = 1; year <= 10; year++) {
     const volumeKey = `year_${year}_volume` as keyof BusinessCaseImportRow;
     const nspKey = `year_${year}_nsp` as keyof BusinessCaseImportRow;
-    
+
     const volume = row[volumeKey];
     const nsp = row[nspKey];
-    
-    if (volume === undefined || volume === null || Number.isNaN(Number(volume))) {
+
+    if (
+      volume === undefined ||
+      volume === null ||
+      Number.isNaN(Number(volume))
+    ) {
       errors.push(`Year ${year}: volume is required`);
     } else if (Number(volume) <= 0) {
       errors.push(`Year ${year}: volume must be greater than 0`);
     }
-    
+
     if (nsp === undefined || nsp === null || Number.isNaN(Number(nsp))) {
       errors.push(`Year ${year}: nsp is required`);
     } else if (Number(nsp) <= 0) {
@@ -970,12 +1108,14 @@ async function validateImportRow(
   const existingGroupId = await checkExistingBusinessCase(
     formulation.formulation_id,
     country.country_id,
-    useGroup.formulation_country_use_group_id
+    useGroup.formulation_country_use_group_id,
   );
 
   // If updating existing, change_reason is required
   if (existingGroupId && !row.change_reason?.trim()) {
-    errors.push("change_reason is required when updating an existing business case");
+    errors.push(
+      "change_reason is required when updating an existing business case",
+    );
   }
 
   if (existingGroupId) {
@@ -988,14 +1128,18 @@ async function validateImportRow(
     isValid: errors.length === 0,
     errors,
     warnings,
-    resolved: errors.length === 0 ? {
-      formulation_id: formulation.formulation_id,
-      country_id: country.country_id,
-      formulation_country_id: formCountry.formulation_country_id,
-      formulation_country_use_group_id: useGroup.formulation_country_use_group_id,
-      target_market_entry_fy: targetMarketEntry,
-      existing_business_case_group_id: existingGroupId,
-    } : undefined,
+    resolved:
+      errors.length === 0
+        ? {
+            formulation_id: formulation.formulation_id,
+            country_id: country.country_id,
+            formulation_country_id: formCountry.formulation_country_id,
+            formulation_country_use_group_id:
+              useGroup.formulation_country_use_group_id,
+            target_market_entry_fy: targetMarketEntry,
+            existing_business_case_group_id: existingGroupId,
+          }
+        : undefined,
   };
 }
 
@@ -1003,12 +1147,15 @@ async function validateImportRow(
  * Validates all import rows without making changes (dry run).
  */
 export async function validateBusinessCaseImport(
-  rows: BusinessCaseImportRow[]
+  rows: BusinessCaseImportRow[],
 ): Promise<{ validations: BusinessCaseImportRowValidation[]; error?: string }> {
   // Permission check
   const canCreate = await hasPermission(PERMISSIONS.BUSINESS_CASE_CREATE);
   if (!canCreate) {
-    return { validations: [], error: "Unauthorized: You don't have permission to import business cases" };
+    return {
+      validations: [],
+      error: "Unauthorized: You don't have permission to import business cases",
+    };
   }
 
   const supabase = await createClient();
@@ -1027,7 +1174,7 @@ export async function validateBusinessCaseImport(
  * Creates new business cases or new versions of existing ones.
  */
 export async function importBusinessCases(
-  rows: BusinessCaseImportRow[]
+  rows: BusinessCaseImportRow[],
 ): Promise<BusinessCaseImportResult> {
   // Permission check
   const canCreate = await hasPermission(PERMISSIONS.BUSINESS_CASE_CREATE);
@@ -1060,11 +1207,13 @@ export async function importBusinessCases(
   const invalidRows = rowValidations.filter((v) => !v.isValid);
 
   // Initialize progress tracking
-  const rowProgress: BusinessCaseImportRowProgress[] = rowValidations.map((v) => ({
-    rowIndex: v.rowIndex,
-    status: v.isValid ? "valid" : "invalid",
-    message: v.isValid ? undefined : v.errors.join("; "),
-  }));
+  const rowProgress: BusinessCaseImportRowProgress[] = rowValidations.map(
+    (v) => ({
+      rowIndex: v.rowIndex,
+      status: v.isValid ? "valid" : "invalid",
+      message: v.isValid ? undefined : v.errors.join("; "),
+    }),
+  );
 
   let created = 0;
   let updated = 0;
@@ -1085,8 +1234,11 @@ export async function importBusinessCases(
       const formData = new FormData();
       formData.append("formulation_id", resolved.formulation_id);
       formData.append("country_id", resolved.country_id);
-      formData.append("use_group_ids", resolved.formulation_country_use_group_id);
-      
+      formData.append(
+        "use_group_ids",
+        resolved.formulation_country_use_group_id,
+      );
+
       if (row.business_case_name?.trim()) {
         formData.append("business_case_name", row.business_case_name.trim());
       }
@@ -1099,12 +1251,16 @@ export async function importBusinessCases(
         const volumeKey = `year_${year}_volume` as keyof BusinessCaseImportRow;
         const nspKey = `year_${year}_nsp` as keyof BusinessCaseImportRow;
         const cogsKey = `year_${year}_cogs` as keyof BusinessCaseImportRow;
-        
+
         formData.append(`year_${year}_volume`, String(row[volumeKey] || 0));
         formData.append(`year_${year}_nsp`, String(row[nspKey] || 0));
-        
+
         const cogsValue = row[cogsKey];
-        if (cogsValue !== undefined && cogsValue !== null && Number(cogsValue) > 0) {
+        if (
+          cogsValue !== undefined &&
+          cogsValue !== null &&
+          Number(cogsValue) > 0
+        ) {
           formData.append(`year_${year}_cogs`, String(cogsValue));
         }
       }
@@ -1127,12 +1283,14 @@ export async function importBusinessCases(
         rowProgress[progressIdx].status = "created";
         rowProgress[progressIdx].message = "Business case created";
       }
-      rowProgress[progressIdx].businessCaseGroupId = result.data?.business_case_group_id;
+      rowProgress[progressIdx].businessCaseGroupId =
+        result.data?.business_case_group_id;
     } catch (error) {
       importErrors++;
       if (progressIdx >= 0) {
         rowProgress[progressIdx].status = "error";
-        rowProgress[progressIdx].message = error instanceof Error ? error.message : "Import failed";
+        rowProgress[progressIdx].message =
+          error instanceof Error ? error.message : "Import failed";
       }
     }
   }
@@ -1173,17 +1331,22 @@ export async function exportBusinessCasesToCSV(
     effective_start_fiscal_year: string | null;
     business_case_name?: string | null;
     change_reason?: string | null;
-    years_data: Record<string, {
-      volume: number | null;
-      nsp: number | null;
-      cogs_per_unit: number | null;
-    }>;
-  }>
+    years_data: Record<
+      string,
+      {
+        volume: number | null;
+        nsp: number | null;
+        cogs_per_unit: number | null;
+      }
+    >;
+  }>,
 ): Promise<string> {
   // Permission check
   const canView = await hasPermission(PERMISSIONS.BUSINESS_CASE_CREATE);
   if (!canView) {
-    throw new Error("Unauthorized: You don't have permission to export business cases");
+    throw new Error(
+      "Unauthorized: You don't have permission to export business cases",
+    );
   }
 
   const headers = [
@@ -1226,7 +1389,7 @@ export async function exportBusinessCasesToCSV(
       const fiscalYearNum = startYear + (yearOffset - 1);
       const fiscalYearStr = `FY${String(fiscalYearNum).padStart(2, "0")}`;
       const yearData = group.years_data[fiscalYearStr];
-      
+
       if (yearData) {
         row.push(String(yearData.volume || ""));
         row.push(String(yearData.nsp || ""));
@@ -1236,13 +1399,17 @@ export async function exportBusinessCasesToCSV(
       }
     }
 
-    rows.push(row.map((cell) => {
-      // Escape commas and quotes in CSV
-      if (cell.includes(",") || cell.includes('"') || cell.includes("\n")) {
-        return `"${cell.replace(/"/g, '""')}"`;
-      }
-      return cell;
-    }).join(","));
+    rows.push(
+      row
+        .map((cell) => {
+          // Escape commas and quotes in CSV
+          if (cell.includes(",") || cell.includes('"') || cell.includes("\n")) {
+            return `"${cell.replace(/"/g, '""')}"`;
+          }
+          return cell;
+        })
+        .join(","),
+    );
   }
 
   return [headers.join(","), ...rows].join("\n");
@@ -1257,7 +1424,9 @@ export async function generateBusinessCaseImportTemplate(): Promise<string> {
   // Permission check
   const canView = await hasPermission(PERMISSIONS.BUSINESS_CASE_CREATE);
   if (!canView) {
-    throw new Error("Unauthorized: You don't have permission to download templates");
+    throw new Error(
+      "Unauthorized: You don't have permission to download templates",
+    );
   }
 
   const headers = [
@@ -1279,58 +1448,64 @@ export async function generateBusinessCaseImportTemplate(): Promise<string> {
   const exampleRows = [
     // Row 1: Ireland
     [
-      "323-01",           // formulation_code
-      "IE",               // country_code
-      "001",              // use_group_variant
-      "FY26",             // effective_start_fiscal_year
+      "323-01", // formulation_code
+      "IE", // country_code
+      "001", // use_group_variant
+      "FY26", // effective_start_fiscal_year
       "Ireland Market Expansion", // business_case_name
-      "Initial import",   // change_reason
+      "Initial import", // change_reason
       ...Array.from({ length: 10 }, (_, i) => [
-        String(50000 + i * 5000),  // volume (increasing)
-        String(12.5 + i * 0.25),  // nsp (increasing)
-        "",                        // cogs (optional - auto-looked up if empty)
+        String(50000 + i * 5000), // volume (increasing)
+        String(12.5 + i * 0.25), // nsp (increasing)
+        "", // cogs (optional - auto-looked up if empty)
       ]).flat(),
     ],
     // Row 2: UK - same formulation, different country
     [
-      "323-01",           // Same formulation_code
-      "UK",               // Different country_code
-      "001",              // use_group_variant
-      "FY26",             // effective_start_fiscal_year
-      "UK Market Entry",  // business_case_name
-      "Initial import",   // change_reason
+      "323-01", // Same formulation_code
+      "UK", // Different country_code
+      "001", // use_group_variant
+      "FY26", // effective_start_fiscal_year
+      "UK Market Entry", // business_case_name
+      "Initial import", // change_reason
       ...Array.from({ length: 10 }, (_, i) => [
-        String(30000 + i * 3000),  // Different volume
-        String(13.0 + i * 0.3),    // Different nsp
-        "",                        // cogs (optional)
+        String(30000 + i * 3000), // Different volume
+        String(13.0 + i * 0.3), // Different nsp
+        "", // cogs (optional)
       ]).flat(),
     ],
     // Row 3: Germany - same formulation, different country
     [
-      "323-01",           // Same formulation_code
-      "DE",               // Different country_code
-      "001",              // use_group_variant
-      "FY26",             // effective_start_fiscal_year
-      "Germany Market",   // business_case_name
-      "Initial import",   // change_reason
+      "323-01", // Same formulation_code
+      "DE", // Different country_code
+      "001", // use_group_variant
+      "FY26", // effective_start_fiscal_year
+      "Germany Market", // business_case_name
+      "Initial import", // change_reason
       ...Array.from({ length: 10 }, (_, i) => [
-        String(40000 + i * 4000),  // Different volume
+        String(40000 + i * 4000), // Different volume
         String(12.75 + i * 0.25), // Different nsp
-        "",                        // cogs (optional)
+        "", // cogs (optional)
       ]).flat(),
     ],
   ];
 
   // Format rows with proper CSV escaping
   const formattedRows = exampleRows.map((row) =>
-    row.map((cell) => {
-      // Escape commas and quotes in CSV
-      const cellStr = String(cell);
-      if (cellStr.includes(",") || cellStr.includes('"') || cellStr.includes("\n")) {
-        return `"${cellStr.replace(/"/g, '""')}"`;
-      }
-      return cellStr;
-    }).join(",")
+    row
+      .map((cell) => {
+        // Escape commas and quotes in CSV
+        const cellStr = String(cell);
+        if (
+          cellStr.includes(",") ||
+          cellStr.includes('"') ||
+          cellStr.includes("\n")
+        ) {
+          return `"${cellStr.replace(/"/g, '""')}"`;
+        }
+        return cellStr;
+      })
+      .join(","),
   );
 
   // Add comment rows to explain the format
@@ -1352,9 +1527,5 @@ export async function generateBusinessCaseImportTemplate(): Promise<string> {
     "#",
   ];
 
-  return [
-    ...commentRows,
-    headers.join(","),
-    ...formattedRows,
-  ].join("\n");
+  return [...commentRows, headers.join(","), ...formattedRows].join("\n");
 }

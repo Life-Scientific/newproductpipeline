@@ -17,7 +17,7 @@ interface YearData {
 export function computeBusinessCaseDiff(
   oldData: YearData[],
   newData: YearData[],
-  effectiveStartYear: number
+  effectiveStartYear: number,
 ): string {
   const volumeChanges: string[] = [];
   const nspChanges: string[] = [];
@@ -51,7 +51,10 @@ export function computeBusinessCaseDiff(
 
     // Check COGS change
     if (oldYear.cogs_per_unit !== newYear.cogs_per_unit) {
-      const pct = computePercentChange(oldYear.cogs_per_unit, newYear.cogs_per_unit);
+      const pct = computePercentChange(
+        oldYear.cogs_per_unit,
+        newYear.cogs_per_unit,
+      );
       if (pct !== null) {
         const sign = pct > 0 ? "+" : "";
         cogsChanges.push(`${fiscalYear} ${sign}${pct}%`);
@@ -81,7 +84,10 @@ export function computeBusinessCaseDiff(
 /**
  * Compute percentage change between two values
  */
-function computePercentChange(oldVal: number | null, newVal: number | null): number | null {
+function computePercentChange(
+  oldVal: number | null,
+  newVal: number | null,
+): number | null {
   if (oldVal === null || oldVal === 0) {
     return newVal ? 100 : null;
   }
@@ -98,11 +104,11 @@ function summarizeYearRange(changes: string[]): string {
   if (changes.length <= 2) {
     return changes.join(", ");
   }
-  
+
   if (changes.length > 3) {
     return `${changes[0]}, ... ${changes[changes.length - 1]} (${changes.length} years)`;
   }
-  
+
   return changes.join(", ");
 }
 

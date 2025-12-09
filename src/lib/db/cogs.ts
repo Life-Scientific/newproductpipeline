@@ -59,7 +59,7 @@ export async function getCOGSGroup(groupId: string) {
  */
 export async function getFormulationCOGSHistory(
   formulationId: string,
-  countryId: string | null
+  countryId: string | null,
 ) {
   const supabase = await createClient();
 
@@ -84,4 +84,3 @@ export async function getFormulationCOGSHistory(
 
   return data as COGS[];
 }
-

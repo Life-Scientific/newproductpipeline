@@ -1,5 +1,11 @@
 import { getCountries } from "@/lib/db/queries";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Database } from "@/lib/supabase/database.types";
@@ -24,43 +30,48 @@ export default async function ReferenceDataPage() {
   const supabase = await createClient();
 
   // Fetch EPPO codes by classification
-  const [cropsResult, insectsResult, diseasesResult, weedsResult, ingredientsResult] =
-    await Promise.all([
-      supabase
-        .from("eppo_codes")
-        .select("*")
-        .eq("is_active", true)
-        .eq("classification", "crop")
-        .order("display_name")
-        .limit(10000),
-      supabase
-        .from("eppo_codes")
-        .select("*")
-        .eq("is_active", true)
-        .eq("classification", "insect")
-        .order("display_name")
-        .limit(10000),
-      supabase
-        .from("eppo_codes")
-        .select("*")
-        .eq("is_active", true)
-        .eq("classification", "disease")
-        .order("display_name")
-        .limit(10000),
-      supabase
-        .from("eppo_codes")
-        .select("*")
-        .eq("is_active", true)
-        .eq("classification", "weed")
-        .order("display_name")
-        .limit(10000),
-      supabase
-        .from("ingredients")
-        .select("*")
-        .eq("is_active", true)
-        .order("ingredient_name")
-        .limit(10000),
-    ]);
+  const [
+    cropsResult,
+    insectsResult,
+    diseasesResult,
+    weedsResult,
+    ingredientsResult,
+  ] = await Promise.all([
+    supabase
+      .from("eppo_codes")
+      .select("*")
+      .eq("is_active", true)
+      .eq("classification", "crop")
+      .order("display_name")
+      .limit(10000),
+    supabase
+      .from("eppo_codes")
+      .select("*")
+      .eq("is_active", true)
+      .eq("classification", "insect")
+      .order("display_name")
+      .limit(10000),
+    supabase
+      .from("eppo_codes")
+      .select("*")
+      .eq("is_active", true)
+      .eq("classification", "disease")
+      .order("display_name")
+      .limit(10000),
+    supabase
+      .from("eppo_codes")
+      .select("*")
+      .eq("is_active", true)
+      .eq("classification", "weed")
+      .order("display_name")
+      .limit(10000),
+    supabase
+      .from("ingredients")
+      .select("*")
+      .eq("is_active", true)
+      .order("ingredient_name")
+      .limit(10000),
+  ]);
 
   const eppoCrops = (cropsResult.data || []) as EPPOCode[];
   const eppoInsects = (insectsResult.data || []) as EPPOCode[];
@@ -74,7 +85,8 @@ export default async function ReferenceDataPage() {
         <div className="space-y-2 mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold">Reference Data</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Manage countries, exchange rates, EPPO codes (crops, insects, diseases, weeds), and ingredients
+            Manage countries, exchange rates, EPPO codes (crops, insects,
+            diseases, weeds), and ingredients
           </p>
         </div>
 
@@ -95,7 +107,9 @@ export default async function ReferenceDataPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>Countries</CardTitle>
-                    <CardDescription>Manage country reference data</CardDescription>
+                    <CardDescription>
+                      Manage country reference data
+                    </CardDescription>
                   </div>
                   <CountryFormButton />
                 </div>
@@ -113,8 +127,8 @@ export default async function ReferenceDataPage() {
                   <div>
                     <CardTitle>Exchange Rates</CardTitle>
                     <CardDescription>
-                      Manage exchange rates to EUR. EUR is the rollup currency for reporting.
-                      ({exchangeRates.length} rates)
+                      Manage exchange rates to EUR. EUR is the rollup currency
+                      for reporting. ({exchangeRates.length} rates)
                     </CardDescription>
                   </div>
                   <ExchangeRateFormButton />
@@ -157,7 +171,10 @@ export default async function ReferenceDataPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <EPPOCodesTable eppoCodes={eppoInsects} classification="insect" />
+                <EPPOCodesTable
+                  eppoCodes={eppoInsects}
+                  classification="insect"
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -175,7 +192,10 @@ export default async function ReferenceDataPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <EPPOCodesTable eppoCodes={eppoDiseases} classification="disease" />
+                <EPPOCodesTable
+                  eppoCodes={eppoDiseases}
+                  classification="disease"
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -204,13 +224,17 @@ export default async function ReferenceDataPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>Ingredients</CardTitle>
-                    <CardDescription>Manage ingredient reference data</CardDescription>
+                    <CardDescription>
+                      Manage ingredient reference data
+                    </CardDescription>
                   </div>
                   <IngredientFormButton />
                 </div>
               </CardHeader>
               <CardContent>
-                <IngredientsTable ingredients={(ingredients || []) as Ingredient[]} />
+                <IngredientsTable
+                  ingredients={(ingredients || []) as Ingredient[]}
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -219,4 +243,3 @@ export default async function ReferenceDataPage() {
     </div>
   );
 }
-

@@ -1,6 +1,6 @@
 /**
  * Generate favicon files from a Lucide icon
- * 
+ *
  * This script generates icon.svg and apple-icon.svg
  * from a Lucide icon (Briefcase for portfolio)
  */
@@ -9,12 +9,16 @@ const { writeFileSync } = require("fs");
 const { join } = require("path");
 
 // Create a styled SVG with better proportions
-function createFaviconSVG(size, backgroundColor = "#ffffff", iconColor = "#09090b") {
+function createFaviconSVG(
+  size,
+  backgroundColor = "#ffffff",
+  iconColor = "#09090b",
+) {
   // Scale factor to make icon fit nicely with padding
   const padding = size * 0.15;
-  const iconSize = size - (padding * 2);
+  const iconSize = size - padding * 2;
   const scale = iconSize / 24; // Lucide icons are 24x24
-  
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
   <rect width="${size}" height="${size}" fill="${backgroundColor}" rx="${size * 0.15}"/>
   <g transform="translate(${padding}, ${padding}) scale(${scale})">

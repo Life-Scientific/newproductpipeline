@@ -6,7 +6,14 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -21,7 +28,9 @@ function AcceptInviteContent() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<"verifying" | "success" | "error" | "needs-password">("verifying");
+  const [status, setStatus] = useState<
+    "verifying" | "success" | "error" | "needs-password"
+  >("verifying");
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,7 +61,7 @@ function AcceptInviteContent() {
         if (data?.user) {
           const userEmail = data.user.email;
           setEmail(userEmail || null);
-          
+
           // Check if user needs to set a password
           // If the user was just created, they might need to set a password
           if (!data.session) {
@@ -69,7 +78,9 @@ function AcceptInviteContent() {
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to verify invitation");
+        setError(
+          err instanceof Error ? err.message : "Failed to verify invitation",
+        );
         setStatus("error");
       }
     };
@@ -77,7 +88,10 @@ function AcceptInviteContent() {
     verifyToken();
   }, [searchParams, supabase]);
 
-  const handleInvitationAccepted = async (userEmail: string, userId: string) => {
+  const handleInvitationAccepted = async (
+    userEmail: string,
+    userId: string,
+  ) => {
     try {
       await markInvitationAsAccepted(userEmail, userId);
     } catch (err) {
@@ -111,10 +125,11 @@ function AcceptInviteContent() {
 
     try {
       // First verify the OTP to get the session
-      const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
-        token_hash: tokenHash,
-        type: "invite",
-      });
+      const { data: verifyData, error: verifyError } =
+        await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: "invite",
+        });
 
       if (verifyError || !verifyData?.user) {
         setError(verifyError?.message || "Failed to verify invitation");
@@ -135,7 +150,10 @@ function AcceptInviteContent() {
 
       // Mark invitation as accepted
       if (verifyData.user.email) {
-        await handleInvitationAccepted(verifyData.user.email, verifyData.user.id);
+        await handleInvitationAccepted(
+          verifyData.user.email,
+          verifyData.user.id,
+        );
       }
 
       setStatus("success");
@@ -160,7 +178,8 @@ function AcceptInviteContent() {
             <CardTitle>Accept Invitation</CardTitle>
             <CardDescription>
               {status === "verifying" && "Verifying your invitation..."}
-              {status === "needs-password" && "Set your password to complete your account"}
+              {status === "needs-password" &&
+                "Set your password to complete your account"}
               {status === "success" && "Invitation accepted! Redirecting..."}
               {status === "error" && "There was a problem with your invitation"}
             </CardDescription>
@@ -169,20 +188,26 @@ function AcceptInviteContent() {
             {status === "verifying" && (
               <div className="flex flex-col items-center justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
-                <p className="text-sm text-muted-foreground">Verifying invitation...</p>
+                <p className="text-sm text-muted-foreground">
+                  Verifying invitation...
+                </p>
               </div>
             )}
 
             {status === "success" && (
               <div className="flex flex-col items-center justify-center py-8">
                 <CheckCircle2 className="h-8 w-8 text-green-600 mb-4" />
-                <p className="text-sm text-muted-foreground">Your account has been created successfully!</p>
+                <p className="text-sm text-muted-foreground">
+                  Your account has been created successfully!
+                </p>
               </div>
             )}
 
             {status === "error" && (
               <Alert variant="destructive">
-                <AlertDescription>{error || "Invalid or expired invitation link"}</AlertDescription>
+                <AlertDescription>
+                  {error || "Invalid or expired invitation link"}
+                </AlertDescription>
               </Alert>
             )}
 
@@ -251,7 +276,9 @@ function LoadingFallback() {
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
-            <p className="text-sm text-muted-foreground">Loading invitation...</p>
+            <p className="text-sm text-muted-foreground">
+              Loading invitation...
+            </p>
           </div>
         </CardContent>
       </Card>

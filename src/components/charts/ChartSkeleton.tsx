@@ -13,10 +13,10 @@ interface ChartSkeletonProps {
  * Loading skeleton for chart components.
  * Used as a placeholder while heavy chart libraries are being loaded.
  */
-export function ChartSkeleton({ 
-  title = "Loading chart...", 
+export function ChartSkeleton({
+  title = "Loading chart...",
   description,
-  height = 400 
+  height = 400,
 }: ChartSkeletonProps) {
   return (
     <Card className="w-full overflow-hidden">
@@ -45,7 +45,7 @@ export function ChartSkeleton({
         </div>
 
         {/* Chart area skeleton */}
-        <div 
+        <div
           className="w-full relative bg-muted/30 rounded-md flex items-center justify-center"
           style={{ height }}
         >
@@ -79,11 +79,3 @@ export function ChartSkeleton({
     </Card>
   );
 }
-
-
-
-
-
-
-
-

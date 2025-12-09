@@ -20,9 +20,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Check, GitBranch, Calendar, Tag, Package, Edit3, History, Search, X } from "lucide-react";
+import {
+  Check,
+  GitBranch,
+  Calendar,
+  Tag,
+  Package,
+  Edit3,
+  History,
+  Search,
+  X,
+} from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { 
+import {
   createBusinessCaseGroupAction,
   updateBusinessCaseGroupAction,
   checkExistingBusinessCaseAction,
@@ -33,7 +43,14 @@ import {
 import { useSupabase } from "@/hooks/use-supabase";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,9 +60,15 @@ import type { Database } from "@/lib/supabase/database.types";
 import type { BusinessCaseYearData } from "@/lib/db/types";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import { BusinessCaseVersionHistory } from "./BusinessCaseVersionHistory";
-import { formatVolumeInput, formatCurrencyInput, parseFormattedNumber } from "@/lib/utils/currency";
+import {
+  formatVolumeInput,
+  formatCurrencyInput,
+  parseFormattedNumber,
+} from "@/lib/utils/currency";
 
-type Formulation = Database["public"]["Tables"]["formulations"]["Row"] | Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
+type Formulation =
+  | Database["public"]["Tables"]["formulations"]["Row"]
+  | Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
 
 // Use group with extended info for display
@@ -72,13 +95,13 @@ export function BusinessCaseModal({
 }: BusinessCaseModalProps) {
   const { toast } = useToast();
   const supabase = useSupabase();
-  
+
   // Refs for callbacks to avoid useEffect dependency issues
   // This prevents race conditions when parent re-renders with new callback references
   const onOpenChangeRef = useRef(onOpenChange);
   const onSuccessRef = useRef(onSuccess);
   const toastRef = useRef(toast);
-  
+
   // Keep refs updated with latest callback values
   useEffect(() => {
     onOpenChangeRef.current = onOpenChange;
@@ -86,26 +109,35 @@ export function BusinessCaseModal({
     toastRef.current = toast;
   });
   const [isPending, startTransition] = useTransition();
-  const { 
-    preferences, currencySymbol, formatCurrency, 
-    convertCurrency, convertVolume, convertWeight, convertPerUnit,
-    toEUR, toLiters, toKG,
-    isWetProduct, isDryProduct, getDisplayUnit
+  const {
+    preferences,
+    currencySymbol,
+    formatCurrency,
+    convertCurrency,
+    convertVolume,
+    convertWeight,
+    convertPerUnit,
+    toEUR,
+    toLiters,
+    toKG,
+    isWetProduct,
+    isDryProduct,
+    getDisplayUnit,
   } = useDisplayPreferences();
-  
+
   // Mode: "select" for choosing country/formulation/use group, "data" for entering/editing year data
   const [step, setStep] = useState<"select" | "data">("select");
   const [loading, setLoading] = useState(false);
-  
+
   // Selection data (for create flow)
   const [formulations, setFormulations] = useState<Formulation[]>([]);
   const [allFormulations, setAllFormulations] = useState<Formulation[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [useGroupOptions, setUseGroupOptions] = useState<UseGroupOption[]>([]);
-  
+
   // Search state
   const [formulationSearch, setFormulationSearch] = useState("");
-  
+
   // Form data
   const [formData, setFormData] = useState({
     formulation_id: "",
@@ -114,53 +146,77 @@ export function BusinessCaseModal({
     business_case_name: "",
     change_reason: "",
   });
-  
+
   // Year data - can be Record format (create) or array format (edit)
-  const [yearDataRecord, setYearDataRecord] = useState<Record<number, { volume: string; nsp: string; cogs: string }>>({});
-  const [yearDataArray, setYearDataArray] = useState<BusinessCaseYearData[]>([]);
-  
+  const [yearDataRecord, setYearDataRecord] = useState<
+    Record<number, { volume: string; nsp: string; cogs: string }>
+  >({});
+  const [yearDataArray, setYearDataArray] = useState<BusinessCaseYearData[]>(
+    [],
+  );
+
   // Raw input strings for inputs while typing (prevents formatting from breaking input)
   // Format: { [yearOffset]: { volume?: string, nsp?: string, cogs?: string } }
-  const [rawInputs, setRawInputs] = useState<Record<number, { volume?: string; nsp?: string; cogs?: string }>>({});
+  const [rawInputs, setRawInputs] = useState<
+    Record<number, { volume?: string; nsp?: string; cogs?: string }>
+  >({});
   // Track which inputs are currently focused
   const [focusedInputs, setFocusedInputs] = useState<Set<string>>(new Set());
-  
+
   // Edit mode state
   const [existingGroupId, setExistingGroupId] = useState<string | null>(null);
-  const [originalValues, setOriginalValues] = useState<Record<number, { volume: number | null; nsp: number | null; cogs: number | null }>>({});
+  const [originalValues, setOriginalValues] = useState<
+    Record<
+      number,
+      { volume: number | null; nsp: number | null; cogs: number | null }
+    >
+  >({});
   const [changedCells, setChangedCells] = useState<Set<string>>(new Set());
-  
+
   // Validation
-  const [targetMarketEntry, setTargetMarketEntry] = useState<string | null>(null);
+  const [targetMarketEntry, setTargetMarketEntry] = useState<string | null>(
+    null,
+  );
   const [targetEntryError, setTargetEntryError] = useState<string | null>(null);
-  
+
   // Shadow data - previous version's values for comparison
-  const [shadowData, setShadowData] = useState<Record<number, { volume: number | null; nsp: number | null; cogs: number | null }>>({});
-  
+  const [shadowData, setShadowData] = useState<
+    Record<
+      number,
+      { volume: number | null; nsp: number | null; cogs: number | null }
+    >
+  >({});
+
   // Use group ID for Version History (used in both create and edit flows)
-  const [useGroupIdForHistory, setUseGroupIdForHistory] = useState<string | null>(null);
-  
-  const { canCreateBusinessCases, canEditBusinessCases, isLoading: permissionsLoading } = usePermissions();
-  
+  const [useGroupIdForHistory, setUseGroupIdForHistory] = useState<
+    string | null
+  >(null);
+
+  const {
+    canCreateBusinessCases,
+    canEditBusinessCases,
+    isLoading: permissionsLoading,
+  } = usePermissions();
+
   // Determine if we're in edit mode (have a groupId)
   const isEditMode = !!groupId;
-  
+
   // Reset state when modal opens/closes or groupId changes
   // Uses refs for callbacks to prevent race conditions from unstable callback references
   useEffect(() => {
     let aborted = false; // Abort flag to prevent stale state updates
-    
+
     if (open) {
       if (groupId) {
         // Edit mode - load existing data
         setStep("data");
         setLoading(true);
         setExistingGroupId(groupId);
-        
+
         getBusinessCaseGroupAction(groupId)
           .then((result) => {
             if (aborted) return; // Don't update state if effect was cleaned up
-            
+
             if (result.error) {
               toastRef.current({
                 title: "Error",
@@ -174,7 +230,8 @@ export function BusinessCaseModal({
               console.error("Business case group returned no data:", groupId);
               toastRef.current({
                 title: "Error",
-                description: "Business case not found or contains no data. It may have been deleted.",
+                description:
+                  "Business case not found or contains no data. It may have been deleted.",
                 variant: "destructive",
               });
               onOpenChangeRef.current(false);
@@ -182,11 +239,25 @@ export function BusinessCaseModal({
             }
             if (result.data && result.data.length > 0) {
               setYearDataArray(result.data);
-              
+
               // Store original values for change tracking
-              const originals: Record<number, { volume: number | null; nsp: number | null; cogs: number | null }> = {};
-              const shadow: Record<number, { volume: number | null; nsp: number | null; cogs: number | null }> = {};
-              
+              const originals: Record<
+                number,
+                {
+                  volume: number | null;
+                  nsp: number | null;
+                  cogs: number | null;
+                }
+              > = {};
+              const shadow: Record<
+                number,
+                {
+                  volume: number | null;
+                  nsp: number | null;
+                  cogs: number | null;
+                }
+              > = {};
+
               result.data.forEach((year) => {
                 originals[year.year_offset] = {
                   volume: year.volume,
@@ -199,24 +270,30 @@ export function BusinessCaseModal({
                   cogs: year.cogs_per_unit,
                 };
               });
-              
+
               setOriginalValues(originals);
               setShadowData(shadow);
               setChangedCells(new Set());
-              
+
               // Extract metadata from first year
               const firstYear = result.data[0];
               if (firstYear) {
-                setTargetMarketEntry(firstYear.target_market_entry_fy || firstYear.effective_start_fiscal_year || null);
+                setTargetMarketEntry(
+                  firstYear.target_market_entry_fy ||
+                    firstYear.effective_start_fiscal_year ||
+                    null,
+                );
                 // Store use group ID for Version History
-                setUseGroupIdForHistory(firstYear.formulation_country_use_group_id || null);
+                setUseGroupIdForHistory(
+                  firstYear.formulation_country_use_group_id || null,
+                );
                 // Note: assumptions would need to be fetched separately or added to the view
               }
             }
           })
           .catch((error) => {
             if (aborted) return; // Don't update state if effect was cleaned up
-            
+
             toastRef.current({
               title: "Error",
               description: `Failed to load business case: ${error.message}`,
@@ -248,17 +325,25 @@ export function BusinessCaseModal({
           business_case_name: "",
           change_reason: "",
         });
-        
+
         Promise.all([getFormulationsAction(), getCountriesAction()])
           .then(([formResult, countryResult]) => {
             if (aborted) return; // Don't update state if effect was cleaned up
-            
+
             if (formResult.error) {
-              toastRef.current({ title: "Error", description: formResult.error, variant: "destructive" });
+              toastRef.current({
+                title: "Error",
+                description: formResult.error,
+                variant: "destructive",
+              });
               return;
             }
             if (countryResult.error) {
-              toastRef.current({ title: "Error", description: countryResult.error, variant: "destructive" });
+              toastRef.current({
+                title: "Error",
+                description: countryResult.error,
+                variant: "destructive",
+              });
               return;
             }
             if (formResult.data) {
@@ -269,7 +354,7 @@ export function BusinessCaseModal({
           })
           .catch((error) => {
             if (aborted) return; // Don't update state if effect was cleaned up
-            
+
             toastRef.current({
               title: "Error",
               description: `Failed to load data: ${error.message}`,
@@ -293,7 +378,7 @@ export function BusinessCaseModal({
       setFocusedInputs(new Set());
       setTargetEntryError(null);
     }
-    
+
     // Cleanup function: abort any pending state updates when effect re-runs or unmounts
     return () => {
       aborted = true;
@@ -315,9 +400,12 @@ export function BusinessCaseModal({
             return;
           }
           if (fcData && fcData.length > 0) {
-            const formulationIds = fcData.map((fc: any) => fc.formulation_id).filter(Boolean) as string[];
-            const filteredFormulations = allFormulations.filter(f => 
-              f.formulation_id && formulationIds.includes(f.formulation_id)
+            const formulationIds = fcData
+              .map((fc: any) => fc.formulation_id)
+              .filter(Boolean) as string[];
+            const filteredFormulations = allFormulations.filter(
+              (f) =>
+                f.formulation_id && formulationIds.includes(f.formulation_id),
             );
             setFormulations(filteredFormulations);
           } else {
@@ -343,13 +431,15 @@ export function BusinessCaseModal({
             setUseGroupOptions([]);
             return;
           }
-          
-          const { data: useGroups, error } = await supabase
+
+          const { data: useGroups, error } = (await supabase
             .from("formulation_country_use_group")
-            .select("formulation_country_use_group_id, use_group_name, use_group_variant, target_market_entry_fy")
+            .select(
+              "formulation_country_use_group_id, use_group_name, use_group_variant, target_market_entry_fy",
+            )
             .eq("formulation_country_id", fcData.formulation_country_id)
-            .eq("is_active", true) as any;
-          
+            .eq("is_active", true)) as any;
+
           if (error) {
             console.error("Failed to load use groups:", error);
             setUseGroupOptions([]);
@@ -404,18 +494,24 @@ export function BusinessCaseModal({
 
         const targetEntries = (useGroups as any[])
           .map((ug: any) => ug.target_market_entry_fy)
-          .filter((entry): entry is string => entry !== null && entry !== undefined);
+          .filter(
+            (entry): entry is string => entry !== null && entry !== undefined,
+          );
 
         if (targetEntries.length === 0) {
-          setTargetEntryError("Selected use groups do not have effective fiscal year start set");
+          setTargetEntryError(
+            "Selected use groups do not have effective fiscal year start set",
+          );
           setTargetMarketEntry(null);
           return;
         }
 
         const uniqueEntries = Array.from(new Set(targetEntries));
-        
+
         if (uniqueEntries.length > 1) {
-          setTargetEntryError(`All selected use groups must have the same effective fiscal year start. Found values: ${uniqueEntries.join(", ")}`);
+          setTargetEntryError(
+            `All selected use groups must have the same effective fiscal year start. Found values: ${uniqueEntries.join(", ")}`,
+          );
           setTargetMarketEntry(null);
         } else {
           setTargetMarketEntry(uniqueEntries[0]);
@@ -427,13 +523,15 @@ export function BusinessCaseModal({
   // Filtered formulations based on search
   const filteredFormulations = useMemo(() => {
     if (!formulationSearch.trim()) return formulations;
-    
+
     const search = formulationSearch.toLowerCase().trim();
     return formulations.filter((f) => {
       const name = ("product_name" in f ? f.product_name : null) || "";
       const code = f.formulation_code || "";
-      const activeIngredients = ("active_ingredients" in f ? f.active_ingredients : null) || "";
-      const category = ("product_category" in f ? f.product_category : null) || "";
+      const activeIngredients =
+        ("active_ingredients" in f ? f.active_ingredients : null) || "";
+      const category =
+        ("product_category" in f ? f.product_category : null) || "";
       return (
         name.toLowerCase().includes(search) ||
         code.toLowerCase().includes(search) ||
@@ -449,27 +547,30 @@ export function BusinessCaseModal({
       // Use effective_start_fiscal_year from loaded data, with fallback to target_market_entry_fy
       const effectiveStart = yearDataArray[0]?.effective_start_fiscal_year;
       const targetEntryFallback = yearDataArray[0]?.target_market_entry_fy;
-      
+
       // Try effective_start_fiscal_year first
       let match = effectiveStart?.match(/FY(\d{2})/);
-      
+
       // Fallback to target_market_entry_fy if effective_start_fiscal_year is missing
       if (!match && targetEntryFallback) {
         match = targetEntryFallback.match(/FY(\d{2})/);
       }
-      
+
       // Final fallback: use current fiscal year if neither field is available
       // This handles legacy data that predates the effective_start_fiscal_year column
       if (!match) {
-        console.warn("Business case missing effective_start_fiscal_year and target_market_entry_fy, using current fiscal year as fallback");
+        console.warn(
+          "Business case missing effective_start_fiscal_year and target_market_entry_fy, using current fiscal year as fallback",
+        );
         return Array.from({ length: 10 }, (_, i) => ({
           yearOffset: i + 1,
           fiscalYear: `FY${String(CURRENT_FISCAL_YEAR + i).padStart(2, "0")}`,
         }));
       }
-      
+
       const startYear = parseInt(match[1], 10);
-      const effectiveStartYear = startYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : startYear;
+      const effectiveStartYear =
+        startYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : startYear;
       return Array.from({ length: 10 }, (_, i) => ({
         yearOffset: i + 1,
         fiscalYear: `FY${String(effectiveStartYear + i).padStart(2, "0")}`,
@@ -478,7 +579,8 @@ export function BusinessCaseModal({
       const match = targetMarketEntry.match(/FY(\d{2})/);
       if (!match) return [];
       const startYear = parseInt(match[1], 10);
-      const effectiveStartYear = startYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : startYear;
+      const effectiveStartYear =
+        startYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : startYear;
       return Array.from({ length: 10 }, (_, i) => ({
         yearOffset: i + 1,
         fiscalYear: `FY${String(effectiveStartYear + i).padStart(2, "0")}`,
@@ -488,20 +590,40 @@ export function BusinessCaseModal({
   }, [isEditMode, yearDataArray, targetMarketEntry]);
 
   // Get metadata for display
-  const selectedFormulation = formulations.find((f) => f.formulation_id === formData.formulation_id);
-  const selectedCountry = countries.find((c) => c.country_id === formData.country_id);
-  const uom = isEditMode ? (yearDataArray[0]?.uom || "L") : (selectedFormulation?.uom || "L");
-  const formulationName = isEditMode ? (yearDataArray[0]?.formulation_name || "") : 
-    (selectedFormulation && "product_name" in selectedFormulation ? selectedFormulation.product_name : selectedFormulation?.formulation_code || "");
-  const countryName = isEditMode ? (yearDataArray[0]?.country_name || "") : (selectedCountry?.country_name || "");
-  const useGroupName = isEditMode ? (yearDataArray[0]?.use_group_name || yearDataArray[0]?.use_group_variant || "") : "";
+  const selectedFormulation = formulations.find(
+    (f) => f.formulation_id === formData.formulation_id,
+  );
+  const selectedCountry = countries.find(
+    (c) => c.country_id === formData.country_id,
+  );
+  const uom = isEditMode
+    ? yearDataArray[0]?.uom || "L"
+    : selectedFormulation?.uom || "L";
+  const formulationName = isEditMode
+    ? yearDataArray[0]?.formulation_name || ""
+    : selectedFormulation && "product_name" in selectedFormulation
+      ? selectedFormulation.product_name
+      : selectedFormulation?.formulation_code || "";
+  const countryName = isEditMode
+    ? yearDataArray[0]?.country_name || ""
+    : selectedCountry?.country_name || "";
+  const useGroupName = isEditMode
+    ? yearDataArray[0]?.use_group_name ||
+      yearDataArray[0]?.use_group_variant ||
+      ""
+    : "";
 
   // Handle Next button (create flow)
   const handleNext = async () => {
-    if (!formData.country_id || !formData.formulation_id || formData.use_group_ids.length === 0) {
+    if (
+      !formData.country_id ||
+      !formData.formulation_id ||
+      formData.use_group_ids.length === 0
+    ) {
       toast({
         title: "Validation Error",
-        description: "Please select country, formulation, and at least one use group",
+        description:
+          "Please select country, formulation, and at least one use group",
         variant: "destructive",
       });
       return;
@@ -519,7 +641,8 @@ export function BusinessCaseModal({
     if (!targetMarketEntry) {
       toast({
         title: "Validation Error",
-        description: "Selected use groups do not have effective fiscal year start set",
+        description:
+          "Selected use groups do not have effective fiscal year start set",
         variant: "destructive",
       });
       return;
@@ -529,7 +652,7 @@ export function BusinessCaseModal({
     const result = await checkExistingBusinessCaseAction(
       formData.formulation_id,
       formData.country_id,
-      formData.use_group_ids[0]
+      formData.use_group_ids[0],
     );
 
     if (result.error) {
@@ -543,13 +666,19 @@ export function BusinessCaseModal({
 
     if (result.data) {
       setExistingGroupId(result.data);
-      
+
       // Load existing business case data as shadow values
       const existingDataResult = await getBusinessCaseGroupAction(result.data);
       if (existingDataResult.data && existingDataResult.data.length > 0) {
-        const shadow: Record<number, { volume: number | null; nsp: number | null; cogs: number | null }> = {};
-        const prefill: Record<number, { volume: string; nsp: string; cogs: string }> = {};
-        
+        const shadow: Record<
+          number,
+          { volume: number | null; nsp: number | null; cogs: number | null }
+        > = {};
+        const prefill: Record<
+          number,
+          { volume: string; nsp: string; cogs: string }
+        > = {};
+
         existingDataResult.data.forEach((year: any) => {
           shadow[year.year_offset] = {
             volume: year.volume,
@@ -562,20 +691,21 @@ export function BusinessCaseModal({
             cogs: year.cogs_per_unit?.toString() || "",
           };
         });
-        
+
         setShadowData(shadow);
         setYearDataRecord(prefill);
-        
+
         // Store use group ID for Version History
         const firstYear = existingDataResult.data[0];
         if (firstYear?.formulation_country_use_group_id) {
           setUseGroupIdForHistory(firstYear.formulation_country_use_group_id);
         }
       }
-      
+
       toast({
         title: "Existing Business Case Found",
-        description: "Previous values are shown as reference. Modify and save to create a new version.",
+        description:
+          "Previous values are shown as reference. Modify and save to create a new version.",
       });
     } else {
       setShadowData({});
@@ -585,22 +715,25 @@ export function BusinessCaseModal({
   };
 
   // Handle cell value change (edit mode)
-  const handleCellChange = (yearOffset: number, field: "volume" | "nsp" | "cogs_per_unit", value: string) => {
+  const handleCellChange = (
+    yearOffset: number,
+    field: "volume" | "nsp" | "cogs_per_unit",
+    value: string,
+  ) => {
     const numValue = value === "" ? null : parseFloat(value);
-    
+
     setYearDataArray((prev) =>
       prev.map((year) =>
-        year.year_offset === yearOffset
-          ? { ...year, [field]: numValue }
-          : year
-      )
+        year.year_offset === yearOffset ? { ...year, [field]: numValue } : year,
+      ),
     );
 
     // Update change tracking
     const cellKey = `${yearOffset}_${field}`;
     const originalField = field === "cogs_per_unit" ? "cogs" : field;
-    const original = originalValues[yearOffset]?.[originalField as "volume" | "nsp" | "cogs"];
-    
+    const original =
+      originalValues[yearOffset]?.[originalField as "volume" | "nsp" | "cogs"];
+
     if (numValue !== original) {
       setChangedCells((prev) => new Set(prev).add(cellKey));
     } else {
@@ -643,7 +776,7 @@ export function BusinessCaseModal({
       return { revenue, margin, marginPercent };
     }
   };
-  
+
   // Helper to convert volume/weight for display based on UOM
   const convertQuantityForDisplay = (value: number) => {
     const productIsWet = isWetProduct(uom);
@@ -652,7 +785,7 @@ export function BusinessCaseModal({
     if (productIsDry) return convertWeight(value);
     return value;
   };
-  
+
   // Helper to convert quantity back to base units (L/KG) for storage
   const convertQuantityToBase = (value: number) => {
     const productIsWet = isWetProduct(uom);
@@ -661,13 +794,13 @@ export function BusinessCaseModal({
     if (productIsDry) return toKG(value);
     return value;
   };
-  
+
   // Helper to convert per-unit price for display (NSP, COGS)
   // EUR/L → USD/GAL (or whatever user prefers)
   const convertPerUnitForDisplay = (eurValue: number) => {
     return convertPerUnit(eurValue, uom);
   };
-  
+
   // Helper to convert per-unit price back to EUR/base-unit for storage
   // USD/GAL → EUR/L (reverse of convertPerUnit)
   const convertPerUnitToBase = (userValue: number) => {
@@ -678,7 +811,7 @@ export function BusinessCaseModal({
     const productIsDry = isDryProduct(uom);
     const VOLUME_TO_GAL = 0.264172;
     const WEIGHT_TO_LB = 2.20462;
-    
+
     if (productIsWet && preferences.volumeUnit === "GAL") {
       return eurValue * VOLUME_TO_GAL; // Reverse: multiply instead of divide
     }
@@ -687,19 +820,23 @@ export function BusinessCaseModal({
     }
     return eurValue;
   };
-  
+
   // Get the display unit based on UOM and user preferences
   const displayUnit = getDisplayUnit(uom);
 
   // Handle save
   const handleSave = () => {
-    const hasRequiredPermission = existingGroupId || isEditMode ? canEditBusinessCases : canCreateBusinessCases;
+    const hasRequiredPermission =
+      existingGroupId || isEditMode
+        ? canEditBusinessCases
+        : canCreateBusinessCases;
     if (!hasRequiredPermission) {
       toast({
         title: "Permission Denied",
-        description: existingGroupId || isEditMode
-          ? "You don't have permission to edit business cases"
-          : "You don't have permission to create business cases",
+        description:
+          existingGroupId || isEditMode
+            ? "You don't have permission to edit business cases"
+            : "You don't have permission to create business cases",
         variant: "destructive",
       });
       return;
@@ -707,17 +844,18 @@ export function BusinessCaseModal({
 
     // Validate data
     const missingData: string[] = [];
-    
+
     // Change reason is required when updating existing business case
     if ((existingGroupId || isEditMode) && !formData.change_reason.trim()) {
       toast({
         title: "Reason Required",
-        description: "Please provide a reason for this update for audit tracking.",
+        description:
+          "Please provide a reason for this update for audit tracking.",
         variant: "destructive",
       });
       return;
     }
-    
+
     if (isEditMode) {
       yearDataArray.forEach((year) => {
         if (!year.volume || year.volume <= 0) {
@@ -742,7 +880,11 @@ export function BusinessCaseModal({
     if (missingData.length > 0) {
       toast({
         title: "Validation Error",
-        description: missingData.slice(0, 3).join("\n") + (missingData.length > 3 ? `\n...and ${missingData.length - 3} more` : ""),
+        description:
+          missingData.slice(0, 3).join("\n") +
+          (missingData.length > 3
+            ? `\n...and ${missingData.length - 3} more`
+            : ""),
         variant: "destructive",
       });
       return;
@@ -752,20 +894,32 @@ export function BusinessCaseModal({
       if (isEditMode && groupId) {
         // Edit mode - update existing
         const formDataToSubmit = new FormData();
-        
+
         yearDataArray.forEach((year) => {
-          formDataToSubmit.append(`year_${year.year_offset}_volume`, String(year.volume || 0));
-          formDataToSubmit.append(`year_${year.year_offset}_nsp`, String(year.nsp || 0));
+          formDataToSubmit.append(
+            `year_${year.year_offset}_volume`,
+            String(year.volume || 0),
+          );
+          formDataToSubmit.append(
+            `year_${year.year_offset}_nsp`,
+            String(year.nsp || 0),
+          );
           if (year.cogs_per_unit !== null && year.cogs_per_unit !== undefined) {
-            formDataToSubmit.append(`year_${year.year_offset}_cogs`, String(year.cogs_per_unit));
+            formDataToSubmit.append(
+              `year_${year.year_offset}_cogs`,
+              String(year.cogs_per_unit),
+            );
           }
         });
-        
+
         if (formData.change_reason) {
           formDataToSubmit.append("change_reason", formData.change_reason);
         }
 
-        const result = await updateBusinessCaseGroupAction(groupId, formDataToSubmit);
+        const result = await updateBusinessCaseGroupAction(
+          groupId,
+          formDataToSubmit,
+        );
 
         if (result.error) {
           toast({
@@ -776,7 +930,8 @@ export function BusinessCaseModal({
         } else {
           toast({
             title: "New Version Created",
-            description: "Business case version saved successfully. Previous version archived.",
+            description:
+              "Business case version saved successfully. Previous version archived.",
           });
           onOpenChange(false);
           if (onSuccess) onSuccess();
@@ -790,7 +945,10 @@ export function BusinessCaseModal({
           formDataToSubmit.append("use_group_ids", id);
         });
         if (formData.business_case_name) {
-          formDataToSubmit.append("business_case_name", formData.business_case_name);
+          formDataToSubmit.append(
+            "business_case_name",
+            formData.business_case_name,
+          );
         }
         if (formData.change_reason) {
           formDataToSubmit.append("change_reason", formData.change_reason);
@@ -798,7 +956,10 @@ export function BusinessCaseModal({
 
         for (let yearOffset = 1; yearOffset <= 10; yearOffset++) {
           const year = yearDataRecord[yearOffset];
-          formDataToSubmit.append(`year_${yearOffset}_volume`, year?.volume || "0");
+          formDataToSubmit.append(
+            `year_${yearOffset}_volume`,
+            year?.volume || "0",
+          );
           formDataToSubmit.append(`year_${yearOffset}_nsp`, year?.nsp || "0");
           if (year?.cogs && parseFloat(year.cogs) > 0) {
             formDataToSubmit.append(`year_${yearOffset}_cogs`, year.cogs);
@@ -815,9 +976,11 @@ export function BusinessCaseModal({
           });
         } else {
           toast({
-            title: existingGroupId ? "New Version Created" : "Business Case Created",
-            description: existingGroupId 
-              ? "New version saved. Previous version has been archived." 
+            title: existingGroupId
+              ? "New Version Created"
+              : "Business Case Created",
+            description: existingGroupId
+              ? "New version saved. Previous version has been archived."
               : "Business case created successfully.",
           });
           onOpenChange(false);
@@ -833,17 +996,18 @@ export function BusinessCaseModal({
       // Use effective_start_fiscal_year, fallback to target_market_entry_fy, then current FY
       const effectiveStart = yearDataArray[0]?.effective_start_fiscal_year;
       if (effectiveStart) return effectiveStart;
-      
+
       const targetEntryFallback = yearDataArray[0]?.target_market_entry_fy;
       if (targetEntryFallback) {
         const match = targetEntryFallback.match(/FY(\d{2})/);
         if (match) {
           const startYear = parseInt(match[1], 10);
-          const effectiveStartYear = startYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : startYear;
+          const effectiveStartYear =
+            startYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : startYear;
           return `FY${String(effectiveStartYear).padStart(2, "0")}`;
         }
       }
-      
+
       // Final fallback for legacy data
       return `FY${String(CURRENT_FISCAL_YEAR).padStart(2, "0")}`;
     }
@@ -851,7 +1015,8 @@ export function BusinessCaseModal({
     const match = targetMarketEntry.match(/FY(\d{2})/);
     if (!match) return null;
     const startYear = parseInt(match[1], 10);
-    const effectiveStartYear = startYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : startYear;
+    const effectiveStartYear =
+      startYear < CURRENT_FISCAL_YEAR ? CURRENT_FISCAL_YEAR : startYear;
     return `FY${String(effectiveStartYear).padStart(2, "0")}`;
   }, [isEditMode, yearDataArray, targetMarketEntry]);
 
@@ -861,11 +1026,15 @@ export function BusinessCaseModal({
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Loading...</DialogTitle>
-            <DialogDescription>Please wait while we load the business case data.</DialogDescription>
+            <DialogDescription>
+              Please wait while we load the business case data.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-8 text-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-            <p className="text-muted-foreground">Loading business case data...</p>
+            <p className="text-muted-foreground">
+              Loading business case data...
+            </p>
           </div>
         </DialogContent>
       </Dialog>
@@ -875,17 +1044,27 @@ export function BusinessCaseModal({
   // Guard: If we're in edit mode but have no data, something went wrong
   // This can happen briefly during state transitions or if data failed to load
   if (isEditMode && step === "data" && yearDataArray.length === 0 && !loading) {
-    console.error("BusinessCaseModal: Edit mode with no data loaded. groupId:", groupId);
+    console.error(
+      "BusinessCaseModal: Edit mode with no data loaded. groupId:",
+      groupId,
+    );
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Error Loading Business Case</DialogTitle>
-            <DialogDescription>Unable to load business case data. The business case may have been deleted or is unavailable.</DialogDescription>
+            <DialogDescription>
+              Unable to load business case data. The business case may have been
+              deleted or is unavailable.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-8 text-center">
-            <p className="text-muted-foreground mb-4">Please close this dialog and try again.</p>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+            <p className="text-muted-foreground mb-4">
+              Please close this dialog and try again.
+            </p>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -894,22 +1073,33 @@ export function BusinessCaseModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={step === "data" ? "max-w-[90vw] max-h-[90vh] overflow-y-auto" : "max-w-4xl max-h-[90vh] overflow-y-auto"}>
+      <DialogContent
+        className={
+          step === "data"
+            ? "max-w-[90vw] max-h-[90vh] overflow-y-auto"
+            : "max-w-4xl max-h-[90vh] overflow-y-auto"
+        }
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isEditMode || existingGroupId ? (formulationName ? `Edit Business Case - ${formulationName}` : "Edit Business Case") : "Create Business Case"}
+            {isEditMode || existingGroupId
+              ? formulationName
+                ? `Edit Business Case - ${formulationName}`
+                : "Edit Business Case"
+              : "Create Business Case"}
             <Badge variant="outline" className="text-xs font-normal gap-1">
               <GitBranch className="h-3 w-3" />
-              {isEditMode || existingGroupId ? "Creates New Version" : "Version Controlled"}
+              {isEditMode || existingGroupId
+                ? "Creates New Version"
+                : "Version Controlled"}
             </Badge>
           </DialogTitle>
           <DialogDescription>
-            {isEditMode 
+            {isEditMode
               ? "Update the 10-year financial projections for this business case. Changes create a new version."
-              : existingGroupId 
+              : existingGroupId
                 ? "Create a new version of this business case with updated projections."
-                : "Define 10-year revenue and margin projections for a formulation in a specific market."
-            }
+                : "Define 10-year revenue and margin projections for a formulation in a specific market."}
           </DialogDescription>
         </DialogHeader>
 
@@ -920,13 +1110,20 @@ export function BusinessCaseModal({
               {/* Country Selector */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">1</span>
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                    1
+                  </span>
                   Country <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={formData.country_id}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, country_id: value, formulation_id: "", use_group_ids: [] })
+                    setFormData({
+                      ...formData,
+                      country_id: value,
+                      formulation_id: "",
+                      use_group_ids: [],
+                    })
                   }
                 >
                   <SelectTrigger className="w-full">
@@ -938,7 +1135,9 @@ export function BusinessCaseModal({
                         <div className="flex items-center gap-2">
                           <span>{c.country_name}</span>
                           {c.currency_code && (
-                            <span className="text-xs text-muted-foreground">({c.currency_code})</span>
+                            <span className="text-xs text-muted-foreground">
+                              ({c.currency_code})
+                            </span>
                           )}
                         </div>
                       </SelectItem>
@@ -950,73 +1149,111 @@ export function BusinessCaseModal({
               {/* Formulation Selector */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">2</span>
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                    2
+                  </span>
                   Formulation <span className="text-destructive">*</span>
                 </Label>
-                
-{/* Search input */}
+
+                {/* Search input */}
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder={!formData.country_id ? "Select country first" : "Search formulations by name, code, or ingredients..."}
+                    placeholder={
+                      !formData.country_id
+                        ? "Select country first"
+                        : "Search formulations by name, code, or ingredients..."
+                    }
                     value={formulationSearch}
                     onChange={(e) => setFormulationSearch(e.target.value)}
                     disabled={!formData.country_id}
                     className="pl-9"
                   />
                 </div>
-                
+
                 {/* Selected formulation display */}
-                {formData.formulation_id && (() => {
-                  const sel = formulations.find(f => f.formulation_id === formData.formulation_id);
-                  if (!sel) return null;
-                  const name = "product_name" in sel ? sel.product_name : null;
-                  const category = "product_category" in sel ? sel.product_category : null;
-                  const activeIngredients = "active_ingredients" in sel ? sel.active_ingredients : null;
-                  return (
-                    <div className="flex items-center gap-2 p-2 rounded-md bg-primary/10 border border-primary/20">
-                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <span className="font-medium text-sm">{name || sel.formulation_code}</span>
-                        <span className="text-xs text-muted-foreground ml-2">({sel.formulation_code})</span>
+                {formData.formulation_id &&
+                  (() => {
+                    const sel = formulations.find(
+                      (f) => f.formulation_id === formData.formulation_id,
+                    );
+                    if (!sel) return null;
+                    const name =
+                      "product_name" in sel ? sel.product_name : null;
+                    const category =
+                      "product_category" in sel ? sel.product_category : null;
+                    const activeIngredients =
+                      "active_ingredients" in sel
+                        ? sel.active_ingredients
+                        : null;
+                    return (
+                      <div className="flex items-center gap-2 p-2 rounded-md bg-primary/10 border border-primary/20">
+                        <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-sm">
+                            {name || sel.formulation_code}
+                          </span>
+                          <span className="text-xs text-muted-foreground ml-2">
+                            ({sel.formulation_code})
+                          </span>
+                        </div>
+                        {category && (
+                          <Badge variant="secondary" className="text-xs">
+                            {category}
+                          </Badge>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() =>
+                            setFormData({
+                              ...formData,
+                              formulation_id: "",
+                              use_group_ids: [],
+                            })
+                          }
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
                       </div>
-                      {category && <Badge variant="secondary" className="text-xs">{category}</Badge>}
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-6 w-6 p-0"
-                        onClick={() => setFormData({ ...formData, formulation_id: "", use_group_ids: [] })}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()}
 
                 {/* Formulation list */}
                 {formData.country_id && !formData.formulation_id && (
                   <div className="border rounded-md max-h-[280px] overflow-y-auto">
                     {filteredFormulations.length === 0 ? (
                       <div className="p-4 text-sm text-muted-foreground text-center">
-                        {formulations.length === 0 
+                        {formulations.length === 0
                           ? "No formulations available for this country"
                           : "No formulations match your search"}
                       </div>
                     ) : (
                       <div className="divide-y" role="listbox">
                         {filteredFormulations.map((f) => {
-                          const name = "product_name" in f ? f.product_name : null;
-                          const category = "product_category" in f ? f.product_category : null;
-                          const formType = "formulation_type" in f ? f.formulation_type : null;
-                          const activeIngredients = "active_ingredients" in f ? f.active_ingredients : null;
-                          
+                          const name =
+                            "product_name" in f ? f.product_name : null;
+                          const category =
+                            "product_category" in f ? f.product_category : null;
+                          const formType =
+                            "formulation_type" in f ? f.formulation_type : null;
+                          const activeIngredients =
+                            "active_ingredients" in f
+                              ? f.active_ingredients
+                              : null;
+
                           return (
                             <button
                               type="button"
                               key={f.formulation_id || f.formulation_code}
                               className="w-full p-3 hover:bg-accent cursor-pointer transition-colors text-left focus:outline-none focus:bg-accent"
                               onClick={() => {
-                                setFormData({ ...formData, formulation_id: f.formulation_id || "", use_group_ids: [] });
+                                setFormData({
+                                  ...formData,
+                                  formulation_id: f.formulation_id || "",
+                                  use_group_ids: [],
+                                });
                                 setFormulationSearch("");
                               }}
                               role="option"
@@ -1026,8 +1263,12 @@ export function BusinessCaseModal({
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2">
                                     <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                    <span className="font-medium text-sm">{name || f.formulation_code}</span>
-                                    <span className="text-xs text-muted-foreground">({f.formulation_code})</span>
+                                    <span className="font-medium text-sm">
+                                      {name || f.formulation_code}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                      ({f.formulation_code})
+                                    </span>
                                   </div>
                                   {activeIngredients && (
                                     <p className="text-xs text-muted-foreground mt-1 line-clamp-1 ml-6">
@@ -1037,17 +1278,26 @@ export function BusinessCaseModal({
                                 </div>
                                 <div className="flex items-center gap-1.5 flex-shrink-0">
                                   {category && (
-                                    <Badge variant="outline" className="text-xs">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
                                       {category}
                                     </Badge>
                                   )}
                                   {formType && (
-                                    <Badge variant="secondary" className="text-xs">
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-xs"
+                                    >
                                       {formType}
                                     </Badge>
                                   )}
                                   {f.uom && (
-                                    <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                    >
                                       {f.uom}
                                     </Badge>
                                   )}
@@ -1065,10 +1315,12 @@ export function BusinessCaseModal({
               {/* Use Group Selector */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">3</span>
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                    3
+                  </span>
                   Use Group <span className="text-destructive">*</span>
                 </Label>
-                
+
                 {!formData.country_id || !formData.formulation_id ? (
                   <div className="px-3 py-4 border rounded-md bg-muted/30 text-sm text-muted-foreground text-center">
                     Select country and formulation first
@@ -1082,51 +1334,73 @@ export function BusinessCaseModal({
                     {useGroupOptions.map((ug) => {
                       const isSelected = formData.use_group_ids.includes(ug.id);
                       return (
-                        <Card 
+                        <Card
                           key={ug.id}
                           className={cn(
                             "cursor-pointer transition-all hover:shadow-sm",
-                            isSelected && "ring-2 ring-primary bg-primary/5"
+                            isSelected && "ring-2 ring-primary bg-primary/5",
                           )}
                           onClick={() => {
                             const newSelected = isSelected
-                              ? formData.use_group_ids.filter((id) => id !== ug.id)
+                              ? formData.use_group_ids.filter(
+                                  (id) => id !== ug.id,
+                                )
                               : [...formData.use_group_ids, ug.id];
-                            setFormData({ ...formData, use_group_ids: newSelected });
+                            setFormData({
+                              ...formData,
+                              use_group_ids: newSelected,
+                            });
                           }}
                         >
                           <CardContent className="p-3">
                             <div className="flex items-start gap-3">
-                              <Checkbox 
+                              <Checkbox
                                 checked={isSelected}
                                 className="mt-0.5"
                                 onCheckedChange={(checked) => {
                                   const newSelected = checked
                                     ? [...formData.use_group_ids, ug.id]
-                                    : formData.use_group_ids.filter((id) => id !== ug.id);
-                                  setFormData({ ...formData, use_group_ids: newSelected });
+                                    : formData.use_group_ids.filter(
+                                        (id) => id !== ug.id,
+                                      );
+                                  setFormData({
+                                    ...formData,
+                                    use_group_ids: newSelected,
+                                  });
                                 }}
                               />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <Badge variant="outline" className="font-mono">
+                                  <Badge
+                                    variant="outline"
+                                    className="font-mono"
+                                  >
                                     <Tag className="h-3 w-3 mr-1" />
                                     {ug.variant}
                                   </Badge>
                                   {ug.name && (
-                                    <span className="font-medium text-sm truncate">{ug.name}</span>
+                                    <span className="font-medium text-sm truncate">
+                                      {ug.name}
+                                    </span>
                                   )}
                                 </div>
                                 {ug.targetMarketEntry ? (
                                   <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                                     <Calendar className="h-3 w-3" />
                                     <span>Effective FY Start:</span>
-                                    <Badge variant="secondary" className="text-xs font-medium">{ug.targetMarketEntry}</Badge>
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-xs font-medium"
+                                    >
+                                      {ug.targetMarketEntry}
+                                    </Badge>
                                   </div>
                                 ) : (
                                   <div className="mt-1.5 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
                                     <Calendar className="h-3 w-3" />
-                                    <span>No effective fiscal year start set</span>
+                                    <span>
+                                      No effective fiscal year start set
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -1142,20 +1416,31 @@ export function BusinessCaseModal({
               {/* Target Entry Summary */}
               {formData.use_group_ids.length > 0 && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Effective Fiscal Year Start</Label>
+                  <Label className="text-sm font-medium">
+                    Effective Fiscal Year Start
+                  </Label>
                   {targetMarketEntry ? (
                     <div className="px-4 py-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        <span className="text-sm font-medium text-green-700 dark:text-green-300">{targetMarketEntry}</span>
-                        {effectiveStartFiscalYear && effectiveStartFiscalYear !== targetMarketEntry && (
-                          <Badge variant="outline" className="text-xs ml-auto">Effective: {effectiveStartFiscalYear}</Badge>
-                        )}
+                        <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                          {targetMarketEntry}
+                        </span>
+                        {effectiveStartFiscalYear &&
+                          effectiveStartFiscalYear !== targetMarketEntry && (
+                            <Badge
+                              variant="outline"
+                              className="text-xs ml-auto"
+                            >
+                              Effective: {effectiveStartFiscalYear}
+                            </Badge>
+                          )}
                       </div>
                     </div>
                   ) : (
                     <div className="px-4 py-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md text-sm text-amber-700 dark:text-amber-300">
-                      Selected use groups do not have effective fiscal year start set
+                      Selected use groups do not have effective fiscal year
+                      start set
                     </div>
                   )}
                   {targetEntryError && (
@@ -1168,10 +1453,17 @@ export function BusinessCaseModal({
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button 
-                onClick={handleNext} 
-                disabled={!!targetEntryError || !targetMarketEntry || permissionsLoading || !canCreateBusinessCases}
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleNext}
+                disabled={
+                  !!targetEntryError ||
+                  !targetMarketEntry ||
+                  permissionsLoading ||
+                  !canCreateBusinessCases
+                }
               >
                 Next →
               </Button>
@@ -1185,7 +1477,8 @@ export function BusinessCaseModal({
                 <Edit3 className="h-4 w-4" />
                 Data
               </TabsTrigger>
-              {(yearDataArray[0]?.formulation_country_use_group_id || useGroupIdForHistory) && (
+              {(yearDataArray[0]?.formulation_country_use_group_id ||
+                useGroupIdForHistory) && (
                 <TabsTrigger value="history" className="gap-2">
                   <History className="h-4 w-4" />
                   Version History
@@ -1199,21 +1492,32 @@ export function BusinessCaseModal({
                 <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded text-sm text-blue-900 dark:text-blue-100 flex items-start gap-2">
                   <GitBranch className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <div>
-                    <strong>{isEditMode ? "Editing existing business case." : "Existing business case found."}</strong> Saving will create a new version and archive the current one. Previous versions are preserved for audit tracking.
+                    <strong>
+                      {isEditMode
+                        ? "Editing existing business case."
+                        : "Existing business case found."}
+                    </strong>{" "}
+                    Saving will create a new version and archive the current
+                    one. Previous versions are preserved for audit tracking.
                   </div>
                 </div>
               )}
 
               {/* Header info */}
               <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>{formulationName} | {countryName} {useGroupName && `| ${useGroupName}`}</span>
+                <span>
+                  {formulationName} | {countryName}{" "}
+                  {useGroupName && `| ${useGroupName}`}
+                </span>
                 <span>Effective FY Start: {effectiveStartFiscalYear}</span>
               </div>
 
               {/* Change indicator */}
               {changedCells.size > 0 && (
                 <div className="text-xs text-amber-600 dark:text-amber-400">
-                  {changedCells.size} {changedCells.size === 1 ? "cell" : "cells"} modified from current version
+                  {changedCells.size}{" "}
+                  {changedCells.size === 1 ? "cell" : "cells"} modified from
+                  current version
                 </div>
               )}
 
@@ -1222,9 +1526,16 @@ export function BusinessCaseModal({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[180px] sticky left-0 bg-background z-10">Metric</TableHead>
+                      <TableHead className="min-w-[180px] sticky left-0 bg-background z-10">
+                        Metric
+                      </TableHead>
                       {fiscalYearColumns.map((col) => (
-                        <TableHead key={col.yearOffset} className="min-w-[100px] text-center">{col.fiscalYear}</TableHead>
+                        <TableHead
+                          key={col.yearOffset}
+                          className="min-w-[100px] text-center"
+                        >
+                          {col.fiscalYear}
+                        </TableHead>
                       ))}
                     </TableRow>
                   </TableHeader>
@@ -1232,13 +1543,21 @@ export function BusinessCaseModal({
                     {/* Shadow row for previous version - Volume */}
                     {Object.keys(shadowData).length > 0 && (
                       <TableRow className="bg-muted/30">
-                        <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">↳ prev</TableCell>
+                        <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">
+                          ↳ prev
+                        </TableCell>
                         {fiscalYearColumns.map((col) => {
-                          const rawVal = shadowData[col.yearOffset]?.volume || 0;
+                          const rawVal =
+                            shadowData[col.yearOffset]?.volume || 0;
                           const displayVal = convertQuantityForDisplay(rawVal);
                           return (
-                            <TableCell key={col.yearOffset} className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums">
-                              {displayVal > 0 ? Math.round(displayVal).toLocaleString() : "-"}
+                            <TableCell
+                              key={col.yearOffset}
+                              className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums"
+                            >
+                              {displayVal > 0
+                                ? Math.round(displayVal).toLocaleString()
+                                : "-"}
                             </TableCell>
                           );
                         })}
@@ -1247,23 +1566,31 @@ export function BusinessCaseModal({
 
                     {/* Volume row */}
                     <TableRow>
-                      <TableCell className="font-medium sticky left-0 bg-background z-10">Volume ({displayUnit})</TableCell>
+                      <TableCell className="font-medium sticky left-0 bg-background z-10">
+                        Volume ({displayUnit})
+                      </TableCell>
                       {fiscalYearColumns.map((col) => {
                         const cellKey = `${col.yearOffset}_volume`;
                         const isChanged = changedCells.has(cellKey);
-                        
+
                         if (isEditMode) {
-                          const year = yearDataArray.find((y) => y.year_offset === col.yearOffset);
+                          const year = yearDataArray.find(
+                            (y) => y.year_offset === col.yearOffset,
+                          );
                           // Convert L/KG to GAL/LB for display
-                          const rawVal = parseFloat(String(year?.volume || 0)) || 0;
-                          const displayValue = convertQuantityForDisplay(rawVal);
+                          const rawVal =
+                            parseFloat(String(year?.volume || 0)) || 0;
+                          const displayValue =
+                            convertQuantityForDisplay(rawVal);
                           const inputKey = `${col.yearOffset}-volume`;
                           const isFocused = focusedInputs.has(inputKey);
                           // Show raw input while typing, formatted when not focused
-                          const inputValue = isFocused && rawInputs[col.yearOffset]?.volume !== undefined
-                            ? rawInputs[col.yearOffset].volume!
-                            : formatVolumeInput(displayValue);
-                          
+                          const inputValue =
+                            isFocused &&
+                            rawInputs[col.yearOffset]?.volume !== undefined
+                              ? rawInputs[col.yearOffset].volume!
+                              : formatVolumeInput(displayValue);
+
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <Input
@@ -1271,14 +1598,19 @@ export function BusinessCaseModal({
                                 inputMode="numeric"
                                 value={inputValue}
                                 onFocus={() => {
-                                  setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                  setFocusedInputs((prev) =>
+                                    new Set(prev).add(inputKey),
+                                  );
                                   // Initialize raw input with current formatted value (without commas)
                                   if (!rawInputs[col.yearOffset]?.volume) {
-                                    setRawInputs(prev => ({
+                                    setRawInputs((prev) => ({
                                       ...prev,
                                       [col.yearOffset]: {
                                         ...prev[col.yearOffset],
-                                        volume: String(displayValue).replace(/,/g, ""),
+                                        volume: String(displayValue).replace(
+                                          /,/g,
+                                          "",
+                                        ),
                                       },
                                     }));
                                   }
@@ -1286,7 +1618,7 @@ export function BusinessCaseModal({
                                 onChange={(e) => {
                                   // Store raw input while typing
                                   const rawValue = e.target.value;
-                                  setRawInputs(prev => ({
+                                  setRawInputs((prev) => ({
                                     ...prev,
                                     [col.yearOffset]: {
                                       ...prev[col.yearOffset],
@@ -1295,43 +1627,64 @@ export function BusinessCaseModal({
                                   }));
                                 }}
                                 onBlur={() => {
-                                  setFocusedInputs(prev => {
+                                  setFocusedInputs((prev) => {
                                     const next = new Set(prev);
                                     next.delete(inputKey);
                                     return next;
                                   });
                                   // Parse and update the actual value
-                                  const rawValue = rawInputs[col.yearOffset]?.volume || String(displayValue).replace(/,/g, "");
-                                  const inputVal = parseFormattedNumber(rawValue);
-                                  const baseVal = convertQuantityToBase(inputVal);
-                                  handleCellChange(col.yearOffset, "volume", String(Math.round(baseVal)));
+                                  const rawValue =
+                                    rawInputs[col.yearOffset]?.volume ||
+                                    String(displayValue).replace(/,/g, "");
+                                  const inputVal =
+                                    parseFormattedNumber(rawValue);
+                                  const baseVal =
+                                    convertQuantityToBase(inputVal);
+                                  handleCellChange(
+                                    col.yearOffset,
+                                    "volume",
+                                    String(Math.round(baseVal)),
+                                  );
                                   // Clear raw input after blur
-                                  setRawInputs(prev => {
+                                  setRawInputs((prev) => {
                                     const next = { ...prev };
                                     if (next[col.yearOffset]) {
                                       delete next[col.yearOffset].volume;
-                                      if (Object.keys(next[col.yearOffset]).length === 0) {
+                                      if (
+                                        Object.keys(next[col.yearOffset])
+                                          .length === 0
+                                      ) {
                                         delete next[col.yearOffset];
                                       }
                                     }
                                     return next;
                                   });
                                 }}
-                                className={cn("h-8 text-sm text-right tabular-nums", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                className={cn(
+                                  "h-8 text-sm text-right tabular-nums",
+                                  isChanged &&
+                                    "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700",
+                                )}
                               />
                             </TableCell>
                           );
                         } else {
                           // Create mode - also convert for display
-                          const rawValue = parseFloat(yearDataRecord[col.yearOffset]?.volume || "0") || 0;
-                          const displayValue = convertQuantityForDisplay(rawValue);
+                          const rawValue =
+                            parseFloat(
+                              yearDataRecord[col.yearOffset]?.volume || "0",
+                            ) || 0;
+                          const displayValue =
+                            convertQuantityForDisplay(rawValue);
                           const inputKey = `${col.yearOffset}-volume`;
                           const isFocused = focusedInputs.has(inputKey);
                           // Show raw input while typing, formatted when not focused
-                          const inputValue = isFocused && rawInputs[col.yearOffset]?.volume !== undefined
-                            ? rawInputs[col.yearOffset].volume!
-                            : formatVolumeInput(displayValue);
-                          
+                          const inputValue =
+                            isFocused &&
+                            rawInputs[col.yearOffset]?.volume !== undefined
+                              ? rawInputs[col.yearOffset].volume!
+                              : formatVolumeInput(displayValue);
+
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <Input
@@ -1340,14 +1693,19 @@ export function BusinessCaseModal({
                                 value={inputValue}
                                 placeholder="0"
                                 onFocus={() => {
-                                  setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                  setFocusedInputs((prev) =>
+                                    new Set(prev).add(inputKey),
+                                  );
                                   // Initialize raw input with current formatted value (without commas)
                                   if (!rawInputs[col.yearOffset]?.volume) {
-                                    setRawInputs(prev => ({
+                                    setRawInputs((prev) => ({
                                       ...prev,
                                       [col.yearOffset]: {
                                         ...prev[col.yearOffset],
-                                        volume: String(displayValue).replace(/,/g, ""),
+                                        volume: String(displayValue).replace(
+                                          /,/g,
+                                          "",
+                                        ),
                                       },
                                     }));
                                   }
@@ -1355,7 +1713,7 @@ export function BusinessCaseModal({
                                 onChange={(e) => {
                                   // Store raw input while typing
                                   const rawValue = e.target.value;
-                                  setRawInputs(prev => ({
+                                  setRawInputs((prev) => ({
                                     ...prev,
                                     [col.yearOffset]: {
                                       ...prev[col.yearOffset],
@@ -1364,30 +1722,41 @@ export function BusinessCaseModal({
                                   }));
                                 }}
                                 onBlur={() => {
-                                  setFocusedInputs(prev => {
+                                  setFocusedInputs((prev) => {
                                     const next = new Set(prev);
                                     next.delete(inputKey);
                                     return next;
                                   });
                                   // Parse and update the actual value
-                                  const rawValue = rawInputs[col.yearOffset]?.volume || String(displayValue).replace(/,/g, "");
-                                  const inputVal = parseFormattedNumber(rawValue);
-                                  const baseVal = convertQuantityToBase(inputVal);
+                                  const rawValue =
+                                    rawInputs[col.yearOffset]?.volume ||
+                                    String(displayValue).replace(/,/g, "");
+                                  const inputVal =
+                                    parseFormattedNumber(rawValue);
+                                  const baseVal =
+                                    convertQuantityToBase(inputVal);
                                   setYearDataRecord({
                                     ...yearDataRecord,
                                     [col.yearOffset]: {
                                       ...yearDataRecord[col.yearOffset],
                                       volume: String(Math.round(baseVal)),
-                                      nsp: yearDataRecord[col.yearOffset]?.nsp || "",
-                                      cogs: yearDataRecord[col.yearOffset]?.cogs || "",
+                                      nsp:
+                                        yearDataRecord[col.yearOffset]?.nsp ||
+                                        "",
+                                      cogs:
+                                        yearDataRecord[col.yearOffset]?.cogs ||
+                                        "",
                                     },
                                   });
                                   // Clear raw input after blur
-                                  setRawInputs(prev => {
+                                  setRawInputs((prev) => {
                                     const next = { ...prev };
                                     if (next[col.yearOffset]) {
                                       delete next[col.yearOffset].volume;
-                                      if (Object.keys(next[col.yearOffset]).length === 0) {
+                                      if (
+                                        Object.keys(next[col.yearOffset])
+                                          .length === 0
+                                      ) {
                                         delete next[col.yearOffset];
                                       }
                                     }
@@ -1405,13 +1774,23 @@ export function BusinessCaseModal({
                     {/* Shadow row for NSP */}
                     {Object.keys(shadowData).length > 0 && (
                       <TableRow className="bg-muted/30">
-                        <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">↳ prev</TableCell>
+                        <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">
+                          ↳ prev
+                        </TableCell>
                         {fiscalYearColumns.map((col) => {
                           const rawVal = shadowData[col.yearOffset]?.nsp || 0;
                           const displayVal = convertPerUnitForDisplay(rawVal);
                           return (
-                            <TableCell key={col.yearOffset} className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums">
-                              {displayVal > 0 ? displayVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"}
+                            <TableCell
+                              key={col.yearOffset}
+                              className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums"
+                            >
+                              {displayVal > 0
+                                ? displayVal.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })
+                                : "-"}
                             </TableCell>
                           );
                         })}
@@ -1420,22 +1799,30 @@ export function BusinessCaseModal({
 
                     {/* NSP row */}
                     <TableRow>
-                      <TableCell className="font-medium sticky left-0 bg-background z-10">NSP ({preferences.currency}/{displayUnit})</TableCell>
+                      <TableCell className="font-medium sticky left-0 bg-background z-10">
+                        NSP ({preferences.currency}/{displayUnit})
+                      </TableCell>
                       {fiscalYearColumns.map((col) => {
                         const cellKey = `${col.yearOffset}_nsp`;
                         const isChanged = changedCells.has(cellKey);
-                        
+
                         if (isEditMode) {
-                          const year = yearDataArray.find((y) => y.year_offset === col.yearOffset);
+                          const year = yearDataArray.find(
+                            (y) => y.year_offset === col.yearOffset,
+                          );
                           // Convert EUR value to display currency/unit
-                          const displayValue = convertPerUnitForDisplay(parseFloat(String(year?.nsp || 0)) || 0);
+                          const displayValue = convertPerUnitForDisplay(
+                            parseFloat(String(year?.nsp || 0)) || 0,
+                          );
                           const inputKey = `${col.yearOffset}-nsp`;
                           const isFocused = focusedInputs.has(inputKey);
                           // Show raw input while typing, formatted when not focused
-                          const inputValue = isFocused && rawInputs[col.yearOffset]?.nsp !== undefined
-                            ? rawInputs[col.yearOffset].nsp!
-                            : formatCurrencyInput(displayValue);
-                          
+                          const inputValue =
+                            isFocused &&
+                            rawInputs[col.yearOffset]?.nsp !== undefined
+                              ? rawInputs[col.yearOffset].nsp!
+                              : formatCurrencyInput(displayValue);
+
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <div className="relative">
@@ -1447,14 +1834,19 @@ export function BusinessCaseModal({
                                   inputMode="decimal"
                                   value={inputValue}
                                   onFocus={() => {
-                                    setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                    setFocusedInputs((prev) =>
+                                      new Set(prev).add(inputKey),
+                                    );
                                     // Initialize raw input with current formatted value (without commas)
                                     if (!rawInputs[col.yearOffset]?.nsp) {
-                                      setRawInputs(prev => ({
+                                      setRawInputs((prev) => ({
                                         ...prev,
                                         [col.yearOffset]: {
                                           ...prev[col.yearOffset],
-                                          nsp: String(displayValue).replace(/,/g, ""),
+                                          nsp: String(displayValue).replace(
+                                            /,/g,
+                                            "",
+                                          ),
                                         },
                                       }));
                                     }
@@ -1462,7 +1854,7 @@ export function BusinessCaseModal({
                                   onChange={(e) => {
                                     // Store raw input while typing
                                     const rawValue = e.target.value;
-                                    setRawInputs(prev => ({
+                                    setRawInputs((prev) => ({
                                       ...prev,
                                       [col.yearOffset]: {
                                         ...prev[col.yearOffset],
@@ -1471,44 +1863,65 @@ export function BusinessCaseModal({
                                     }));
                                   }}
                                   onBlur={() => {
-                                    setFocusedInputs(prev => {
+                                    setFocusedInputs((prev) => {
                                       const next = new Set(prev);
                                       next.delete(inputKey);
                                       return next;
                                     });
                                     // Parse and update the actual value
-                                    const rawValue = rawInputs[col.yearOffset]?.nsp || String(displayValue).replace(/,/g, "");
-                                    const inputVal = parseFormattedNumber(rawValue);
-                                    const baseVal = convertPerUnitToBase(inputVal);
-                                    handleCellChange(col.yearOffset, "nsp", String(baseVal));
+                                    const rawValue =
+                                      rawInputs[col.yearOffset]?.nsp ||
+                                      String(displayValue).replace(/,/g, "");
+                                    const inputVal =
+                                      parseFormattedNumber(rawValue);
+                                    const baseVal =
+                                      convertPerUnitToBase(inputVal);
+                                    handleCellChange(
+                                      col.yearOffset,
+                                      "nsp",
+                                      String(baseVal),
+                                    );
                                     // Clear raw input after blur
-                                    setRawInputs(prev => {
+                                    setRawInputs((prev) => {
                                       const next = { ...prev };
                                       if (next[col.yearOffset]) {
                                         delete next[col.yearOffset].nsp;
-                                        if (Object.keys(next[col.yearOffset]).length === 0) {
+                                        if (
+                                          Object.keys(next[col.yearOffset])
+                                            .length === 0
+                                        ) {
                                           delete next[col.yearOffset];
                                         }
                                       }
                                       return next;
                                     });
                                   }}
-                                  className={cn("h-8 text-sm text-right tabular-nums pl-6", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                  className={cn(
+                                    "h-8 text-sm text-right tabular-nums pl-6",
+                                    isChanged &&
+                                      "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700",
+                                  )}
                                 />
                               </div>
                             </TableCell>
                           );
                         } else {
                           // Create mode - also convert for display
-                          const rawValue = parseFloat(yearDataRecord[col.yearOffset]?.nsp || "0") || 0;
-                          const displayValue = convertPerUnitForDisplay(rawValue);
+                          const rawValue =
+                            parseFloat(
+                              yearDataRecord[col.yearOffset]?.nsp || "0",
+                            ) || 0;
+                          const displayValue =
+                            convertPerUnitForDisplay(rawValue);
                           const inputKey = `${col.yearOffset}-nsp`;
                           const isFocused = focusedInputs.has(inputKey);
                           // Show raw input while typing, formatted when not focused
-                          const inputValue = isFocused && rawInputs[col.yearOffset]?.nsp !== undefined
-                            ? rawInputs[col.yearOffset].nsp!
-                            : formatCurrencyInput(displayValue);
-                          
+                          const inputValue =
+                            isFocused &&
+                            rawInputs[col.yearOffset]?.nsp !== undefined
+                              ? rawInputs[col.yearOffset].nsp!
+                              : formatCurrencyInput(displayValue);
+
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <div className="relative">
@@ -1521,14 +1934,19 @@ export function BusinessCaseModal({
                                   value={inputValue}
                                   placeholder="0"
                                   onFocus={() => {
-                                    setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                    setFocusedInputs((prev) =>
+                                      new Set(prev).add(inputKey),
+                                    );
                                     // Initialize raw input with current formatted value (without commas)
                                     if (!rawInputs[col.yearOffset]?.nsp) {
-                                      setRawInputs(prev => ({
+                                      setRawInputs((prev) => ({
                                         ...prev,
                                         [col.yearOffset]: {
                                           ...prev[col.yearOffset],
-                                          nsp: String(displayValue).replace(/,/g, ""),
+                                          nsp: String(displayValue).replace(
+                                            /,/g,
+                                            "",
+                                          ),
                                         },
                                       }));
                                     }
@@ -1536,7 +1954,7 @@ export function BusinessCaseModal({
                                   onChange={(e) => {
                                     // Store raw input while typing
                                     const rawValue = e.target.value;
-                                    setRawInputs(prev => ({
+                                    setRawInputs((prev) => ({
                                       ...prev,
                                       [col.yearOffset]: {
                                         ...prev[col.yearOffset],
@@ -1545,30 +1963,41 @@ export function BusinessCaseModal({
                                     }));
                                   }}
                                   onBlur={() => {
-                                    setFocusedInputs(prev => {
+                                    setFocusedInputs((prev) => {
                                       const next = new Set(prev);
                                       next.delete(inputKey);
                                       return next;
                                     });
                                     // Parse and update the actual value
-                                    const rawValue = rawInputs[col.yearOffset]?.nsp || String(displayValue).replace(/,/g, "");
-                                    const inputVal = parseFormattedNumber(rawValue);
-                                    const baseVal = convertPerUnitToBase(inputVal);
+                                    const rawValue =
+                                      rawInputs[col.yearOffset]?.nsp ||
+                                      String(displayValue).replace(/,/g, "");
+                                    const inputVal =
+                                      parseFormattedNumber(rawValue);
+                                    const baseVal =
+                                      convertPerUnitToBase(inputVal);
                                     setYearDataRecord({
                                       ...yearDataRecord,
                                       [col.yearOffset]: {
                                         ...yearDataRecord[col.yearOffset],
-                                        volume: yearDataRecord[col.yearOffset]?.volume || "",
+                                        volume:
+                                          yearDataRecord[col.yearOffset]
+                                            ?.volume || "",
                                         nsp: String(baseVal),
-                                        cogs: yearDataRecord[col.yearOffset]?.cogs || "",
+                                        cogs:
+                                          yearDataRecord[col.yearOffset]
+                                            ?.cogs || "",
                                       },
                                     });
                                     // Clear raw input after blur
-                                    setRawInputs(prev => {
+                                    setRawInputs((prev) => {
                                       const next = { ...prev };
                                       if (next[col.yearOffset]) {
                                         delete next[col.yearOffset].nsp;
-                                        if (Object.keys(next[col.yearOffset]).length === 0) {
+                                        if (
+                                          Object.keys(next[col.yearOffset])
+                                            .length === 0
+                                        ) {
                                           delete next[col.yearOffset];
                                         }
                                       }
@@ -1587,13 +2016,24 @@ export function BusinessCaseModal({
                     {/* Shadow row for COGS */}
                     {Object.keys(shadowData).length > 0 && (
                       <TableRow className="bg-muted/30">
-                        <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">↳ prev</TableCell>
+                        <TableCell className="text-xs text-muted-foreground italic sticky left-0 bg-muted/30 z-10">
+                          ↳ prev
+                        </TableCell>
                         {fiscalYearColumns.map((col) => {
                           const rawVal = shadowData[col.yearOffset]?.cogs || 0;
-                          const displayVal = rawVal > 0 ? convertPerUnitForDisplay(rawVal) : 0;
+                          const displayVal =
+                            rawVal > 0 ? convertPerUnitForDisplay(rawVal) : 0;
                           return (
-                            <TableCell key={col.yearOffset} className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums">
-                              {displayVal > 0 ? displayVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"}
+                            <TableCell
+                              key={col.yearOffset}
+                              className="p-1 text-right text-xs text-muted-foreground/70 italic tabular-nums"
+                            >
+                              {displayVal > 0
+                                ? displayVal.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })
+                                : "-"}
                             </TableCell>
                           );
                         })}
@@ -1604,26 +2044,38 @@ export function BusinessCaseModal({
                     <TableRow>
                       <TableCell className="font-medium sticky left-0 bg-background z-10">
                         <div className="flex flex-col">
-                          <span>COGS ({preferences.currency}/{displayUnit})</span>
-                          {!isEditMode && <span className="text-xs text-muted-foreground font-normal">Optional override</span>}
+                          <span>
+                            COGS ({preferences.currency}/{displayUnit})
+                          </span>
+                          {!isEditMode && (
+                            <span className="text-xs text-muted-foreground font-normal">
+                              Optional override
+                            </span>
+                          )}
                         </div>
                       </TableCell>
                       {fiscalYearColumns.map((col) => {
                         const cellKey = `${col.yearOffset}_cogs_per_unit`;
                         const isChanged = changedCells.has(cellKey);
-                        
+
                         if (isEditMode) {
-                          const year = yearDataArray.find((y) => y.year_offset === col.yearOffset);
+                          const year = yearDataArray.find(
+                            (y) => y.year_offset === col.yearOffset,
+                          );
                           // Convert EUR value to display currency/unit
-                          const rawVal = parseFloat(String(year?.cogs_per_unit || 0)) || 0;
-                          const displayValue = rawVal > 0 ? convertPerUnitForDisplay(rawVal) : 0;
+                          const rawVal =
+                            parseFloat(String(year?.cogs_per_unit || 0)) || 0;
+                          const displayValue =
+                            rawVal > 0 ? convertPerUnitForDisplay(rawVal) : 0;
                           const inputKey = `${col.yearOffset}-cogs`;
                           const isFocused = focusedInputs.has(inputKey);
                           // Show raw input while typing, formatted when not focused
-                          const inputValue = isFocused && rawInputs[col.yearOffset]?.cogs !== undefined
-                            ? rawInputs[col.yearOffset].cogs!
-                            : formatCurrencyInput(displayValue);
-                          
+                          const inputValue =
+                            isFocused &&
+                            rawInputs[col.yearOffset]?.cogs !== undefined
+                              ? rawInputs[col.yearOffset].cogs!
+                              : formatCurrencyInput(displayValue);
+
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <div className="relative">
@@ -1635,14 +2087,19 @@ export function BusinessCaseModal({
                                   inputMode="decimal"
                                   value={inputValue}
                                   onFocus={() => {
-                                    setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                    setFocusedInputs((prev) =>
+                                      new Set(prev).add(inputKey),
+                                    );
                                     // Initialize raw input with current formatted value (without commas)
                                     if (!rawInputs[col.yearOffset]?.cogs) {
-                                      setRawInputs(prev => ({
+                                      setRawInputs((prev) => ({
                                         ...prev,
                                         [col.yearOffset]: {
                                           ...prev[col.yearOffset],
-                                          cogs: String(displayValue).replace(/,/g, ""),
+                                          cogs: String(displayValue).replace(
+                                            /,/g,
+                                            "",
+                                          ),
                                         },
                                       }));
                                     }
@@ -1650,7 +2107,7 @@ export function BusinessCaseModal({
                                   onChange={(e) => {
                                     // Store raw input while typing
                                     const rawValue = e.target.value;
-                                    setRawInputs(prev => ({
+                                    setRawInputs((prev) => ({
                                       ...prev,
                                       [col.yearOffset]: {
                                         ...prev[col.yearOffset],
@@ -1659,44 +2116,69 @@ export function BusinessCaseModal({
                                     }));
                                   }}
                                   onBlur={() => {
-                                    setFocusedInputs(prev => {
+                                    setFocusedInputs((prev) => {
                                       const next = new Set(prev);
                                       next.delete(inputKey);
                                       return next;
                                     });
                                     // Parse and update the actual value
-                                    const rawValue = rawInputs[col.yearOffset]?.cogs || String(displayValue).replace(/,/g, "");
-                                    const inputVal = parseFormattedNumber(rawValue);
-                                    const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
-                                    handleCellChange(col.yearOffset, "cogs_per_unit", inputVal > 0 ? String(baseVal) : "");
+                                    const rawValue =
+                                      rawInputs[col.yearOffset]?.cogs ||
+                                      String(displayValue).replace(/,/g, "");
+                                    const inputVal =
+                                      parseFormattedNumber(rawValue);
+                                    const baseVal =
+                                      inputVal > 0
+                                        ? convertPerUnitToBase(inputVal)
+                                        : 0;
+                                    handleCellChange(
+                                      col.yearOffset,
+                                      "cogs_per_unit",
+                                      inputVal > 0 ? String(baseVal) : "",
+                                    );
                                     // Clear raw input after blur
-                                    setRawInputs(prev => {
+                                    setRawInputs((prev) => {
                                       const next = { ...prev };
                                       if (next[col.yearOffset]) {
                                         delete next[col.yearOffset].cogs;
-                                        if (Object.keys(next[col.yearOffset]).length === 0) {
+                                        if (
+                                          Object.keys(next[col.yearOffset])
+                                            .length === 0
+                                        ) {
                                           delete next[col.yearOffset];
                                         }
                                       }
                                       return next;
                                     });
                                   }}
-                                  className={cn("h-8 text-sm text-right tabular-nums pl-6", isChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                  className={cn(
+                                    "h-8 text-sm text-right tabular-nums pl-6",
+                                    isChanged &&
+                                      "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700",
+                                  )}
                                 />
                               </div>
                             </TableCell>
                           );
                         } else {
                           // Create mode - also convert for display
-                          const rawValue = parseFloat(yearDataRecord[col.yearOffset]?.cogs || "0") || 0;
-                          const displayValue = rawValue > 0 ? convertPerUnitForDisplay(rawValue) : 0;
+                          const rawValue =
+                            parseFloat(
+                              yearDataRecord[col.yearOffset]?.cogs || "0",
+                            ) || 0;
+                          const displayValue =
+                            rawValue > 0
+                              ? convertPerUnitForDisplay(rawValue)
+                              : 0;
                           const inputKey = `${col.yearOffset}-cogs`;
                           const isFocused = focusedInputs.has(inputKey);
                           // Show raw input while typing, formatted when not focused
-                          const inputValue = isFocused && rawInputs[col.yearOffset]?.cogs !== undefined
-                            ? rawInputs[col.yearOffset].cogs!
-                            : formatCurrencyInput(displayValue);
-                          
+                          const inputValue =
+                            isFocused &&
+                            rawInputs[col.yearOffset]?.cogs !== undefined
+                              ? rawInputs[col.yearOffset].cogs!
+                              : formatCurrencyInput(displayValue);
+
                           return (
                             <TableCell key={col.yearOffset} className="p-1">
                               <div className="relative">
@@ -1709,14 +2191,19 @@ export function BusinessCaseModal({
                                   value={inputValue}
                                   placeholder="Auto"
                                   onFocus={() => {
-                                    setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                    setFocusedInputs((prev) =>
+                                      new Set(prev).add(inputKey),
+                                    );
                                     // Initialize raw input with current formatted value (without commas)
                                     if (!rawInputs[col.yearOffset]?.cogs) {
-                                      setRawInputs(prev => ({
+                                      setRawInputs((prev) => ({
                                         ...prev,
                                         [col.yearOffset]: {
                                           ...prev[col.yearOffset],
-                                          cogs: String(displayValue).replace(/,/g, ""),
+                                          cogs: String(displayValue).replace(
+                                            /,/g,
+                                            "",
+                                          ),
                                         },
                                       }));
                                     }
@@ -1724,7 +2211,7 @@ export function BusinessCaseModal({
                                   onChange={(e) => {
                                     // Store raw input while typing
                                     const rawValue = e.target.value;
-                                    setRawInputs(prev => ({
+                                    setRawInputs((prev) => ({
                                       ...prev,
                                       [col.yearOffset]: {
                                         ...prev[col.yearOffset],
@@ -1733,30 +2220,44 @@ export function BusinessCaseModal({
                                     }));
                                   }}
                                   onBlur={() => {
-                                    setFocusedInputs(prev => {
+                                    setFocusedInputs((prev) => {
                                       const next = new Set(prev);
                                       next.delete(inputKey);
                                       return next;
                                     });
                                     // Parse and update the actual value
-                                    const rawValue = rawInputs[col.yearOffset]?.cogs || String(displayValue).replace(/,/g, "");
-                                    const inputVal = parseFormattedNumber(rawValue);
-                                    const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
+                                    const rawValue =
+                                      rawInputs[col.yearOffset]?.cogs ||
+                                      String(displayValue).replace(/,/g, "");
+                                    const inputVal =
+                                      parseFormattedNumber(rawValue);
+                                    const baseVal =
+                                      inputVal > 0
+                                        ? convertPerUnitToBase(inputVal)
+                                        : 0;
                                     setYearDataRecord({
                                       ...yearDataRecord,
                                       [col.yearOffset]: {
                                         ...yearDataRecord[col.yearOffset],
-                                        volume: yearDataRecord[col.yearOffset]?.volume || "",
-                                        nsp: yearDataRecord[col.yearOffset]?.nsp || "",
-                                        cogs: inputVal > 0 ? String(baseVal) : "",
+                                        volume:
+                                          yearDataRecord[col.yearOffset]
+                                            ?.volume || "",
+                                        nsp:
+                                          yearDataRecord[col.yearOffset]?.nsp ||
+                                          "",
+                                        cogs:
+                                          inputVal > 0 ? String(baseVal) : "",
                                       },
                                     });
                                     // Clear raw input after blur
-                                    setRawInputs(prev => {
+                                    setRawInputs((prev) => {
                                       const next = { ...prev };
                                       if (next[col.yearOffset]) {
                                         delete next[col.yearOffset].cogs;
-                                        if (Object.keys(next[col.yearOffset]).length === 0) {
+                                        if (
+                                          Object.keys(next[col.yearOffset])
+                                            .length === 0
+                                        ) {
                                           delete next[col.yearOffset];
                                         }
                                       }
@@ -1774,13 +2275,20 @@ export function BusinessCaseModal({
 
                     {/* Calculated rows */}
                     <TableRow>
-                      <TableCell className="font-medium sticky left-0 bg-background z-10">Total Revenue ({preferences.currency})</TableCell>
+                      <TableCell className="font-medium sticky left-0 bg-background z-10">
+                        Total Revenue ({preferences.currency})
+                      </TableCell>
                       {fiscalYearColumns.map((col) => {
                         const metrics = calculateMetrics(col.yearOffset);
                         return (
-                          <TableCell key={col.yearOffset} className="p-1 text-right">
+                          <TableCell
+                            key={col.yearOffset}
+                            className="p-1 text-right"
+                          >
                             <span className="text-sm tabular-nums">
-                              {metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                              {metrics.revenue > 0
+                                ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                                : "-"}
                             </span>
                           </TableCell>
                         );
@@ -1788,13 +2296,20 @@ export function BusinessCaseModal({
                     </TableRow>
 
                     <TableRow>
-                      <TableCell className="font-medium sticky left-0 bg-background z-10">Gross Margin ({preferences.currency})</TableCell>
+                      <TableCell className="font-medium sticky left-0 bg-background z-10">
+                        Gross Margin ({preferences.currency})
+                      </TableCell>
                       {fiscalYearColumns.map((col) => {
                         const metrics = calculateMetrics(col.yearOffset);
                         return (
-                          <TableCell key={col.yearOffset} className="p-1 text-right">
+                          <TableCell
+                            key={col.yearOffset}
+                            className="p-1 text-right"
+                          >
                             <span className="text-sm tabular-nums">
-                              {metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                              {metrics.margin > 0
+                                ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                                : "-"}
                             </span>
                           </TableCell>
                         );
@@ -1802,13 +2317,20 @@ export function BusinessCaseModal({
                     </TableRow>
 
                     <TableRow>
-                      <TableCell className="font-medium sticky left-0 bg-background z-10">Margin %</TableCell>
+                      <TableCell className="font-medium sticky left-0 bg-background z-10">
+                        Margin %
+                      </TableCell>
                       {fiscalYearColumns.map((col) => {
                         const metrics = calculateMetrics(col.yearOffset);
                         return (
-                          <TableCell key={col.yearOffset} className="p-1 text-right">
+                          <TableCell
+                            key={col.yearOffset}
+                            className="p-1 text-right"
+                          >
                             <span className="text-sm tabular-nums">
-                              {metrics.marginPercent > 0 ? `${metrics.marginPercent.toFixed(1)}%` : "-"}
+                              {metrics.marginPercent > 0
+                                ? `${metrics.marginPercent.toFixed(1)}%`
+                                : "-"}
                             </span>
                           </TableCell>
                         );
@@ -1823,65 +2345,96 @@ export function BusinessCaseModal({
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {fiscalYearColumns.map((col) => {
                     const metrics = calculateMetrics(col.yearOffset);
-                    const volumeChanged = changedCells.has(`${col.yearOffset}_volume`);
-                    const nspChanged = changedCells.has(`${col.yearOffset}_nsp`);
-                    const cogsChanged = changedCells.has(`${col.yearOffset}_cogs_per_unit`);
-                    
-                    const yearValue = isEditMode 
-                      ? yearDataArray.find((y) => y.year_offset === col.yearOffset)
+                    const volumeChanged = changedCells.has(
+                      `${col.yearOffset}_volume`,
+                    );
+                    const nspChanged = changedCells.has(
+                      `${col.yearOffset}_nsp`,
+                    );
+                    const cogsChanged = changedCells.has(
+                      `${col.yearOffset}_cogs_per_unit`,
+                    );
+
+                    const yearValue = isEditMode
+                      ? yearDataArray.find(
+                          (y) => y.year_offset === col.yearOffset,
+                        )
                       : yearDataRecord[col.yearOffset];
-                    
+
                     // Compute converted display values for mobile
-                    const rawVolume = isEditMode 
-                      ? parseFloat(String((yearValue as BusinessCaseYearData)?.volume || 0)) || 0
+                    const rawVolume = isEditMode
+                      ? parseFloat(
+                          String(
+                            (yearValue as BusinessCaseYearData)?.volume || 0,
+                          ),
+                        ) || 0
                       : parseFloat((yearValue as any)?.volume || "0") || 0;
                     const displayVolume = convertQuantityForDisplay(rawVolume);
-                    
+
                     const rawNsp = isEditMode
-                      ? parseFloat(String((yearValue as BusinessCaseYearData)?.nsp || 0)) || 0
+                      ? parseFloat(
+                          String((yearValue as BusinessCaseYearData)?.nsp || 0),
+                        ) || 0
                       : parseFloat((yearValue as any)?.nsp || "0") || 0;
                     const displayNsp = convertPerUnitForDisplay(rawNsp);
-                    
+
                     const rawCogs = isEditMode
-                      ? parseFloat(String((yearValue as BusinessCaseYearData)?.cogs_per_unit || 0)) || 0
+                      ? parseFloat(
+                          String(
+                            (yearValue as BusinessCaseYearData)
+                              ?.cogs_per_unit || 0,
+                          ),
+                        ) || 0
                       : parseFloat((yearValue as any)?.cogs || "0") || 0;
-                    const displayCogs = rawCogs > 0 ? convertPerUnitForDisplay(rawCogs) : 0;
-                    
+                    const displayCogs =
+                      rawCogs > 0 ? convertPerUnitForDisplay(rawCogs) : 0;
+
                     return (
                       <Card key={col.yearOffset} className="overflow-hidden">
                         <div className="bg-muted/50 px-3 py-2 border-b">
-                          <span className="font-semibold text-sm">{col.fiscalYear}</span>
+                          <span className="font-semibold text-sm">
+                            {col.fiscalYear}
+                          </span>
                         </div>
                         <CardContent className="p-3 space-y-3">
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">Volume ({displayUnit})</Label>
+                            <Label className="text-xs text-muted-foreground">
+                              Volume ({displayUnit})
+                            </Label>
                             {(() => {
                               const inputKey = `card-${col.yearOffset}-volume`;
                               const isFocused = focusedInputs.has(inputKey);
-                              const inputValue = isFocused && rawInputs[col.yearOffset]?.volume !== undefined
-                                ? rawInputs[col.yearOffset].volume!
-                                : formatVolumeInput(displayVolume);
-                              
+                              const inputValue =
+                                isFocused &&
+                                rawInputs[col.yearOffset]?.volume !== undefined
+                                  ? rawInputs[col.yearOffset].volume!
+                                  : formatVolumeInput(displayVolume);
+
                               return (
                                 <Input
                                   type="text"
                                   inputMode="numeric"
                                   value={inputValue}
                                   onFocus={() => {
-                                    setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                    setFocusedInputs((prev) =>
+                                      new Set(prev).add(inputKey),
+                                    );
                                     if (!rawInputs[col.yearOffset]?.volume) {
-                                      setRawInputs(prev => ({
+                                      setRawInputs((prev) => ({
                                         ...prev,
                                         [col.yearOffset]: {
                                           ...prev[col.yearOffset],
-                                          volume: String(displayVolume).replace(/,/g, ""),
+                                          volume: String(displayVolume).replace(
+                                            /,/g,
+                                            "",
+                                          ),
                                         },
                                       }));
                                     }
                                   }}
                                   onChange={(e) => {
                                     const rawValue = e.target.value;
-                                    setRawInputs(prev => ({
+                                    setRawInputs((prev) => ({
                                       ...prev,
                                       [col.yearOffset]: {
                                         ...prev[col.yearOffset],
@@ -1890,44 +2443,65 @@ export function BusinessCaseModal({
                                     }));
                                   }}
                                   onBlur={() => {
-                                    setFocusedInputs(prev => {
+                                    setFocusedInputs((prev) => {
                                       const next = new Set(prev);
                                       next.delete(inputKey);
                                       return next;
                                     });
-                                    const rawValue = rawInputs[col.yearOffset]?.volume || String(displayVolume).replace(/,/g, "");
-                                    const inputVal = parseFormattedNumber(rawValue);
-                                    const baseVal = convertQuantityToBase(inputVal);
+                                    const rawValue =
+                                      rawInputs[col.yearOffset]?.volume ||
+                                      String(displayVolume).replace(/,/g, "");
+                                    const inputVal =
+                                      parseFormattedNumber(rawValue);
+                                    const baseVal =
+                                      convertQuantityToBase(inputVal);
                                     if (isEditMode) {
-                                      handleCellChange(col.yearOffset, "volume", String(Math.round(baseVal)));
+                                      handleCellChange(
+                                        col.yearOffset,
+                                        "volume",
+                                        String(Math.round(baseVal)),
+                                      );
                                     } else {
                                       setYearDataRecord({
                                         ...yearDataRecord,
                                         [col.yearOffset]: {
                                           volume: String(Math.round(baseVal)),
-                                          nsp: yearDataRecord[col.yearOffset]?.nsp || "",
-                                          cogs: yearDataRecord[col.yearOffset]?.cogs || "",
+                                          nsp:
+                                            yearDataRecord[col.yearOffset]
+                                              ?.nsp || "",
+                                          cogs:
+                                            yearDataRecord[col.yearOffset]
+                                              ?.cogs || "",
                                         },
                                       });
                                     }
-                                    setRawInputs(prev => {
+                                    setRawInputs((prev) => {
                                       const next = { ...prev };
                                       if (next[col.yearOffset]) {
                                         delete next[col.yearOffset].volume;
-                                        if (Object.keys(next[col.yearOffset]).length === 0) {
+                                        if (
+                                          Object.keys(next[col.yearOffset])
+                                            .length === 0
+                                        ) {
                                           delete next[col.yearOffset];
                                         }
                                       }
                                       return next;
                                     });
                                   }}
-                                  className={cn("h-8 text-sm text-right tabular-nums", volumeChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                  className={cn(
+                                    "h-8 text-sm text-right tabular-nums",
+                                    volumeChanged &&
+                                      "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700",
+                                  )}
                                 />
                               );
                             })()}
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">NSP ({preferences.currency}/{displayUnit})</Label>
+                            <Label className="text-xs text-muted-foreground">
+                              NSP ({preferences.currency}/{displayUnit})
+                            </Label>
                             <div className="relative">
                               <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
                                 {currencySymbol}
@@ -1935,30 +2509,37 @@ export function BusinessCaseModal({
                               {(() => {
                                 const inputKey = `card-${col.yearOffset}-nsp`;
                                 const isFocused = focusedInputs.has(inputKey);
-                                const inputValue = isFocused && rawInputs[col.yearOffset]?.nsp !== undefined
-                                  ? rawInputs[col.yearOffset].nsp!
-                                  : formatCurrencyInput(displayNsp);
-                                
+                                const inputValue =
+                                  isFocused &&
+                                  rawInputs[col.yearOffset]?.nsp !== undefined
+                                    ? rawInputs[col.yearOffset].nsp!
+                                    : formatCurrencyInput(displayNsp);
+
                                 return (
                                   <Input
                                     type="text"
                                     inputMode="decimal"
                                     value={inputValue}
                                     onFocus={() => {
-                                      setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                      setFocusedInputs((prev) =>
+                                        new Set(prev).add(inputKey),
+                                      );
                                       if (!rawInputs[col.yearOffset]?.nsp) {
-                                        setRawInputs(prev => ({
+                                        setRawInputs((prev) => ({
                                           ...prev,
                                           [col.yearOffset]: {
                                             ...prev[col.yearOffset],
-                                            nsp: String(displayNsp).replace(/,/g, ""),
+                                            nsp: String(displayNsp).replace(
+                                              /,/g,
+                                              "",
+                                            ),
                                           },
                                         }));
                                       }
                                     }}
                                     onChange={(e) => {
                                       const rawValue = e.target.value;
-                                      setRawInputs(prev => ({
+                                      setRawInputs((prev) => ({
                                         ...prev,
                                         [col.yearOffset]: {
                                           ...prev[col.yearOffset],
@@ -1967,45 +2548,66 @@ export function BusinessCaseModal({
                                       }));
                                     }}
                                     onBlur={() => {
-                                      setFocusedInputs(prev => {
+                                      setFocusedInputs((prev) => {
                                         const next = new Set(prev);
                                         next.delete(inputKey);
                                         return next;
                                       });
-                                      const rawValue = rawInputs[col.yearOffset]?.nsp || String(displayNsp).replace(/,/g, "");
-                                      const inputVal = parseFormattedNumber(rawValue);
-                                      const baseVal = convertPerUnitToBase(inputVal);
+                                      const rawValue =
+                                        rawInputs[col.yearOffset]?.nsp ||
+                                        String(displayNsp).replace(/,/g, "");
+                                      const inputVal =
+                                        parseFormattedNumber(rawValue);
+                                      const baseVal =
+                                        convertPerUnitToBase(inputVal);
                                       if (isEditMode) {
-                                        handleCellChange(col.yearOffset, "nsp", String(baseVal));
+                                        handleCellChange(
+                                          col.yearOffset,
+                                          "nsp",
+                                          String(baseVal),
+                                        );
                                       } else {
                                         setYearDataRecord({
                                           ...yearDataRecord,
                                           [col.yearOffset]: {
-                                            volume: yearDataRecord[col.yearOffset]?.volume || "",
+                                            volume:
+                                              yearDataRecord[col.yearOffset]
+                                                ?.volume || "",
                                             nsp: String(baseVal),
-                                            cogs: yearDataRecord[col.yearOffset]?.cogs || "",
+                                            cogs:
+                                              yearDataRecord[col.yearOffset]
+                                                ?.cogs || "",
                                           },
                                         });
                                       }
-                                      setRawInputs(prev => {
+                                      setRawInputs((prev) => {
                                         const next = { ...prev };
                                         if (next[col.yearOffset]) {
                                           delete next[col.yearOffset].nsp;
-                                          if (Object.keys(next[col.yearOffset]).length === 0) {
+                                          if (
+                                            Object.keys(next[col.yearOffset])
+                                              .length === 0
+                                          ) {
                                             delete next[col.yearOffset];
                                           }
                                         }
                                         return next;
                                       });
                                     }}
-                                    className={cn("h-8 text-sm text-right tabular-nums pl-6", nspChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                    className={cn(
+                                      "h-8 text-sm text-right tabular-nums pl-6",
+                                      nspChanged &&
+                                        "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700",
+                                    )}
                                   />
                                 );
                               })()}
                             </div>
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">COGS ({preferences.currency}/{displayUnit})</Label>
+                            <Label className="text-xs text-muted-foreground">
+                              COGS ({preferences.currency}/{displayUnit})
+                            </Label>
                             <div className="relative">
                               <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
                                 {currencySymbol}
@@ -2013,30 +2615,37 @@ export function BusinessCaseModal({
                               {(() => {
                                 const inputKey = `card-${col.yearOffset}-cogs`;
                                 const isFocused = focusedInputs.has(inputKey);
-                                const inputValue = isFocused && rawInputs[col.yearOffset]?.cogs !== undefined
-                                  ? rawInputs[col.yearOffset].cogs!
-                                  : formatCurrencyInput(displayCogs);
-                                
+                                const inputValue =
+                                  isFocused &&
+                                  rawInputs[col.yearOffset]?.cogs !== undefined
+                                    ? rawInputs[col.yearOffset].cogs!
+                                    : formatCurrencyInput(displayCogs);
+
                                 return (
                                   <Input
                                     type="text"
                                     inputMode="decimal"
                                     value={inputValue}
                                     onFocus={() => {
-                                      setFocusedInputs(prev => new Set(prev).add(inputKey));
+                                      setFocusedInputs((prev) =>
+                                        new Set(prev).add(inputKey),
+                                      );
                                       if (!rawInputs[col.yearOffset]?.cogs) {
-                                        setRawInputs(prev => ({
+                                        setRawInputs((prev) => ({
                                           ...prev,
                                           [col.yearOffset]: {
                                             ...prev[col.yearOffset],
-                                            cogs: String(displayCogs).replace(/,/g, ""),
+                                            cogs: String(displayCogs).replace(
+                                              /,/g,
+                                              "",
+                                            ),
                                           },
                                         }));
                                       }
                                     }}
                                     onChange={(e) => {
                                       const rawValue = e.target.value;
-                                      setRawInputs(prev => ({
+                                      setRawInputs((prev) => ({
                                         ...prev,
                                         [col.yearOffset]: {
                                           ...prev[col.yearOffset],
@@ -2045,38 +2654,62 @@ export function BusinessCaseModal({
                                       }));
                                     }}
                                     onBlur={() => {
-                                      setFocusedInputs(prev => {
+                                      setFocusedInputs((prev) => {
                                         const next = new Set(prev);
                                         next.delete(inputKey);
                                         return next;
                                       });
-                                      const rawValue = rawInputs[col.yearOffset]?.cogs || String(displayCogs).replace(/,/g, "");
-                                      const inputVal = parseFormattedNumber(rawValue);
-                                      const baseVal = inputVal > 0 ? convertPerUnitToBase(inputVal) : 0;
+                                      const rawValue =
+                                        rawInputs[col.yearOffset]?.cogs ||
+                                        String(displayCogs).replace(/,/g, "");
+                                      const inputVal =
+                                        parseFormattedNumber(rawValue);
+                                      const baseVal =
+                                        inputVal > 0
+                                          ? convertPerUnitToBase(inputVal)
+                                          : 0;
                                       if (isEditMode) {
-                                        handleCellChange(col.yearOffset, "cogs_per_unit", inputVal > 0 ? String(baseVal) : "");
+                                        handleCellChange(
+                                          col.yearOffset,
+                                          "cogs_per_unit",
+                                          inputVal > 0 ? String(baseVal) : "",
+                                        );
                                       } else {
                                         setYearDataRecord({
                                           ...yearDataRecord,
                                           [col.yearOffset]: {
-                                            volume: yearDataRecord[col.yearOffset]?.volume || "",
-                                            nsp: yearDataRecord[col.yearOffset]?.nsp || "",
-                                            cogs: inputVal > 0 ? String(baseVal) : "",
+                                            volume:
+                                              yearDataRecord[col.yearOffset]
+                                                ?.volume || "",
+                                            nsp:
+                                              yearDataRecord[col.yearOffset]
+                                                ?.nsp || "",
+                                            cogs:
+                                              inputVal > 0
+                                                ? String(baseVal)
+                                                : "",
                                           },
                                         });
                                       }
-                                      setRawInputs(prev => {
+                                      setRawInputs((prev) => {
                                         const next = { ...prev };
                                         if (next[col.yearOffset]) {
                                           delete next[col.yearOffset].cogs;
-                                          if (Object.keys(next[col.yearOffset]).length === 0) {
+                                          if (
+                                            Object.keys(next[col.yearOffset])
+                                              .length === 0
+                                          ) {
                                             delete next[col.yearOffset];
                                           }
                                         }
                                         return next;
                                       });
                                     }}
-                                    className={cn("h-8 text-sm text-right tabular-nums pl-6", cogsChanged && "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700")}
+                                    className={cn(
+                                      "h-8 text-sm text-right tabular-nums pl-6",
+                                      cogsChanged &&
+                                        "bg-yellow-50 dark:bg-yellow-950 border-yellow-300 dark:border-yellow-700",
+                                    )}
                                   />
                                 );
                               })()}
@@ -2084,21 +2717,33 @@ export function BusinessCaseModal({
                           </div>
                           <div className="pt-2 border-t space-y-1.5 text-xs">
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Revenue</span>
+                              <span className="text-muted-foreground">
+                                Revenue
+                              </span>
                               <span className="font-medium tabular-nums">
-                                {metrics.revenue > 0 ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                                {metrics.revenue > 0
+                                  ? `${currencySymbol}${metrics.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                                  : "-"}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Margin</span>
+                              <span className="text-muted-foreground">
+                                Margin
+                              </span>
                               <span className="font-medium tabular-nums">
-                                {metrics.margin > 0 ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "-"}
+                                {metrics.margin > 0
+                                  ? `${currencySymbol}${metrics.margin.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                                  : "-"}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Margin %</span>
+                              <span className="text-muted-foreground">
+                                Margin %
+                              </span>
                               <span className="font-medium">
-                                {metrics.marginPercent > 0 ? `${metrics.marginPercent.toFixed(1)}%` : "-"}
+                                {metrics.marginPercent > 0
+                                  ? `${metrics.marginPercent.toFixed(1)}%`
+                                  : "-"}
                               </span>
                             </div>
                           </div>
@@ -2112,14 +2757,22 @@ export function BusinessCaseModal({
               {/* Change reason - compact, at bottom when updating */}
               {(existingGroupId || isEditMode) && (
                 <div className="flex items-center gap-3 pt-2 border-t">
-                  <Label htmlFor="change_reason" className="text-sm text-muted-foreground whitespace-nowrap">
+                  <Label
+                    htmlFor="change_reason"
+                    className="text-sm text-muted-foreground whitespace-nowrap"
+                  >
                     Update reason<span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="change_reason"
                     placeholder="e.g., 'Revised per Q3 data', 'Distributor feedback'"
                     value={formData.change_reason}
-                    onChange={(e) => setFormData({ ...formData, change_reason: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        change_reason: e.target.value,
+                      })
+                    }
                     className={`flex-1 h-9 ${!formData.change_reason.trim() ? "border-destructive/50" : ""}`}
                   />
                 </div>
@@ -2127,26 +2780,45 @@ export function BusinessCaseModal({
 
               <DialogFooter>
                 {!isEditMode && (
-                  <Button variant="outline" onClick={() => setStep("select")} disabled={isPending}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setStep("select")}
+                    disabled={isPending}
+                  >
                     ← Back
                   </Button>
                 )}
-                <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+                <Button
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={isPending}
+                >
                   Cancel
                 </Button>
-                <Button 
-                  onClick={handleSave} 
-                  disabled={isPending || permissionsLoading || (existingGroupId || isEditMode ? !canEditBusinessCases : !canCreateBusinessCases)}
+                <Button
+                  onClick={handleSave}
+                  disabled={
+                    isPending ||
+                    permissionsLoading ||
+                    (existingGroupId || isEditMode
+                      ? !canEditBusinessCases
+                      : !canCreateBusinessCases)
+                  }
                 >
                   {isPending ? "Saving..." : "Save Business Case"}
                 </Button>
               </DialogFooter>
             </TabsContent>
 
-            {(yearDataArray[0]?.formulation_country_use_group_id || useGroupIdForHistory) && (
+            {(yearDataArray[0]?.formulation_country_use_group_id ||
+              useGroupIdForHistory) && (
               <TabsContent value="history">
                 <BusinessCaseVersionHistory
-                  useGroupId={yearDataArray[0]?.formulation_country_use_group_id || useGroupIdForHistory || ""}
+                  useGroupId={
+                    yearDataArray[0]?.formulation_country_use_group_id ||
+                    useGroupIdForHistory ||
+                    ""
+                  }
                   currentGroupId={groupId || existingGroupId || ""}
                   formulationName={formulationName ?? undefined}
                   countryName={countryName ?? undefined}
@@ -2159,4 +2831,3 @@ export function BusinessCaseModal({
     </Dialog>
   );
 }
-

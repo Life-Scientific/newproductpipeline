@@ -16,13 +16,14 @@ function validateYearBreakdown(
   mfg: number | null,
   pkg: number | null,
   other: number | null,
-  yearLabel: string
+  yearLabel: string,
 ): string | null {
   if (total === null || total <= 0) {
     return `${yearLabel}: Total COGS is required and must be greater than 0`;
   }
 
-  const hasAnyBreakdown = raw !== null || mfg !== null || pkg !== null || other !== null;
+  const hasAnyBreakdown =
+    raw !== null || mfg !== null || pkg !== null || other !== null;
 
   if (hasAnyBreakdown) {
     // If ANY breakdown field provided, ALL must be provided
@@ -45,7 +46,7 @@ function validateYearBreakdown(
  */
 async function getAvailableCOGSFiscalYears(
   formulationId: string,
-  countryId: string | null
+  countryId: string | null,
 ): Promise<string[]> {
   const supabase = await createClient();
 
@@ -78,7 +79,7 @@ async function getAvailableCOGSFiscalYears(
 export async function lookupCOGSForBusinessCase(
   formulationId: string,
   countryId: string | null,
-  fiscalYear: string
+  fiscalYear: string,
 ): Promise<number | null> {
   const supabase = await createClient();
 
@@ -92,7 +93,9 @@ export async function lookupCOGSForBusinessCase(
 
   if (countryId) {
     // Look for country-specific or global, prioritize country-specific
-    query.or(`formulation_country_id.eq.${countryId},formulation_country_id.is.null`);
+    query.or(
+      `formulation_country_id.eq.${countryId},formulation_country_id.is.null`,
+    );
   } else {
     // Only global
     query.is("formulation_country_id", null);
@@ -106,7 +109,9 @@ export async function lookupCOGSForBusinessCase(
 
   // If we have multiple results, prefer country-specific over global
   if (data.length > 1 && countryId) {
-    const countrySpecific = data.find((row) => row.formulation_country_id === countryId);
+    const countrySpecific = data.find(
+      (row) => row.formulation_country_id === countryId,
+    );
     if (countrySpecific) {
       return countrySpecific.cogs_value;
     }
@@ -122,17 +127,24 @@ export async function lookupCOGSForBusinessCase(
 export async function lookupCOGSWithCarryForward(
   formulationId: string,
   countryId: string | null,
-  fiscalYear: string
+  fiscalYear: string,
 ): Promise<number | null> {
   // Try exact match first
-  let cogsValue = await lookupCOGSForBusinessCase(formulationId, countryId, fiscalYear);
+  let cogsValue = await lookupCOGSForBusinessCase(
+    formulationId,
+    countryId,
+    fiscalYear,
+  );
 
   if (cogsValue !== null) {
     return cogsValue;
   }
 
   // Carry-forward: Use last available COGS year
-  const availableYears = await getAvailableCOGSFiscalYears(formulationId, countryId);
+  const availableYears = await getAvailableCOGSFiscalYears(
+    formulationId,
+    countryId,
+  );
 
   if (availableYears.length === 0) {
     return null;
@@ -157,14 +169,18 @@ export async function createCOGSGroupAction(formData: FormData) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.COGS_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage COGS data" };
+    return {
+      error: "Unauthorized: You don't have permission to manage COGS data",
+    };
   }
 
   const supabase = await createClient();
   const userName = await getCurrentUserName();
 
   const formulationId = formData.get("formulation_id") as string | null;
-  const formulationCountryId = formData.get("formulation_country_id") as string | null;
+  const formulationCountryId = formData.get("formulation_country_id") as
+    | string
+    | null;
 
   if (!formulationId) {
     return { error: "Formulation is required" };
@@ -173,7 +189,7 @@ export async function createCOGSGroupAction(formData: FormData) {
   // Check for existing COGS group
   const existingGroupId = await checkExistingCOGSGroup(
     formulationId,
-    formulationCountryId
+    formulationCountryId,
   );
 
   if (existingGroupId) {
@@ -212,12 +228,26 @@ export async function createCOGSGroupAction(formData: FormData) {
       : null;
 
     // Validate this year
-    const validationError = validateYearBreakdown(total, raw, mfg, pkg, other, fiscalYear);
+    const validationError = validateYearBreakdown(
+      total,
+      raw,
+      mfg,
+      pkg,
+      other,
+      fiscalYear,
+    );
     if (validationError) {
       return { error: validationError };
     }
 
-    yearData.push({ fiscal_year: fiscalYear, total: total!, raw, mfg, pkg, other });
+    yearData.push({
+      fiscal_year: fiscalYear,
+      total: total!,
+      raw,
+      mfg,
+      pkg,
+      other,
+    });
   }
 
   // Generate a single UUID for the group
@@ -257,11 +287,16 @@ export async function createCOGSGroupAction(formData: FormData) {
 /**
  * Update an existing COGS group (versioning + cascade)
  */
-export async function updateCOGSGroupAction(groupId: string, formData: FormData) {
+export async function updateCOGSGroupAction(
+  groupId: string,
+  formData: FormData,
+) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.COGS_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage COGS data" };
+    return {
+      error: "Unauthorized: You don't have permission to manage COGS data",
+    };
   }
 
   const supabase = await createClient();
@@ -312,12 +347,26 @@ export async function updateCOGSGroupAction(groupId: string, formData: FormData)
       ? Number(formData.get(`year_${i + 1}_other`))
       : null;
 
-    const validationError = validateYearBreakdown(total, raw, mfg, pkg, other, fiscalYear);
+    const validationError = validateYearBreakdown(
+      total,
+      raw,
+      mfg,
+      pkg,
+      other,
+      fiscalYear,
+    );
     if (validationError) {
       return { error: validationError };
     }
 
-    yearData.push({ fiscal_year: fiscalYear, total: total!, raw, mfg, pkg, other });
+    yearData.push({
+      fiscal_year: fiscalYear,
+      total: total!,
+      raw,
+      mfg,
+      pkg,
+      other,
+    });
   }
 
   // Mark old COGS group as inactive
@@ -363,7 +412,7 @@ export async function updateCOGSGroupAction(groupId: string, formData: FormData)
   // Cascade update to business cases
   const cascadeResult = await cascadeBusinessCaseUpdatesFromCOGS(
     formulationId,
-    formulationCountryId
+    formulationCountryId,
   );
 
   if (cascadeResult.error) {
@@ -381,7 +430,10 @@ export async function updateCOGSGroupAction(groupId: string, formData: FormData)
   revalidateTag("business-cases", "page");
   revalidateTag("formulations", "page");
   return {
-    data: { cogs_group_id: newGroupId, business_cases_updated: cascadeResult.count },
+    data: {
+      cogs_group_id: newGroupId,
+      business_cases_updated: cascadeResult.count,
+    },
     success: true,
   };
 }
@@ -391,7 +443,7 @@ export async function updateCOGSGroupAction(groupId: string, formData: FormData)
  */
 async function cascadeBusinessCaseUpdatesFromCOGS(
   formulationId: string,
-  formulationCountryId: string | null
+  formulationCountryId: string | null,
 ): Promise<{ count: number; error?: string }> {
   const supabase = await createClient();
   const userName = await getCurrentUserName();
@@ -420,7 +472,7 @@ async function cascadeBusinessCaseUpdatesFromCOGS(
 
   // Get unique group IDs
   const groupIds = Array.from(
-    new Set(matchingBCs.map((bc) => bc.business_case_group_id).filter(Boolean))
+    new Set(matchingBCs.map((bc) => bc.business_case_group_id).filter(Boolean)),
   );
 
   let updatedCount = 0;
@@ -445,7 +497,10 @@ async function cascadeBusinessCaseUpdatesFromCOGS(
       .eq("business_case_group_id", groupId);
 
     if (inactiveError) {
-      console.error(`Failed to deactivate business case group ${groupId}:`, inactiveError);
+      console.error(
+        `Failed to deactivate business case group ${groupId}:`,
+        inactiveError,
+      );
       continue;
     }
 
@@ -468,7 +523,7 @@ async function cascadeBusinessCaseUpdatesFromCOGS(
       const newCOGSValue = await lookupCOGSWithCarryForward(
         formulationId,
         formulationCountryId,
-        fiscalYear
+        fiscalYear,
       );
 
       newBCInserts.push({
@@ -500,7 +555,7 @@ async function cascadeBusinessCaseUpdatesFromCOGS(
       .select("formulation_country_use_group_id")
       .in(
         "business_case_id",
-        bcRecords.map((bc) => bc.business_case_id)
+        bcRecords.map((bc) => bc.business_case_id),
       );
 
     if (oldUseGroups && oldUseGroups.length > 0) {
@@ -514,8 +569,9 @@ async function cascadeBusinessCaseUpdatesFromCOGS(
         const useGroupInserts = newBCRecords.flatMap((bc) =>
           oldUseGroups.map((ug) => ({
             business_case_id: bc.business_case_id,
-            formulation_country_use_group_id: ug.formulation_country_use_group_id,
-          }))
+            formulation_country_use_group_id:
+              ug.formulation_country_use_group_id,
+          })),
         );
 
         await supabase.from("business_case_use_groups").insert(useGroupInserts);
@@ -552,7 +608,7 @@ export async function getCOGSGroupAction(groupId: string) {
  */
 export async function checkExistingCOGSGroupAction(
   formulationId: string,
-  countryId: string | null
+  countryId: string | null,
 ) {
   const groupId = await checkExistingCOGSGroup(formulationId, countryId);
   return { data: groupId, error: null };
@@ -563,7 +619,7 @@ export async function checkExistingCOGSGroupAction(
  */
 async function checkExistingCOGSGroup(
   formulationId: string,
-  countryId: string | null
+  countryId: string | null,
 ): Promise<string | null> {
   const supabase = await createClient();
 
@@ -591,13 +647,20 @@ async function checkExistingCOGSGroup(
 
 // Legacy functions for backward compatibility (can be removed later)
 export async function createCOGS(formData: FormData) {
-  return { error: "This function is deprecated. Use createCOGSGroupAction instead." };
+  return {
+    error: "This function is deprecated. Use createCOGSGroupAction instead.",
+  };
 }
 
 export async function updateCOGS(cogsId: string, formData: FormData) {
-  return { error: "This function is deprecated. Use updateCOGSGroupAction instead." };
+  return {
+    error: "This function is deprecated. Use updateCOGSGroupAction instead.",
+  };
 }
 
 export async function deleteCOGS(cogsId: string) {
-  return { error: "Deletion is not allowed. Updates create new versions automatically." };
+  return {
+    error:
+      "Deletion is not allowed. Updates create new versions automatically.",
+  };
 }

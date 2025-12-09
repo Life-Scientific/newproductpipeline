@@ -10,7 +10,9 @@ export async function createExchangeRate(formData: FormData) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.EXCHANGE_RATE_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage exchange rates" };
+    return {
+      error: "Unauthorized: You don't have permission to manage exchange rates",
+    };
   }
 
   const supabase = await createClient();
@@ -24,7 +26,10 @@ export async function createExchangeRate(formData: FormData) {
   const notes = formData.get("notes") as string | null;
 
   if (!countryId || !currencyCode || !exchangeRateToEur || !effectiveDate) {
-    return { error: "Country, currency code, exchange rate, and effective date are required" };
+    return {
+      error:
+        "Country, currency code, exchange rate, and effective date are required",
+    };
   }
 
   const rate = parseFloat(exchangeRateToEur);
@@ -49,7 +54,8 @@ export async function createExchangeRate(formData: FormData) {
   if (error) {
     if (error.code === "23505") {
       return {
-        error: "An exchange rate already exists for this country and effective date",
+        error:
+          "An exchange rate already exists for this country and effective date",
       };
     }
     return { error: `Failed to create exchange rate: ${error.message}` };
@@ -61,12 +67,14 @@ export async function createExchangeRate(formData: FormData) {
 
 export async function updateExchangeRate(
   exchangeRateId: string,
-  formData: FormData
+  formData: FormData,
 ) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.EXCHANGE_RATE_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage exchange rates" };
+    return {
+      error: "Unauthorized: You don't have permission to manage exchange rates",
+    };
   }
 
   const supabase = await createClient();
@@ -78,7 +86,9 @@ export async function updateExchangeRate(
   const notes = formData.get("notes") as string | null;
 
   if (!currencyCode || !exchangeRateToEur || !effectiveDate) {
-    return { error: "Currency code, exchange rate, and effective date are required" };
+    return {
+      error: "Currency code, exchange rate, and effective date are required",
+    };
   }
 
   const rate = parseFloat(exchangeRateToEur);
@@ -102,7 +112,8 @@ export async function updateExchangeRate(
   if (error) {
     if (error.code === "23505") {
       return {
-        error: "An exchange rate already exists for this country and effective date",
+        error:
+          "An exchange rate already exists for this country and effective date",
       };
     }
     return { error: `Failed to update exchange rate: ${error.message}` };
@@ -116,7 +127,9 @@ export async function deleteExchangeRate(exchangeRateId: string) {
   // Permission check
   const canEdit = await hasPermission(PERMISSIONS.EXCHANGE_RATE_EDIT);
   if (!canEdit) {
-    return { error: "Unauthorized: You don't have permission to manage exchange rates" };
+    return {
+      error: "Unauthorized: You don't have permission to manage exchange rates",
+    };
   }
 
   const supabase = await createClient();
@@ -133,9 +146,3 @@ export async function deleteExchangeRate(exchangeRateId: string) {
   revalidatePath("/reference");
   return { success: true };
 }
-
-
-
-
-
-

@@ -11,7 +11,9 @@ interface COGSFormButtonProps {
   defaultFormulationId?: string;
 }
 
-export function COGSFormButton({ defaultFormulationId }: COGSFormButtonProps = {}) {
+export function COGSFormButton({
+  defaultFormulationId,
+}: COGSFormButtonProps = {}) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const { canEditCOGS, isLoading } = usePermissions();
@@ -36,4 +38,3 @@ export function COGSFormButton({ defaultFormulationId }: COGSFormButtonProps = {
     </>
   );
 }
-

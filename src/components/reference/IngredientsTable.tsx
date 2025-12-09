@@ -22,13 +22,18 @@ const supplyRiskColors: Record<string, string> = {
   Critical: "destructive",
 };
 
-const IngredientActionsCell = memo(function IngredientActionsCell({ ingredient }: { ingredient: Ingredient }) {
+const IngredientActionsCell = memo(function IngredientActionsCell({
+  ingredient,
+}: {
+  ingredient: Ingredient;
+}) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const { canEditIngredients, isLoading: permissionsLoading } = usePermissions();
+  const { canEditIngredients, isLoading: permissionsLoading } =
+    usePermissions();
 
   const handleDelete = () => {
     if (!canEditIngredients) {
@@ -94,7 +99,11 @@ const IngredientActionsCell = memo(function IngredientActionsCell({ ingredient }
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
-      <IngredientForm ingredient={ingredient} open={editOpen} onOpenChange={setEditOpen} />
+      <IngredientForm
+        ingredient={ingredient}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
       <DeleteConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
@@ -134,7 +143,11 @@ const createColumns = (): ColumnDef<Ingredient>[] => [
     header: "Type",
     cell: ({ row }) => {
       const type = row.getValue("ingredient_type") as string | null;
-      return <Badge variant="outline" className="text-xs">{type || "—"}</Badge>;
+      return (
+        <Badge variant="outline" className="text-xs">
+          {type || "—"}
+        </Badge>
+      );
     },
   },
   {
@@ -143,7 +156,9 @@ const createColumns = (): ColumnDef<Ingredient>[] => [
     cell: ({ row }) => {
       const density = row.getValue("standard_density_g_per_l") as number | null;
       return density ? (
-        <span className="text-sm">{density.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+        <span className="text-sm">
+          {density.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+        </span>
       ) : (
         <span className="text-sm text-muted-foreground">—</span>
       );
@@ -154,9 +169,13 @@ const createColumns = (): ColumnDef<Ingredient>[] => [
     header: "Supply Risk",
     cell: ({ row }) => {
       const risk = row.getValue("supply_risk") as string | null;
-      if (!risk) return <span className="text-sm text-muted-foreground">—</span>;
+      if (!risk)
+        return <span className="text-sm text-muted-foreground">—</span>;
       return (
-        <Badge variant={(supplyRiskColors[risk] as any) || "outline"} className="text-xs">
+        <Badge
+          variant={(supplyRiskColors[risk] as any) || "outline"}
+          className="text-xs"
+        >
           {risk}
         </Badge>
       );
@@ -168,9 +187,13 @@ const createColumns = (): ColumnDef<Ingredient>[] => [
     cell: ({ row }) => {
       const approved = row.getValue("is_eu_approved") as boolean | null;
       return approved ? (
-        <Badge variant="default" className="text-xs">Yes</Badge>
+        <Badge variant="default" className="text-xs">
+          Yes
+        </Badge>
       ) : (
-        <Badge variant="outline" className="text-xs">No</Badge>
+        <Badge variant="outline" className="text-xs">
+          No
+        </Badge>
       );
     },
   },

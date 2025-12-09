@@ -70,4 +70,3 @@ export async function deleteCrop(cropId: string) {
   revalidatePath("/reference");
   return { success: true };
 }
-

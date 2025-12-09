@@ -26,7 +26,10 @@ export default function SettingsLoading() {
           </CardHeader>
           <CardContent className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
                 <div className="space-y-1">
                   <Skeleton className="h-5 w-36" />
                   <Skeleton className="h-4 w-48" />
@@ -57,4 +60,3 @@ export default function SettingsLoading() {
     </div>
   );
 }
-

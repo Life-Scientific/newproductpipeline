@@ -64,16 +64,16 @@ export function Particles({
 
   const [scene] = useState(() => new THREE.Scene());
   const [camera] = useState(
-    () => new THREE.OrthographicCamera(-1, 1, 1, -1, 1 / Math.pow(2, 53), 1)
+    () => new THREE.OrthographicCamera(-1, 1, 1, -1, 1 / Math.pow(2, 53), 1),
   );
   const [positions] = useState(
     () =>
       new Float32Array([
         -1, -1, 0, 1, -1, 0, 1, 1, 0, -1, -1, 0, 1, 1, 0, -1, 1, 0,
-      ])
+      ]),
   );
   const [uvs] = useState(
-    () => new Float32Array([0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0])
+    () => new Float32Array([0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0]),
   );
 
   const particles = useMemo(() => {
@@ -129,7 +129,7 @@ export function Particles({
       "value",
       introspect ? 1.0 : 0.0,
       introspect ? 0.35 : 0.2,
-      delta
+      delta,
     );
 
     simulationMaterial.uniforms.uTime.value = currentTime;
@@ -158,7 +158,7 @@ export function Particles({
           </bufferGeometry>
         </mesh>,
         // @ts-ignore
-        scene
+        scene,
       )}
       {/* @ts-ignore */}
       <points material={dofPointsMaterial} {...props}>

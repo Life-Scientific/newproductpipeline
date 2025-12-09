@@ -6,7 +6,10 @@ import { createClient } from "@/lib/supabase/server";
  * Get the current authenticated user's email or ID
  * Returns null if no user is authenticated
  */
-export async function getCurrentUser(): Promise<{ email: string | null; id: string | null }> {
+export async function getCurrentUser(): Promise<{
+  email: string | null;
+  id: string | null;
+}> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -25,4 +28,3 @@ export async function getCurrentUserName(): Promise<string> {
   const user = await getCurrentUser();
   return user.email || user.id || "Unknown User";
 }
-

@@ -18,4 +18,3 @@ export function decodeJWT(token: string): Record<string, any> | null {
     return null;
   }
 }
-

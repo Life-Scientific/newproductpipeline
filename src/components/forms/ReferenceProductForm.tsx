@@ -28,7 +28,8 @@ import type { Database } from "@/lib/supabase/database.types";
 import { EPPOCropSelector } from "./EPPOCropSelector";
 import { EPPOTargetSelector } from "./EPPOTargetSelector";
 
-type ReferenceProduct = Database["public"]["Tables"]["reference_products"]["Row"];
+type ReferenceProduct =
+  Database["public"]["Tables"]["reference_products"]["Row"];
 type Supplier = Database["public"]["Tables"]["suppliers"]["Row"];
 
 interface ReferenceProductFormProps {
@@ -53,7 +54,8 @@ export function ReferenceProductForm({
     product_name: referenceProduct?.product_name || "",
     manufacturer: referenceProduct?.manufacturer || "",
     supplier_id: referenceProduct?.supplier_id || "",
-    active_ingredients_description: referenceProduct?.active_ingredients_description || "",
+    active_ingredients_description:
+      referenceProduct?.active_ingredients_description || "",
     formulation_type: referenceProduct?.formulation_type || "",
     registration_number: referenceProduct?.registration_number || "",
     notes: referenceProduct?.notes || "",
@@ -96,10 +98,13 @@ export function ReferenceProductForm({
       try {
         const action = referenceProduct
           ? await import("@/lib/actions/reference-products").then((m) =>
-              m.updateReferenceProduct(referenceProduct.reference_product_id, form)
+              m.updateReferenceProduct(
+                referenceProduct.reference_product_id,
+                form,
+              ),
             )
           : await import("@/lib/actions/reference-products").then((m) =>
-              m.createReferenceProduct(form)
+              m.createReferenceProduct(form),
             );
 
         if (action.error) {
@@ -134,7 +139,9 @@ export function ReferenceProductForm({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {referenceProduct ? "Edit Reference Product" : "Create Reference Product"}
+            {referenceProduct
+              ? "Edit Reference Product"
+              : "Create Reference Product"}
           </DialogTitle>
           <DialogDescription>
             {referenceProduct
@@ -150,7 +157,9 @@ export function ReferenceProductForm({
             <Input
               id="product_name"
               value={formData.product_name}
-              onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, product_name: e.target.value })
+              }
               required
             />
           </div>
@@ -161,14 +170,21 @@ export function ReferenceProductForm({
               <Input
                 id="manufacturer"
                 value={formData.manufacturer}
-                onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, manufacturer: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="supplier_id">Supplier</Label>
               <Select
                 value={formData.supplier_id || "__none__"}
-                onValueChange={(value) => setFormData({ ...formData, supplier_id: value === "__none__" ? "" : value })}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    supplier_id: value === "__none__" ? "" : value,
+                  })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select supplier" />
@@ -186,12 +202,17 @@ export function ReferenceProductForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="active_ingredients_description">Active Ingredients Description</Label>
+            <Label htmlFor="active_ingredients_description">
+              Active Ingredients Description
+            </Label>
             <Textarea
               id="active_ingredients_description"
               value={formData.active_ingredients_description}
               onChange={(e) =>
-                setFormData({ ...formData, active_ingredients_description: e.target.value })
+                setFormData({
+                  ...formData,
+                  active_ingredients_description: e.target.value,
+                })
               }
               rows={3}
             />
@@ -203,7 +224,9 @@ export function ReferenceProductForm({
               <Input
                 id="formulation_type"
                 value={formData.formulation_type}
-                onChange={(e) => setFormData({ ...formData, formulation_type: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, formulation_type: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
@@ -211,7 +234,12 @@ export function ReferenceProductForm({
               <Input
                 id="registration_number"
                 value={formData.registration_number}
-                onChange={(e) => setFormData({ ...formData, registration_number: e.target.value })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    registration_number: e.target.value,
+                  })
+                }
               />
             </div>
           </div>
@@ -221,7 +249,9 @@ export function ReferenceProductForm({
             <Textarea
               id="notes"
               value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
               rows={3}
             />
           </div>
@@ -229,14 +259,17 @@ export function ReferenceProductForm({
           {/* EPPO Crops & Targets Section */}
           {referenceProduct && (
             <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">Crops & Targets</h3>
+              <h3 className="text-sm font-semibold text-foreground">
+                Crops & Targets
+              </h3>
               <p className="text-xs text-muted-foreground">
-                Define which crops and targets this reference product can be used for.
+                Define which crops and targets this reference product can be
+                used for.
               </p>
-              
+
               {/* EPPO Crops Section */}
               <div>
-                <EPPOCropSelector 
+                <EPPOCropSelector
                   formulationId={referenceProduct.reference_product_id}
                   onUpdate={() => router.refresh()}
                 />
@@ -244,18 +277,19 @@ export function ReferenceProductForm({
 
               {/* EPPO Targets Section */}
               <div>
-                <EPPOTargetSelector 
+                <EPPOTargetSelector
                   formulationId={referenceProduct.reference_product_id}
                   onUpdate={() => router.refresh()}
                 />
               </div>
             </div>
           )}
-          
+
           {!referenceProduct && (
             <div className="border rounded-lg p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                <strong>Note:</strong> Save the reference product first, then add crops and targets on the edit screen.
+                <strong>Note:</strong> Save the reference product first, then
+                add crops and targets on the edit screen.
               </p>
             </div>
           )}
@@ -264,16 +298,27 @@ export function ReferenceProductForm({
             <Switch
               id="is_active"
               checked={formData.is_active}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, is_active: checked })
+              }
             />
             <Label htmlFor="is_active">Active</Label>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending} size="lg" className="h-12 px-6">
+            <Button
+              type="submit"
+              disabled={isPending}
+              size="lg"
+              className="h-12 px-6"
+            >
               {isPending ? "Saving..." : referenceProduct ? "Update" : "Create"}
             </Button>
           </DialogFooter>
@@ -282,4 +327,3 @@ export function ReferenceProductForm({
     </Dialog>
   );
 }
-

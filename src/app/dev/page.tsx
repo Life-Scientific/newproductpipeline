@@ -22,21 +22,24 @@ import {
 const devTools = [
   {
     title: "Entity Hierarchy",
-    description: "Interactive node diagram of database entities and their relationships. Shows drill-down paths and identifies UI gaps.",
+    description:
+      "Interactive node diagram of database entities and their relationships. Shows drill-down paths and identifies UI gaps.",
     href: "/dev/entity-map",
     icon: GitBranch,
     status: "active",
   },
   {
     title: "API Routes",
-    description: "List of all API endpoints with their methods and descriptions.",
+    description:
+      "List of all API endpoints with their methods and descriptions.",
     href: "/dev/api-routes",
     icon: Route,
     status: "active",
   },
   {
     title: "Database Tables",
-    description: "Quick view of all database tables with row counts and column info.",
+    description:
+      "Quick view of all database tables with row counts and column info.",
     href: "/dev/tables",
     icon: Table2,
     status: "active",
@@ -65,8 +68,8 @@ const devTools = [
 ];
 
 export default function DevHomePage() {
-  const activeTools = devTools.filter(t => t.status === "active");
-  const plannedTools = devTools.filter(t => t.status === "planned");
+  const activeTools = devTools.filter((t) => t.status === "active");
+  const plannedTools = devTools.filter((t) => t.status === "planned");
 
   return (
     <div className="min-h-screen bg-background">
@@ -79,7 +82,9 @@ export default function DevHomePage() {
                 <Wrench className="h-6 w-6 text-yellow-600" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold">Developer Tools</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold">
+                  Developer Tools
+                </h1>
                 <p className="text-sm text-muted-foreground">
                   Internal tools for development, debugging, and documentation
                 </p>
@@ -104,12 +109,19 @@ export default function DevHomePage() {
                           <div className="p-2 rounded-lg bg-primary/10">
                             <Icon className="h-5 w-5 text-primary" />
                           </div>
-                          <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-500/30">
+                          <Badge
+                            variant="default"
+                            className="bg-green-500/10 text-green-600 border-green-500/30"
+                          >
                             active
                           </Badge>
                         </div>
-                        <CardTitle className="text-base mt-3">{tool.title}</CardTitle>
-                        <CardDescription className="text-xs">{tool.description}</CardDescription>
+                        <CardTitle className="text-base mt-3">
+                          {tool.title}
+                        </CardTitle>
+                        <CardDescription className="text-xs">
+                          {tool.description}
+                        </CardDescription>
                       </CardHeader>
                     </Card>
                   </Link>
@@ -135,8 +147,12 @@ export default function DevHomePage() {
                         </div>
                         <Badge variant="secondary">planned</Badge>
                       </div>
-                      <CardTitle className="text-base mt-3">{tool.title}</CardTitle>
-                      <CardDescription className="text-xs">{tool.description}</CardDescription>
+                      <CardTitle className="text-base mt-3">
+                        {tool.title}
+                      </CardTitle>
+                      <CardDescription className="text-xs">
+                        {tool.description}
+                      </CardDescription>
                     </CardHeader>
                   </Card>
                 );
@@ -151,19 +167,31 @@ export default function DevHomePage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2 text-xs">
-                <Link href="/portfolio" className="text-primary hover:underline">
+                <Link
+                  href="/portfolio"
+                  className="text-primary hover:underline"
+                >
                   → Portfolio Dashboard
                 </Link>
                 <span className="text-muted-foreground">|</span>
-                <Link href="/portfolio/formulations" className="text-primary hover:underline">
+                <Link
+                  href="/portfolio/formulations"
+                  className="text-primary hover:underline"
+                >
                   → Formulations
                 </Link>
                 <span className="text-muted-foreground">|</span>
-                <Link href="/portfolio/business-cases" className="text-primary hover:underline">
+                <Link
+                  href="/portfolio/business-cases"
+                  className="text-primary hover:underline"
+                >
                   → Business Cases
                 </Link>
                 <span className="text-muted-foreground">|</span>
-                <Link href="/portfolio/settings" className="text-primary hover:underline">
+                <Link
+                  href="/portfolio/settings"
+                  className="text-primary hover:underline"
+                >
                   → Settings
                 </Link>
               </div>
@@ -178,7 +206,3 @@ export default function DevHomePage() {
     </div>
   );
 }
-
-
-
-

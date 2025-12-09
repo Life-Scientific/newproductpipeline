@@ -1,10 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { WORKSPACE_BASE, SHORTURL_WORKSPACE_BASE, isLegacyRoute, toLegacyRedirect } from "@/lib/routes";
+import {
+  WORKSPACE_BASE,
+  SHORTURL_WORKSPACE_BASE,
+  isLegacyRoute,
+  toLegacyRedirect,
+} from "@/lib/routes";
 
 export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  
+
   // ============================================================================
   // ls.life Short URL Domain Handling
   // Handle this BEFORE auth setup since redirects don't need session management
@@ -14,7 +19,12 @@ export async function updateSession(request: NextRequest) {
 
   if (isShortUrlDomain) {
     const slug = pathname.slice(1); // Remove leading /
-    if (slug && slug !== "" && !slug.startsWith("_next") && !slug.startsWith("api")) {
+    if (
+      slug &&
+      slug !== "" &&
+      !slug.startsWith("_next") &&
+      !slug.startsWith("api")
+    ) {
       // Rewrite to redirect handler (internal route, user never sees /s/ path)
       return NextResponse.rewrite(new URL(`/s/${slug}`, request.url));
     }
@@ -36,17 +46,17 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
+            request.cookies.set(name, value),
           );
           supabaseResponse = NextResponse.next({
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   // IMPORTANT: Avoid writing any logic between createServerClient and
@@ -65,20 +75,28 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  
+
   const user = session?.user ?? null;
 
-  const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
+  const isAuthPage =
+    pathname.startsWith("/login") || pathname.startsWith("/signup");
   const isAcceptInvite = pathname.startsWith("/accept-invite");
   const isAuthCallback = pathname.startsWith("/auth/callback");
   const isLandingPage = pathname === "/";
   const isApiRoute = pathname.startsWith("/api");
-  const isWorkspaceRoute = pathname.startsWith(WORKSPACE_BASE) || pathname.startsWith(SHORTURL_WORKSPACE_BASE);
-  const isPublicPath = isAuthPage || isAcceptInvite || isAuthCallback || isLandingPage || isApiRoute;
+  const isWorkspaceRoute =
+    pathname.startsWith(WORKSPACE_BASE) ||
+    pathname.startsWith(SHORTURL_WORKSPACE_BASE);
+  const isPublicPath =
+    isAuthPage ||
+    isAcceptInvite ||
+    isAuthCallback ||
+    isLandingPage ||
+    isApiRoute;
 
   // Check if this is a legacy route that needs redirecting
   const legacyRoute = isLegacyRoute(pathname);
-  
+
   // Redirect legacy routes to workspace (preserving the rest of the path)
   if (legacyRoute && user) {
     const url = request.nextUrl.clone();
@@ -115,4 +133,3 @@ export async function updateSession(request: NextRequest) {
 
   return supabaseResponse;
 }
-

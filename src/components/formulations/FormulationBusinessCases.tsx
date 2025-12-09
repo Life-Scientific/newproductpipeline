@@ -2,9 +2,26 @@
 
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 import type { Database } from "@/lib/supabase/database.types";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
@@ -22,17 +39,22 @@ function formatNumber(value: number | null | undefined): string {
   return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
-export function FormulationBusinessCases({ businessCases }: FormulationBusinessCasesProps) {
-  const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
+export function FormulationBusinessCases({
+  businessCases,
+}: FormulationBusinessCasesProps) {
+  const [expandedCountries, setExpandedCountries] = useState<Set<string>>(
+    new Set(),
+  );
   const { formatCurrencyCompact } = useDisplayPreferences();
 
   // Wrapper for currency formatting
-  const formatCurrency = (value: number | null | undefined): string => formatCurrencyCompact(value);
+  const formatCurrency = (value: number | null | undefined): string =>
+    formatCurrencyCompact(value);
 
   // Group business cases by country
   const groupedByCountry = useMemo(() => {
     const groups = new Map<string, BusinessCase[]>();
-    
+
     businessCases.forEach((bc) => {
       const countryName = bc.country_name || "Unknown";
       if (!groups.has(countryName)) {
@@ -51,7 +73,9 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
     });
 
     // Sort countries alphabetically
-    return new Map([...groups.entries()].sort((a, b) => a[0].localeCompare(b[0])));
+    return new Map(
+      [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0])),
+    );
   }, [businessCases]);
 
   // Calculate summary for a country (converted to EUR)
@@ -59,18 +83,30 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
     let totalRevenue = 0;
     let totalMargin = 0;
     const totalVolume = cases.reduce((sum, bc) => sum + (bc.volume || 0), 0);
-    const uniqueUseGroups = new Set(cases.map(bc => bc.use_group_name || bc.formulation_country_use_group_id).filter(Boolean));
-    
+    const uniqueUseGroups = new Set(
+      cases
+        .map((bc) => bc.use_group_name || bc.formulation_country_use_group_id)
+        .filter(Boolean),
+    );
+
     cases.forEach((bc) => {
       // Data is already in EUR - no conversion needed
       totalRevenue += bc.total_revenue || 0;
       totalMargin += bc.total_margin || 0;
     });
-    
-    const avgMarginPercent = cases.length > 0
-      ? cases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) / cases.length
-      : 0;
-    return { totalRevenue, totalMargin, totalVolume, avgMarginPercent, useGroupCount: uniqueUseGroups.size };
+
+    const avgMarginPercent =
+      cases.length > 0
+        ? cases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) /
+          cases.length
+        : 0;
+    return {
+      totalRevenue,
+      totalMargin,
+      totalVolume,
+      avgMarginPercent,
+      useGroupCount: uniqueUseGroups.size,
+    };
   };
 
   const toggleCountry = (country: string) => {
@@ -93,7 +129,10 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
           <CardDescription>Financial projections</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No business cases found. Create projections for this formulation in specific markets.</p>
+          <p className="text-sm text-muted-foreground">
+            No business cases found. Create projections for this formulation in
+            specific markets.
+          </p>
         </CardContent>
       </Card>
     );
@@ -104,7 +143,8 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
       <CardHeader>
         <CardTitle>Business Cases</CardTitle>
         <CardDescription>
-          Financial projections and business case analysis ({countUniqueBusinessCaseGroups(businessCases)} total)
+          Financial projections and business case analysis (
+          {countUniqueBusinessCaseGroups(businessCases)} total)
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -112,7 +152,7 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
           {Array.from(groupedByCountry.entries()).map(([country, cases]) => {
             const isExpanded = expandedCountries.has(country);
             const summary = calculateCountrySummary(cases);
-            
+
             return (
               <Collapsible
                 key={country}
@@ -131,25 +171,45 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                         <div className="text-left">
                           <div className="font-semibold text-sm">{country}</div>
                           <div className="text-xs text-muted-foreground">
-                            {countUniqueBusinessCaseGroups(cases)} business case group{countUniqueBusinessCaseGroups(cases) !== 1 ? "s" : ""}
+                            {countUniqueBusinessCaseGroups(cases)} business case
+                            group
+                            {countUniqueBusinessCaseGroups(cases) !== 1
+                              ? "s"
+                              : ""}
                             {summary.useGroupCount > 0 && (
-                              <span> • {summary.useGroupCount} use group{summary.useGroupCount !== 1 ? "s" : ""}</span>
+                              <span>
+                                {" "}
+                                • {summary.useGroupCount} use group
+                                {summary.useGroupCount !== 1 ? "s" : ""}
+                              </span>
                             )}
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 text-sm">
                         <div className="text-right">
-                          <div className="text-xs text-muted-foreground">Total Revenue</div>
-                          <div className="font-semibold">{formatCurrency(summary.totalRevenue)}</div>
+                          <div className="text-xs text-muted-foreground">
+                            Total Revenue
+                          </div>
+                          <div className="font-semibold">
+                            {formatCurrency(summary.totalRevenue)}
+                          </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs text-muted-foreground">Total Margin</div>
-                          <div className="font-semibold">{formatCurrency(summary.totalMargin)}</div>
+                          <div className="text-xs text-muted-foreground">
+                            Total Margin
+                          </div>
+                          <div className="font-semibold">
+                            {formatCurrency(summary.totalMargin)}
+                          </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs text-muted-foreground">Avg Margin %</div>
-                          <div className="font-semibold">{summary.avgMarginPercent.toFixed(1)}%</div>
+                          <div className="text-xs text-muted-foreground">
+                            Avg Margin %
+                          </div>
+                          <div className="font-semibold">
+                            {summary.avgMarginPercent.toFixed(1)}%
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -159,16 +219,36 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="min-w-[120px]">Formulation</TableHead>
-                            <TableHead className="min-w-[120px]">Use Group</TableHead>
-                            <TableHead className="w-[80px] text-right">Year</TableHead>
-                            <TableHead className="w-[100px] text-right">Fiscal Year</TableHead>
-                            <TableHead className="w-[100px] text-right">Volume</TableHead>
-                            <TableHead className="w-[100px] text-right">NSP</TableHead>
-                            <TableHead className="w-[100px] text-right">COGS/Unit</TableHead>
-                            <TableHead className="w-[120px] text-right">Revenue</TableHead>
-                            <TableHead className="w-[120px] text-right">Margin</TableHead>
-                            <TableHead className="w-[100px] text-right">Margin %</TableHead>
+                            <TableHead className="min-w-[120px]">
+                              Formulation
+                            </TableHead>
+                            <TableHead className="min-w-[120px]">
+                              Use Group
+                            </TableHead>
+                            <TableHead className="w-[80px] text-right">
+                              Year
+                            </TableHead>
+                            <TableHead className="w-[100px] text-right">
+                              Fiscal Year
+                            </TableHead>
+                            <TableHead className="w-[100px] text-right">
+                              Volume
+                            </TableHead>
+                            <TableHead className="w-[100px] text-right">
+                              NSP
+                            </TableHead>
+                            <TableHead className="w-[100px] text-right">
+                              COGS/Unit
+                            </TableHead>
+                            <TableHead className="w-[120px] text-right">
+                              Revenue
+                            </TableHead>
+                            <TableHead className="w-[120px] text-right">
+                              Margin
+                            </TableHead>
+                            <TableHead className="w-[100px] text-right">
+                              Margin %
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -176,21 +256,31 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                             return (
                               <TableRow key={bc.business_case_id}>
                                 <TableCell className="font-medium">
-                                  <span className="text-sm">{bc.formulation_name || "—"}</span>
+                                  <span className="text-sm">
+                                    {bc.formulation_name || "—"}
+                                  </span>
                                 </TableCell>
                                 <TableCell>
                                   <span className="text-sm font-medium">
-                                    {bc.use_group_name || bc.use_group_variant || "—"}
+                                    {bc.use_group_name ||
+                                      bc.use_group_variant ||
+                                      "—"}
                                   </span>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <span className="text-sm">{bc.year_offset || "—"}</span>
+                                  <span className="text-sm">
+                                    {bc.year_offset || "—"}
+                                  </span>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <span className="text-sm font-mono">{bc.fiscal_year || "—"}</span>
+                                  <span className="text-sm font-mono">
+                                    {bc.fiscal_year || "—"}
+                                  </span>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <span className="text-sm font-medium">{formatNumber(bc.volume)}</span>
+                                  <span className="text-sm font-medium">
+                                    {formatNumber(bc.volume)}
+                                  </span>
                                   {bc.volume_last_updated_by && (
                                     <div className="text-xs text-muted-foreground mt-0.5">
                                       by {bc.volume_last_updated_by}
@@ -198,7 +288,9 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                                   )}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <span className="text-sm font-medium">{formatCurrency(bc.nsp)}</span>
+                                  <span className="text-sm font-medium">
+                                    {formatCurrency(bc.nsp)}
+                                  </span>
                                   {bc.nsp_last_updated_by && (
                                     <div className="text-xs text-muted-foreground mt-0.5">
                                       by {bc.nsp_last_updated_by}
@@ -206,7 +298,9 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                                   )}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <span className="text-sm font-medium">{formatCurrency(bc.cogs_per_unit)}</span>
+                                  <span className="text-sm font-medium">
+                                    {formatCurrency(bc.cogs_per_unit)}
+                                  </span>
                                   {bc.cogs_last_updated_by && (
                                     <div className="text-xs text-muted-foreground mt-0.5">
                                       by {bc.cogs_last_updated_by}
@@ -214,7 +308,9 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                                   )}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  <span className="text-sm font-semibold">{formatCurrency(bc.total_revenue)}</span>
+                                  <span className="text-sm font-semibold">
+                                    {formatCurrency(bc.total_revenue)}
+                                  </span>
                                 </TableCell>
                                 <TableCell className="text-right">
                                   <div className="flex items-center justify-end gap-1">
@@ -223,13 +319,20 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                                         <AlertTriangle className="h-3 w-3 text-destructive" />
                                       </span>
                                     )}
-                                    <span className={cn("text-sm font-semibold", (bc.total_margin || 0) < 0 && "text-destructive")}>
+                                    <span
+                                      className={cn(
+                                        "text-sm font-semibold",
+                                        (bc.total_margin || 0) < 0 &&
+                                          "text-destructive",
+                                      )}
+                                    >
                                       {formatCurrency(bc.total_margin)}
                                     </span>
                                   </div>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  {bc.margin_percent !== null && bc.margin_percent !== undefined ? (
+                                  {bc.margin_percent !== null &&
+                                  bc.margin_percent !== undefined ? (
                                     <Badge
                                       variant={
                                         bc.margin_percent >= 40
@@ -245,7 +348,9 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
                                       {bc.margin_percent.toFixed(1)}%
                                     </Badge>
                                   ) : (
-                                    <span className="text-sm text-muted-foreground">—</span>
+                                    <span className="text-sm text-muted-foreground">
+                                      —
+                                    </span>
                                   )}
                                 </TableCell>
                               </TableRow>
@@ -262,12 +367,20 @@ export function FormulationBusinessCases({ businessCases }: FormulationBusinessC
         </div>
         {businessCases.some((bc) => bc.assumptions) && (
           <div className="mt-4 pt-4 border-t space-y-2">
-            <h4 className="text-sm font-semibold text-foreground">Assumptions</h4>
+            <h4 className="text-sm font-semibold text-foreground">
+              Assumptions
+            </h4>
             {businessCases
               .filter((bc) => bc.assumptions)
               .map((bc) => (
-                <div key={bc.business_case_id} className="text-sm text-muted-foreground">
-                  <strong className="text-foreground">{bc.formulation_name || bc.business_case_name}:</strong> {bc.assumptions}
+                <div
+                  key={bc.business_case_id}
+                  className="text-sm text-muted-foreground"
+                >
+                  <strong className="text-foreground">
+                    {bc.formulation_name || bc.business_case_name}:
+                  </strong>{" "}
+                  {bc.assumptions}
                 </div>
               ))}
           </div>

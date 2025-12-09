@@ -285,10 +285,7 @@ export async function deleteShortUrl(id: string): Promise<void> {
   }
 
   // RLS restricts DELETE to Admin/Editor roles
-  const { error } = await supabase
-    .from("short_urls")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("short_urls").delete().eq("id", id);
 
   if (error) {
     // Check if it's a permission error from RLS
@@ -338,9 +335,7 @@ export async function getShortUrlAnalytics(
     urlIds = [shortUrlId];
   } else {
     // Get ALL URLs (org-wide)
-    const { data: urls } = await supabase
-      .from("short_urls")
-      .select("id");
+    const { data: urls } = await supabase.from("short_urls").select("id");
 
     urlIds = (urls || []).map((u) => u.id);
   }

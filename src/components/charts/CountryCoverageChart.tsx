@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   BarChart,
   Bar,
@@ -13,7 +19,13 @@ import {
 } from "recharts";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
-import { chartTheme, chartColors, getAxisProps, getTooltipProps, getLegendFormatter } from "@/lib/utils/chart-theme";
+import {
+  chartTheme,
+  chartColors,
+  getAxisProps,
+  getTooltipProps,
+  getLegendFormatter,
+} from "@/lib/utils/chart-theme";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -28,15 +40,18 @@ export function CountryCoverageChart({
 }: CountryCoverageChartProps) {
   const router = useRouter();
 
-  const byCountry = businessCases.reduce((acc, bc) => {
-    const country = bc.country_name || "Unknown";
-    if (!acc[country]) {
-      acc[country] = { revenue: 0, count: 0 };
-    }
-    acc[country].revenue += bc.total_revenue || 0;
-    acc[country].count += 1;
-    return acc;
-  }, {} as Record<string, { revenue: number; count: number }>);
+  const byCountry = businessCases.reduce(
+    (acc, bc) => {
+      const country = bc.country_name || "Unknown";
+      if (!acc[country]) {
+        acc[country] = { revenue: 0, count: 0 };
+      }
+      acc[country].revenue += bc.total_revenue || 0;
+      acc[country].count += 1;
+      return acc;
+    },
+    {} as Record<string, { revenue: number; count: number }>,
+  );
 
   const chartData = Object.entries(byCountry)
     .map(([country, data]) => ({
@@ -51,7 +66,9 @@ export function CountryCoverageChart({
     if (onDrillDown) {
       onDrillDown(data.country);
     } else {
-      router.push(`/business-cases?country=${encodeURIComponent(data.country)}`);
+      router.push(
+        `/business-cases?country=${encodeURIComponent(data.country)}`,
+      );
     }
   };
 
@@ -59,19 +76,27 @@ export function CountryCoverageChart({
     <Card>
       <CardHeader>
         <CardTitle>Top Countries by Revenue</CardTitle>
-        <CardDescription>Revenue projections by country (top 10)</CardDescription>
+        <CardDescription>
+          Revenue projections by country (top 10)
+        </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
-        <ResponsiveContainer width="100%" height={300} className="min-h-[300px]">
-          <BarChart data={chartData} layout="vertical" onClick={handleClick} style={{ cursor: "pointer" }}>
+        <ResponsiveContainer
+          width="100%"
+          height={300}
+          className="min-h-[300px]"
+        >
+          <BarChart
+            data={chartData}
+            layout="vertical"
+            onClick={handleClick}
+            style={{ cursor: "pointer" }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis 
-              type="number" 
-              {...getAxisProps("Revenue (M$)")}
-            />
-            <YAxis 
-              dataKey="country" 
-              type="category" 
+            <XAxis type="number" {...getAxisProps("Revenue (M$)")} />
+            <YAxis
+              dataKey="country"
+              type="category"
               width={100}
               tick={chartTheme.tick}
               axisLine={chartTheme.axis}
@@ -82,13 +107,13 @@ export function CountryCoverageChart({
               {...getTooltipProps()}
               cursor={{ fill: "var(--color-muted)", opacity: 0.1 }}
             />
-            <Legend 
+            <Legend
               wrapperStyle={chartTheme.legend.wrapperStyle}
               formatter={getLegendFormatter()}
             />
-            <Bar 
-              dataKey="revenue" 
-              fill={chartColors.primary} 
+            <Bar
+              dataKey="revenue"
+              fill={chartColors.primary}
               name="Revenue"
               radius={[0, 4, 4, 0]}
             />

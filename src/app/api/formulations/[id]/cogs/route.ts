@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -11,9 +11,10 @@ export async function GET(
     return NextResponse.json(cogs);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch COGS" },
-      { status: 500 }
+      {
+        error: error instanceof Error ? error.message : "Failed to fetch COGS",
+      },
+      { status: 500 },
     );
   }
 }
-

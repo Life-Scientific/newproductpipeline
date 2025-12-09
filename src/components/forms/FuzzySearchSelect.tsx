@@ -3,7 +3,11 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { X, ChevronDown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverAnchor,
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -61,59 +65,62 @@ export function FuzzySearchSelect({
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Search function
-  const performSearch = useCallback(async (term: string) => {
-    if (!term || term.trim().length < 1) {
-      if (preloadAll && preloadFunction) {
-        setIsSearching(true);
-        try {
-          const result = await preloadFunction();
-          if (result.data) {
-            setAllItems(result.data);
-            setSearchResults(result.data);
-            // Cache items
-            const newCache = new Map(loadedItems);
-            result.data.forEach((item) => {
-              newCache.set(getOptionValue(item), item);
-            });
-            setLoadedItems(newCache);
+  const performSearch = useCallback(
+    async (term: string) => {
+      if (!term || term.trim().length < 1) {
+        if (preloadAll && preloadFunction) {
+          setIsSearching(true);
+          try {
+            const result = await preloadFunction();
+            if (result.data) {
+              setAllItems(result.data);
+              setSearchResults(result.data);
+              // Cache items
+              const newCache = new Map(loadedItems);
+              result.data.forEach((item) => {
+                newCache.set(getOptionValue(item), item);
+              });
+              setLoadedItems(newCache);
+            }
+          } catch (error) {
+            console.error("Error preloading items:", error);
+          } finally {
+            setIsSearching(false);
           }
-        } catch (error) {
-          console.error("Error preloading items:", error);
-        } finally {
+        } else {
+          setSearchResults([]);
           setIsSearching(false);
         }
-      } else {
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const result = await searchFunction(term);
+        if (result.data) {
+          setSearchResults(result.data);
+          // Cache items
+          if (result.data) {
+            setLoadedItems((prev) => {
+              const newCache = new Map(prev);
+              result.data!.forEach((item) => {
+                newCache.set(getOptionValue(item), item);
+              });
+              return newCache;
+            });
+          }
+        } else {
+          setSearchResults([]);
+        }
+      } catch (error) {
+        console.error("Error searching:", error);
         setSearchResults([]);
+      } finally {
         setIsSearching(false);
       }
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const result = await searchFunction(term);
-      if (result.data) {
-        setSearchResults(result.data);
-        // Cache items
-        if (result.data) {
-          setLoadedItems((prev) => {
-            const newCache = new Map(prev);
-            result.data!.forEach((item) => {
-              newCache.set(getOptionValue(item), item);
-            });
-            return newCache;
-          });
-        }
-      } else {
-        setSearchResults([]);
-      }
-    } catch (error) {
-      console.error("Error searching:", error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [searchFunction, getOptionValue, preloadAll, preloadFunction, loadedItems]);
+    },
+    [searchFunction, getOptionValue, preloadAll, preloadFunction, loadedItems],
+  );
 
   // Debounced search effect
   useEffect(() => {
@@ -174,16 +181,19 @@ export function FuzzySearchSelect({
     }
   };
 
-  const selectedItemData = value ? loadedItems.get(value) || selectedItem : null;
+  const selectedItemData = value
+    ? loadedItems.get(value) || selectedItem
+    : null;
   const displayLabel = selectedItemData
     ? getOptionLabel(selectedItemData)
     : placeholder;
 
-  const displayOptions = searchValue && searchResults.length > 0
-    ? searchResults
-    : preloadAll && allItems.length > 0
-      ? allItems
-      : searchResults;
+  const displayOptions =
+    searchValue && searchResults.length > 0
+      ? searchResults
+      : preloadAll && allItems.length > 0
+        ? allItems
+        : searchResults;
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal={true}>
@@ -198,7 +208,7 @@ export function FuzzySearchSelect({
             className={cn(
               "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
               disabled && "cursor-not-allowed opacity-50",
-              !disabled && "cursor-pointer"
+              !disabled && "cursor-pointer",
             )}
             onClick={(e) => {
               if (!disabled) {
@@ -285,7 +295,7 @@ export function FuzzySearchSelect({
                     aria-selected={isSelected}
                     className={cn(
                       "relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                      isSelected && "bg-accent"
+                      isSelected && "bg-accent",
                     )}
                     onClick={(e) => {
                       e.preventDefault();

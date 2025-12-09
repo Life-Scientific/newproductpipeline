@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useTransition, useMemo, useCallback, useEffect, useRef } from "react";
+import {
+  useState,
+  useTransition,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
@@ -64,7 +71,12 @@ interface FormulationsExcelViewProps {
   formulations: FormulationWithNestedData[];
 }
 
-const STATUS_OPTIONS = ["Not Yet Considered", "Selected", "Monitoring", "Killed"];
+const STATUS_OPTIONS = [
+  "Not Yet Considered",
+  "Selected",
+  "Monitoring",
+  "Killed",
+];
 const PRODUCT_CATEGORIES = [
   "Herbicide",
   "Fungicide",
@@ -101,7 +113,10 @@ const ALL_COLUMNS: ColumnDef[] = [
     accessor: (row) => row.formulation_code,
     minWidth: 140,
     render: (value, row) => (
-      <Link href={`/portfolio/formulations/${row.formulation_id}`} className="text-primary hover:underline font-medium">
+      <Link
+        href={`/portfolio/formulations/${row.formulation_id}`}
+        className="text-primary hover:underline font-medium"
+      >
         {value || "—"}
       </Link>
     ),
@@ -126,7 +141,10 @@ const ALL_COLUMNS: ColumnDef[] = [
     editType: "text",
     minWidth: 220,
     render: (value, row) => (
-      <Link href={`/portfolio/formulations/${row.formulation_id}`} className="text-primary hover:underline">
+      <Link
+        href={`/portfolio/formulations/${row.formulation_id}`}
+        className="text-primary hover:underline"
+      >
         {value || "—"}
       </Link>
     ),
@@ -142,7 +160,8 @@ const ALL_COLUMNS: ColumnDef[] = [
   {
     id: "formulation_category",
     header: "Category",
-    accessor: (row) => (row as any).formulation_category || row.product_category,
+    accessor: (row) =>
+      (row as any).formulation_category || row.product_category,
     editable: true,
     editType: "select",
     editOptions: PRODUCT_CATEGORIES,
@@ -173,7 +192,11 @@ const ALL_COLUMNS: ColumnDef[] = [
     editOptions: STATUS_OPTIONS,
     minWidth: 170,
     render: (value) => (
-      <Badge variant={(statusColors[value || "Not Yet Considered"] as any) || "secondary"}>
+      <Badge
+        variant={
+          (statusColors[value || "Not Yet Considered"] as any) || "secondary"
+        }
+      >
         {value || "Not Yet Considered"}
       </Badge>
     ),
@@ -417,7 +440,7 @@ function SortableHeaderCell({
       startXRef.current = e.clientX;
       startWidthRef.current = width;
     },
-    [width]
+    [width],
   );
 
   useEffect(() => {
@@ -487,7 +510,9 @@ function SortableHeaderCell({
   );
 }
 
-export function FormulationsExcelView({ formulations }: FormulationsExcelViewProps) {
+export function FormulationsExcelView({
+  formulations,
+}: FormulationsExcelViewProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -495,27 +520,34 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
     rowId: string;
     field: string;
   } | null>(null);
-  const [editedData, setEditedData] = useState<Record<string, Partial<FormulationTable>>>({});
+  const [editedData, setEditedData] = useState<
+    Record<string, Partial<FormulationTable>>
+  >({});
 
   // Permission check
-  const { canEditFormulations, isLoading: permissionsLoading } = usePermissions();
+  const { canEditFormulations, isLoading: permissionsLoading } =
+    usePermissions();
 
   // Display preferences for currency formatting
   const { formatCurrencyCompact, formatCurrency } = useDisplayPreferences();
 
   // Process columns to add currency render functions
   const processedColumns = useMemo(() => {
-    return ALL_COLUMNS.map(col => {
+    return ALL_COLUMNS.map((col) => {
       if (col.id === "total_revenue" || col.id === "total_margin") {
         return {
           ...col,
-          render: (value: number | null) => value ? formatCurrencyCompact(value) : "—"
+          render: (value: number | null) =>
+            value ? formatCurrencyCompact(value) : "—",
         };
       }
       if (col.id === "latest_cogs") {
         return {
           ...col,
-          render: (value: number | null) => value ? formatCurrency(value, { compact: false, decimals: 2 }) : "—"
+          render: (value: number | null) =>
+            value
+              ? formatCurrency(value, { compact: false, decimals: 2 })
+              : "—",
         };
       }
       return col;
@@ -554,23 +586,27 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
   });
 
   // Column widths state
-  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem(STORAGE_KEY_WIDTHS);
-      if (saved) return JSON.parse(saved);
-    }
-    const widths: Record<string, number> = {};
-    ALL_COLUMNS.forEach((col) => {
-      widths[col.id] = col.minWidth;
-    });
-    return widths;
-  });
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(
+    () => {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem(STORAGE_KEY_WIDTHS);
+        if (saved) return JSON.parse(saved);
+      }
+      const widths: Record<string, number> = {};
+      ALL_COLUMNS.forEach((col) => {
+        widths[col.id] = col.minWidth;
+      });
+      return widths;
+    },
+  );
 
   // Global search state
   const [globalSearch, setGlobalSearch] = useState("");
 
   // Per-column filter state
-  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>(
+    {},
+  );
 
   // Persist settings
   useEffect(() => {
@@ -607,7 +643,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // Handle column reorder
@@ -658,7 +694,10 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
         const filterValue = columnFilters[col.id];
         if (filterValue) {
           const cellValue = col.accessor(formulation);
-          if (!cellValue || !String(cellValue).toLowerCase().includes(filterValue.toLowerCase())) {
+          if (
+            !cellValue ||
+            !String(cellValue).toLowerCase().includes(filterValue.toLowerCase())
+          ) {
             return false;
           }
         }
@@ -688,7 +727,11 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
     }
   };
 
-  const handleCellChange = (rowId: string, field: string, value: string | boolean) => {
+  const handleCellChange = (
+    rowId: string,
+    field: string,
+    value: string | boolean,
+  ) => {
     setEditedData((prev) => ({
       ...prev,
       [rowId]: {
@@ -718,16 +761,20 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
 
     startTransition(async () => {
       try {
-        const { updateFormulation } = await import("@/lib/actions/formulations");
-        const updates = Object.entries(editedData).map(async ([formulationId, data]) => {
-          const form = new FormData();
-          Object.entries(data).forEach(([key, value]) => {
-            if (value !== null && value !== undefined) {
-              form.append(key, value.toString());
-            }
-          });
-          return updateFormulation(formulationId, form);
-        });
+        const { updateFormulation } = await import(
+          "@/lib/actions/formulations"
+        );
+        const updates = Object.entries(editedData).map(
+          async ([formulationId, data]) => {
+            const form = new FormData();
+            Object.entries(data).forEach(([key, value]) => {
+              if (value !== null && value !== undefined) {
+                form.append(key, value.toString());
+              }
+            });
+            return updateFormulation(formulationId, form);
+          },
+        );
 
         const results = await Promise.all(updates);
         const errors = results.filter((r) => r.error);
@@ -777,10 +824,19 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
 
   const hasChanges = Object.keys(editedData).length > 0;
 
-  const getCellValue = (formulation: FormulationWithNestedData, field: string): any => {
+  const getCellValue = (
+    formulation: FormulationWithNestedData,
+    field: string,
+  ): any => {
     if (!formulation.formulation_id) return "";
-    if (editedData[formulation.formulation_id]?.[field as keyof FormulationTable] !== undefined) {
-      return editedData[formulation.formulation_id][field as keyof FormulationTable];
+    if (
+      editedData[formulation.formulation_id]?.[
+        field as keyof FormulationTable
+      ] !== undefined
+    ) {
+      return editedData[formulation.formulation_id][
+        field as keyof FormulationTable
+      ];
     }
     const column = processedColumns.find((c) => c.id === field);
     if (column) {
@@ -792,7 +848,7 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
   const renderEditableCell = (
     formulation: FormulationWithNestedData,
     column: ColumnDef,
-    isEditing: boolean
+    isEditing: boolean,
   ) => {
     const value = getCellValue(formulation, column.id);
 
@@ -803,7 +859,8 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
             <Select
               value={String(value || "")}
               onValueChange={(val) =>
-                formulation.formulation_id && handleCellChange(formulation.formulation_id, column.id, val)
+                formulation.formulation_id &&
+                handleCellChange(formulation.formulation_id, column.id, val)
               }
               onOpenChange={(open) => !open && setEditingCell(null)}
             >
@@ -824,7 +881,12 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
             <Textarea
               value={String(value || "")}
               onChange={(e) =>
-                formulation.formulation_id && handleCellChange(formulation.formulation_id, column.id, e.target.value)
+                formulation.formulation_id &&
+                handleCellChange(
+                  formulation.formulation_id,
+                  column.id,
+                  e.target.value,
+                )
               }
               onBlur={() => setEditingCell(null)}
               onKeyDown={(e) => {
@@ -840,7 +902,8 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
             <Switch
               checked={Boolean(value)}
               onCheckedChange={(checked) =>
-                formulation.formulation_id && handleCellChange(formulation.formulation_id, column.id, checked)
+                formulation.formulation_id &&
+                handleCellChange(formulation.formulation_id, column.id, checked)
               }
               onBlur={() => setEditingCell(null)}
             />
@@ -850,7 +913,12 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
             <Input
               value={String(value || "")}
               onChange={(e) =>
-                formulation.formulation_id && handleCellChange(formulation.formulation_id, column.id, e.target.value)
+                formulation.formulation_id &&
+                handleCellChange(
+                  formulation.formulation_id,
+                  column.id,
+                  e.target.value,
+                )
               }
               onBlur={() => setEditingCell(null)}
               onKeyDown={(e) => {
@@ -868,7 +936,9 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
     if (column.render) {
       return column.render(value, formulation);
     }
-    return <span className="text-sm text-muted-foreground">{value || "—"}</span>;
+    return (
+      <span className="text-sm text-muted-foreground">{value || "—"}</span>
+    );
   };
 
   const containerClasses = isFullscreen
@@ -878,7 +948,9 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
   return (
     <div ref={containerRef} className={containerClasses}>
       {/* Toolbar */}
-      <div className={`flex flex-wrap items-center justify-between gap-3 ${isFullscreen ? "p-4 border-b" : ""}`}>
+      <div
+        className={`flex flex-wrap items-center justify-between gap-3 ${isFullscreen ? "p-4 border-b" : ""}`}
+      >
         {/* Left side: Search and filters */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="relative">
@@ -927,7 +999,10 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                 Columns <ChevronDown className="ml-1 h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 max-h-96 overflow-y-auto">
+            <DropdownMenuContent
+              align="end"
+              className="w-56 max-h-96 overflow-y-auto"
+            >
               <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {ALL_COLUMNS.map((col) => (
@@ -938,7 +1013,9 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                     if (checked) {
                       setVisibleColumns((prev) => [...prev, col.id]);
                     } else {
-                      setVisibleColumns((prev) => prev.filter((id) => id !== col.id));
+                      setVisibleColumns((prev) =>
+                        prev.filter((id) => id !== col.id),
+                      );
                     }
                   }}
                 >
@@ -977,12 +1054,19 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
 
       {/* Unsaved changes bar */}
       {hasChanges && (
-        <div className={`flex items-center justify-between p-3 bg-muted rounded-lg border ${isFullscreen ? "mx-4" : ""}`}>
+        <div
+          className={`flex items-center justify-between p-3 bg-muted rounded-lg border ${isFullscreen ? "mx-4" : ""}`}
+        >
           <span className="text-sm font-medium">
             {Object.keys(editedData).length} formulation(s) have unsaved changes
           </span>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleCancel} disabled={isPending}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCancel}
+              disabled={isPending}
+            >
               <X className="mr-1 h-3 w-3" />
               Cancel
             </Button>
@@ -995,7 +1079,9 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
       )}
 
       {/* Table container */}
-      <div className={`border rounded-lg overflow-hidden ${isFullscreen ? "flex-1 mx-4 mb-4" : ""}`}>
+      <div
+        className={`border rounded-lg overflow-hidden ${isFullscreen ? "flex-1 mx-4 mb-4" : ""}`}
+      >
         <div
           className="overflow-auto h-full"
           style={{
@@ -1031,19 +1117,24 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
               </thead>
               <tbody>
                 {filteredFormulations.map((formulation) => {
-                  const isEditing = editingCell?.rowId === formulation.formulation_id;
+                  const isEditing =
+                    editingCell?.rowId === formulation.formulation_id;
                   const rowHasChanges =
-                    !!formulation.formulation_id && !!editedData[formulation.formulation_id];
+                    !!formulation.formulation_id &&
+                    !!editedData[formulation.formulation_id];
 
                   return (
                     <tr
                       key={formulation.formulation_id}
                       className={`border-b hover:bg-muted/50 transition-colors ${
-                        rowHasChanges ? "bg-yellow-50 dark:bg-yellow-900/10" : ""
+                        rowHasChanges
+                          ? "bg-yellow-50 dark:bg-yellow-900/10"
+                          : ""
                       }`}
                     >
                       {orderedVisibleColumns.map((column) => {
-                        const isEditableCell = column.editable && canEditFormulations;
+                        const isEditableCell =
+                          column.editable && canEditFormulations;
                         return (
                           <td
                             key={column.id}
@@ -1055,7 +1146,10 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
                             onClick={() =>
                               column.editable &&
                               formulation.formulation_id &&
-                              handleCellClick(formulation.formulation_id, column.id)
+                              handleCellClick(
+                                formulation.formulation_id,
+                                column.id,
+                              )
                             }
                           >
                             {renderEditableCell(formulation, column, isEditing)}
@@ -1075,11 +1169,20 @@ export function FormulationsExcelView({ formulations }: FormulationsExcelViewPro
       {!isFullscreen && (
         <div className="text-xs text-muted-foreground space-y-1">
           {canEditFormulations ? (
-            <p>Click on editable cells to edit. Press Enter to confirm, Escape to cancel.</p>
+            <p>
+              Click on editable cells to edit. Press Enter to confirm, Escape to
+              cancel.
+            </p>
           ) : (
-            <p className="text-amber-600">View-only mode. You don&apos;t have permission to edit formulations.</p>
+            <p className="text-amber-600">
+              View-only mode. You don&apos;t have permission to edit
+              formulations.
+            </p>
           )}
-          <p>Drag column headers to reorder. Drag column edges to resize. Press Escape to exit fullscreen.</p>
+          <p>
+            Drag column headers to reorder. Drag column edges to resize. Press
+            Escape to exit fullscreen.
+          </p>
         </div>
       )}
     </div>

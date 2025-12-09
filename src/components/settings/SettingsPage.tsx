@@ -47,7 +47,10 @@ export function SettingsPage() {
       variant="single"
     >
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className={`grid w-full grid-cols-${tabCount}`} style={{ gridTemplateColumns: `repeat(${tabCount}, minmax(0, 1fr))` }}>
+        <TabsList
+          className={`grid w-full grid-cols-${tabCount}`}
+          style={{ gridTemplateColumns: `repeat(${tabCount}, minmax(0, 1fr))` }}
+        >
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="theme">Theme</TabsTrigger>
           <TabsTrigger value="workspace">Workspace</TabsTrigger>

@@ -36,25 +36,43 @@ export function ActionItemsWidget({ items }: ActionItemsWidgetProps) {
         ) : (
           <div className="space-y-4">
             {items.slice(0, 5).map((item) => (
-              <div key={item.id} className="flex items-start gap-3 pb-3 border-b last:border-0 last:pb-0">
-                <div className={`mt-0.5 ${
-                  item.priority === "high" ? "text-destructive" : 
-                  item.priority === "medium" ? "text-warning" : "text-info"
-                }`}>
+              <div
+                key={item.id}
+                className="flex items-start gap-3 pb-3 border-b last:border-0 last:pb-0"
+              >
+                <div
+                  className={`mt-0.5 ${
+                    item.priority === "high"
+                      ? "text-destructive"
+                      : item.priority === "medium"
+                        ? "text-warning"
+                        : "text-info"
+                  }`}
+                >
                   <AlertCircle className="h-4 w-4" />
                 </div>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium leading-none">{item.title}</p>
+                    <p className="text-sm font-medium leading-none">
+                      {item.title}
+                    </p>
                     {item.dueDate && (
                       <span className="text-xs text-muted-foreground flex items-center">
                         <Clock className="h-3 w-3 mr-1" />
-                        {new Date(item.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        {new Date(item.dueDate).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-1">{item.description}</p>
-                  <Link href={item.href} className="text-xs text-primary hover:underline flex items-center mt-1">
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    {item.description}
+                  </p>
+                  <Link
+                    href={item.href}
+                    className="text-xs text-primary hover:underline flex items-center mt-1"
+                  >
                     Take action <ArrowRight className="h-3 w-3 ml-1" />
                   </Link>
                 </div>
@@ -66,4 +84,3 @@ export function ActionItemsWidget({ items }: ActionItemsWidgetProps) {
     </Card>
   );
 }
-

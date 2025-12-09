@@ -1,6 +1,9 @@
 "use client";
 
-import { HeatmapGrid, type HeatmapDataPoint } from "@/components/charts/HeatmapGrid";
+import {
+  HeatmapGrid,
+  type HeatmapDataPoint,
+} from "@/components/charts/HeatmapGrid";
 import type { Database } from "@/lib/supabase/database.types";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
@@ -10,38 +13,46 @@ interface CountryAttractivenessHeatmapProps {
   businessCases: BusinessCase[];
 }
 
-export function CountryAttractivenessHeatmap({ businessCases }: CountryAttractivenessHeatmapProps) {
-  const { formatCurrencyCompact, formatCurrency, currencySymbol, convertCurrency } = useDisplayPreferences();
+export function CountryAttractivenessHeatmap({
+  businessCases,
+}: CountryAttractivenessHeatmapProps) {
+  const {
+    formatCurrencyCompact,
+    formatCurrency,
+    currencySymbol,
+    convertCurrency,
+  } = useDisplayPreferences();
   const revenueByCountry: Record<string, number> = {};
   const revenueByFormulation: Record<string, number> = {};
   const dataMap: Record<string, number> = {};
-  
-  businessCases.forEach(bc => {
+
+  businessCases.forEach((bc) => {
     const country = bc.country_name || "Unknown";
     const formulation = bc.formulation_code || "Unknown";
     const revenue = bc.total_revenue || 0;
-    
+
     revenueByCountry[country] = (revenueByCountry[country] || 0) + revenue;
-    revenueByFormulation[formulation] = (revenueByFormulation[formulation] || 0) + revenue;
-    
+    revenueByFormulation[formulation] =
+      (revenueByFormulation[formulation] || 0) + revenue;
+
     const key = `${country}:${formulation}`;
     dataMap[key] = (dataMap[key] || 0) + revenue;
   });
-  
+
   const topCountries = Object.entries(revenueByCountry)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 15)
-    .map(e => e[0]);
-    
+    .map((e) => e[0]);
+
   const topFormulations = Object.entries(revenueByFormulation)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 12)
-    .map(e => e[0]);
-    
+    .map((e) => e[0]);
+
   const heatmapData: HeatmapDataPoint[] = [];
-  
-  topCountries.forEach(country => {
-    topFormulations.forEach(formulation => {
+
+  topCountries.forEach((country) => {
+    topFormulations.forEach((formulation) => {
       const key = `${country}:${formulation}`;
       const value = dataMap[key] || 0;
       heatmapData.push({
@@ -49,7 +60,10 @@ export function CountryAttractivenessHeatmap({ businessCases }: CountryAttractiv
         y: country,
         value: value / 1000,
         label: value > 0 ? formatCurrencyCompact(value) : "-",
-        context: value > 0 ? `Revenue: ${formatCurrency(value, { compact: false, decimals: 0 })}` : "No active business case"
+        context:
+          value > 0
+            ? `Revenue: ${formatCurrency(value, { compact: false, decimals: 0 })}`
+            : "No active business case",
       });
     });
   });
@@ -59,7 +73,9 @@ export function CountryAttractivenessHeatmap({ businessCases }: CountryAttractiv
       data={heatmapData}
       xLabels={topFormulations}
       yLabels={topCountries}
-      valueFormatter={(v) => `${currencySymbol}${convertCurrency(v * 1000).toFixed(0)}K`}
+      valueFormatter={(v) =>
+        `${currencySymbol}${convertCurrency(v * 1000).toFixed(0)}K`
+      }
       height={500}
     />
   );

@@ -30,22 +30,21 @@ export async function GET(
       // Redirect to login on the main domain with return URL
       const hostname = request.headers.get("host") || "";
       const isShortUrlDomain = hostname.includes("ls.life");
-      
+
       if (isShortUrlDomain) {
         // If on ls.life domain, redirect to main domain login
-        const mainDomain = process.env.NEXT_PUBLIC_APP_URL || "https://lsnav.app";
+        const mainDomain =
+          process.env.NEXT_PUBLIC_APP_URL || "https://lsnav.app";
         const returnUrl = encodeURIComponent(request.url);
-        return NextResponse.redirect(
-          `${mainDomain}/login?next=${returnUrl}`,
-          { status: 302 }
-        );
+        return NextResponse.redirect(`${mainDomain}/login?next=${returnUrl}`, {
+          status: 302,
+        });
       } else {
         // If on main domain, redirect to login with return URL
         const returnUrl = encodeURIComponent(request.url);
-        return NextResponse.redirect(
-          `/login?next=${returnUrl}`,
-          { status: 302 }
-        );
+        return NextResponse.redirect(`/login?next=${returnUrl}`, {
+          status: 302,
+        });
       }
     }
   }

@@ -4,7 +4,8 @@ import { FuzzySearchSelect } from "./FuzzySearchSelect";
 import { searchFormulationCountries } from "@/lib/actions/search";
 import type { Database } from "@/lib/supabase/database.types";
 
-type FormulationCountry = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
+type FormulationCountry =
+  Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 
 interface FormulationCountrySelectorProps {
   value?: string;
@@ -42,7 +43,9 @@ export function FormulationCountrySelector({
         })
       }
       getOptionValue={(item) => item.formulation_country_id}
-      getOptionLabel={(item) => item.display_name || `${item.formulation_code} - ${item.country_name}`}
+      getOptionLabel={(item) =>
+        item.display_name || `${item.formulation_code} - ${item.country_name}`
+      }
       getOptionSubtitle={(item) => item.formulation_code}
       placeholder={placeholder}
       searchPlaceholder="Type formulation code, country name, or display name..."
@@ -55,9 +58,3 @@ export function FormulationCountrySelector({
     />
   );
 }
-
-
-
-
-
-

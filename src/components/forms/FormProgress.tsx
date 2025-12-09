@@ -32,9 +32,9 @@ interface FormProgressProps {
   allowNavigation?: boolean;
 }
 
-export function FormProgress({ 
-  steps, 
-  currentStep, 
+export function FormProgress({
+  steps,
+  currentStep,
   completedSteps = [],
   variant = "horizontal",
   size = "md",
@@ -46,7 +46,7 @@ export function FormProgress({
 
   const handleStepClick = (index: number) => {
     if (!allowNavigation || !onStepClick) return;
-    
+
     // Only allow clicking on completed steps or current step
     const isCompleted = completedSteps.includes(index) || index < currentStep;
     if (isCompleted || index === currentStep) {
@@ -56,53 +56,61 @@ export function FormProgress({
 
   return (
     <nav aria-label="Progress">
-      <ol 
+      <ol
         className={cn(
           "w-full",
-          isHorizontal 
-            ? "flex items-center" 
-            : "flex flex-col gap-4"
+          isHorizontal ? "flex items-center" : "flex flex-col gap-4",
         )}
       >
         {steps.map((step, index) => {
-          const isCompleted = completedSteps.includes(index) || index < currentStep;
+          const isCompleted =
+            completedSteps.includes(index) || index < currentStep;
           const isCurrent = index === currentStep;
-          const isUpcoming = index > currentStep && !completedSteps.includes(index);
-          const isClickable = allowNavigation && onStepClick && (isCompleted || isCurrent);
+          const isUpcoming =
+            index > currentStep && !completedSteps.includes(index);
+          const isClickable =
+            allowNavigation && onStepClick && (isCompleted || isCurrent);
 
           return (
             <li
               key={step.id}
               className={cn(
                 isHorizontal && "flex-1 flex items-center",
-                !isHorizontal && "flex gap-3"
+                !isHorizontal && "flex gap-3",
               )}
             >
               {/* Step indicator and content wrapper */}
-              <div 
+              <div
                 className={cn(
                   "flex items-center gap-3",
-                  isClickable && "cursor-pointer group"
+                  isClickable && "cursor-pointer group",
                 )}
                 onClick={() => handleStepClick(index)}
                 role={isClickable ? "button" : undefined}
                 tabIndex={isClickable ? 0 : undefined}
-                onKeyDown={isClickable ? (e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    handleStepClick(index);
-                  }
-                } : undefined}
+                onKeyDown={
+                  isClickable
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleStepClick(index);
+                        }
+                      }
+                    : undefined
+                }
               >
                 {/* Step number/check circle */}
                 <div
                   className={cn(
                     "flex items-center justify-center rounded-full border-2 transition-all duration-200 flex-shrink-0",
                     isSmall ? "h-6 w-6 text-xs" : "h-8 w-8 text-sm",
-                    isCompleted && "border-success bg-success text-success-foreground",
-                    isCurrent && "border-primary bg-primary text-primary-foreground",
-                    isUpcoming && "border-muted-foreground/30 bg-background text-muted-foreground",
-                    isClickable && "group-hover:scale-110"
+                    isCompleted &&
+                      "border-success bg-success text-success-foreground",
+                    isCurrent &&
+                      "border-primary bg-primary text-primary-foreground",
+                    isUpcoming &&
+                      "border-muted-foreground/30 bg-background text-muted-foreground",
+                    isClickable && "group-hover:scale-110",
                   )}
                 >
                   {isCompleted ? (
@@ -114,30 +122,32 @@ export function FormProgress({
 
                 {/* Step label and description */}
                 <div className={cn(isHorizontal && "hidden sm:block")}>
-                  <p 
+                  <p
                     className={cn(
                       "font-medium transition-colors",
                       isSmall ? "text-xs" : "text-sm",
                       isCurrent && "text-foreground",
                       isCompleted && "text-success",
                       isUpcoming && "text-muted-foreground",
-                      isClickable && "group-hover:text-foreground"
+                      isClickable && "group-hover:text-foreground",
                     )}
                   >
                     {step.label}
                   </p>
                   {step.description && !isSmall && (
-                    <p className="text-xs text-muted-foreground">{step.description}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {step.description}
+                    </p>
                   )}
                 </div>
               </div>
 
               {/* Connector line (horizontal variant) */}
               {index < steps.length - 1 && isHorizontal && (
-                <div 
+                <div
                   className={cn(
                     "flex-1 h-0.5 mx-3 transition-colors duration-200",
-                    isCompleted ? "bg-success" : "bg-muted"
+                    isCompleted ? "bg-success" : "bg-muted",
                   )}
                   aria-hidden="true"
                 />
@@ -145,10 +155,10 @@ export function FormProgress({
 
               {/* Connector line (vertical variant) */}
               {index < steps.length - 1 && !isHorizontal && (
-                <div 
+                <div
                   className={cn(
                     "ml-4 w-0.5 h-8 transition-colors duration-200",
-                    isCompleted ? "bg-success" : "bg-muted"
+                    isCompleted ? "bg-success" : "bg-muted",
                   )}
                   aria-hidden="true"
                 />
@@ -179,9 +189,14 @@ export function FormProgressDots({
   completedSteps = [],
 }: FormProgressDotsProps) {
   return (
-    <div className="flex items-center justify-center gap-2" role="group" aria-label="Progress">
+    <div
+      className="flex items-center justify-center gap-2"
+      role="group"
+      aria-label="Progress"
+    >
       {Array.from({ length: totalSteps }).map((_, index) => {
-        const isCompleted = completedSteps.includes(index) || index < currentStep;
+        const isCompleted =
+          completedSteps.includes(index) || index < currentStep;
         const isCurrent = index === currentStep;
 
         return (
@@ -189,11 +204,11 @@ export function FormProgressDots({
             key={index}
             className={cn(
               "rounded-full transition-all duration-200",
-              isCurrent 
-                ? "h-2.5 w-2.5 bg-primary" 
-                : isCompleted 
+              isCurrent
+                ? "h-2.5 w-2.5 bg-primary"
+                : isCompleted
                   ? "h-2 w-2 bg-success"
-                  : "h-2 w-2 bg-muted"
+                  : "h-2 w-2 bg-muted",
             )}
             aria-label={`Step ${index + 1}${isCurrent ? " (current)" : isCompleted ? " (completed)" : ""}`}
           />
@@ -202,4 +217,3 @@ export function FormProgressDots({
     </div>
   );
 }
-

@@ -35,8 +35,9 @@ export function FormattedCurrency({
  * in a client component
  */
 export function useFormattedCurrency() {
-  const { formatCurrency, formatCurrencyCompact, currencySymbol, preferences } = useDisplayPreferences();
-  
+  const { formatCurrency, formatCurrencyCompact, currencySymbol, preferences } =
+    useDisplayPreferences();
+
   return {
     formatCurrency,
     formatCurrencyCompact,

@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   LineChart,
   Line,
@@ -13,7 +19,13 @@ import {
 } from "recharts";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
-import { chartTheme, chartColors, getAxisProps, getTooltipProps, getLegendFormatter } from "@/lib/utils/chart-theme";
+import {
+  chartTheme,
+  chartColors,
+  getAxisProps,
+  getTooltipProps,
+  getLegendFormatter,
+} from "@/lib/utils/chart-theme";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
@@ -31,17 +43,23 @@ export function RevenueTrendChart({
   const { currencySymbol } = useDisplayPreferences();
 
   // Group by fiscal year
-  const byFiscalYear = businessCases.reduce((acc, bc) => {
-    const fy = bc.fiscal_year || "Unknown";
-    if (!acc[fy]) {
-      acc[fy] = { revenue: 0, margin: 0, cogs: 0, count: 0 };
-    }
-    acc[fy].revenue += bc.total_revenue || 0;
-    acc[fy].margin += bc.total_margin || 0;
-    acc[fy].cogs += bc.total_cogs || 0;
-    acc[fy].count += 1;
-    return acc;
-  }, {} as Record<string, { revenue: number; margin: number; cogs: number; count: number }>);
+  const byFiscalYear = businessCases.reduce(
+    (acc, bc) => {
+      const fy = bc.fiscal_year || "Unknown";
+      if (!acc[fy]) {
+        acc[fy] = { revenue: 0, margin: 0, cogs: 0, count: 0 };
+      }
+      acc[fy].revenue += bc.total_revenue || 0;
+      acc[fy].margin += bc.total_margin || 0;
+      acc[fy].cogs += bc.total_cogs || 0;
+      acc[fy].count += 1;
+      return acc;
+    },
+    {} as Record<
+      string,
+      { revenue: number; margin: number; cogs: number; count: number }
+    >,
+  );
 
   const chartData = Object.entries(byFiscalYear)
     .map(([fy, data]) => ({
@@ -64,25 +82,32 @@ export function RevenueTrendChart({
     <Card>
       <CardHeader>
         <CardTitle>Revenue Trend Over Time</CardTitle>
-        <CardDescription>Revenue and margin trends by fiscal year</CardDescription>
+        <CardDescription>
+          Revenue and margin trends by fiscal year
+        </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
-        <ResponsiveContainer width="100%" height={300} className="min-h-[300px]">
-          <LineChart data={chartData} onClick={handleClick} style={{ cursor: "pointer" }}>
+        <ResponsiveContainer
+          width="100%"
+          height={300}
+          className="min-h-[300px]"
+        >
+          <LineChart
+            data={chartData}
+            onClick={handleClick}
+            style={{ cursor: "pointer" }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis 
-              dataKey="fiscalYear" 
-              {...getAxisProps()}
-            />
-            <YAxis 
-              {...getAxisProps(`Amount (M${currencySymbol})`, true)}
-            />
+            <XAxis dataKey="fiscalYear" {...getAxisProps()} />
+            <YAxis {...getAxisProps(`Amount (M${currencySymbol})`, true)} />
             <Tooltip
-              formatter={(value: number) => `${currencySymbol}${value.toFixed(2)}M`}
+              formatter={(value: number) =>
+                `${currencySymbol}${value.toFixed(2)}M`
+              }
               labelFormatter={(label) => `Fiscal Year: ${label}`}
               {...getTooltipProps()}
             />
-            <Legend 
+            <Legend
               wrapperStyle={chartTheme.legend.wrapperStyle}
               formatter={getLegendFormatter()}
             />

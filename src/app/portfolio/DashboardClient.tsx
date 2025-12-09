@@ -6,13 +6,20 @@ import { TenYearProjectionChart } from "@/components/charts/TenYearProjectionCha
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
-import { useFilterOptions, type ReferenceFormulation, type ReferenceCountry } from "@/hooks/use-filter-options";
+import {
+  useFilterOptions,
+  type ReferenceFormulation,
+  type ReferenceCountry,
+} from "@/hooks/use-filter-options";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { computeFilteredCounts } from "@/lib/utils/filter-counts";
 import type { Database } from "@/lib/supabase/database.types";
 import type { Country } from "@/lib/db/types";
 import type { Formulation } from "@/lib/db/types";
-import type { FormulationCountryDetail, FormulationCountryUseGroup } from "@/lib/db/types";
+import type {
+  FormulationCountryDetail,
+  FormulationCountryUseGroup,
+} from "@/lib/db/types";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"] & {
   country_id?: string | null;
@@ -59,8 +66,8 @@ function DashboardContent({
   const enrichedBusinessCases = useMemo(() => {
     return businessCases.map((bc) => ({
       ...bc,
-      formulation_status: bc.formulation_code 
-        ? (formulationStatusMap.get(bc.formulation_code) || null)
+      formulation_status: bc.formulation_code
+        ? formulationStatusMap.get(bc.formulation_code) || null
         : null,
     }));
   }, [businessCases, formulationStatusMap]);
@@ -103,16 +110,18 @@ function DashboardContent({
     referenceFormulations,
     referenceCountries,
     filterableBusinessCases,
-    formulationCountries.length > 0 ? formulationCountries.map((fc) => ({
-      formulation_country_id: fc.formulation_country_id || null,
-      formulation_id: null,
-      formulation_code: fc.formulation_code || null,
-      country_id: null,
-      country_code: fc.country_code || null,
-      country_name: fc.country_name || null,
-      country_status: fc.country_status || null,
-    })) : null,
-    filters
+    formulationCountries.length > 0
+      ? formulationCountries.map((fc) => ({
+          formulation_country_id: fc.formulation_country_id || null,
+          formulation_id: null,
+          formulation_code: fc.formulation_code || null,
+          country_id: null,
+          country_code: fc.country_code || null,
+          country_name: fc.country_name || null,
+          country_status: fc.country_status || null,
+        }))
+      : null,
+    filters,
   );
 
   // filters.formulations now contains codes directly
@@ -129,7 +138,10 @@ function DashboardContent({
       }
       // Formulation filter - filters.formulations now contains codes
       if (selectedFormulationCodes.length > 0) {
-        if (!fc.formulation_code || !selectedFormulationCodes.includes(fc.formulation_code)) {
+        if (
+          !fc.formulation_code ||
+          !selectedFormulationCodes.includes(fc.formulation_code)
+        ) {
           return false;
         }
       }
@@ -162,13 +174,19 @@ function DashboardContent({
       }
       // Formulation filter - filters.formulations now contains codes
       if (selectedFormulationCodes.length > 0) {
-        if (!bc.formulation_code || !selectedFormulationCodes.includes(bc.formulation_code)) {
+        if (
+          !bc.formulation_code ||
+          !selectedFormulationCodes.includes(bc.formulation_code)
+        ) {
           return false;
         }
       }
       // Use group filter (by name)
       if (filters.useGroups.length > 0) {
-        if (!bc.use_group_name || !filters.useGroups.includes(bc.use_group_name)) {
+        if (
+          !bc.use_group_name ||
+          !filters.useGroups.includes(bc.use_group_name)
+        ) {
           return false;
         }
       }
@@ -193,7 +211,7 @@ function DashboardContent({
   // Filter use groups based on global filters
   const filteredUseGroups = useMemo(() => {
     if (!useGroups || useGroups.length === 0) return [];
-    
+
     return useGroups.filter((ug) => {
       // Country filter
       if (filters.countries.length > 0) {
@@ -203,13 +221,19 @@ function DashboardContent({
       }
       // Formulation filter
       if (selectedFormulationCodes.length > 0) {
-        if (!ug.formulation_code || !selectedFormulationCodes.includes(ug.formulation_code)) {
+        if (
+          !ug.formulation_code ||
+          !selectedFormulationCodes.includes(ug.formulation_code)
+        ) {
           return false;
         }
       }
       // Use group filter (by name)
       if (filters.useGroups.length > 0) {
-        if (!ug.use_group_name || !filters.useGroups.includes(ug.use_group_name)) {
+        if (
+          !ug.use_group_name ||
+          !filters.useGroups.includes(ug.use_group_name)
+        ) {
           return false;
         }
       }
@@ -241,22 +265,28 @@ function DashboardContent({
       {
         useGroups: filteredUseGroups,
         businessCases: filteredBusinessCases,
-      }
+      },
     );
-  }, [formulations, filteredFormulationCountries, filters, filteredUseGroups, filteredBusinessCases]);
+  }, [
+    formulations,
+    filteredFormulationCountries,
+    filters,
+    filteredUseGroups,
+    filteredBusinessCases,
+  ]);
 
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-4 sm:p-6 space-y-6">
         {/* Integrated Filters */}
-        <GlobalFilterBar 
-          filterOptions={filterOptions} 
-          defaultExpanded={true} 
+        <GlobalFilterBar
+          filterOptions={filterOptions}
+          defaultExpanded={true}
           filteredCounts={filteredCounts}
           inline={true}
           integrated={true}
         />
-        
+
         {/* Chart */}
         <TenYearProjectionChart
           businessCases={filteredBusinessCases}
@@ -288,7 +318,7 @@ function DashboardSkeleton() {
               <Skeleton className="h-8 w-24" />
             </div>
           </div>
-          
+
           {/* Filter Controls Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -298,13 +328,13 @@ function DashboardSkeleton() {
               </div>
             ))}
           </div>
-          
+
           {/* Results Summary */}
           <div className="pt-4 border-t bg-muted/30 -mx-4 sm:-mx-6 px-4 sm:px-6 rounded-md mt-4">
             <Skeleton className="h-4 w-64" />
           </div>
         </div>
-        
+
         {/* Chart Skeleton */}
         <div className="space-y-4">
           {/* Chart Header */}
@@ -320,10 +350,10 @@ function DashboardSkeleton() {
               <Skeleton className="h-8 w-16" />
             </div>
           </div>
-          
+
           {/* Chart Area */}
           <Skeleton className="h-[400px] sm:h-[500px] w-full rounded-lg" />
-          
+
           {/* Table Skeleton */}
           <div className="pt-4 border-t space-y-2">
             <Skeleton className="h-10 w-full" />

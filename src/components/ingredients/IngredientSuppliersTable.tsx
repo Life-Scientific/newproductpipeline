@@ -2,7 +2,10 @@
 
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { EnhancedDataTable, type FilterConfig } from "@/components/ui/enhanced-data-table";
+import {
+  EnhancedDataTable,
+  type FilterConfig,
+} from "@/components/ui/enhanced-data-table";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Building2 } from "lucide-react";
 
@@ -37,7 +40,9 @@ const createColumns = (): ColumnDef<FlatSupplier>[] => [
     header: "Supplier Name",
     meta: { sticky: "left", minWidth: "180px" },
     cell: ({ row }) => (
-      <span className="font-medium text-sm">{row.getValue("supplier_name") || "—"}</span>
+      <span className="font-medium text-sm">
+        {row.getValue("supplier_name") || "—"}
+      </span>
     ),
   },
   {
@@ -65,7 +70,9 @@ const createColumns = (): ColumnDef<FlatSupplier>[] => [
     cell: ({ row }) => {
       const isPrimary = row.getValue("is_primary") as boolean;
       return isPrimary ? (
-        <Badge variant="default" className="text-xs">Primary</Badge>
+        <Badge variant="default" className="text-xs">
+          Primary
+        </Badge>
       ) : (
         <span className="text-sm text-muted-foreground">—</span>
       );
@@ -81,7 +88,8 @@ const createColumns = (): ColumnDef<FlatSupplier>[] => [
         <div className="text-right">
           {cost ? (
             <span className="text-sm font-medium">
-              €{Number(cost).toLocaleString(undefined, {
+              €
+              {Number(cost).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
@@ -107,7 +115,7 @@ const filterConfigs: FilterConfig<FlatSupplier>[] = [
     columnKey: "is_primary",
     label: "Primary",
     paramKey: "primary",
-    getValue: (row) => row.is_primary ? "Yes" : "No",
+    getValue: (row) => (row.is_primary ? "Yes" : "No"),
   },
 ];
 
@@ -115,7 +123,9 @@ interface IngredientSuppliersTableProps {
   suppliers: IngredientSupplier[];
 }
 
-export function IngredientSuppliersTable({ suppliers }: IngredientSuppliersTableProps) {
+export function IngredientSuppliersTable({
+  suppliers,
+}: IngredientSuppliersTableProps) {
   // Flatten and filter the data
   const flatData = useMemo(() => {
     return suppliers
@@ -124,7 +134,10 @@ export function IngredientSuppliersTable({ suppliers }: IngredientSuppliersTable
         id: `${is.ingredient_id}-${is.supplier_id}`,
         supplier_name: is.suppliers!.supplier_name || "",
         supplier_code: is.suppliers!.supplier_code || "",
-        country: is.suppliers!.countries?.country_name || is.suppliers!.countries?.country_code || "",
+        country:
+          is.suppliers!.countries?.country_name ||
+          is.suppliers!.countries?.country_code ||
+          "",
         is_primary: is.is_primary || false,
         cost_per_kg: is.cost_per_kg,
       }));

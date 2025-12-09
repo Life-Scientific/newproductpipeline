@@ -4,7 +4,13 @@ import { useState, useTransition, useEffect } from "react";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { updateFormulationCountryUseGroup } from "@/lib/actions/formulation-country-use-group";
 import { getReferenceProducts } from "@/lib/actions/reference-products";
 import { useToast } from "@/components/ui/use-toast";
@@ -33,10 +39,7 @@ interface UseGroupEditModalProps {
   onSuccess?: () => void;
 }
 
-const USE_GROUP_STATUS_OPTIONS = [
-  "Active",
-  "Inactive",
-];
+const USE_GROUP_STATUS_OPTIONS = ["Active", "Inactive"];
 
 const REGISTRATION_STATUS_OPTIONS = [
   "Planning",
@@ -57,7 +60,7 @@ export function UseGroupEditModal({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const { canEditUseGroups, isLoading: permissionsLoading } = usePermissions();
-  
+
   const [variant, setVariant] = useState(useGroup.use_group_variant || "");
   const [name, setName] = useState(useGroup.use_group_name || "");
   const [status, setStatus] = useState(useGroup.use_group_status || "Active");
@@ -81,16 +84,28 @@ export function UseGroupEditModal({
   // Wait, checking `submissions` table? `formulation_country_use_group_id` FK.
   // Submissions track dates.
   // Maybe `formulation_country_use_group` relies on `country_readiness`? No.
-  
+
   // I will proceed with available fields.
-  
-  const [targetFy, setTargetFy] = useState(useGroup.target_market_entry_fy || "");
-  const [planSubDate, setPlanSubDate] = useState(useGroup.earliest_planned_submission_date || "");
-  const [planAppDate, setPlanAppDate] = useState(useGroup.earliest_planned_approval_date || "");
-  const [actSubDate, setActSubDate] = useState(useGroup.earliest_actual_submission_date || "");
-  const [actAppDate, setActAppDate] = useState(useGroup.earliest_actual_approval_date || "");
-  const [refProdId, setRefProdId] = useState(useGroup.reference_product_id || "none");
-  
+
+  const [targetFy, setTargetFy] = useState(
+    useGroup.target_market_entry_fy || "",
+  );
+  const [planSubDate, setPlanSubDate] = useState(
+    useGroup.earliest_planned_submission_date || "",
+  );
+  const [planAppDate, setPlanAppDate] = useState(
+    useGroup.earliest_planned_approval_date || "",
+  );
+  const [actSubDate, setActSubDate] = useState(
+    useGroup.earliest_actual_submission_date || "",
+  );
+  const [actAppDate, setActAppDate] = useState(
+    useGroup.earliest_actual_approval_date || "",
+  );
+  const [refProdId, setRefProdId] = useState(
+    useGroup.reference_product_id || "none",
+  );
+
   const [referenceProducts, setReferenceProducts] = useState<any[]>([]);
 
   useEffect(() => {
@@ -114,24 +129,27 @@ export function UseGroupEditModal({
       });
       return;
     }
-    
+
     startTransition(async () => {
       const formData = new FormData();
       formData.append("use_group_variant", variant);
       formData.append("use_group_name", name);
       formData.append("use_group_status", status);
       formData.append("target_market_entry_fy", targetFy);
-      
+
       if (planSubDate) formData.append("earliest_submission_date", planSubDate);
       if (planAppDate) formData.append("earliest_approval_date", planAppDate);
       if (actSubDate) formData.append("actual_submission_date", actSubDate);
       if (actAppDate) formData.append("actual_approval_date", actAppDate);
-      
+
       if (refProdId && refProdId !== "none") {
         formData.append("reference_product_id", refProdId);
       }
 
-      const result = await updateFormulationCountryUseGroup(useGroup.formulation_country_use_group_id, formData);
+      const result = await updateFormulationCountryUseGroup(
+        useGroup.formulation_country_use_group_id,
+        formData,
+      );
 
       if (result.error) {
         toast({
@@ -155,7 +173,11 @@ export function UseGroupEditModal({
       open={open}
       onOpenChange={onOpenChange}
       title={`Edit Use Group - ${variant}`}
-      description={useGroup.country_name ? `${useGroup.country_name} | ${useGroup.formulation_name || ""}` : undefined}
+      description={
+        useGroup.country_name
+          ? `${useGroup.country_name} | ${useGroup.formulation_name || ""}`
+          : undefined
+      }
       onSave={handleSave}
       isSaving={isPending}
       saveDisabled={permissionsLoading || !canEditUseGroups}
@@ -163,8 +185,10 @@ export function UseGroupEditModal({
       <div className="space-y-6">
         {/* Basic Info */}
         <div className="space-y-4 border rounded-lg p-4 bg-muted/10">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">Basic Information</h3>
-          
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">
+            Basic Information
+          </h3>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="variant">Variant Code</Label>
@@ -206,8 +230,10 @@ export function UseGroupEditModal({
 
         {/* Market & Reference */}
         <div className="space-y-4 border rounded-lg p-4 bg-muted/10">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">Market & Strategy</h3>
-          
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">
+            Market & Strategy
+          </h3>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="targetFy">Target Market Entry</Label>
@@ -234,7 +260,10 @@ export function UseGroupEditModal({
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
                   {referenceProducts.map((prod) => (
-                    <SelectItem key={prod.reference_product_id} value={prod.reference_product_id}>
+                    <SelectItem
+                      key={prod.reference_product_id}
+                      value={prod.reference_product_id}
+                    >
                       {prod.product_name}
                     </SelectItem>
                   ))}
@@ -246,8 +275,10 @@ export function UseGroupEditModal({
 
         {/* Dates */}
         <div className="space-y-4 border rounded-lg p-4 bg-muted/10">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">Timeline</h3>
-          
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">
+            Timeline
+          </h3>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="planSub">Planned Submission</Label>
@@ -291,6 +322,3 @@ export function UseGroupEditModal({
     </BaseModal>
   );
 }
-
-
-

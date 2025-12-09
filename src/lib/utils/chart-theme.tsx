@@ -1,6 +1,6 @@
 /**
  * Chart Theme Utilities
- * 
+ *
  * Provides consistent theming for Recharts components across dark and light modes.
  * Uses CSS variables that are already defined in globals.css
  */
@@ -14,24 +14,24 @@ export const chartTheme = {
     stroke: "var(--color-border)",
     strokeDasharray: "3 3",
   },
-  
+
   // Axis styling
   axis: {
     stroke: "var(--color-border)",
   },
-  
+
   // Tick styling
   tick: {
     fill: "var(--color-muted-foreground)",
     fontSize: 12,
   },
-  
+
   // Label styling
   label: {
     fill: "var(--color-muted-foreground)",
     fontSize: 12,
   },
-  
+
   // Tooltip styling
   tooltip: {
     contentStyle: {
@@ -53,7 +53,7 @@ export const chartTheme = {
       opacity: 0.1,
     },
   },
-  
+
   // Legend styling
   legend: {
     wrapperStyle: {
@@ -72,7 +72,7 @@ export const chartColors = {
   tertiary: "var(--color-chart-3)",
   quaternary: "var(--color-chart-4)",
   quinary: "var(--color-chart-5)",
-  
+
   // Semantic colors
   success: "var(--color-success)",
   warning: "var(--color-warning)",
@@ -127,7 +127,9 @@ export function getTooltipProps() {
  */
 export function getLegendFormatter() {
   return (value: string) => (
-    <span style={{ color: "var(--color-foreground)", fontSize: "12px" }}>{value}</span>
+    <span style={{ color: "var(--color-foreground)", fontSize: "12px" }}>
+      {value}
+    </span>
   );
 }
 
@@ -144,7 +146,7 @@ export function getHeatmapColorScale(isDark: boolean) {
       return `oklch(${0.45 + intensity * 0.35} ${0.1 + intensity * 0.1} 155)`;
     };
   }
-  
+
   // Light mode: Standard green intensity
   return (value: number) => {
     const opacity = Math.max(0.1, Math.min(1, value / 100));
@@ -163,11 +165,3 @@ export function getHeatmapTextColor(value: number, isDark: boolean): string {
   // In light mode, use dark text on light backgrounds
   return value > 50 ? "oklch(0.98 0 0)" : "oklch(0.2 0 0)";
 }
-
-
-
-
-
-
-
-

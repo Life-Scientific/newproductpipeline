@@ -41,10 +41,10 @@ export interface FilterableFormulationCountry {
  */
 export interface ComputedFilterOptions {
   // Available options for dropdown display (names/display values)
-  countries: string[];           // Country names for display
-  countryCodes: string[];        // Country codes for URL
-  formulations: string[];        // Display names for dropdown
-  formulationCodes: string[];    // Codes for URL
+  countries: string[]; // Country names for display
+  countryCodes: string[]; // Country codes for URL
+  formulations: string[]; // Display names for dropdown
+  formulationCodes: string[]; // Codes for URL
   useGroups: string[];
   formulationStatuses: string[];
   countryStatuses: string[];
@@ -96,7 +96,7 @@ export interface ReferenceFormulation {
 /**
  * Hook to compute filter options with cascading/union logic.
  * All filters pre-filter each other so that only relevant options are shown.
- * 
+ *
  * @param referenceFormulations - Complete list of formulations for building display name lookups
  * @param referenceCountries - Complete list of countries for building code/name lookups
  * @param filterableData - Page-specific data for cascading filter logic (business cases, formulation-countries)
@@ -108,7 +108,7 @@ export function useFilterOptions(
   referenceCountries: ReferenceCountry[],
   filterableData: FilterableBusinessCase[],
   formulationCountries: FilterableFormulationCountry[] | null,
-  filters: PortfolioFilters
+  filters: PortfolioFilters,
 ): ComputedFilterOptions {
   return useMemo(() => {
     // Build formulation lookup maps from REFERENCE data (complete list)
@@ -246,7 +246,7 @@ export function useFilterOptions(
     // === CASCADING LOGIC ===
     // Each filter constrains the others using union logic
     // Note: filters.countries and filters.formulations now contain CODES
-    
+
     // Start with all available options from reference data
     // For formulations: if formulations are selected, show ALL formulations (don't constrain dropdown)
     // The actual filtering happens in the component, not here
@@ -254,12 +254,13 @@ export function useFilterOptions(
     let validFormulationCodes = new Set<string>(allFormulationCodes);
     // Start with all reference countries, then constrain based on filterable data relationships
     // If there's no filterable data, show all countries from reference data
-    let validCountryCodes = countryCodeToFormulations.size > 0 
-      ? new Set<string>(countryCodeToFormulations.keys())
-      : new Set<string>(allCountryCodes);
+    let validCountryCodes =
+      countryCodeToFormulations.size > 0
+        ? new Set<string>(countryCodeToFormulations.keys())
+        : new Set<string>(allCountryCodes);
 
     // === STEP 1: Apply CROSS-TYPE filters first (for dropdown options) ===
-    
+
     // If countries are selected, constrain formulations to those available in selected countries
     if (filters.countries.length > 0) {
       const formulationsInSelectedCountries = new Set<string>();
@@ -271,8 +272,8 @@ export function useFilterOptions(
       });
       validFormulationCodes = new Set(
         Array.from(validFormulationCodes).filter((code) =>
-          formulationsInSelectedCountries.has(code)
-        )
+          formulationsInSelectedCountries.has(code),
+        ),
       );
     }
 
@@ -284,13 +285,15 @@ export function useFilterOptions(
       selectedFormulationCodes.forEach((code) => {
         const countryCodes = formulationToCountryCodes.get(code);
         if (countryCodes) {
-          countryCodes.forEach((c) => countryCodesWithSelectedFormulations.add(c));
+          countryCodes.forEach((c) =>
+            countryCodesWithSelectedFormulations.add(c),
+          );
         }
       });
       validCountryCodes = new Set(
         Array.from(validCountryCodes).filter((countryCode) =>
-          countryCodesWithSelectedFormulations.has(countryCode)
-        )
+          countryCodesWithSelectedFormulations.has(countryCode),
+        ),
       );
       // Note: We intentionally DON'T constrain validFormulationCodes here
       // Users should be able to select any formulation regardless of what's already selected
@@ -298,7 +301,7 @@ export function useFilterOptions(
 
     // === STEP 2: Compute status counts BEFORE applying same-type status filters ===
     // This lets users see "if I select this status, how many would match?"
-    
+
     // For formulation status counts: use formulations constrained by country/formulation selection
     // but NOT by formulation status filter (we want to show alternatives)
     const formulationStatusCounts = new Map<string, number>();
@@ -308,17 +311,20 @@ export function useFilterOptions(
       // 2. Have this specific status
       // 3. Pass country status filter if any (cross-type constraint)
       let countableFormulations = Array.from(validFormulationCodes);
-      
+
       // Apply country status filter as cross-type constraint
       if (filters.countryStatuses.length > 0 && hasCountryData) {
         countableFormulations = countableFormulations.filter((code) => {
           const statuses = formulationToCountryStatuses.get(code);
-          return statuses && filters.countryStatuses.some((s) => statuses.has(s));
+          return (
+            statuses && filters.countryStatuses.some((s) => statuses.has(s))
+          );
         });
       }
-      
+
       const count = countableFormulations.filter((code) => {
-        const formStatus = formulationCodeToStatus.get(code) || "Not Yet Evaluated";
+        const formStatus =
+          formulationCodeToStatus.get(code) || "Not Yet Evaluated";
         return formStatus === status;
       }).length;
       formulationStatusCounts.set(status, count);
@@ -328,15 +334,19 @@ export function useFilterOptions(
     // but NOT by country status filter (we want to show alternatives)
     const countryStatusCounts = new Map<string, number>();
     const fcCountedByStatus = new Map<string, Set<string>>();
-    ALL_COUNTRY_STATUSES.forEach((status) => fcCountedByStatus.set(status, new Set()));
+    ALL_COUNTRY_STATUSES.forEach((status) =>
+      fcCountedByStatus.set(status, new Set()),
+    );
 
     // Get formulations constrained by formulation status (cross-type constraint for country status counts)
     let formulationsForCountryStatusCount = Array.from(validFormulationCodes);
     if (filters.formulationStatuses.length > 0) {
-      formulationsForCountryStatusCount = formulationsForCountryStatusCount.filter((code) => {
-        const status = formulationCodeToStatus.get(code) || "Not Yet Evaluated";
-        return filters.formulationStatuses.includes(status);
-      });
+      formulationsForCountryStatusCount =
+        formulationsForCountryStatusCount.filter((code) => {
+          const status =
+            formulationCodeToStatus.get(code) || "Not Yet Evaluated";
+          return filters.formulationStatuses.includes(status);
+        });
     }
 
     // Count formulation-countries by status
@@ -362,14 +372,15 @@ export function useFilterOptions(
     });
 
     // === STEP 3: Apply SAME-TYPE status filters for dropdown options ===
-    
+
     // Apply formulation status filter to constrain valid formulations
     if (filters.formulationStatuses.length > 0) {
       validFormulationCodes = new Set(
         Array.from(validFormulationCodes).filter((code) => {
-          const status = formulationCodeToStatus.get(code) || "Not Yet Evaluated";
+          const status =
+            formulationCodeToStatus.get(code) || "Not Yet Evaluated";
           return filters.formulationStatuses.includes(status);
-        })
+        }),
       );
     }
 
@@ -378,22 +389,27 @@ export function useFilterOptions(
       validCountryCodes = new Set(
         Array.from(validCountryCodes).filter((countryCode) => {
           const statuses = countryCodeToStatuses.get(countryCode);
-          return statuses && filters.countryStatuses.some((s) => statuses.has(s));
-        })
+          return (
+            statuses && filters.countryStatuses.some((s) => statuses.has(s))
+          );
+        }),
       );
       // Also filter formulations - only those with at least one country having matching status
       validFormulationCodes = new Set(
         Array.from(validFormulationCodes).filter((code) => {
           const statuses = formulationToCountryStatuses.get(code);
-          return statuses && filters.countryStatuses.some((s) => statuses.has(s));
-        })
+          return (
+            statuses && filters.countryStatuses.some((s) => statuses.has(s))
+          );
+        }),
       );
     }
 
     // === STEP 4: Compute available use groups (only when both country AND formulation selected) ===
     const availableUseGroups = new Set<string>();
-    const useGroupsDisabled = filters.countries.length === 0 || filters.formulations.length === 0;
-    
+    const useGroupsDisabled =
+      filters.countries.length === 0 || filters.formulations.length === 0;
+
     if (!useGroupsDisabled) {
       // For each selected country code + formulation code combination, add their use groups
       filters.countries.forEach((countryCode) => {
@@ -422,11 +438,13 @@ export function useFilterOptions(
       .filter((name): name is string => !!name);
 
     // Formulation codes sorted by display name
-    const sortedFormulationCodes = Array.from(validFormulationCodes).sort((a, b) => {
-      const displayA = formulationCodeToDisplay.get(a) || a;
-      const displayB = formulationCodeToDisplay.get(b) || b;
-      return displayA.localeCompare(displayB);
-    });
+    const sortedFormulationCodes = Array.from(validFormulationCodes).sort(
+      (a, b) => {
+        const displayA = formulationCodeToDisplay.get(a) || a;
+        const displayB = formulationCodeToDisplay.get(b) || b;
+        return displayA.localeCompare(displayB);
+      },
+    );
     const formulationDisplayNames = sortedFormulationCodes
       .map((code) => formulationCodeToDisplay.get(code))
       .filter((display): display is string => !!display);
@@ -452,6 +470,11 @@ export function useFilterOptions(
       countryStatusCounts,
       useGroupsDisabled,
     };
-  }, [referenceFormulations, referenceCountries, filterableData, formulationCountries, filters]);
+  }, [
+    referenceFormulations,
+    referenceCountries,
+    filterableData,
+    formulationCountries,
+    filters,
+  ]);
 }
-

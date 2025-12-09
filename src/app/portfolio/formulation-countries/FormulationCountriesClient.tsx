@@ -6,7 +6,12 @@ import { FormulationCountriesList } from "@/components/formulations/FormulationC
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
-import { useFilterOptions, type ReferenceFormulation, type ReferenceCountry, type FilterableFormulationCountry } from "@/hooks/use-filter-options";
+import {
+  useFilterOptions,
+  type ReferenceFormulation,
+  type ReferenceCountry,
+  type FilterableFormulationCountry,
+} from "@/hooks/use-filter-options";
 import { computeFilteredCounts } from "@/lib/utils/filter-counts";
 import type { FormulationCountryDetail } from "@/lib/db/queries";
 import type { Formulation } from "@/lib/db/types";
@@ -48,17 +53,18 @@ function FormulationCountriesContent({
   }, [referenceCountries]);
 
   // Convert formulation countries to filterable format
-  const filterableFormulationCountries: FilterableFormulationCountry[] = useMemo(() => {
-    return countries.map((fc) => ({
-      formulation_country_id: fc.formulation_country_id || null,
-      formulation_id: fc.formulation_id ?? null, // Use nullish coalescing for optional field
-      formulation_code: fc.formulation_code || null,
-      country_id: fc.country_id ?? null, // Use nullish coalescing for optional field
-      country_code: fc.country_code || null,
-      country_name: fc.country_name || null,
-      country_status: fc.country_status || null,
-    }));
-  }, [countries]);
+  const filterableFormulationCountries: FilterableFormulationCountry[] =
+    useMemo(() => {
+      return countries.map((fc) => ({
+        formulation_country_id: fc.formulation_country_id || null,
+        formulation_id: fc.formulation_id ?? null, // Use nullish coalescing for optional field
+        formulation_code: fc.formulation_code || null,
+        country_id: fc.country_id ?? null, // Use nullish coalescing for optional field
+        country_code: fc.country_code || null,
+        country_name: fc.country_name || null,
+        country_status: fc.country_status || null,
+      }));
+    }, [countries]);
 
   // Convert to filterable business cases format (empty - not needed for this page)
   const filterableBusinessCases = useMemo(() => {
@@ -71,7 +77,7 @@ function FormulationCountriesContent({
     referenceCountriesData,
     filterableBusinessCases,
     filterableFormulationCountries,
-    filters
+    filters,
   );
 
   // Filter formulation countries based on global filters
@@ -86,7 +92,10 @@ function FormulationCountriesContent({
 
       // Formulation filter - filters.formulations contains codes
       if (filters.formulations.length > 0) {
-        if (!fc.formulation_code || !filters.formulations.includes(fc.formulation_code)) {
+        if (
+          !fc.formulation_code ||
+          !filters.formulations.includes(fc.formulation_code)
+        ) {
           return false;
         }
       }
@@ -123,7 +132,11 @@ function FormulationCountriesContent({
 
   return (
     <>
-      <GlobalFilterBar filterOptions={filterOptions} defaultExpanded={true} filteredCounts={filteredCounts} />
+      <GlobalFilterBar
+        filterOptions={filterOptions}
+        defaultExpanded={true}
+        filteredCounts={filteredCounts}
+      />
       <Card>
         <CardContent className="p-0">
           <div className="p-6">
@@ -156,7 +169,9 @@ function FormulationCountriesSkeleton() {
 }
 
 // Wrap in Suspense for useSearchParams
-export function FormulationCountriesClient(props: FormulationCountriesClientProps) {
+export function FormulationCountriesClient(
+  props: FormulationCountriesClientProps,
+) {
   return (
     <Suspense fallback={<FormulationCountriesSkeleton />}>
       <FormulationCountriesContent {...props} />

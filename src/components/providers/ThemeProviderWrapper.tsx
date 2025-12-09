@@ -2,7 +2,10 @@
 
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
-export function ThemeProviderWrapper({ children }: { children: React.ReactNode }) {
+export function ThemeProviderWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <ThemeProvider>{children}</ThemeProvider>;
 }
-

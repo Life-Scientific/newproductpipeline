@@ -11,7 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Force dynamic rendering to ensure fresh data
 export const dynamic = "force-dynamic";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
@@ -26,7 +32,15 @@ import { FormulationTreeView } from "@/components/navigation/FormulationTreeView
 import { getFormulationBusinessCasesForTree } from "@/lib/db/queries";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import Link from "next/link";
-import { Network, Package, Globe, DollarSign, FileText, Shield, History } from "lucide-react";
+import {
+  Network,
+  Package,
+  Globe,
+  DollarSign,
+  FileText,
+  Shield,
+  History,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FormattedCurrency } from "@/components/ui/formatted-currency";
 
@@ -45,7 +59,7 @@ export default async function FormulationDetailPage({
   params,
 }: FormulationDetailPageProps) {
   const { id } = await params;
-  
+
   const [
     formulation,
     countryDetails,
@@ -70,34 +84,46 @@ export default async function FormulationDetailPage({
     notFound();
   }
 
-  const formulationDisplayName = 
-    ("formulation_name" in formulation && formulation.formulation_name)
+  const formulationDisplayName =
+    "formulation_name" in formulation && formulation.formulation_name
       ? formulation.formulation_name
-      : ("product_name" in formulation && formulation.product_name)
+      : "product_name" in formulation && formulation.product_name
         ? formulation.product_name
         : formulation.formulation_code || "Formulation";
-  
+
   const breadcrumbs = [
     { label: "Formulations", href: "/formulations" },
     { label: formulationDisplayName },
   ];
 
   // Calculate summary metrics
-  const totalRevenue = businessCases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
-  const totalMargin = businessCases.reduce((sum, bc) => sum + (bc.total_margin || 0), 0);
-  const avgMarginPercent = businessCases.length > 0
-    ? businessCases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) / businessCases.length
-    : 0;
-  
+  const totalRevenue = businessCases.reduce(
+    (sum, bc) => sum + (bc.total_revenue || 0),
+    0,
+  );
+  const totalMargin = businessCases.reduce(
+    (sum, bc) => sum + (bc.total_margin || 0),
+    0,
+  );
+  const avgMarginPercent =
+    businessCases.length > 0
+      ? businessCases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) /
+        businessCases.length
+      : 0;
+
   // Check for negative margins
-  const hasNegativeMargins = businessCases.some((bc) => (bc.total_margin || 0) < 0);
-  const negativeMarginCount = businessCases.filter((bc) => (bc.total_margin || 0) < 0).length;
+  const hasNegativeMargins = businessCases.some(
+    (bc) => (bc.total_margin || 0) < 0,
+  );
+  const negativeMarginCount = businessCases.filter(
+    (bc) => (bc.total_margin || 0) < 0,
+  ).length;
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <AnimatedPage>
         <HierarchicalBreadcrumb items={breadcrumbs} />
-        
+
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold">
@@ -108,10 +134,14 @@ export default async function FormulationDetailPage({
                   : formulation.formulation_code || "Formulation"}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              {formulation.formulation_code ? `Code: ${formulation.formulation_code}` : "—"}
-              {"formulation_category" in formulation && formulation.formulation_category
+              {formulation.formulation_code
+                ? `Code: ${formulation.formulation_code}`
+                : "—"}
+              {"formulation_category" in formulation &&
+              formulation.formulation_category
                 ? ` • ${formulation.formulation_category}`
-                : "product_category" in formulation && formulation.product_category
+                : "product_category" in formulation &&
+                    formulation.product_category
                   ? ` • ${formulation.product_category}`
                   : ""}
             </p>
@@ -137,7 +167,11 @@ export default async function FormulationDetailPage({
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">{countryDetails.length}</div>
               <p className="text-xs text-muted-foreground">
-                {countryDetails.filter(c => c.country_status === "Approved").length} approved
+                {
+                  countryDetails.filter((c) => c.country_status === "Approved")
+                    .length
+                }{" "}
+                approved
               </p>
             </CardContent>
           </Card>
@@ -152,7 +186,11 @@ export default async function FormulationDetailPage({
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">{useGroups.length}</div>
               <p className="text-xs text-muted-foreground">
-                {useGroups.filter(l => l.use_group_status === "Approved").length} approved
+                {
+                  useGroups.filter((l) => l.use_group_status === "Approved")
+                    .length
+                }{" "}
+                approved
               </p>
             </CardContent>
           </Card>
@@ -165,7 +203,9 @@ export default async function FormulationDetailPage({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              <div className="text-2xl font-bold">{countUniqueBusinessCaseGroups(businessCases)}</div>
+              <div className="text-2xl font-bold">
+                {countUniqueBusinessCaseGroups(businessCases)}
+              </div>
               <p className="text-xs text-muted-foreground">
                 <FormattedCurrency value={totalRevenue} compact /> revenue
               </p>
@@ -182,7 +222,12 @@ export default async function FormulationDetailPage({
             <CardContent className="space-y-1">
               <div className="text-2xl font-bold">{ingredients.length}</div>
               <p className="text-xs text-muted-foreground">
-                {ingredients.filter(i => i.ingredients?.ingredient_type === "Active").length} active
+                {
+                  ingredients.filter(
+                    (i) => i.ingredients?.ingredient_type === "Active",
+                  ).length
+                }{" "}
+                active
               </p>
             </CardContent>
           </Card>
@@ -207,40 +252,75 @@ export default async function FormulationDetailPage({
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground">Formulation Code</p>
-                      <p className="text-sm font-medium">{formulation.formulation_code || "—"}</p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Formulation Code
+                      </p>
+                      <p className="text-sm font-medium">
+                        {formulation.formulation_code || "—"}
+                      </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground">Status</p>
-                      <Badge variant={"formulation_status" in formulation ? (statusColors[formulation.formulation_status] as any) || "secondary" : "secondary"}>
-                        {"formulation_status" in formulation ? formulation.formulation_status : "—"}
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Status
+                      </p>
+                      <Badge
+                        variant={
+                          "formulation_status" in formulation
+                            ? (statusColors[
+                                formulation.formulation_status
+                              ] as any) || "secondary"
+                            : "secondary"
+                        }
+                      >
+                        {"formulation_status" in formulation
+                          ? formulation.formulation_status
+                          : "—"}
                       </Badge>
                     </div>
-                    {"formulation_category" in formulation && (<div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground">Formulation Category</p>
-                      <p className="text-sm">{formulation.formulation_category || "—"}</p>
-                    </div>)}
+                    {"formulation_category" in formulation && (
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Formulation Category
+                        </p>
+                        <p className="text-sm">
+                          {formulation.formulation_category || "—"}
+                        </p>
+                      </div>
+                    )}
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground">Formulation Type</p>
-                      <p className="text-sm">{formulation.formulation_type || "—"}</p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Formulation Type
+                      </p>
+                      <p className="text-sm">
+                        {formulation.formulation_type || "—"}
+                      </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground">UOM</p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        UOM
+                      </p>
                       <p className="text-sm">{formulation.uom || "—"}</p>
                     </div>
                     {formulation.short_name && (
                       <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">Short Name</p>
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Short Name
+                        </p>
                         <p className="text-sm">{formulation.short_name}</p>
                       </div>
                     )}
                   </div>
-                  {"status_rationale" in formulation && formulation.status_rationale && (
-                    <div className="space-y-1 pt-2 border-t">
-                      <p className="text-xs font-medium text-muted-foreground">Status Rationale</p>
-                      <p className="text-sm">{formulation.status_rationale}</p>
-                    </div>
-                  )}
+                  {"status_rationale" in formulation &&
+                    formulation.status_rationale && (
+                      <div className="space-y-1 pt-2 border-t">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Status Rationale
+                        </p>
+                        <p className="text-sm">
+                          {formulation.status_rationale}
+                        </p>
+                      </div>
+                    )}
                 </CardContent>
               </Card>
 
@@ -250,7 +330,9 @@ export default async function FormulationDetailPage({
                   <CardTitle>Financial Summary</CardTitle>
                   {hasNegativeMargins && (
                     <CardDescription className="text-destructive">
-                      ⚠️ Warning: {negativeMarginCount} business case{negativeMarginCount !== 1 ? "s" : ""} with negative margins (COGS &gt; NSP)
+                      ⚠️ Warning: {negativeMarginCount} business case
+                      {negativeMarginCount !== 1 ? "s" : ""} with negative
+                      margins (COGS &gt; NSP)
                     </CardDescription>
                   )}
                 </CardHeader>
@@ -258,30 +340,54 @@ export default async function FormulationDetailPage({
                   {hasNegativeMargins && (
                     <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg mb-4">
                       <p className="text-sm text-destructive font-medium">
-                        ⚠️ Negative margins detected: Some business cases have COGS exceeding NSP. Please review pricing or cost assumptions.
+                        ⚠️ Negative margins detected: Some business cases have
+                        COGS exceeding NSP. Please review pricing or cost
+                        assumptions.
                       </p>
                     </div>
                   )}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground">Total Revenue</p>
-                      <p className="text-lg font-semibold"><FormattedCurrency value={totalRevenue} compact /></p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Total Revenue
+                      </p>
+                      <p className="text-lg font-semibold">
+                        <FormattedCurrency value={totalRevenue} compact />
+                      </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground">Total Margin</p>
-                      <p className={cn("text-lg font-semibold", totalMargin < 0 && "text-destructive")}>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Total Margin
+                      </p>
+                      <p
+                        className={cn(
+                          "text-lg font-semibold",
+                          totalMargin < 0 && "text-destructive",
+                        )}
+                      >
                         <FormattedCurrency value={totalMargin} compact />
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground">Avg Margin %</p>
-                      <p className={cn("text-lg font-semibold", avgMarginPercent < 0 && "text-destructive")}>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Avg Margin %
+                      </p>
+                      <p
+                        className={cn(
+                          "text-lg font-semibold",
+                          avgMarginPercent < 0 && "text-destructive",
+                        )}
+                      >
                         {avgMarginPercent.toFixed(1)}%
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground">Business Cases</p>
-                      <p className="text-lg font-semibold">{businessCases.length}</p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Business Cases
+                      </p>
+                      <p className="text-lg font-semibold">
+                        {businessCases.length}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -303,77 +409,111 @@ export default async function FormulationDetailPage({
             {countryDetails.length > 0 && (
               <Card>
                 <CardHeader className="space-y-1.5">
-                  <CardTitle>Country Portfolio ({countryDetails.length})</CardTitle>
-                  <CardDescription>Revenue and margin breakdown by country</CardDescription>
+                  <CardTitle>
+                    Country Portfolio ({countryDetails.length})
+                  </CardTitle>
+                  <CardDescription>
+                    Revenue and margin breakdown by country
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {countryDetails.map((detail) => {
                       // Calculate country-specific metrics from business cases
                       const countryBusinessCases = businessCases.filter(
-                        (bc) => bc.country_name === detail.country_name
+                        (bc) => bc.country_name === detail.country_name,
                       );
                       const countryRevenue = countryBusinessCases.reduce(
                         (sum, bc) => sum + (bc.total_revenue || 0),
-                        0
+                        0,
                       );
                       const countryMargin = countryBusinessCases.reduce(
                         (sum, bc) => sum + (bc.total_margin || 0),
-                        0
+                        0,
                       );
-                      const countryMarginPercent = countryRevenue > 0 
-                        ? (countryMargin / countryRevenue) * 100 
-                        : 0;
+                      const countryMarginPercent =
+                        countryRevenue > 0
+                          ? (countryMargin / countryRevenue) * 100
+                          : 0;
                       const countryUseGroups = useGroups.filter(
-                        (ug) => ug.formulation_country_id === detail.formulation_country_id
+                        (ug) =>
+                          ug.formulation_country_id ===
+                          detail.formulation_country_id,
                       );
 
                       return (
                         <Link
                           key={detail.formulation_country_id}
-                          href={`/portfolio/formulations/${id}?country=${encodeURIComponent(detail.country_name || '')}`}
+                          href={`/portfolio/formulations/${id}?country=${encodeURIComponent(detail.country_name || "")}`}
                           className="block"
                         >
                           <div className="p-4 border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all cursor-pointer">
                             <div className="flex items-start justify-between mb-3">
                               <div>
-                                <h4 className="font-semibold text-sm">{detail.country_name}</h4>
+                                <h4 className="font-semibold text-sm">
+                                  {detail.country_name}
+                                </h4>
                                 <p className="text-xs text-muted-foreground">
-                                  {detail.target_market_entry_fy || "No target FY"}
+                                  {detail.target_market_entry_fy ||
+                                    "No target FY"}
                                 </p>
                               </div>
                               {detail.country_status && (
-                                <Badge 
-                                  variant={detail.country_status === "Approved" ? "default" : "outline"} 
+                                <Badge
+                                  variant={
+                                    detail.country_status === "Approved"
+                                      ? "default"
+                                      : "outline"
+                                  }
                                   className="text-xs"
                                 >
                                   {detail.country_status}
                                 </Badge>
                               )}
                             </div>
-                            
+
                             {countryBusinessCases.length > 0 ? (
                               <div className="space-y-2">
                                 <div className="flex justify-between text-sm">
-                                  <span className="text-muted-foreground">Revenue</span>
-                                  <span className="font-medium"><FormattedCurrency value={countryRevenue} compact /></span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                  <span className="text-muted-foreground">Margin</span>
-                                  <span className={cn(
-                                    "font-medium",
-                                    countryMargin < 0 && "text-destructive"
-                                  )}>
-                                    <FormattedCurrency value={countryMargin} compact />
+                                  <span className="text-muted-foreground">
+                                    Revenue
+                                  </span>
+                                  <span className="font-medium">
+                                    <FormattedCurrency
+                                      value={countryRevenue}
+                                      compact
+                                    />
                                   </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                  <span className="text-muted-foreground">Margin %</span>
-                                  <Badge 
+                                  <span className="text-muted-foreground">
+                                    Margin
+                                  </span>
+                                  <span
+                                    className={cn(
+                                      "font-medium",
+                                      countryMargin < 0 && "text-destructive",
+                                    )}
+                                  >
+                                    <FormattedCurrency
+                                      value={countryMargin}
+                                      compact
+                                    />
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">
+                                    Margin %
+                                  </span>
+                                  <Badge
                                     variant={
-                                      countryMarginPercent >= 40 ? "default" :
-                                      countryMarginPercent >= 20 ? "secondary" :
-                                      countryMarginPercent >= 0 ? "outline" : "destructive"
+                                      countryMarginPercent >= 40
+                                        ? "default"
+                                        : countryMarginPercent >= 20
+                                          ? "secondary"
+                                          : countryMarginPercent >= 0
+                                            ? "outline"
+                                            : "destructive"
                                     }
                                     className="text-xs"
                                   >
@@ -381,14 +521,20 @@ export default async function FormulationDetailPage({
                                   </Badge>
                                 </div>
                                 <div className="pt-2 border-t mt-2 flex justify-between text-xs text-muted-foreground">
-                                  <span>{countryBusinessCases.length} business cases</span>
-                                  <span>{countryUseGroups.length} use groups</span>
+                                  <span>
+                                    {countryBusinessCases.length} business cases
+                                  </span>
+                                  <span>
+                                    {countryUseGroups.length} use groups
+                                  </span>
                                 </div>
                               </div>
                             ) : (
                               <div className="text-sm text-muted-foreground">
                                 <p>No business cases yet</p>
-                                <p className="text-xs mt-1">{countryUseGroups.length} use groups</p>
+                                <p className="text-xs mt-1">
+                                  {countryUseGroups.length} use groups
+                                </p>
                               </div>
                             )}
                           </div>
@@ -412,7 +558,11 @@ export default async function FormulationDetailPage({
             <FormulationTreeView
               formulationId={id}
               formulationCode={formulation.formulation_code || ""}
-              formulationName={"formulation_name" in formulation ? formulation.formulation_name || "" : formulation.formulation_code || ""}
+              formulationName={
+                "formulation_name" in formulation
+                  ? formulation.formulation_name || ""
+                  : formulation.formulation_code || ""
+              }
               countries={countryDetails}
               useGroups={useGroups}
               businessCases={businessCasesForTree}

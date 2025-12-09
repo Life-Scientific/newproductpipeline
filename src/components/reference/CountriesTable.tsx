@@ -24,7 +24,9 @@ const createColumns = (): ColumnDef<Country>[] => [
     cell: ({ row }) => {
       const code = row.getValue("country_code") as string | null;
       return (
-        <span className="font-mono text-sm text-muted-foreground">{code || "—"}</span>
+        <span className="font-mono text-sm text-muted-foreground">
+          {code || "—"}
+        </span>
       );
     },
   },
@@ -42,9 +44,13 @@ const createColumns = (): ColumnDef<Country>[] => [
     cell: ({ row }) => {
       const hasTariffs = row.getValue("has_tariffs") as boolean | null;
       return hasTariffs ? (
-        <Badge variant="default" className="text-xs">Yes</Badge>
+        <Badge variant="default" className="text-xs">
+          Yes
+        </Badge>
       ) : (
-        <Badge variant="outline" className="text-xs">No</Badge>
+        <Badge variant="outline" className="text-xs">
+          No
+        </Badge>
       );
     },
   },
@@ -54,9 +60,13 @@ const createColumns = (): ColumnDef<Country>[] => [
     cell: ({ row }) => {
       const isActive = row.getValue("is_active") as boolean | null;
       return isActive ? (
-        <Badge variant="default" className="text-xs">Active</Badge>
+        <Badge variant="default" className="text-xs">
+          Active
+        </Badge>
       ) : (
-        <Badge variant="secondary" className="text-xs">Inactive</Badge>
+        <Badge variant="secondary" className="text-xs">
+          Inactive
+        </Badge>
       );
     },
   },

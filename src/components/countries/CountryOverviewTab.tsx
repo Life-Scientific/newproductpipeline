@@ -3,7 +3,13 @@
 import { useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
@@ -12,7 +18,8 @@ import { FiscalYearSelector } from "@/components/countries/FiscalYearSelector";
 import type { Database } from "@/lib/supabase/database.types";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
-type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
+type FormulationCountryDetail =
+  Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 
 interface CountryOverviewTabProps {
   country: {
@@ -60,7 +67,7 @@ export function CountryOverviewTab({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { formatCurrencyCompact } = useDisplayPreferences();
-  
+
   // Get selected FY from URL params, default to FY30
   const selectedFY = parseInt(searchParams.get("fy") || "30", 10);
 
@@ -78,17 +85,30 @@ export function CountryOverviewTab({
 
   // Calculate FY-specific financial stats
   const fyStats = useMemo(() => {
-    const totalRevenue = filteredBusinessCases.reduce((sum, bc) => sum + (bc.total_revenue || 0), 0);
-    const totalMargin = filteredBusinessCases.reduce((sum, bc) => sum + (bc.total_margin || 0), 0);
-    const avgMarginPercent = filteredBusinessCases.length > 0
-      ? filteredBusinessCases.reduce((sum, bc) => sum + (bc.margin_percent || 0), 0) / filteredBusinessCases.length
-      : 0;
+    const totalRevenue = filteredBusinessCases.reduce(
+      (sum, bc) => sum + (bc.total_revenue || 0),
+      0,
+    );
+    const totalMargin = filteredBusinessCases.reduce(
+      (sum, bc) => sum + (bc.total_margin || 0),
+      0,
+    );
+    const avgMarginPercent =
+      filteredBusinessCases.length > 0
+        ? filteredBusinessCases.reduce(
+            (sum, bc) => sum + (bc.margin_percent || 0),
+            0,
+          ) / filteredBusinessCases.length
+        : 0;
     return { totalRevenue, totalMargin, avgMarginPercent };
   }, [filteredBusinessCases]);
 
   // Group business cases by formulation for top formulations
   const bcByFormulation = useMemo(() => {
-    const map = new Map<string, { revenue: number; margin: number; count: number }>();
+    const map = new Map<
+      string,
+      { revenue: number; margin: number; count: number }
+    >();
     filteredBusinessCases.forEach((bc) => {
       const key = bc.formulation_code || "Unknown";
       const existing = map.get(key) || { revenue: 0, margin: 0, count: 0 };
@@ -146,11 +166,15 @@ export function CountryOverviewTab({
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Country Code</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Country Code
+                </p>
                 <p className="text-sm font-medium">{country.country_code}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Status</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Status
+                </p>
                 <Badge variant={country.is_active ? "success" : "muted"}>
                   {country.is_active ? "Active" : "Inactive"}
                 </Badge>
@@ -167,30 +191,46 @@ export function CountryOverviewTab({
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Revenue</p>
-                <p className="text-lg font-semibold">{formatCurrencyCompact(fyStats.totalRevenue)}</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Revenue
+                </p>
+                <p className="text-lg font-semibold">
+                  {formatCurrencyCompact(fyStats.totalRevenue)}
+                </p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Margin</p>
-                <p className={cn(
-                  "text-lg font-semibold",
-                  fyStats.totalMargin < 0 && "text-destructive"
-                )}>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Margin
+                </p>
+                <p
+                  className={cn(
+                    "text-lg font-semibold",
+                    fyStats.totalMargin < 0 && "text-destructive",
+                  )}
+                >
                   {formatCurrencyCompact(fyStats.totalMargin)}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Avg Margin %</p>
-                <p className={cn(
-                  "text-lg font-semibold",
-                  fyStats.avgMarginPercent < 0 && "text-destructive"
-                )}>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Avg Margin %
+                </p>
+                <p
+                  className={cn(
+                    "text-lg font-semibold",
+                    fyStats.avgMarginPercent < 0 && "text-destructive",
+                  )}
+                >
                   {fyStats.avgMarginPercent.toFixed(1)}%
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Business Cases</p>
-                <p className="text-lg font-semibold">{filteredBusinessCases.length}</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Business Cases
+                </p>
+                <p className="text-lg font-semibold">
+                  {filteredBusinessCases.length}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -202,14 +242,19 @@ export function CountryOverviewTab({
         <Card>
           <CardHeader className="space-y-1.5">
             <CardTitle>Top Formulations by Revenue</CardTitle>
-            <CardDescription>Highest performing formulations in this country (FY{selectedFY})</CardDescription>
+            <CardDescription>
+              Highest performing formulations in this country (FY{selectedFY})
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {topFormulations.map((f, index) => {
-                const formulation = formulations.find(fc => fc.formulation_code === f.code);
-                const marginPercent = f.revenue > 0 ? (f.margin / f.revenue) * 100 : 0;
-                
+                const formulation = formulations.find(
+                  (fc) => fc.formulation_code === f.code,
+                );
+                const marginPercent =
+                  f.revenue > 0 ? (f.margin / f.revenue) * 100 : 0;
+
                 return (
                   <div
                     key={f.code}
@@ -221,9 +266,10 @@ export function CountryOverviewTab({
                       </div>
                       <div>
                         <Link
-                          href={formulation?.formulation_country_id 
-                            ? `/formulation-countries/${formulation.formulation_country_id}`
-                            : "#"
+                          href={
+                            formulation?.formulation_country_id
+                              ? `/formulation-countries/${formulation.formulation_country_id}`
+                              : "#"
                           }
                           className="font-medium text-primary hover:underline"
                         >
@@ -237,13 +283,19 @@ export function CountryOverviewTab({
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold">{formatCurrencyCompact(f.revenue)}</div>
+                      <div className="font-semibold">
+                        {formatCurrencyCompact(f.revenue)}
+                      </div>
                       <div className="text-xs text-muted-foreground">
                         <Badge
                           variant={
-                            marginPercent >= 40 ? "success" :
-                            marginPercent >= 20 ? "info" :
-                            marginPercent >= 0 ? "warning" : "destructive"
+                            marginPercent >= 40
+                              ? "success"
+                              : marginPercent >= 20
+                                ? "info"
+                                : marginPercent >= 0
+                                  ? "warning"
+                                  : "destructive"
                           }
                           className="text-xs"
                         >
@@ -263,14 +315,16 @@ export function CountryOverviewTab({
       <Card>
         <CardHeader className="space-y-1.5">
           <CardTitle>Formulation Country Breakdown</CardTitle>
-          <CardDescription>Formulation country statuses in {country.country_name}</CardDescription>
+          <CardDescription>
+            Formulation country statuses in {country.country_name}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from(statusCounts.entries()).map(([status, count]) => (
               <div key={status} className="p-4 border rounded-lg">
                 <div className="flex items-center justify-between">
-                  <Badge variant={getStatusVariant(status, 'country')}>
+                  <Badge variant={getStatusVariant(status, "country")}>
                     {status}
                   </Badge>
                   <span className="text-2xl font-bold">{count}</span>
@@ -283,4 +337,3 @@ export function CountryOverviewTab({
     </div>
   );
 }
-

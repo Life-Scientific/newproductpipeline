@@ -6,11 +6,17 @@ import { ChevronRight, ChevronDown, Globe, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import type { Database } from "@/lib/supabase/database.types";
 
-type FormulationCountryDetail = Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
-type FormulationCountryUseGroup = Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
+type FormulationCountryDetail =
+  Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
+type FormulationCountryUseGroup =
+  Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 
 interface FormulationHierarchyViewProps {
   formulationId: string;
@@ -27,7 +33,9 @@ export function FormulationHierarchyView({
   countries,
   useGroups,
 }: FormulationHierarchyViewProps) {
-  const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
+  const [expandedCountries, setExpandedCountries] = useState<Set<string>>(
+    new Set(),
+  );
 
   const toggleCountry = (countryId: string) => {
     const newExpanded = new Set(expandedCountries);
@@ -40,14 +48,17 @@ export function FormulationHierarchyView({
   };
 
   // Group use groups by country
-  const useGroupsByCountry = useGroups.reduce((acc, useGroup) => {
-    const countryId = useGroup.formulation_country_id || "unknown";
-    if (!acc[countryId]) {
-      acc[countryId] = [];
-    }
-    acc[countryId].push(useGroup);
-    return acc;
-  }, {} as Record<string, FormulationCountryUseGroup[]>);
+  const useGroupsByCountry = useGroups.reduce(
+    (acc, useGroup) => {
+      const countryId = useGroup.formulation_country_id || "unknown";
+      if (!acc[countryId]) {
+        acc[countryId] = [];
+      }
+      acc[countryId].push(useGroup);
+      return acc;
+    },
+    {} as Record<string, FormulationCountryUseGroup[]>,
+  );
 
   return (
     <Card>
@@ -92,7 +103,9 @@ export function FormulationHierarchyView({
                           <ChevronRight className="h-4 w-4 mr-2" />
                         )}
                         <Globe className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <span className="font-medium">{country.country_name}</span>
+                        <span className="font-medium">
+                          {country.country_name}
+                        </span>
                         {country.country_status && (
                           <Badge variant="outline" className="ml-2">
                             {country.country_status}
@@ -100,7 +113,8 @@ export function FormulationHierarchyView({
                         )}
                         {countryUseGroups.length > 0 && (
                           <Badge variant="secondary" className="ml-auto">
-                            {countryUseGroups.length} use group{countryUseGroups.length !== 1 ? "s" : ""}
+                            {countryUseGroups.length} use group
+                            {countryUseGroups.length !== 1 ? "s" : ""}
                           </Badge>
                         )}
                       </Button>
@@ -118,7 +132,8 @@ export function FormulationHierarchyView({
                             >
                               <FileText className="h-3 w-3 text-muted-foreground" />
                               <span className="text-sm">
-                                {useGroup.use_group_name || `Use Group ${useGroup.use_group_variant}`}
+                                {useGroup.use_group_name ||
+                                  `Use Group ${useGroup.use_group_variant}`}
                               </span>
                               {useGroup.use_group_variant && (
                                 <Badge variant="outline" className="text-xs">
@@ -126,7 +141,10 @@ export function FormulationHierarchyView({
                                 </Badge>
                               )}
                               {useGroup.use_group_status && (
-                                <Badge variant="secondary" className="text-xs ml-auto">
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs ml-auto"
+                                >
                                   {useGroup.use_group_status}
                                 </Badge>
                               )}
@@ -149,4 +167,3 @@ export function FormulationHierarchyView({
     </Card>
   );
 }
-

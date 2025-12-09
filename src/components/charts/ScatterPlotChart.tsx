@@ -57,7 +57,6 @@ export function ScatterPlotChart({
   onClick,
   categories = [],
 }: ScatterPlotChartProps) {
-  
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -97,62 +96,73 @@ export function ScatterPlotChart({
           style={{ cursor: onClick ? "pointer" : "default" }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-          <XAxis 
-            type="number" 
-            dataKey="x" 
-            name={xAxisLabel} 
+          <XAxis
+            type="number"
+            dataKey="x"
+            name={xAxisLabel}
             domain={xAxisDomain}
-            label={{ 
-              value: xAxisLabel, 
-              position: "insideBottom", 
-              offset: -15, 
+            label={{
+              value: xAxisLabel,
+              position: "insideBottom",
+              offset: -15,
               fill: "var(--color-muted-foreground)",
-              style: { fontSize: '12px' }
+              style: { fontSize: "12px" },
             }}
             tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
             axisLine={{ stroke: "var(--color-border)" }}
           />
-          <YAxis 
-            type="number" 
-            dataKey="y" 
-            name={yAxisLabel} 
+          <YAxis
+            type="number"
+            dataKey="y"
+            name={yAxisLabel}
             domain={yAxisDomain}
-            label={{ 
-              value: yAxisLabel, 
-              angle: -90, 
-              position: "insideLeft", 
+            label={{
+              value: yAxisLabel,
+              angle: -90,
+              position: "insideLeft",
               offset: 10,
               fill: "var(--color-muted-foreground)",
-              style: { fontSize: '12px', textAnchor: 'middle' }
+              style: { fontSize: "12px", textAnchor: "middle" },
             }}
             tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
             axisLine={{ stroke: "var(--color-border)" }}
           />
-          <ZAxis type="number" dataKey="z" range={[50, 400]} name={zAxisLabel} />
-          <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: "3 3" }} />
+          <ZAxis
+            type="number"
+            dataKey="z"
+            range={[50, 400]}
+            name={zAxisLabel}
+          />
+          <Tooltip
+            content={<CustomTooltip />}
+            cursor={{ strokeDasharray: "3 3" }}
+          />
           {categories.length > 0 && (
-            <Legend 
-              wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
+            <Legend
+              wrapperStyle={{ paddingTop: "20px", fontSize: "12px" }}
               iconSize={10}
               layout="horizontal"
               verticalAlign="bottom"
               align="center"
             />
           )}
-          
+
           {categories.length > 0 ? (
             categories.map((cat, index) => (
               <Scatter
                 key={cat}
                 name={cat}
-                data={data.filter(d => d.category === cat)}
+                data={data.filter((d) => d.category === cat)}
                 fill={COLORS[index % COLORS.length]}
               />
             ))
           ) : (
             <Scatter name="Items" data={data} fill="var(--color-chart-1)">
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill || COLORS[index % COLORS.length]} />
+                <Cell
+                  key={`cell-${index}`}
+                  fill={entry.fill || COLORS[index % COLORS.length]}
+                />
               ))}
             </Scatter>
           )}
