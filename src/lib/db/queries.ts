@@ -947,6 +947,8 @@ export async function getBusinessCasesForChart() {
         business_case_id,
         business_case_group_id,
         fiscal_year,
+        effective_start_fiscal_year,
+        year_offset,
         total_revenue,
         total_margin,
         total_cogs,
