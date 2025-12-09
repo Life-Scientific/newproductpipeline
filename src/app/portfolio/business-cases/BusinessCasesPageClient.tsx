@@ -302,10 +302,18 @@ function BusinessCasesContent({
 
   return (
     <>
-      <GlobalFilterBar filterOptions={filterOptions} defaultExpanded={true} filteredCounts={filteredCounts} />
+      <Card className="overflow-hidden">
+        <CardContent className="p-4 sm:p-6 space-y-6">
+          {/* Integrated Filters */}
+          <GlobalFilterBar 
+            filterOptions={filterOptions} 
+            defaultExpanded={true} 
+            filteredCounts={filteredCounts}
+            inline={true}
+            integrated={true}
+          />
 
-      <Card>
-        <CardHeader className="pb-3">
+          {/* Business Cases Header */}
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Business Cases</CardTitle>
@@ -374,9 +382,9 @@ function BusinessCasesContent({
               )}
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="p-4 sm:p-6 pt-0">
+
+          {/* Business Cases Table */}
+          <div>
             <BusinessCasesProjectionTable
               businessCases={filteredBusinessCases}
               canEdit={canEditBusinessCases}
