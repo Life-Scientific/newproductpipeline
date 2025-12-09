@@ -1,6 +1,6 @@
 import { getBusinessCases, getFormulations } from "@/lib/db/queries";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
-import { MarketOverviewDashboard } from "@/components/markets/MarketOverviewDashboard";
+import { MarketsClient } from "./MarketsClient";
 import { createClient } from "@/lib/supabase/server";
 
 // Force dynamic rendering
@@ -32,7 +32,7 @@ export default async function MarketsPage() {
           </div>
         </div>
 
-        <MarketOverviewDashboard
+        <MarketsClient
           businessCases={businessCases}
           formulations={formulations}
           countries={countries}

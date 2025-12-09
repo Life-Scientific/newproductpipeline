@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
 import type { ComputedFilterOptions } from "@/hooks/use-filter-options";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface FilteredCounts {
   countries?: number;
@@ -123,16 +125,37 @@ export function GlobalFilterBar({
     setFilter("countryStatuses", selectedStatuses);
   };
 
+  // Count active filters
+  const activeFilterCount = useMemo(() => {
+    return filters.countries.length +
+           filters.formulations.length +
+           filters.useGroups.length +
+           filters.formulationStatuses.length +
+           filters.countryStatuses.length;
+  }, [filters]);
+
   return (
     <Card className="mb-6">
-      <CardContent className="p-4">
+      <CardContent className="p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold">Portfolio Filters</h3>
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "p-1.5 rounded-md transition-colors",
+              hasActiveFilters ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+            )}>
+              <Filter className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold">Portfolio Filters</h3>
+              {hasActiveFilters && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {activeFilterCount} {activeFilterCount === 1 ? "filter" : "filters"} active
+                </p>
+              )}
+            </div>
             {hasActiveFilters && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-xs font-medium">
                 Active
               </Badge>
             )}
@@ -143,9 +166,9 @@ export function GlobalFilterBar({
                 variant="ghost"
                 size="sm"
                 onClick={clearAllFilters}
-                className="h-8 text-xs"
+                className="h-8 text-xs hover:bg-destructive/10 hover:text-destructive transition-colors"
               >
-                <X className="h-3 w-3 mr-1" />
+                <X className="h-3 w-3 mr-1.5" />
                 Clear All
               </Button>
             )}
@@ -157,12 +180,12 @@ export function GlobalFilterBar({
             >
               {isExpanded ? (
                 <>
-                  <ChevronUp className="h-4 w-4 mr-1" />
+                  <ChevronUp className="h-4 w-4 mr-1.5" />
                   Collapse
                 </>
               ) : (
                 <>
-                  <ChevronDown className="h-4 w-4 mr-1" />
+                  <ChevronDown className="h-4 w-4 mr-1.5" />
                   Expand
                 </>
               )}
@@ -170,91 +193,225 @@ export function GlobalFilterBar({
           </div>
         </div>
 
+        {/* Active Filter Pills (when expanded) */}
+        <AnimatePresence>
+          {isExpanded && hasActiveFilters && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-wrap gap-2 mb-4 pb-4"
+            >
+              {filters.countries.length > 0 && (
+                <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+                  <span className="font-semibold">{filters.countries.length}</span>
+                  <span>Country{filters.countries.length !== 1 ? "ies" : ""}</span>
+                  <button
+                    onClick={() => setFilter("countries", [])}
+                    className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {filters.formulations.length > 0 && (
+                <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+                  <span className="font-semibold">{filters.formulations.length}</span>
+                  <span>Formulation{filters.formulations.length !== 1 ? "s" : ""}</span>
+                  <button
+                    onClick={() => setFilter("formulations", [])}
+                    className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {filters.useGroups.length > 0 && (
+                <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+                  <span className="font-semibold">{filters.useGroups.length}</span>
+                  <span>Use Group{filters.useGroups.length !== 1 ? "s" : ""}</span>
+                  <button
+                    onClick={() => setFilter("useGroups", [])}
+                    className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {filters.formulationStatuses.length > 0 && (
+                <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+                  <span className="font-semibold">{filters.formulationStatuses.length}</span>
+                  <span>Form Status{filters.formulationStatuses.length !== 1 ? "es" : ""}</span>
+                  <button
+                    onClick={() => setFilter("formulationStatuses", [])}
+                    className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {filters.countryStatuses.length > 0 && (
+                <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+                  <span className="font-semibold">{filters.countryStatuses.length}</span>
+                  <span>Country Status{filters.countryStatuses.length !== 1 ? "es" : ""}</span>
+                  <button
+                    onClick={() => setFilter("countryStatuses", [])}
+                    className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Filter Controls */}
-        {isExpanded && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-            {/* Country Filter */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">
-                Country
-              </Label>
-              <MultiSelect
-                options={countryOptions}
-                selected={filters.countries}
-                onChange={handleCountryChange}
-                placeholder="All countries"
-                searchPlaceholder="Search countries..."
-                emptyText="No countries found"
-                compact={true}
-              />
-            </div>
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                {/* Country Filter */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 }}
+                  className="space-y-2"
+                >
+                  <Label className="text-xs font-medium flex items-center justify-between">
+                    <span>Country</span>
+                    {filters.countries.length > 0 && (
+                      <Badge variant="outline" className="text-xs h-4 px-1.5">
+                        {filters.countries.length}
+                      </Badge>
+                    )}
+                  </Label>
+                  <MultiSelect
+                    options={countryOptions}
+                    selected={filters.countries}
+                    onChange={handleCountryChange}
+                    placeholder="All countries"
+                    searchPlaceholder="Search countries..."
+                    emptyText="No countries found"
+                    compact={true}
+                  />
+                </motion.div>
 
-            {/* Formulation Filter */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">
-                Formulation
-              </Label>
-              <MultiSelect
-                options={formulationOptions}
-                selected={filters.formulations}
-                onChange={handleFormulationChange}
-                placeholder="All formulations"
-                searchPlaceholder="Search formulations..."
-                emptyText="No formulations found"
-                compact={true}
-              />
-            </div>
+                {/* Formulation Filter */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="space-y-2"
+                >
+                  <Label className="text-xs font-medium flex items-center justify-between">
+                    <span>Formulation</span>
+                    {filters.formulations.length > 0 && (
+                      <Badge variant="outline" className="text-xs h-4 px-1.5">
+                        {filters.formulations.length}
+                      </Badge>
+                    )}
+                  </Label>
+                  <MultiSelect
+                    options={formulationOptions}
+                    selected={filters.formulations}
+                    onChange={handleFormulationChange}
+                    placeholder="All formulations"
+                    searchPlaceholder="Search formulations..."
+                    emptyText="No formulations found"
+                    compact={true}
+                  />
+                </motion.div>
 
-            {/* Use Group Filter */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">
-                Use Group
-              </Label>
-              <MultiSelect
-                options={useGroupOptions}
-                selected={filters.useGroups}
-                onChange={handleUseGroupChange}
-                placeholder="All use groups"
-                searchPlaceholder="Search use groups..."
-                emptyText="No use groups found"
-                disabled={filterOptions.useGroupsDisabled}
-                compact={true}
-              />
-            </div>
+                {/* Use Group Filter */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="space-y-2"
+                >
+                  <Label className="text-xs font-medium flex items-center justify-between">
+                    <span>Use Group</span>
+                    {filters.useGroups.length > 0 && (
+                      <Badge variant="outline" className="text-xs h-4 px-1.5">
+                        {filters.useGroups.length}
+                      </Badge>
+                    )}
+                  </Label>
+                  <MultiSelect
+                    options={useGroupOptions}
+                    selected={filters.useGroups}
+                    onChange={handleUseGroupChange}
+                    placeholder="All use groups"
+                    searchPlaceholder="Search use groups..."
+                    emptyText="No use groups found"
+                    disabled={filterOptions.useGroupsDisabled}
+                    compact={true}
+                  />
+                </motion.div>
 
-            {/* Formulation Status Filter */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">
-                Formulation Status
-              </Label>
-              <MultiSelect
-                options={formulationStatusOptions}
-                selected={filters.formulationStatuses}
-                onChange={handleFormulationStatusChange}
-                placeholder="All statuses"
-                searchPlaceholder="Search statuses..."
-                emptyText="No statuses found"
-                compact={true}
-              />
-            </div>
+                {/* Formulation Status Filter */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="space-y-2"
+                >
+                  <Label className="text-xs font-medium flex items-center justify-between">
+                    <span>Formulation Status</span>
+                    {filters.formulationStatuses.length > 0 && (
+                      <Badge variant="outline" className="text-xs h-4 px-1.5">
+                        {filters.formulationStatuses.length}
+                      </Badge>
+                    )}
+                  </Label>
+                  <MultiSelect
+                    options={formulationStatusOptions}
+                    selected={filters.formulationStatuses}
+                    onChange={handleFormulationStatusChange}
+                    placeholder="All statuses"
+                    searchPlaceholder="Search statuses..."
+                    emptyText="No statuses found"
+                    compact={true}
+                  />
+                </motion.div>
 
-            {/* Country Status Filter */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">
-                Country Status
-              </Label>
-              <MultiSelect
-                options={countryStatusOptions}
-                selected={filters.countryStatuses}
-                onChange={handleCountryStatusChange}
-                placeholder="All statuses"
-                searchPlaceholder="Search statuses..."
-                emptyText="No statuses found"
-                compact={true}
-              />
-            </div>
-          </div>
-        )}
+                {/* Country Status Filter */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="space-y-2"
+                >
+                  <Label className="text-xs font-medium flex items-center justify-between">
+                    <span>Country Status</span>
+                    {filters.countryStatuses.length > 0 && (
+                      <Badge variant="outline" className="text-xs h-4 px-1.5">
+                        {filters.countryStatuses.length}
+                      </Badge>
+                    )}
+                  </Label>
+                  <MultiSelect
+                    options={countryStatusOptions}
+                    selected={filters.countryStatuses}
+                    onChange={handleCountryStatusChange}
+                    placeholder="All statuses"
+                    searchPlaceholder="Search statuses..."
+                    emptyText="No statuses found"
+                    compact={true}
+                  />
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Filtered Results Summary - show always when counts available */}
         {filteredCounts && (() => {
@@ -278,53 +435,69 @@ export function GlobalFilterBar({
           if (countItems.length === 0) return null;
 
           return (
-            <div className="pt-4 border-t">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="pt-4 mt-4"
+            >
               <div className="flex items-center gap-2 flex-wrap text-sm">
-                <span className="text-muted-foreground">{hasActiveFilters ? "Showing:" : "Total:"}</span>
+                <span className="text-muted-foreground font-medium">{hasActiveFilters ? "Showing:" : "Total:"}</span>
                 {countItems.map((item, index) => (
-                  <span key={item.label}>
-                    <span className="font-semibold tabular-nums">{item.value}</span>
+                  <span key={item.label} className="flex items-center gap-1">
+                    <span className="font-semibold tabular-nums text-foreground">{item.value.toLocaleString()}</span>
                     <span className="text-muted-foreground"> {item.label}</span>
                     {index < countItems.length - 1 && (
-                      <span className="text-muted-foreground"> •</span>
+                      <span className="text-muted-foreground mx-1">•</span>
                     )}
                   </span>
                 ))}
               </div>
-            </div>
+            </motion.div>
           );
         })()}
 
         {/* Active Filters Summary (when collapsed) */}
-        {!isExpanded && hasActiveFilters && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {filters.countries.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {filters.countries.length} {filters.countries.length === 1 ? "country" : "countries"}
-              </Badge>
-            )}
-            {filters.formulations.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {filters.formulations.length} {filters.formulations.length === 1 ? "formulation" : "formulations"}
-              </Badge>
-            )}
-            {filters.useGroups.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {filters.useGroups.length} {filters.useGroups.length === 1 ? "use group" : "use groups"}
-              </Badge>
-            )}
-            {filters.formulationStatuses.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {filters.formulationStatuses.length} formulation {filters.formulationStatuses.length === 1 ? "status" : "statuses"}
-              </Badge>
-            )}
-            {filters.countryStatuses.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {filters.countryStatuses.length} country {filters.countryStatuses.length === 1 ? "status" : "statuses"}
-              </Badge>
-            )}
-          </div>
-        )}
+        <AnimatePresence>
+          {!isExpanded && hasActiveFilters && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-wrap gap-2 mt-3 pt-3"
+            >
+              {filters.countries.length > 0 && (
+                <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+                  <span className="font-semibold">{filters.countries.length}</span>
+                  <span>Country{filters.countries.length !== 1 ? "ies" : ""}</span>
+                </Badge>
+              )}
+              {filters.formulations.length > 0 && (
+                <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+                  <span className="font-semibold">{filters.formulations.length}</span>
+                  <span>Formulation{filters.formulations.length !== 1 ? "s" : ""}</span>
+                </Badge>
+              )}
+              {filters.useGroups.length > 0 && (
+                <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+                  <span className="font-semibold">{filters.useGroups.length}</span>
+                  <span>Use Group{filters.useGroups.length !== 1 ? "s" : ""}</span>
+                </Badge>
+              )}
+              {filters.formulationStatuses.length > 0 && (
+                <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+                  <span className="font-semibold">{filters.formulationStatuses.length}</span>
+                  <span>Form Status{filters.formulationStatuses.length !== 1 ? "es" : ""}</span>
+                </Badge>
+              )}
+              {filters.countryStatuses.length > 0 && (
+                <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+                  <span className="font-semibold">{filters.countryStatuses.length}</span>
+                  <span>Country Status{filters.countryStatuses.length !== 1 ? "es" : ""}</span>
+                </Badge>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </CardContent>
     </Card>
   );

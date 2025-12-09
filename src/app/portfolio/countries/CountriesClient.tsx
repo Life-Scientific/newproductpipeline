@@ -35,8 +35,12 @@ function CountriesContent({
   referenceCountries,
   formulationCountries,
 }: CountriesClientProps) {
-  // Use global portfolio filters from URL
-  const { filters } = usePortfolioFilters();
+  // Use global portfolio filters from URL - Countries page doesn't need default status filters
+  // since it's focused on geographic data, not formulation selection status
+  const { filters } = usePortfolioFilters({
+    formulationStatuses: [], // No default formulation status filter for countries page
+    countryStatuses: [],     // No default country status filter - show all countries
+  });
   
   // Ensure filters object is fully initialized (defensive check)
   const safeFilters = {

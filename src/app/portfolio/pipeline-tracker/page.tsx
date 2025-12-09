@@ -1,6 +1,6 @@
 import { getPipelineTrackerData } from "@/lib/db/queries";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
-import { PipelineTrackerDashboard } from "@/components/dashboard/PipelineTrackerDashboard";
+import { PipelineTrackerClient } from "./PipelineTrackerClient";
 
 export default async function PipelineTrackerPage() {
   const { formulations, countries, useGroups, businessCases } = await getPipelineTrackerData();
@@ -17,7 +17,7 @@ export default async function PipelineTrackerPage() {
           </div>
         </div>
 
-        <PipelineTrackerDashboard
+        <PipelineTrackerClient
           formulations={formulations}
           countries={countries}
           useGroups={useGroups}
