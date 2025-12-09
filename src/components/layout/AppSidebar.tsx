@@ -69,6 +69,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { DARK_THEME_SLUGS, useTheme } from "@/contexts/ThemeContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
@@ -220,6 +225,8 @@ export function AppSidebar() {
   const { preferences, updatePreferences, currencySymbol, CURRENCY_OPTIONS, VOLUME_OPTIONS, WEIGHT_OPTIONS } = useDisplayPreferences();
   const [user, setUser] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [santaHatOpen, setSantaHatOpen] = useState(false);
+  const [santaHatDropdownOpen, setSantaHatDropdownOpen] = useState(false);
 
   // Handle cache refresh
   const handleRefreshData = useCallback(async () => {
@@ -448,28 +455,6 @@ export function AppSidebar() {
               isCollapsed ? "flex-col" : "flex-row",
             )}
           >
-            {/* Refresh Data Button */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleRefreshData}
-                  disabled={isRefreshing}
-                  className="h-9 w-9 shrink-0"
-                >
-                  {isRefreshing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <RefreshCw className="h-4 w-4" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p>Refresh all data</p>
-              </TooltipContent>
-            </Tooltip>
-
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -488,7 +473,77 @@ export function AppSidebar() {
                         {userInitial}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 ring-1 ring-sidebar" />
+                    {/* Santa Hat - Clickable */}
+                    <Popover open={santaHatOpen} onOpenChange={setSantaHatOpen}>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="absolute left-1/2 -translate-x-1/2 z-50 cursor-pointer hover:scale-110 transition-transform"
+                          style={{ top: isCollapsed ? "-0.5rem" : "-0.375rem" }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSantaHatOpen(true);
+                          }}
+                        >
+                          <svg
+                            className="h-9 w-9 drop-shadow-lg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <defs>
+                              <filter id="hat-shadow-footer">
+                                <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#000000" floodOpacity="0.3"/>
+                              </filter>
+                            </defs>
+                            {/* Complete hat shape - top triangle */}
+                            <path
+                              d="M12 2 L6 10 L18 10 Z"
+                              fill="#EF4444"
+                              stroke="#B91C1C"
+                              strokeWidth="0.5"
+                              filter="url(#hat-shadow-footer)"
+                            />
+                            {/* Hat brim/base */}
+                            <path
+                              d="M3 10 L21 10 L21 12 L3 12 Z"
+                              fill="#EF4444"
+                              stroke="#B91C1C"
+                              strokeWidth="0.5"
+                              filter="url(#hat-shadow-footer)"
+                            />
+                            {/* White trim band - thicker */}
+                            <path
+                              d="M3 10 L21 10 L21 11.5 L3 11.5 Z"
+                              fill="#FFFFFF"
+                              stroke="#DC2626"
+                              strokeWidth="0.3"
+                            />
+                            {/* Pom pom on the side - bigger */}
+                            <circle
+                              cx="5.5"
+                              cy="9.5"
+                              r="2.2"
+                              fill="#FFFFFF"
+                              stroke="#DC2626"
+                              strokeWidth="0.3"
+                              filter="url(#hat-shadow-footer)"
+                            />
+                          </svg>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent 
+                        className="w-auto p-3 text-center"
+                        side={isCollapsed ? "right" : "top"}
+                        align="center"
+                      >
+                        <div className="space-y-2">
+                          <div className="text-2xl">🎄</div>
+                          <div className="text-lg font-bold text-primary">Merry Christmas!</div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 ring-1 ring-sidebar z-10" />
                   </div>
                   {!isCollapsed && (
                     <span className="flex-1 truncate text-left text-sm font-medium">
@@ -506,11 +561,83 @@ export function AppSidebar() {
                 {/* User info header */}
                 <div className="px-2 py-2">
                   <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
-                        {userInitial}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative shrink-0">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
+                          {userInitial}
+                        </AvatarFallback>
+                      </Avatar>
+                      {/* Santa Hat - Clickable */}
+                      <Popover open={santaHatDropdownOpen} onOpenChange={setSantaHatDropdownOpen}>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="absolute left-1/2 -translate-x-1/2 z-50 cursor-pointer hover:scale-110 transition-transform"
+                            style={{ top: "-0.5rem" }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSantaHatDropdownOpen(true);
+                            }}
+                          >
+                            <svg
+                              className="h-9 w-9 drop-shadow-lg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <defs>
+                                <filter id="hat-shadow-dropdown">
+                                  <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#000000" floodOpacity="0.3"/>
+                                </filter>
+                              </defs>
+                              {/* Complete hat shape - top triangle */}
+                              <path
+                                d="M12 2 L6 10 L18 10 Z"
+                                fill="#EF4444"
+                                stroke="#B91C1C"
+                                strokeWidth="0.5"
+                                filter="url(#hat-shadow-dropdown)"
+                              />
+                              {/* Hat brim/base */}
+                              <path
+                                d="M3 10 L21 10 L21 12 L3 12 Z"
+                                fill="#EF4444"
+                                stroke="#B91C1C"
+                                strokeWidth="0.5"
+                                filter="url(#hat-shadow-dropdown)"
+                              />
+                              {/* White trim band - thicker */}
+                              <path
+                                d="M3 10 L21 10 L21 11.5 L3 11.5 Z"
+                                fill="#FFFFFF"
+                                stroke="#DC2626"
+                                strokeWidth="0.3"
+                              />
+                              {/* Pom pom on the side - bigger */}
+                              <circle
+                                cx="5.5"
+                                cy="9.5"
+                                r="2.2"
+                                fill="#FFFFFF"
+                                stroke="#DC2626"
+                                strokeWidth="0.3"
+                                filter="url(#hat-shadow-dropdown)"
+                              />
+                            </svg>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent 
+                          className="w-auto p-3 text-center"
+                          side="top"
+                          align="center"
+                        >
+                          <div className="space-y-2">
+                            <div className="text-2xl">🎄</div>
+                            <div className="text-lg font-bold text-primary">Merry Christmas!</div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                     <div className="flex flex-col min-w-0">
                       <p className="text-sm font-medium truncate">{userName}</p>
                       <p className="text-xs text-muted-foreground truncate">
@@ -690,6 +817,22 @@ export function AppSidebar() {
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
+
+                <DropdownMenuSeparator />
+
+                {/* Refresh Data */}
+                <DropdownMenuItem
+                  onClick={handleRefreshData}
+                  disabled={isRefreshing}
+                  className="cursor-pointer"
+                >
+                  {isRefreshing ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                  )}
+                  <span>Refresh all data</span>
+                </DropdownMenuItem>
                 
                 <DropdownMenuItem asChild className="cursor-pointer">
                   <Link

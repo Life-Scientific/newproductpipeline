@@ -35,6 +35,8 @@ type Formulation = Database["public"]["Views"]["vw_formulations_with_ingredients
 interface TenYearProjectionChartProps {
   businessCases: BusinessCase[];
   formulations: Formulation[];
+  /** If true, removes the Card wrapper for integration into parent card */
+  noCard?: boolean;
 }
 
 // Default year range
@@ -43,6 +45,7 @@ const DEFAULT_YEAR_RANGE = 10;
 export function TenYearProjectionChart({
   businessCases,
   formulations,
+  noCard = false,
 }: TenYearProjectionChartProps) {
   const { currentTheme } = useTheme();
   const { currencySymbol, preferences, formatCurrencyCompact, convertCurrency } = useDisplayPreferences();
@@ -304,109 +307,104 @@ export function TenYearProjectionChart({
     return countUniqueBusinessCaseGroups(businessCases);
   }, [businessCases]);
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-    >
-      <Card className="w-full overflow-hidden">
-        <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <motion.div 
-              className="space-y-0.5"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              <CardTitle className="text-xl font-semibold">Long-Range Revenue and Gross Margin Projection</CardTitle>
-              <CardDescription className="text-sm">
-                {hasActiveFilters ? (
-                  <motion.span key="filtered" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    {uniqueBusinessCaseGroups} business case group{uniqueBusinessCaseGroups !== 1 ? 's' : ''}
-                    {selectedFormulationNames.length > 0 ? (
-                      <>
-                        {' • '}
-                        {selectedFormulationNames.length <= 3 
-                          ? selectedFormulationNames.join(', ')
-                          : `${selectedFormulationNames.slice(0, 2).join(', ')} +${selectedFormulationNames.length - 2} more`
-                        }
-                      </>
-                    ) : (
-                      <>, {uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''}</>
-                    )}
-                  </motion.span>
-                ) : (
-                  <span>{uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''} represented</span>
-                )}
-              </CardDescription>
-            </motion.div>
-            <motion.div 
-              className="flex items-center gap-2 flex-wrap"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-            {/* Compact Year Range */}
-            <div className="flex items-center gap-1.5 text-sm">
-              <Select value={effectiveStartYear.toString()} onValueChange={handleStartYearChange}>
-                <SelectTrigger className="w-[72px] h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {validStartYearOptions.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      FY{year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span className="text-muted-foreground">–</span>
-              <Select value={effectiveEndYear.toString()} onValueChange={handleEndYearChange}>
-                <SelectTrigger className="w-[72px] h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {validEndYearOptions.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      FY{year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span className={cn(
-                "text-xs tabular-nums",
-                exceedsLimit ? "text-amber-500" : "text-muted-foreground"
-              )}>
-                ({yearCount}yr)
-              </span>
-            </div>
-              
-              <div className="h-6 w-px bg-border hidden sm:block" />
-              
-              {/* Chart Type Toggle */}
-              <div className="flex items-center gap-1">
-                <Button
-                  variant={chartType === "line" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setChartType("line")}
-                  className="h-8 px-3 transition-all duration-200 hover:scale-105 active:scale-95"
-                >
-                  Line
-                </Button>
-                <Button
-                  variant={chartType === "bar" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setChartType("bar")}
-                  className="h-8 px-3 transition-all duration-200 hover:scale-105 active:scale-95"
-                >
-                  Bar
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+  const headerContent = (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <motion.div 
+        className="space-y-0.5"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
+        <CardTitle className="text-xl font-semibold">Long-Range Revenue and Gross Margin Projection</CardTitle>
+        <CardDescription className="text-sm">
+          {hasActiveFilters ? (
+            <motion.span key="filtered" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              {uniqueBusinessCaseGroups} business case group{uniqueBusinessCaseGroups !== 1 ? 's' : ''}
+              {selectedFormulationNames.length > 0 ? (
+                <>
+                  {' • '}
+                  {selectedFormulationNames.length <= 3 
+                    ? selectedFormulationNames.join(', ')
+                    : `${selectedFormulationNames.slice(0, 2).join(', ')} +${selectedFormulationNames.length - 2} more`
+                  }
+                </>
+              ) : (
+                <>, {uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''}</>
+              )}
+            </motion.span>
+          ) : (
+            <span>{uniqueFormulations} formulation{uniqueFormulations !== 1 ? 's' : ''} represented</span>
+          )}
+        </CardDescription>
+      </motion.div>
+      <motion.div 
+        className="flex items-center gap-2 flex-wrap"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
+        {/* Compact Year Range */}
+        <div className="flex items-center gap-1.5 text-sm">
+          <Select value={effectiveStartYear.toString()} onValueChange={handleStartYearChange}>
+            <SelectTrigger className="w-[72px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {validStartYearOptions.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  FY{year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-muted-foreground">–</span>
+          <Select value={effectiveEndYear.toString()} onValueChange={handleEndYearChange}>
+            <SelectTrigger className="w-[72px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {validEndYearOptions.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  FY{year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className={cn(
+            "text-xs tabular-nums",
+            exceedsLimit ? "text-amber-500" : "text-muted-foreground"
+          )}>
+            ({yearCount}yr)
+          </span>
+        </div>
+        
+        <div className="h-6 w-px bg-border hidden sm:block" />
+        
+        {/* Chart Type Toggle */}
+        <div className="flex items-center gap-1">
+          <Button
+            variant={chartType === "line" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setChartType("line")}
+            className="h-8 px-3 transition-all duration-200 hover:scale-105 active:scale-95"
+          >
+            Line
+          </Button>
+          <Button
+            variant={chartType === "bar" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setChartType("bar")}
+            className="h-8 px-3 transition-all duration-200 hover:scale-105 active:scale-95"
+          >
+            Bar
+          </Button>
+        </div>
+      </motion.div>
+    </div>
+  );
+
+  const chartContent = (
+    <div className="space-y-4">
         {/* Chart */}
         <motion.div 
           className="w-full h-[400px] sm:h-[500px] relative"
@@ -792,8 +790,39 @@ export function TenYearProjectionChart({
             Some formulation-country combinations may be excluded from projections if marked as excluded (e.g., Article 33 entries pending financial validation, or products with expected market exits before the projection horizon).
           </p>
         </motion.div>
-      </CardContent>
-    </Card>
+      </div>
+  );
+
+  if (noCard) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        className="w-full space-y-4"
+      >
+        <div className="pb-3">
+          {headerContent}
+        </div>
+        {chartContent}
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+    >
+      <Card className="w-full overflow-hidden">
+        <CardHeader className="pb-3">
+          {headerContent}
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {chartContent}
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }
