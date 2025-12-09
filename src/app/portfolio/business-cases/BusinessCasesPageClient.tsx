@@ -132,7 +132,15 @@ function BusinessCasesContent({
     referenceFormulations,
     referenceCountries,
     filterableBusinessCases, // Filterable data for cascading logic
-    null,
+    enrichedFormulationCountries.length > 0 ? enrichedFormulationCountries.map((fc) => ({
+      formulation_country_id: fc.formulation_country_id || null,
+      formulation_id: fc.formulation_id || null,
+      formulation_code: fc.formulation_code || null,
+      country_id: fc.country_id || null,
+      country_code: fc.country_code || null,
+      country_name: fc.country_name || null,
+      country_status: fc.country_status || null,
+    })) : null,
     filters
   );
 
@@ -219,7 +227,11 @@ function BusinessCasesContent({
       filters,
       { includeOrphanFormulations: false }, // Business Cases page only shows intersection
       {
-        businessCases: filteredBusinessCases,
+        businessCases: filteredBusinessCases.map(bc => ({
+          business_case_group_id: bc.business_case_group_id,
+          country_code: bc.country_code,
+          formulation_code: bc.formulation_code,
+        })),
       }
     );
   }, [formulations, filteredFormulationCountries, filters, filteredBusinessCases]);
@@ -306,6 +318,7 @@ export function BusinessCasesPageClient({
   countryStatuses,
   formulations,
   countries,
+  formulationCountries,
 }: BusinessCasesPageClientProps) {
   return (
     <Suspense fallback={<BusinessCasesSkeleton />}>
@@ -315,6 +328,7 @@ export function BusinessCasesPageClient({
         countryStatuses={countryStatuses}
         formulations={formulations}
         countries={countries}
+        formulationCountries={formulationCountries}
       />
     </Suspense>
   );

@@ -196,6 +196,7 @@ export function useFilterOptions(
     });
 
     // If we have formulation countries data, use it for more accurate status mapping
+    // AND to build country-formulation relationships (needed when filterableData is empty)
     if (formulationCountries) {
       formulationCountries.forEach((fc) => {
         const countryCode = fc.country_code;
@@ -210,6 +211,19 @@ export function useFilterOptions(
         }
 
         if (countryCode && formCode) {
+          // Build country -> formulations relationship (needed for country filter options)
+          if (!countryCodeToFormulations.has(countryCode)) {
+            countryCodeToFormulations.set(countryCode, new Set());
+          }
+          countryCodeToFormulations.get(countryCode)!.add(formCode);
+
+          // Build formulation -> countries relationship
+          if (!formulationToCountryCodes.has(formCode)) {
+            formulationToCountryCodes.set(formCode, new Set());
+          }
+          formulationToCountryCodes.get(formCode)!.add(countryCode);
+
+          // Track country statuses
           if (!countryCodeToStatuses.has(countryCode)) {
             countryCodeToStatuses.set(countryCode, new Set());
           }
@@ -232,6 +246,9 @@ export function useFilterOptions(
     // Note: filters.countries and filters.formulations now contain CODES
     
     // Start with all available options
+    // For formulations: if formulations are selected, show ALL formulations (don't constrain dropdown)
+    // The actual filtering happens in the component, not here
+    // We only constrain dropdown options for cross-type filters (country -> formulation, country status -> formulation)
     let validFormulationCodes = new Set<string>(allFormulationCodes);
     let validCountryCodes = new Set<string>(countryCodeToFormulations.keys());
 
@@ -254,6 +271,8 @@ export function useFilterOptions(
     }
 
     // If formulations are selected, constrain countries to those where selected formulations exist
+    // BUT don't constrain formulation options - users should be able to select any formulation
+    // The actual filtering happens in the component, not here
     if (selectedFormulationCodes.length > 0) {
       const countryCodesWithSelectedFormulations = new Set<string>();
       selectedFormulationCodes.forEach((code) => {
@@ -267,6 +286,8 @@ export function useFilterOptions(
           countryCodesWithSelectedFormulations.has(countryCode)
         )
       );
+      // Note: We intentionally DON'T constrain validFormulationCodes here
+      // Users should be able to select any formulation regardless of what's already selected
     }
 
     // === STEP 2: Compute status counts BEFORE applying same-type status filters ===

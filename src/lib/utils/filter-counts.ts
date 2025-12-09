@@ -37,7 +37,11 @@ export function computeFilteredCounts(
   context: CountingContext,
   additionalData?: {
     useGroups?: Array<{ formulation_code?: string | null; country_code?: string | null }>;
-    businessCases?: Array<{ business_case_group_id?: string | null }>;
+    businessCases?: Array<{ 
+      business_case_group_id?: string | null;
+      country_code?: string | null;
+      formulation_code?: string | null;
+    }>;
   }
 ): FilteredCounts {
   // Determine filter types
@@ -60,6 +64,14 @@ export function computeFilteredCounts(
     if (fc.country_code) uniqueCountries.add(fc.country_code);
     if (fc.formulation_code) uniqueFormulations.add(fc.formulation_code);
   });
+
+  // Also count from business cases if provided (they represent actual relationships)
+  if (additionalData?.businessCases) {
+    additionalData.businessCases.forEach(bc => {
+      if (bc.country_code) uniqueCountries.add(bc.country_code);
+      if (bc.formulation_code) uniqueFormulations.add(bc.formulation_code);
+    });
+  }
 
   // Determine formulation count
   let formulationCount: number;

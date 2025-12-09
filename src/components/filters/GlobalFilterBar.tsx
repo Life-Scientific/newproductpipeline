@@ -44,15 +44,35 @@ export function GlobalFilterBar({
   }, [filterOptions.countries, filterOptions.countryNameToCode]);
 
   // Convert formulation codes to display names for MultiSelect
+  // Include selected formulations even if they're not in the filtered options (to preserve selection)
   const formulationOptions = useMemo(() => {
-    return filterOptions.formulations.map((displayName) => {
+    const optionsMap = new Map<string, { value: string; label: string }>();
+    
+    // Add all formulations from filterOptions
+    filterOptions.formulations.forEach((displayName) => {
       const code = filterOptions.displayToFormulationCode.get(displayName) || "";
-      return {
-        value: code,
-        label: displayName,
-      };
+      if (code) {
+        optionsMap.set(code, {
+          value: code,
+          label: displayName,
+        });
+      }
     });
-  }, [filterOptions.formulations, filterOptions.displayToFormulationCode]);
+    
+    // Also include any selected formulations that might not be in the filtered options
+    // This ensures selected values persist even when options are constrained by cascading logic
+    filters.formulations.forEach((code) => {
+      if (!optionsMap.has(code)) {
+        const displayName = filterOptions.formulationCodeToDisplay.get(code) || code;
+        optionsMap.set(code, {
+          value: code,
+          label: displayName,
+        });
+      }
+    });
+    
+    return Array.from(optionsMap.values());
+  }, [filterOptions.formulations, filterOptions.displayToFormulationCode, filterOptions.formulationCodeToDisplay, filters.formulations]);
 
   // Use group options
   const useGroupOptions = useMemo(() => {
