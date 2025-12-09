@@ -165,7 +165,7 @@ After merging, test:
 |------|--------|--------|
 | `src/components/filters/GlobalFilterBar.tsx` | ✅ Copy from vikram | New, no conflicts |
 | `src/components/layout/FilterPreservingLink.tsx` | ✅ Copy from vikram | New, no conflicts |
-| `src/app/portfolio/DashboardClient.tsx` | ✅ Copy from vikram | New, no conflicts |
+| `src/app/portfolio/DashboardClient.tsx` | ✅ Copy from vikram | New, conflicts |
 | `src/app/portfolio/*/Client.tsx` | ✅ Copy from vikram | New client components |
 | `src/lib/utils/filter-counts.ts` | ✅ Copy from vikram | New utility |
 | `src/hooks/use-portfolio-filters.ts` | ✅ Copy from vikram | Filter hook |

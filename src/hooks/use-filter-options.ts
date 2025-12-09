@@ -134,11 +134,13 @@ export function useFilterOptions(
     // Build country lookup maps from REFERENCE data (complete list)
     const countryCodeToName = new Map<string, string>();
     const countryNameToCode = new Map<string, string>();
+    const allCountryCodes = new Set<string>();
 
     referenceCountries.forEach((c) => {
       if (c.country_code && c.country_name) {
         countryCodeToName.set(c.country_code, c.country_name);
         countryNameToCode.set(c.country_name, c.country_code);
+        allCountryCodes.add(c.country_code);
       }
     });
 
@@ -245,12 +247,16 @@ export function useFilterOptions(
     // Each filter constrains the others using union logic
     // Note: filters.countries and filters.formulations now contain CODES
     
-    // Start with all available options
+    // Start with all available options from reference data
     // For formulations: if formulations are selected, show ALL formulations (don't constrain dropdown)
     // The actual filtering happens in the component, not here
     // We only constrain dropdown options for cross-type filters (country -> formulation, country status -> formulation)
     let validFormulationCodes = new Set<string>(allFormulationCodes);
-    let validCountryCodes = new Set<string>(countryCodeToFormulations.keys());
+    // Start with all reference countries, then constrain based on filterable data relationships
+    // If there's no filterable data, show all countries from reference data
+    let validCountryCodes = countryCodeToFormulations.size > 0 
+      ? new Set<string>(countryCodeToFormulations.keys())
+      : new Set<string>(allCountryCodes);
 
     // === STEP 1: Apply CROSS-TYPE filters first (for dropdown options) ===
     
@@ -403,11 +409,14 @@ export function useFilterOptions(
 
     // Convert to final options
     // Country codes sorted, with names for display
-    const sortedCountryCodes = Array.from(validCountryCodes).sort((a, b) => {
-      const nameA = countryCodeToName.get(a) || a;
-      const nameB = countryCodeToName.get(b) || b;
-      return nameA.localeCompare(nameB);
-    });
+    // Ensure we only include countries that have names in the lookup map
+    const sortedCountryCodes = Array.from(validCountryCodes)
+      .filter((code) => countryCodeToName.has(code)) // Only include countries with names
+      .sort((a, b) => {
+        const nameA = countryCodeToName.get(a) || a;
+        const nameB = countryCodeToName.get(b) || b;
+        return nameA.localeCompare(nameB);
+      });
     const countryNames = sortedCountryCodes
       .map((code) => countryCodeToName.get(code))
       .filter((name): name is string => !!name);

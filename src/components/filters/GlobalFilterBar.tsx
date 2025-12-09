@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
 import type { ComputedFilterOptions } from "@/hooks/use-filter-options";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { FilterContainer } from "./FilterContainer";
 
 interface FilteredCounts {
   countries?: number;
@@ -22,12 +25,21 @@ interface GlobalFilterBarProps {
   filterOptions: ComputedFilterOptions;
   defaultExpanded?: boolean;
   filteredCounts?: FilteredCounts;
+  /** If true, renders without Card wrapper for inline integration */
+  inline?: boolean;
+  /** If true, uses integrated container styling (background, borders) */
+  integrated?: boolean;
+  /** Custom className for the container */
+  containerClassName?: string;
 }
 
 export function GlobalFilterBar({
   filterOptions,
   defaultExpanded = false,
   filteredCounts,
+  inline = false,
+  integrated = false,
+  containerClassName,
 }: GlobalFilterBarProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const { filters, setFilter, clearAllFilters, hasActiveFilters } = usePortfolioFilters();
@@ -123,208 +135,393 @@ export function GlobalFilterBar({
     setFilter("countryStatuses", selectedStatuses);
   };
 
-  return (
-    <Card className="mb-6">
-      <CardContent className="p-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+  // Count active filters
+  const activeFilterCount = useMemo(() => {
+    return filters.countries.length +
+           filters.formulations.length +
+           filters.useGroups.length +
+           filters.formulationStatuses.length +
+           filters.countryStatuses.length;
+  }, [filters]);
+
+  const content = (
+    <>
+      {/* Header */}
+      <div className={cn("flex items-center justify-between", inline ? "mb-4" : "mb-4")}>
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold">Portfolio Filters</h3>
-            {hasActiveFilters && (
-              <Badge variant="secondary" className="text-xs">
-                Active
-              </Badge>
-            )}
+            <div className={cn(
+              "p-1.5 rounded-md transition-colors",
+              hasActiveFilters ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+            )}>
+              <Filter className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold">Portfolio Filters</h3>
+              {hasActiveFilters && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {activeFilterCount} {activeFilterCount === 1 ? "filter" : "filters"} active
+                </p>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearAllFilters}
-                className="h-8 text-xs"
-              >
-                <X className="h-3 w-3 mr-1" />
-                Clear All
-              </Button>
-            )}
+          {hasActiveFilters && (
+            <Badge variant="secondary" className="text-xs font-medium">
+              Active
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {hasActiveFilters && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="h-8"
+              onClick={clearAllFilters}
+              className="h-8 text-xs hover:bg-destructive/10 hover:text-destructive transition-colors"
             >
-              {isExpanded ? (
-                <>
-                  <ChevronUp className="h-4 w-4 mr-1" />
-                  Collapse
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="h-4 w-4 mr-1" />
-                  Expand
-                </>
-              )}
+              <X className="h-3 w-3 mr-1.5" />
+              Clear All
             </Button>
-          </div>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="h-8"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp className="h-4 w-4 mr-1.5" />
+                Collapse
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4 mr-1.5" />
+                Expand
+              </>
+            )}
+          </Button>
         </div>
+      </div>
 
-        {/* Filter Controls */}
+      {/* Active Filter Pills (when expanded) */}
+      {isExpanded && hasActiveFilters && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="flex flex-wrap gap-2 mb-4 pb-4"
+        >
+          {filters.countries.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+              <span className="font-semibold">{filters.countries.length}</span>
+              <span>Country{filters.countries.length !== 1 ? "ies" : ""}</span>
+              <button
+                onClick={() => setFilter("countries", [])}
+                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          {filters.formulations.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+              <span className="font-semibold">{filters.formulations.length}</span>
+              <span>Formulation{filters.formulations.length !== 1 ? "s" : ""}</span>
+              <button
+                onClick={() => setFilter("formulations", [])}
+                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          {filters.useGroups.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+              <span className="font-semibold">{filters.useGroups.length}</span>
+              <span>Use Group{filters.useGroups.length !== 1 ? "s" : ""}</span>
+              <button
+                onClick={() => setFilter("useGroups", [])}
+                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          {filters.formulationStatuses.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+              <span className="font-semibold">{filters.formulationStatuses.length}</span>
+              <span>Form Status{filters.formulationStatuses.length !== 1 ? "es" : ""}</span>
+              <button
+                onClick={() => setFilter("formulationStatuses", [])}
+                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          {filters.countryStatuses.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+              <span className="font-semibold">{filters.countryStatuses.length}</span>
+              <span>Country Status{filters.countryStatuses.length !== 1 ? "es" : ""}</span>
+              <button
+                onClick={() => setFilter("countryStatuses", [])}
+                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+        </motion.div>
+      )}
+
+      {/* Filter Controls */}
+      <AnimatePresence>
         {isExpanded && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-            {/* Country Filter */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">
-                Country
-              </Label>
-              <MultiSelect
-                options={countryOptions}
-                selected={filters.countries}
-                onChange={handleCountryChange}
-                placeholder="All countries"
-                searchPlaceholder="Search countries..."
-                emptyText="No countries found"
-                compact={true}
-              />
-            </div>
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className={cn(
+              "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4",
+              inline && "pb-4"
+            )}>
+              {/* Country Filter */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="space-y-2"
+              >
+                <Label className="text-xs font-medium flex items-center justify-between">
+                  <span>Country</span>
+                  {filters.countries.length > 0 && (
+                    <Badge variant="outline" className="text-xs h-4 px-1.5">
+                      {filters.countries.length}
+                    </Badge>
+                  )}
+                </Label>
+                <MultiSelect
+                  options={countryOptions}
+                  selected={filters.countries}
+                  onChange={handleCountryChange}
+                  placeholder="All countries"
+                  searchPlaceholder="Search countries..."
+                  emptyText="No countries found"
+                  compact={true}
+                />
+              </motion.div>
 
-            {/* Formulation Filter */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">
-                Formulation
-              </Label>
-              <MultiSelect
-                options={formulationOptions}
-                selected={filters.formulations}
-                onChange={handleFormulationChange}
-                placeholder="All formulations"
-                searchPlaceholder="Search formulations..."
-                emptyText="No formulations found"
-                compact={true}
-              />
-            </div>
+              {/* Formulation Filter */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="space-y-2"
+              >
+                <Label className="text-xs font-medium flex items-center justify-between">
+                  <span>Formulation</span>
+                  {filters.formulations.length > 0 && (
+                    <Badge variant="outline" className="text-xs h-4 px-1.5">
+                      {filters.formulations.length}
+                    </Badge>
+                  )}
+                </Label>
+                <MultiSelect
+                  options={formulationOptions}
+                  selected={filters.formulations}
+                  onChange={handleFormulationChange}
+                  placeholder="All formulations"
+                  searchPlaceholder="Search formulations..."
+                  emptyText="No formulations found"
+                  compact={true}
+                />
+              </motion.div>
 
-            {/* Use Group Filter */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">
-                Use Group
-              </Label>
-              <MultiSelect
-                options={useGroupOptions}
-                selected={filters.useGroups}
-                onChange={handleUseGroupChange}
-                placeholder="All use groups"
-                searchPlaceholder="Search use groups..."
-                emptyText="No use groups found"
-                disabled={filterOptions.useGroupsDisabled}
-                compact={true}
-              />
-            </div>
+              {/* Use Group Filter */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="space-y-2"
+              >
+                <Label className="text-xs font-medium flex items-center justify-between">
+                  <span>Use Group</span>
+                  {filters.useGroups.length > 0 && (
+                    <Badge variant="outline" className="text-xs h-4 px-1.5">
+                      {filters.useGroups.length}
+                    </Badge>
+                  )}
+                </Label>
+                <MultiSelect
+                  options={useGroupOptions}
+                  selected={filters.useGroups}
+                  onChange={handleUseGroupChange}
+                  placeholder="All use groups"
+                  searchPlaceholder="Search use groups..."
+                  emptyText="No use groups found"
+                  disabled={filterOptions.useGroupsDisabled}
+                  compact={true}
+                />
+              </motion.div>
 
-            {/* Formulation Status Filter */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">
-                Formulation Status
-              </Label>
-              <MultiSelect
-                options={formulationStatusOptions}
-                selected={filters.formulationStatuses}
-                onChange={handleFormulationStatusChange}
-                placeholder="All statuses"
-                searchPlaceholder="Search statuses..."
-                emptyText="No statuses found"
-                compact={true}
-              />
-            </div>
+              {/* Formulation Status Filter */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="space-y-2"
+              >
+                <Label className="text-xs font-medium flex items-center justify-between">
+                  <span>Formulation Status</span>
+                  {filters.formulationStatuses.length > 0 && (
+                    <Badge variant="outline" className="text-xs h-4 px-1.5">
+                      {filters.formulationStatuses.length}
+                    </Badge>
+                  )}
+                </Label>
+                <MultiSelect
+                  options={formulationStatusOptions}
+                  selected={filters.formulationStatuses}
+                  onChange={handleFormulationStatusChange}
+                  placeholder="All statuses"
+                  searchPlaceholder="Search statuses..."
+                  emptyText="No statuses found"
+                  compact={true}
+                />
+              </motion.div>
 
-            {/* Country Status Filter */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">
-                Country Status
-              </Label>
-              <MultiSelect
-                options={countryStatusOptions}
-                selected={filters.countryStatuses}
-                onChange={handleCountryStatusChange}
-                placeholder="All statuses"
-                searchPlaceholder="Search statuses..."
-                emptyText="No statuses found"
-                compact={true}
-              />
+              {/* Country Status Filter */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="space-y-2"
+              >
+                <Label className="text-xs font-medium flex items-center justify-between">
+                  <span>Country Status</span>
+                  {filters.countryStatuses.length > 0 && (
+                    <Badge variant="outline" className="text-xs h-4 px-1.5">
+                      {filters.countryStatuses.length}
+                    </Badge>
+                  )}
+                </Label>
+                <MultiSelect
+                  options={countryStatusOptions}
+                  selected={filters.countryStatuses}
+                  onChange={handleCountryStatusChange}
+                  placeholder="All statuses"
+                  searchPlaceholder="Search statuses..."
+                  emptyText="No statuses found"
+                  compact={true}
+                />
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        {/* Filtered Results Summary - show always when counts available */}
-        {filteredCounts && (() => {
-          const countItems: Array<{ value: number; label: string }> = [];
-          if (filteredCounts.countries !== undefined) {
-            countItems.push({ value: filteredCounts.countries, label: "countries" });
-          }
-          if (filteredCounts.formulations !== undefined) {
-            countItems.push({ value: filteredCounts.formulations, label: "formulations" });
-          }
-          if (filteredCounts.formulationCountries !== undefined) {
-            countItems.push({ value: filteredCounts.formulationCountries, label: "formulation-countries" });
-          }
-          if (filteredCounts.useGroups !== undefined) {
-            countItems.push({ value: filteredCounts.useGroups, label: "use groups" });
-          }
-          if (filteredCounts.businessCases !== undefined) {
-            countItems.push({ value: filteredCounts.businessCases, label: "business cases" });
-          }
+      {/* Filtered Results Summary - show always when counts available */}
+      {filteredCounts && (() => {
+        const countItems: Array<{ value: number; label: string }> = [];
+        if (filteredCounts.countries !== undefined) {
+          countItems.push({ value: filteredCounts.countries, label: "countries" });
+        }
+        if (filteredCounts.formulations !== undefined) {
+          countItems.push({ value: filteredCounts.formulations, label: "formulations" });
+        }
+        if (filteredCounts.formulationCountries !== undefined) {
+          countItems.push({ value: filteredCounts.formulationCountries, label: "formulation-countries" });
+        }
+        if (filteredCounts.useGroups !== undefined) {
+          countItems.push({ value: filteredCounts.useGroups, label: "use groups" });
+        }
+        if (filteredCounts.businessCases !== undefined) {
+          countItems.push({ value: filteredCounts.businessCases, label: "business cases" });
+        }
 
-          if (countItems.length === 0) return null;
+        if (countItems.length === 0) return null;
 
-          return (
-            <div className="pt-4 border-t">
-              <div className="flex items-center gap-2 flex-wrap text-sm">
-                <span className="text-muted-foreground">{hasActiveFilters ? "Showing:" : "Total:"}</span>
-                {countItems.map((item, index) => (
-                  <span key={item.label}>
-                    <span className="font-semibold tabular-nums">{item.value}</span>
-                    <span className="text-muted-foreground"> {item.label}</span>
-                    {index < countItems.length - 1 && (
-                      <span className="text-muted-foreground"> •</span>
-                    )}
-                  </span>
-                ))}
-              </div>
+        return (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className={cn("pt-4", inline && "mt-4")}
+          >
+            <div className="flex items-center gap-2 flex-wrap text-sm">
+              <span className="text-muted-foreground font-medium">{hasActiveFilters ? "Showing:" : "Total:"}</span>
+              {countItems.map((item, index) => (
+                <span key={item.label} className="flex items-center gap-1">
+                  <span className="font-semibold tabular-nums text-foreground">{item.value.toLocaleString()}</span>
+                  <span className="text-muted-foreground"> {item.label}</span>
+                  {index < countItems.length - 1 && (
+                    <span className="text-muted-foreground mx-1">•</span>
+                  )}
+                </span>
+              ))}
             </div>
-          );
-        })()}
+          </motion.div>
+        );
+      })()}
 
-        {/* Active Filters Summary (when collapsed) */}
-        {!isExpanded && hasActiveFilters && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {filters.countries.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {filters.countries.length} {filters.countries.length === 1 ? "country" : "countries"}
-              </Badge>
-            )}
-            {filters.formulations.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {filters.formulations.length} {filters.formulations.length === 1 ? "formulation" : "formulations"}
-              </Badge>
-            )}
-            {filters.useGroups.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {filters.useGroups.length} {filters.useGroups.length === 1 ? "use group" : "use groups"}
-              </Badge>
-            )}
-            {filters.formulationStatuses.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {filters.formulationStatuses.length} formulation {filters.formulationStatuses.length === 1 ? "status" : "statuses"}
-              </Badge>
-            )}
-            {filters.countryStatuses.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {filters.countryStatuses.length} country {filters.countryStatuses.length === 1 ? "status" : "statuses"}
-              </Badge>
-            )}
-          </div>
-        )}
+      {/* Active Filters Summary (when collapsed) */}
+      {!isExpanded && hasActiveFilters && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-wrap gap-2 mt-3 pt-3"
+        >
+          {filters.countries.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+              <span className="font-semibold">{filters.countries.length}</span>
+              <span>Country{filters.countries.length !== 1 ? "ies" : ""}</span>
+            </Badge>
+          )}
+          {filters.formulations.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+              <span className="font-semibold">{filters.formulations.length}</span>
+              <span>Formulation{filters.formulations.length !== 1 ? "s" : ""}</span>
+            </Badge>
+          )}
+          {filters.useGroups.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+              <span className="font-semibold">{filters.useGroups.length}</span>
+              <span>Use Group{filters.useGroups.length !== 1 ? "s" : ""}</span>
+            </Badge>
+          )}
+          {filters.formulationStatuses.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+              <span className="font-semibold">{filters.formulationStatuses.length}</span>
+              <span>Form Status{filters.formulationStatuses.length !== 1 ? "es" : ""}</span>
+            </Badge>
+          )}
+          {filters.countryStatuses.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-medium gap-1.5 px-2.5 py-1">
+              <span className="font-semibold">{filters.countryStatuses.length}</span>
+              <span>Country Status{filters.countryStatuses.length !== 1 ? "es" : ""}</span>
+            </Badge>
+          )}
+        </motion.div>
+      )}
+    </>
+  );
+
+  // Use FilterContainer for consistent styling
+  if (inline) {
+    return (
+      <FilterContainer integrated={integrated} className={containerClassName}>
+        <div className={cn("w-full", !isExpanded && "pb-2")}>{content}</div>
+      </FilterContainer>
+    );
+  }
+
+  return (
+    <Card className="mb-6">
+      <CardContent className="p-4">
+        {content}
       </CardContent>
     </Card>
   );

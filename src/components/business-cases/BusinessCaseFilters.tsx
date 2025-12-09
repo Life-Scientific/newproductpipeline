@@ -367,7 +367,7 @@ export function BusinessCaseFilters({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Country Filter */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-medium flex items-center justify-between">
             <span>Country</span>
             <span className="text-muted-foreground font-normal">
@@ -385,7 +385,7 @@ export function BusinessCaseFilters({
         </div>
 
         {/* Formulation Filter - filtered by country */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-medium flex items-center justify-between">
             <span>Formulation</span>
             <span className="text-muted-foreground font-normal">
@@ -403,7 +403,7 @@ export function BusinessCaseFilters({
         </div>
 
         {/* Use Group Filter - filtered by country AND formulation */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs font-medium flex items-center justify-between">
             <span>Use Group</span>
             <span className="text-muted-foreground font-normal">
@@ -423,7 +423,7 @@ export function BusinessCaseFilters({
 
       {/* Active filter badges */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2 pt-2 border-t">
+        <div className="flex flex-wrap gap-2 pt-4 mt-4 border-t">
           {selectedCountryIds.length > 0 && (
             <Badge variant="outline" className="text-xs gap-1">
               <CheckCircle2 className="h-3 w-3" />

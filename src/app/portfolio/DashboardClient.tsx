@@ -98,11 +98,20 @@ function DashboardContent({
   }, [enrichedBusinessCases]);
 
   // Compute filter options with cascading logic using standardized reference data
+  // Pass formulationCountries to ensure country options are available even when business cases are filtered out
   const filterOptions = useFilterOptions(
     referenceFormulations,
     referenceCountries,
     filterableBusinessCases,
-    null,
+    formulationCountries.length > 0 ? formulationCountries.map((fc) => ({
+      formulation_country_id: fc.formulation_country_id || null,
+      formulation_id: null,
+      formulation_code: fc.formulation_code || null,
+      country_id: null,
+      country_code: fc.country_code || null,
+      country_name: fc.country_name || null,
+      country_status: fc.country_status || null,
+    })) : null,
     filters
   );
 
@@ -237,37 +246,93 @@ function DashboardContent({
   }, [formulations, filteredFormulationCountries, filters, filteredUseGroups, filteredBusinessCases]);
 
   return (
-    <>
-      <GlobalFilterBar filterOptions={filterOptions} defaultExpanded={true} filteredCounts={filteredCounts} />
-      <Card>
-        <CardContent className="p-4 sm:p-6">
-          <TenYearProjectionChart
-            businessCases={filteredBusinessCases}
-            formulations={formulations}
-          />
-        </CardContent>
-      </Card>
-    </>
+    <Card className="overflow-hidden">
+      <CardContent className="p-4 sm:p-6 space-y-6">
+        {/* Integrated Filters */}
+        <GlobalFilterBar 
+          filterOptions={filterOptions} 
+          defaultExpanded={true} 
+          filteredCounts={filteredCounts}
+          inline={true}
+          integrated={true}
+        />
+        
+        {/* Chart */}
+        <TenYearProjectionChart
+          businessCases={filteredBusinessCases}
+          formulations={formulations}
+          noCard={true}
+        />
+      </CardContent>
+    </Card>
   );
 }
 
 function DashboardSkeleton() {
   return (
-    <>
-      <Card className="mb-6 p-4">
-        <Skeleton className="h-8 w-48 mb-4" />
-        <div className="flex gap-4">
-          <Skeleton className="h-9 w-24" />
-          <Skeleton className="h-9 w-28" />
-          <Skeleton className="h-9 w-24" />
+    <Card className="overflow-hidden">
+      <CardContent className="p-4 sm:p-6 space-y-6">
+        {/* Integrated Filters Skeleton */}
+        <div className="border-b border-border/50 pb-6 -mx-4 sm:-mx-6 px-4 sm:px-6 bg-muted/20 -mt-4 sm:-mt-6 pt-4 sm:pt-6 rounded-t-lg">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-7 w-7 rounded-md" />
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-8 w-20" />
+              <Skeleton className="h-8 w-24" />
+            </div>
+          </div>
+          
+          {/* Filter Controls Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+            ))}
+          </div>
+          
+          {/* Results Summary */}
+          <div className="pt-4 border-t bg-muted/30 -mx-4 sm:-mx-6 px-4 sm:px-6 rounded-md mt-4">
+            <Skeleton className="h-4 w-64" />
+          </div>
         </div>
-      </Card>
-      <Card>
-        <CardContent>
-          <Skeleton className="h-[400px] w-full" />
-        </CardContent>
-      </Card>
-    </>
+        
+        {/* Chart Skeleton */}
+        <div className="space-y-4">
+          {/* Chart Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-80" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-6 w-px" />
+              <Skeleton className="h-8 w-16" />
+              <Skeleton className="h-8 w-16" />
+            </div>
+          </div>
+          
+          {/* Chart Area */}
+          <Skeleton className="h-[400px] sm:h-[500px] w-full rounded-lg" />
+          
+          {/* Table Skeleton */}
+          <div className="pt-4 border-t space-y-2">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
