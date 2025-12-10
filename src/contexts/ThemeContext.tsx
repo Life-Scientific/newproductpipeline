@@ -31,11 +31,24 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Initialize with cached theme from localStorage for instant application
   const [currentTheme, setCurrentTheme] = useState<ThemeWithColors | null>(
-    null,
+    () => {
+      if (typeof window === "undefined") return null;
+      try {
+        const cachedThemeData = localStorage.getItem("ls-portfolio-theme-data");
+        if (cachedThemeData) {
+          return JSON.parse(cachedThemeData);
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+      return null;
+    },
   );
   const [availableThemes, setAvailableThemes] = useState<Theme[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Start with false if we have cached theme (theme already applied by inline script)
+  const [isLoading, setIsLoading] = useState(!currentTheme);
 
   const applyThemeToDOM = (theme: ThemeWithColors) => {
     // Apply CSS variables to document root
@@ -67,19 +80,44 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Apply cached theme immediately on mount (before async load)
+  // This ensures theme is applied instantly, even before async data loads
+  useEffect(() => {
+    if (currentTheme && typeof window !== "undefined") {
+      // Theme is already applied by inline script, but ensure it's synced
+      // Only re-apply if there's a mismatch (shouldn't happen, but safety check)
+      const currentSlug = document.documentElement.getAttribute("data-theme");
+      if (currentSlug !== currentTheme.slug) {
+        applyThemeToDOM(currentTheme);
+      }
+    }
+  }, []); // Only run once on mount
+
   const loadTheme = async () => {
-    setIsLoading(true);
+    // Don't set loading to true if we already have a cached theme
+    // This prevents UI flicker on pages with heavy client-side rendering
+    if (!currentTheme) {
+      setIsLoading(true);
+    }
     try {
       const [theme, themes] = await Promise.all([getUserTheme(), getThemes()]);
 
       setAvailableThemes(themes);
 
       if (theme) {
-        setCurrentTheme(theme);
-        applyThemeToDOM(theme);
+        // Only update if theme actually changed (prevents unnecessary re-renders)
+        const themeChanged = !currentTheme || currentTheme.theme_id !== theme.theme_id;
+        if (themeChanged) {
+          setCurrentTheme(theme);
+          applyThemeToDOM(theme);
+        }
       }
     } catch (error) {
       console.error("Failed to load theme:", error);
+      // If we have a cached theme, keep using it even if fetch fails
+      if (!currentTheme) {
+        setIsLoading(false);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -119,8 +157,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     await loadTheme();
   };
 
+  // Load theme asynchronously in background (non-blocking)
+  // Since inline script already applied theme from localStorage, this is just for updates
   useEffect(() => {
-    loadTheme();
+    // Small delay to let page render first, then load theme data in background
+    const timeoutId = setTimeout(() => {
+      loadTheme();
+    }, 0); // Use setTimeout to defer to next tick, allowing initial render
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
