@@ -1192,6 +1192,137 @@ export async function validateBusinessCaseImport(
 }
 
 /**
+ * Preview import - simulates import without actually saving to database.
+ * Shows what would be created, updated, or fail.
+ */
+export async function previewBusinessCaseImport(
+  rows: BusinessCaseImportRow[],
+): Promise<BusinessCaseImportResult> {
+  const supabase = await createClient();
+
+  // Step 1: Validate all rows (same as import)
+  const rowValidations: BusinessCaseImportRowValidation[] = [];
+  for (let i = 0; i < rows.length; i++) {
+    const validation = await validateImportRow(rows[i], i, supabase);
+    rowValidations.push(validation);
+  }
+
+  const validRows = rowValidations.filter((v) => v.isValid);
+  const invalidRows = rowValidations.filter((v) => !v.isValid);
+
+  // Initialize progress tracking
+  const rowProgress: BusinessCaseImportRowProgress[] = rowValidations.map(
+    (v) => ({
+      rowIndex: v.rowIndex,
+      status: v.isValid ? "valid" : "invalid",
+      message: v.isValid ? undefined : v.errors.join("; "),
+    }),
+  );
+
+  let wouldCreate = 0;
+  let wouldUpdate = 0;
+  let wouldError = 0;
+
+  // Step 2: Simulate import for valid rows (without actually saving)
+  for (const validation of validRows) {
+    const { row, rowIndex, resolved } = validation;
+    if (!resolved) {
+      wouldError++;
+      const progressIdx = rowProgress.findIndex((p) => p.rowIndex === rowIndex);
+      if (progressIdx >= 0) {
+        rowProgress[progressIdx].status = "error";
+        rowProgress[progressIdx].message = "Validation resolved data missing";
+      }
+      continue;
+    }
+
+    const progressIdx = rowProgress.findIndex((p) => p.rowIndex === rowIndex);
+    if (progressIdx >= 0) {
+      rowProgress[progressIdx].status = "importing";
+    }
+
+    try {
+      // Simulate validation checks that would happen in createBusinessCaseGroupAction
+      // Check if this would be an update or create
+      const isUpdate = !!resolved.existing_business_case_group_id;
+
+      // Validate year data (simulate what createBusinessCaseGroupAction would check)
+      let hasYearError = false;
+      for (let year = 1; year <= 10; year++) {
+        const volumeKey = `year_${year}_volume` as keyof BusinessCaseImportRow;
+        const nspKey = `year_${year}_nsp` as keyof BusinessCaseImportRow;
+
+        const volume = row[volumeKey];
+        const nsp = row[nspKey];
+
+        if (
+          volume === undefined ||
+          volume === null ||
+          Number.isNaN(Number(volume)) ||
+          Number(volume) <= 0
+        ) {
+          hasYearError = true;
+          break;
+        }
+        if (
+          nsp === undefined ||
+          nsp === null ||
+          Number.isNaN(Number(nsp)) ||
+          Number(nsp) <= 0
+        ) {
+          hasYearError = true;
+          break;
+        }
+      }
+
+      if (hasYearError) {
+        wouldError++;
+        if (progressIdx >= 0) {
+          rowProgress[progressIdx].status = "error";
+          rowProgress[progressIdx].message =
+            "Year data validation would fail: Volume and NSP must be greater than 0";
+        }
+      } else {
+        // Simulate successful import
+        if (isUpdate) {
+          wouldUpdate++;
+          if (progressIdx >= 0) {
+            rowProgress[progressIdx].status = "updated";
+            rowProgress[progressIdx].message =
+              "Would create new version (existing business case would be archived)";
+          }
+        } else {
+          wouldCreate++;
+          if (progressIdx >= 0) {
+            rowProgress[progressIdx].status = "created";
+            rowProgress[progressIdx].message = "Would create new business case";
+          }
+        }
+      }
+    } catch (error) {
+      wouldError++;
+      if (progressIdx >= 0) {
+        rowProgress[progressIdx].status = "error";
+        rowProgress[progressIdx].message =
+          error instanceof Error ? error.message : "Preview simulation failed";
+      }
+    }
+  }
+
+  return {
+    totalRows: rows.length,
+    validRows: validRows.length,
+    invalidRows: invalidRows.length,
+    created: wouldCreate,
+    updated: wouldUpdate,
+    skipped: 0,
+    errors: wouldError,
+    rowValidations,
+    rowProgress,
+  };
+}
+
+/**
  * Imports business cases from validated rows.
  * Creates new business cases or new versions of existing ones.
  */
