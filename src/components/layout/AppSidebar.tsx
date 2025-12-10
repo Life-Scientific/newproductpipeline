@@ -483,8 +483,7 @@ export function AppSidebar() {
                     {/* Santa Hat - Clickable */}
                     <Popover open={santaHatOpen} onOpenChange={setSantaHatOpen}>
                       <PopoverTrigger asChild>
-                        <button
-                          type="button"
+                        <div
                           className="absolute left-1/2 -translate-x-1/2 z-50 cursor-pointer hover:scale-110 transition-transform"
                           style={{ top: isCollapsed ? "-0.5rem" : "-0.375rem" }}
                           onClick={(e) => {
@@ -543,7 +542,7 @@ export function AppSidebar() {
                               filter="url(#hat-shadow-footer)"
                             />
                           </svg>
-                        </button>
+                        </div>
                       </PopoverTrigger>
                       <PopoverContent
                         className="w-auto p-3 text-center"
