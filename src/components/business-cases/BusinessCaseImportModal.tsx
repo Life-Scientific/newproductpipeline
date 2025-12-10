@@ -63,7 +63,7 @@ export function BusinessCaseImportModal({
 }: BusinessCaseImportModalProps) {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
   const [step, setStep] = useState<ImportStep>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [parsedRows, setParsedRows] = useState<BusinessCaseImportRow[]>([]);
@@ -116,7 +116,7 @@ export function BusinessCaseImportModal({
         dataLines.push({ line: trimmed, originalLineNumber: i + 1 });
       }
     }
-
+    
     if (dataLines.length < 2) {
       throw new Error(
         "The CSV file appears to be empty or incomplete. It must have at least a header row (with column names) and one data row. Please check your file and try again.",
@@ -124,7 +124,7 @@ export function BusinessCaseImportModal({
     }
 
     const headers = dataLines[0].line.split(",").map((h) => h.trim());
-
+    
     // Only check required headers
     const requiredHeaders = [
       "formulation_code",
@@ -135,7 +135,7 @@ export function BusinessCaseImportModal({
         `year_${i + 1}_nsp`,
       ]).flat(),
     ];
-
+    
     const missingRequired = requiredHeaders.filter(
       (h) =>
         !headers.some((header) => header.toLowerCase() === h.toLowerCase()),
@@ -163,7 +163,7 @@ export function BusinessCaseImportModal({
 
     const validRows: BusinessCaseImportRow[] = [];
     const skippedRows: SkippedRow[] = [];
-
+    
     for (let i = 1; i < dataLines.length; i++) {
       const { line, originalLineNumber } = dataLines[i];
       if (!line) continue;
@@ -172,7 +172,7 @@ export function BusinessCaseImportModal({
       const values: string[] = [];
       let current = "";
       let inQuotes = false;
-
+      
       for (let j = 0; j < line.length; j++) {
         const char = line[j];
         if (char === '"') {
@@ -188,11 +188,11 @@ export function BusinessCaseImportModal({
 
       const row: Partial<BusinessCaseImportRow> = {};
       const parseErrors: string[] = [];
-
+      
       headers.forEach((header, idx) => {
         const value = values[idx]?.trim() || "";
         const headerLower = header.toLowerCase();
-
+        
         if (headerLower === "formulation_code") {
           row.formulation_code = value;
         } else if (headerLower === "country_code") {
@@ -220,7 +220,7 @@ export function BusinessCaseImportModal({
                     ? "Volume"
                     : "NSP (Net Selling Price)";
                 parseErrors.push(
-                  `Year ${yearNum} ${fieldName} is empty. Please enter a number greater than 0. For Volume, use Litres. For NSP, use Euros per Litre.`,
+                  `Year ${yearNum} ${fieldName} is empty. Please enter a number (>= 0). For Volume, use Litres. For NSP, use Euros per Litre. Use 0 to indicate zero values.`,
                 );
               } else {
                 const numValue = parseFloat(value);
@@ -232,16 +232,16 @@ export function BusinessCaseImportModal({
                   parseErrors.push(
                     `Year ${yearNum} ${fieldName} contains invalid text: "${value}". Please enter a number only (no letters or special characters).`,
                   );
-                } else if (numValue <= 0) {
+                } else if (numValue < 0) {
                   const fieldName =
                     field === "volume"
                       ? "Volume"
                       : "NSP (Net Selling Price)";
                   parseErrors.push(
-                    `Year ${yearNum} ${fieldName} must be greater than 0. You entered "${value}". If there is no value for this year, leave the cell blank instead of entering 0.`,
+                    `Year ${yearNum} ${fieldName} cannot be negative. You entered "${value}". Please enter a number >= 0. Use 0 to indicate zero values.`,
                   );
                 } else {
-                  (row as any)[key] = numValue;
+                (row as any)[key] = numValue;
                 }
               }
             } else if (field === "cogs" && value) {
@@ -272,10 +272,10 @@ export function BusinessCaseImportModal({
       }
 
       // Check all 10 years have volume and nsp
-      for (let year = 1; year <= 10; year++) {
-        const volumeKey = `year_${year}_volume` as keyof BusinessCaseImportRow;
-        const nspKey = `year_${year}_nsp` as keyof BusinessCaseImportRow;
-        if (
+        for (let year = 1; year <= 10; year++) {
+          const volumeKey = `year_${year}_volume` as keyof BusinessCaseImportRow;
+          const nspKey = `year_${year}_nsp` as keyof BusinessCaseImportRow;
+          if (
           row[volumeKey] === undefined &&
           !parseErrors.some((e) => e.includes(`Year ${year} Volume`))
         ) {
@@ -332,7 +332,7 @@ export function BusinessCaseImportModal({
       try {
         const text = await selectedFile.text();
         const result = parseCSV(text);
-
+        
         if (result.validRows.length === 0) {
           toast({
             title: "No valid rows found",
@@ -404,7 +404,7 @@ export function BusinessCaseImportModal({
     setIsValidating(true);
     try {
       const result = await validateBusinessCaseImport(parsedRows);
-
+      
       if (result.error) {
         toast({
           title: "Validation error",
@@ -417,10 +417,10 @@ export function BusinessCaseImportModal({
 
       setValidations(result.validations);
       setIsValidating(false);
-
+      
       const validCount = result.validations.filter((v) => v.isValid).length;
       const invalidCount = result.validations.length - validCount;
-
+      
       if (invalidCount > 0) {
         toast({
           title: "Validation complete",
@@ -497,7 +497,7 @@ export function BusinessCaseImportModal({
     // Use preview result if available (from preview step), otherwise use validations
     const rowsToImport = previewResult
       ? previewResult.rowValidations
-          .filter((v) => v.isValid)
+      .filter((v) => v.isValid)
           .map((v) => v.row)
       : validations.filter((v) => v.isValid).map((v) => v.row);
 
@@ -525,12 +525,12 @@ export function BusinessCaseImportModal({
 
     setIsImporting(true);
     setStep("import");
-
+    
     try {
       const result = await importBusinessCases(validRows);
       setImportResult(result);
       setStep("results");
-
+      
       if (result.error) {
         toast({
           title: "Import failed",
@@ -574,7 +574,7 @@ export function BusinessCaseImportModal({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-
+      
       toast({
         title: "Template downloaded",
         description:
@@ -743,7 +743,7 @@ export function BusinessCaseImportModal({
                   }
                 }}
               />
-
+              
               {file ? (
                 <div className="space-y-2">
                   <FileText className="h-12 w-12 mx-auto text-primary" />
@@ -1015,7 +1015,7 @@ export function BusinessCaseImportModal({
                     <p className="text-xl font-bold text-amber-600">
                       {skippedRows.length}
                     </p>
-                  </div>
+                </div>
                 )}
                 <div className="p-3 border rounded-lg">
                   <p className="text-xs text-muted-foreground">Validated</p>
@@ -1027,14 +1027,14 @@ export function BusinessCaseImportModal({
                     <p className="text-xl font-bold text-orange-600">
                       {importResult.invalidRows}
                     </p>
-                  </div>
+                </div>
                 )}
                 <div className="p-3 border rounded-lg bg-green-50 dark:bg-green-950/20">
                   <p className="text-xs text-muted-foreground">Created</p>
                   <p className="text-xl font-bold text-green-600">
                     {importResult.created}
                   </p>
-                </div>
+              </div>
                 <div className="p-3 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
                   <p className="text-xs text-muted-foreground">Updated</p>
                   <p className="text-xl font-bold text-blue-600">
@@ -1049,7 +1049,7 @@ export function BusinessCaseImportModal({
                     </p>
                   </div>
                 )}
-              </div>
+            </div>
 
               {/* Summary */}
               <div className="p-3 bg-muted rounded-lg text-sm">
@@ -1118,7 +1118,7 @@ export function BusinessCaseImportModal({
                                 {validation.row.formulation_code} / {validation.row.country_code} / {validation.row.use_group_variant}
                               </span>
                             )}
-                          </div>
+                      </div>
                           <p className="text-xs text-red-600 dark:text-red-500 mt-1 ml-14">
                             {p.message || "Import failed"}
                           </p>
@@ -1262,7 +1262,7 @@ export function BusinessCaseImportModal({
                   >
                     <Download className="mr-2 h-4 w-4" />
                     Export Failed Rows
-                  </Button>
+            </Button>
                 )}
               <Button onClick={handleClose}>Close</Button>
             </>

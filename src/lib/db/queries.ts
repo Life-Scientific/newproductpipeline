@@ -1753,20 +1753,36 @@ export async function getBusinessCaseGroup(
 ): Promise<BusinessCaseYearData[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  // Get ALL records in the group (including duplicates) to handle edge cases
+  const { data: allData, error } = await supabase
     .from("vw_business_case")
     .select("*")
     .eq("business_case_group_id", groupId)
     .eq("status", "active")
+    .order("created_at", { ascending: false }) // Most recent first
     .order("year_offset", { ascending: true });
 
   if (error) {
     throw new Error(`Failed to fetch business case group: ${error.message}`);
   }
 
-  if (!data || data.length === 0) {
+  if (!allData || allData.length === 0) {
     return [];
   }
+
+  // Deduplicate: If there are multiple active records for the same year_offset,
+  // keep only the most recent one (by created_at)
+  const deduplicatedMap = new Map<number, typeof allData[0]>();
+  for (const record of allData) {
+    const yearOffset = record.year_offset || 1;
+    const existing = deduplicatedMap.get(yearOffset);
+    if (!existing || (record.created_at && existing.created_at && new Date(record.created_at) > new Date(existing.created_at))) {
+      deduplicatedMap.set(yearOffset, record);
+    }
+  }
+
+  // Convert back to array and sort by year_offset
+  const data = Array.from(deduplicatedMap.values()).sort((a, b) => (a.year_offset || 1) - (b.year_offset || 1));
 
   // Get the formulation_country_use_group_id from junction table
   const firstBusinessCaseId = data[0]?.business_case_id;

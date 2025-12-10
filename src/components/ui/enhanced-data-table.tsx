@@ -36,7 +36,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import * as React from "react";
 
 // Dynamically import DnD table to reduce initial bundle size
@@ -223,6 +223,7 @@ export function EnhancedDataTable<TData, TValue>({
   getRowClassName,
 }: EnhancedDataTableProps<TData, TValue>) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Local state for filters (initialized empty, synced from URL after mount to avoid hydration mismatch)
   const [activeFilters, setActiveFilters] = React.useState<
@@ -297,12 +298,14 @@ export function EnhancedDataTable<TData, TValue>({
         } else {
           params.delete(paramKey);
         }
+        // Always remove page param when filters change to reset pagination
         params.delete("page");
         const newUrl = params.toString()
           ? `${pathname}?${params.toString()}`
           : pathname;
         console.log("[EnhancedDataTable] Updating URL to:", newUrl);
-        window.history.replaceState(null, "", newUrl);
+        // Use pushState instead of replaceState to ensure browser history is updated
+        window.history.pushState(null, "", newUrl);
       }
     },
     [pathname],
@@ -450,6 +453,65 @@ export function EnhancedDataTable<TData, TValue>({
       }
     }
   }, []); // Empty deps - only run once on mount
+
+  // Watch for URL changes (including portfolio filters) and reset pagination if filters changed
+  // This handles cases where external filters (like portfolio filters) change the URL
+  // Use a ref to track previous filter state to detect changes
+  const prevFilterParamsRef = React.useRef<string>("");
+  const prevPageParamRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (!enableUrlPagination) return;
+
+    // Sync pagination from URL (but only if it's different from current state)
+    const pageParam = searchParams.get("page");
+    const currentPageFromUrl = pageParam ? parseInt(pageParam, 10) - 1 : 0;
+    
+    // Only sync if URL page param actually changed (not just searchParams object reference)
+    if (prevPageParamRef.current !== pageParam) {
+      prevPageParamRef.current = pageParam;
+      // Only update if different from current state to avoid loops
+      if (currentPageFromUrl !== pagination.pageIndex && !Number.isNaN(currentPageFromUrl)) {
+        setPagination((prev) => ({ ...prev, pageIndex: Math.max(0, currentPageFromUrl) }));
+      }
+    }
+
+    // Handle filter changes (only if filterConfigs exist)
+    if (filterConfigs.length > 0) {
+      // Build a string representation of current filter params (excluding page)
+      const filterParams: string[] = [];
+      filterConfigs.forEach((config) => {
+        const paramKey = config.paramKey || String(config.columnKey);
+        const value = searchParams.get(paramKey);
+        if (value) {
+          filterParams.push(`${paramKey}=${value}`);
+        }
+      });
+      const currentFilterString = filterParams.sort().join("&");
+
+      // Compare with previous to detect changes
+      if (prevFilterParamsRef.current !== currentFilterString && prevFilterParamsRef.current !== "") {
+        // If filters changed, reset pagination to page 1
+        isUpdatingPaginationRef.current = true;
+        setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+        prevPageParamRef.current = null; // Reset page param ref since we're resetting to page 1
+        setTimeout(() => {
+          isUpdatingPaginationRef.current = false;
+        }, 100);
+        
+        // Update active filters to match URL
+        const newFilters: Record<string, string[]> = {};
+        filterConfigs.forEach((config) => {
+          const paramKey = config.paramKey || String(config.columnKey);
+          const value = searchParams.get(paramKey);
+          newFilters[paramKey] = value ? value.split(",").filter(Boolean) : [];
+        });
+        setActiveFilters(newFilters);
+      }
+      
+      // Update ref for next comparison
+      prevFilterParamsRef.current = currentFilterString;
+    }
+  }, [searchParams, enableUrlPagination, filterConfigs]);
 
   // Handle browser back/forward navigation (syncs both pagination and filters)
   React.useEffect(() => {
@@ -1101,22 +1163,31 @@ export function EnhancedDataTable<TData, TValue>({
             onClick={() => {
               const newPageIndex = pagination.pageIndex - 1;
               if (newPageIndex >= 0) {
-                // Update React state directly
-                setPagination((prev) => ({ ...prev, pageIndex: newPageIndex }));
-
-                // Update URL using history API (no server navigation)
+                // Mark that we're updating pagination to prevent effect from resetting
+                isUpdatingPaginationRef.current = true;
+                
+                // Update URL first, then state (prevents race conditions)
                 if (enableUrlPagination && typeof window !== "undefined") {
                   const params = new URLSearchParams(window.location.search);
                   if (newPageIndex === 0) {
                     params.delete("page");
+                    prevPageParamRef.current = null;
                   } else {
                     params.set("page", (newPageIndex + 1).toString());
+                    prevPageParamRef.current = (newPageIndex + 1).toString();
                   }
                   const newUrl = params.toString()
                     ? `${pathname}?${params.toString()}`
                     : pathname;
-                  window.history.replaceState(null, "", newUrl);
+                  window.history.pushState(null, "", newUrl);
                 }
+                // Update React state
+                setPagination((prev) => ({ ...prev, pageIndex: newPageIndex }));
+                
+                // Allow effect to run again after a short delay
+                setTimeout(() => {
+                  isUpdatingPaginationRef.current = false;
+                }, 100);
               }
             }}
             disabled={pagination.pageIndex <= 0}
@@ -1142,18 +1213,27 @@ export function EnhancedDataTable<TData, TValue>({
               const newPageIndex = pagination.pageIndex + 1;
               const pageCount = table.getPageCount();
               if (newPageIndex < pageCount) {
-                // Update React state directly
-                setPagination((prev) => ({ ...prev, pageIndex: newPageIndex }));
-
-                // Update URL using history API (no server navigation)
+                // Mark that we're updating pagination to prevent effect from resetting
+                isUpdatingPaginationRef.current = true;
+                
+                // Update URL first, then state (prevents race conditions)
                 if (enableUrlPagination && typeof window !== "undefined") {
                   const params = new URLSearchParams(window.location.search);
                   params.set("page", (newPageIndex + 1).toString());
                   const newUrl = params.toString()
                     ? `${pathname}?${params.toString()}`
                     : pathname;
-                  window.history.replaceState(null, "", newUrl);
+                  window.history.pushState(null, "", newUrl);
+                  // Update ref to prevent effect from resetting
+                  prevPageParamRef.current = (newPageIndex + 1).toString();
                 }
+                // Update React state
+                setPagination((prev) => ({ ...prev, pageIndex: newPageIndex }));
+                
+                // Allow effect to run again after a short delay
+                setTimeout(() => {
+                  isUpdatingPaginationRef.current = false;
+                }, 100);
               }
             }}
             disabled={pagination.pageIndex >= table.getPageCount() - 1}
