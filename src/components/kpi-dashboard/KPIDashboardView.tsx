@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { CardGrid } from "@/components/layout/CardGrid";
 import { MetricCard } from "@/components/layout/MetricCard";
 import { KPIDetailModal } from "./KPIDetailModal";
+import { VisualizationsSection } from "./VisualizationsSection";
 import type { UserManagementData } from "@/lib/actions/user-management";
 import type { KPIData, KeyResult } from "@/lib/kpi-dashboard/mock-data";
 import {
@@ -242,6 +242,9 @@ export function KPIDashboardView({
             </Card>
           ))}
         </CardGrid>
+
+        {/* Visualizations Section - Below the fold */}
+        <VisualizationsSection defaultOpen={true} />
       </div>
 
       {/* Detail Modal */}
@@ -252,6 +255,7 @@ export function KPIDashboardView({
         onClose={() => setSelectedKR(null)}
         coreDriverLabel={selectedKR?.coreDriverLabel}
         strategicDriverLabel={selectedKR?.strategicDriverLabel}
+        strategicDriverId={selectedKR?.strategicDriverId}
       />
     </>
   );
@@ -310,7 +314,9 @@ function KeyResultRow({
         )}
 
         {/* Source indicator */}
-        <Database className="h-3 w-3 text-muted-foreground" title={keyResult.source.system} />
+        <div title={keyResult.source.system}>
+          <Database className="h-3 w-3 text-muted-foreground" />
+        </div>
 
         {/* Last Updated */}
         <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">

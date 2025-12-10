@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { OwnerSelector } from "./OwnerSelector";
+import { StrategicDriverCharts } from "./StrategicDriverCharts";
 import type { UserManagementData } from "@/lib/actions/user-management";
 import type { KeyResult, StatusColor } from "@/lib/kpi-dashboard/mock-data";
 import {
@@ -30,6 +31,7 @@ import {
   Minus,
   ExternalLink,
   History,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +41,7 @@ interface KPIDetailModalProps {
   onUpdate: (updated: KeyResult) => void;
   onClose: () => void;
   strategicDriverLabel?: string;
+  strategicDriverId?: string;
   coreDriverLabel?: string;
 }
 
@@ -83,6 +86,7 @@ export function KPIDetailModal({
   onUpdate,
   onClose,
   strategicDriverLabel,
+  strategicDriverId,
   coreDriverLabel,
 }: KPIDetailModalProps) {
   const [activeTab, setActiveTab] = useState("details");
@@ -158,12 +162,16 @@ export function KPIDetailModal({
       showSave={false}
     >
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-3 mb-4">
+        <TabsList className="w-full grid grid-cols-4 mb-4">
           <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="charts">
+            <BarChart3 className="h-3.5 w-3.5 mr-1.5" />
+            Charts
+          </TabsTrigger>
           <TabsTrigger value="source">Data Source</TabsTrigger>
           <TabsTrigger value="audit">
             <History className="h-3.5 w-3.5 mr-1.5" />
-            Audit Log
+            Audit
           </TabsTrigger>
         </TabsList>
 
@@ -272,6 +280,16 @@ export function KPIDetailModal({
               className="min-h-[80px]"
             />
           </div>
+        </TabsContent>
+
+        <TabsContent value="charts" className="mt-0">
+          {strategicDriverId ? (
+            <StrategicDriverCharts strategicDriverId={strategicDriverId} />
+          ) : (
+            <div className="flex items-center justify-center h-32 text-muted-foreground">
+              <p className="text-sm">No visualizations available for this KPI.</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="source" className="space-y-4 mt-0">
