@@ -22,6 +22,7 @@ import {
   chartTheme,
   chartColors,
 } from "@/lib/utils/chart-theme";
+import { cn } from "@/lib/utils";
 
 interface TrendLineChartProps {
   title: string;
@@ -51,49 +52,54 @@ export function TrendLineChart({
   }));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Current Value Tile */}
-      <Card>
-        <CardContent className="p-4">
+      <Card className="border-border/50 bg-muted/20">
+        <CardContent className="p-3">
           <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground font-medium">
+            <div className="space-y-0.5">
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
                 This Month
               </p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold tabular-nums">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold tabular-nums text-foreground">
                   {currentValue.toFixed(1)}
                 </span>
-                <span className="text-sm text-muted-foreground">{unit}</span>
+                <span className="text-xs text-muted-foreground font-medium">
+                  {unit}
+                </span>
               </div>
             </div>
             <div
-              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold ${
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold border",
                 changeIsGood
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-              }`}
+                  ? "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30"
+                  : "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30",
+              )}
             >
               {isPositive ? (
-                <TrendingUp className="h-3.5 w-3.5" />
+                <TrendingUp className="h-3 w-3" />
               ) : (
-                <TrendingDown className="h-3.5 w-3.5" />
+                <TrendingDown className="h-3 w-3" />
               )}
-              {isPositive ? "+" : ""}
-              {change.toFixed(1)}%
+              <span className="tabular-nums">
+                {isPositive ? "+" : ""}
+                {change.toFixed(1)}%
+              </span>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Trend Line Chart */}
-      <div className="h-[200px] w-full">
+      <div className="h-[180px] min-h-[180px] w-full rounded-lg border border-border/50 bg-muted/10 p-2">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={formattedData}
-            margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+            margin={{ top: 5, right: 5, left: 0, bottom: 0 }}
           >
-            <CartesianGrid {...chartTheme.grid} />
+            <CartesianGrid {...chartTheme.grid} strokeDasharray="3 3" />
             <XAxis dataKey="month" {...getAxisProps()} />
             <YAxis
               {...getAxisProps()}
@@ -114,7 +120,8 @@ export function TrendLineChart({
                   value: `Target: ${targetValue}${unit}`,
                   position: "right",
                   fill: "var(--color-muted-foreground)",
-                  fontSize: 10,
+                  fontSize: 9,
+                  fontWeight: 600,
                 }}
               />
             )}
@@ -122,9 +129,9 @@ export function TrendLineChart({
               type="monotone"
               dataKey="value"
               stroke={chartColors.primary}
-              strokeWidth={2}
-              dot={{ r: 3, fill: chartColors.primary }}
-              activeDot={{ r: 5 }}
+              strokeWidth={2.5}
+              dot={{ r: 3, fill: chartColors.primary, strokeWidth: 1.5 }}
+              activeDot={{ r: 5, strokeWidth: 2 }}
             />
           </LineChart>
         </ResponsiveContainer>

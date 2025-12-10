@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useMemo, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Button } from "@/components/ui/button";
@@ -27,40 +27,46 @@ interface ChartCardProps {
 
 const accentStyles = {
   blue: {
-    glow: "hover:shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)]",
-    border: "hover:border-blue-500/30",
+    glow: "hover:shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)] dark:hover:shadow-[0_0_30px_-5px_rgba(59,130,246,0.4)]",
+    border: "hover:border-blue-500/40 dark:hover:border-blue-400/40",
     icon: "text-blue-500",
-    bg: "from-blue-500/5 to-transparent",
+    bg: "from-blue-500/8 to-transparent dark:from-blue-500/12",
+    accentLine: "via-blue-500/60",
   },
   green: {
-    glow: "hover:shadow-[0_0_30px_-5px_rgba(34,197,94,0.3)]",
-    border: "hover:border-green-500/30",
+    glow: "hover:shadow-[0_0_30px_-5px_rgba(34,197,94,0.3)] dark:hover:shadow-[0_0_30px_-5px_rgba(34,197,94,0.4)]",
+    border: "hover:border-green-500/40 dark:hover:border-green-400/40",
     icon: "text-green-500",
-    bg: "from-green-500/5 to-transparent",
+    bg: "from-green-500/8 to-transparent dark:from-green-500/12",
+    accentLine: "via-green-500/60",
   },
   amber: {
-    glow: "hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.3)]",
-    border: "hover:border-amber-500/30",
+    glow: "hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.3)] dark:hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.4)]",
+    border: "hover:border-amber-500/40 dark:hover:border-amber-400/40",
     icon: "text-amber-500",
-    bg: "from-amber-500/5 to-transparent",
+    bg: "from-amber-500/8 to-transparent dark:from-amber-500/12",
+    accentLine: "via-amber-500/60",
   },
   purple: {
-    glow: "hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)]",
-    border: "hover:border-purple-500/30",
+    glow: "hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)] dark:hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.4)]",
+    border: "hover:border-purple-500/40 dark:hover:border-purple-400/40",
     icon: "text-purple-500",
-    bg: "from-purple-500/5 to-transparent",
+    bg: "from-purple-500/8 to-transparent dark:from-purple-500/12",
+    accentLine: "via-purple-500/60",
   },
   rose: {
-    glow: "hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)]",
-    border: "hover:border-rose-500/30",
+    glow: "hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)] dark:hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.4)]",
+    border: "hover:border-rose-500/40 dark:hover:border-rose-400/40",
     icon: "text-rose-500",
-    bg: "from-rose-500/5 to-transparent",
+    bg: "from-rose-500/8 to-transparent dark:from-rose-500/12",
+    accentLine: "via-rose-500/60",
   },
   cyan: {
-    glow: "hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.3)]",
-    border: "hover:border-cyan-500/30",
+    glow: "hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.3)] dark:hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.4)]",
+    border: "hover:border-cyan-500/40 dark:hover:border-cyan-400/40",
     icon: "text-cyan-500",
-    bg: "from-cyan-500/5 to-transparent",
+    bg: "from-cyan-500/8 to-transparent dark:from-cyan-500/12",
+    accentLine: "via-cyan-500/60",
   },
 };
 
@@ -88,11 +94,10 @@ export function ChartCard({
     setMounted(true);
   }, []);
 
-  const TrendIcon = trend
-    ? trend.value >= 0
-      ? TrendingUp
-      : TrendingDown
-    : Minus;
+  const TrendIcon = useMemo(() => {
+    if (!trend) return Minus;
+    return trend.value >= 0 ? TrendingUp : TrendingDown;
+  }, [trend]);
 
   return (
     <>
@@ -104,7 +109,9 @@ export function ChartCard({
       >
         <div
           className={cn(
-            "group relative rounded-xl border bg-card overflow-hidden transition-all duration-300",
+            "group relative rounded-xl border bg-card/50 backdrop-blur-sm overflow-hidden",
+            "transition-all duration-300 ease-out",
+            "hover:bg-card hover:shadow-lg",
             accent.glow,
             accent.border,
           )}
@@ -112,66 +119,73 @@ export function ChartCard({
           {/* Gradient overlay */}
           <div
             className={cn(
-              "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none",
+              "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0",
               accent.bg,
             )}
           />
 
           {/* Card Header */}
-          <div className="relative flex items-start justify-between p-4 pb-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold truncate">{title}</h3>
+          <div className="relative flex items-start justify-between p-4 pb-3 z-10">
+            <div className="flex-1 min-w-0 pr-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-semibold text-foreground truncate">
+                  {title}
+                </h3>
                 {trend && (
                   <motion.div
                     initial={mounted ? { scale: 0.8, opacity: 0 } : false}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: mounted ? 0.2 : 0 }}
+                    transition={{ duration: mounted ? 0.2 : 0, delay: 0.1 }}
                     className={cn(
-                      "flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full",
+                      "flex items-center gap-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-md shrink-0",
+                      "backdrop-blur-sm",
                       trend.value >= 0
-                        ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                        : "bg-red-500/10 text-red-600 dark:text-red-400",
+                        ? "bg-green-500/15 text-green-700 dark:text-green-400 border border-green-500/20"
+                        : "bg-red-500/15 text-red-700 dark:text-red-400 border border-red-500/20",
                     )}
                   >
-                    <TrendIcon className="h-3 w-3" />
-                    {trend.value >= 0 ? "+" : ""}
-                    {trend.value.toFixed(1)}%
+                    <TrendIcon className="h-2.5 w-2.5" />
+                    <span className="tabular-nums">
+                      {trend.value >= 0 ? "+" : ""}
+                      {trend.value.toFixed(1)}%
+                    </span>
                   </motion.div>
                 )}
               </div>
               {description && (
-                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-1 leading-relaxed">
                   {description}
                 </p>
               )}
             </div>
 
-            {/* Expand Button - Always visible */}
+            {/* Expand Button */}
             <Button
               variant="ghost"
               size="icon"
               className={cn(
-                "h-8 w-8 shrink-0 rounded-lg transition-all",
-                "bg-muted/50 hover:bg-muted",
-                "opacity-60 group-hover:opacity-100",
+                "h-7 w-7 shrink-0 rounded-md transition-all duration-200",
+                "bg-muted/40 hover:bg-muted/80",
+                "border border-border/50 hover:border-border",
+                "opacity-70 group-hover:opacity-100",
+                "hover:scale-105 active:scale-95",
               )}
               onClick={() => setIsExpanded(true)}
             >
-              <Expand className="h-4 w-4" />
+              <Expand className="h-3.5 w-3.5" />
             </Button>
           </div>
 
           {/* Card Content */}
-          <div className="relative px-4 pb-4">
+          <div className="relative px-4 pb-4 z-10">
             {children}
           </div>
 
           {/* Bottom accent line */}
           <div
             className={cn(
-              "absolute bottom-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-              `bg-gradient-to-r from-transparent via-${accentColor}-500/50 to-transparent`,
+              "absolute bottom-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10",
+              `bg-gradient-to-r from-transparent ${accent.accentLine} to-transparent`,
             )}
           />
         </div>
@@ -194,4 +208,3 @@ export function ChartCard({
     </>
   );
 }
-

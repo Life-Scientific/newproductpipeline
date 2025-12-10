@@ -15,6 +15,7 @@ export { ForecastAccuracyChart } from "./ForecastAccuracyChart";
 export { ObsoleteStockChart } from "./ObsoleteStockChart";
 export { ExpandableChart } from "./ExpandableChart";
 export { ChartCard } from "./ChartCard";
+export { ChartContainer } from "./ChartContainer";
 
 // Drilldowns
 export { RevenueDrilldown, MarketShareDrilldown } from "./drilldowns";

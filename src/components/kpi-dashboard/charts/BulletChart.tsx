@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { chartColors } from "@/lib/utils/chart-theme";
+import { cn } from "@/lib/utils";
 
 interface BulletChartProps {
   label: string;
@@ -25,19 +26,24 @@ export function BulletChart({
   // Determine performance status
   let status: "poor" | "ok" | "good" | "excellent";
   let statusColor: string;
+  let statusBg: string;
 
   if (actual < ranges[0]) {
     status = "poor";
     statusColor = "text-red-600 dark:text-red-400";
+    statusBg = "bg-red-500/10 border-red-500/20";
   } else if (actual < ranges[1]) {
     status = "ok";
     statusColor = "text-yellow-600 dark:text-yellow-400";
+    statusBg = "bg-yellow-500/10 border-yellow-500/20";
   } else if (actual < ranges[2]) {
     status = "good";
     statusColor = "text-green-600 dark:text-green-400";
+    statusBg = "bg-green-500/10 border-green-500/20";
   } else {
     status = "excellent";
     statusColor = "text-green-600 dark:text-green-400";
+    statusBg = "bg-green-500/10 border-green-500/20";
   }
 
   const gap = target - actual;
@@ -54,60 +60,70 @@ export function BulletChart({
   };
 
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="space-y-3">
+    <Card className="border-border/50 hover:border-border transition-colors">
+      <CardContent className="p-3">
+        <div className="space-y-2.5">
           <div className="flex items-start justify-between">
-            <span className="text-xs text-muted-foreground font-medium">
+            <span className="text-[11px] text-muted-foreground font-medium leading-tight">
               {label}
             </span>
-            <span className={`text-xs font-semibold ${statusColor}`}>
+            <span
+              className={cn(
+                "text-[10px] font-semibold px-1.5 py-0.5 rounded border",
+                statusColor,
+                statusBg,
+              )}
+            >
               {status.charAt(0).toUpperCase() + status.slice(1)}
             </span>
           </div>
 
           {/* Bullet Chart */}
-          <div className="relative h-8">
+          <div className="relative h-7 rounded-md overflow-hidden bg-muted/30">
             {/* Background ranges */}
-            <div className="absolute inset-0 flex rounded-md overflow-hidden">
+            <div className="absolute inset-0 flex">
               <div
+                className="transition-all"
                 style={{
                   width: `${(ranges[0] / max) * 100}%`,
-                  backgroundColor: "oklch(0.65 0.2 25 / 0.25)",
+                  backgroundColor: "oklch(0.65 0.2 25 / 0.3)",
                 }}
               />
               <div
+                className="transition-all"
                 style={{
                   width: `${((ranges[1] - ranges[0]) / max) * 100}%`,
-                  backgroundColor: "oklch(0.75 0.15 85 / 0.25)",
+                  backgroundColor: "oklch(0.75 0.15 85 / 0.3)",
                 }}
               />
               <div
+                className="transition-all"
                 style={{
                   width: `${((ranges[2] - ranges[1]) / max) * 100}%`,
-                  backgroundColor: "oklch(0.7 0.15 145 / 0.25)",
+                  backgroundColor: "oklch(0.7 0.15 145 / 0.3)",
                 }}
               />
               <div
+                className="transition-all"
                 style={{
                   width: `${((ranges[3] - ranges[2]) / max) * 100}%`,
-                  backgroundColor: "oklch(0.7 0.15 160 / 0.35)",
+                  backgroundColor: "oklch(0.7 0.15 160 / 0.4)",
                 }}
               />
             </div>
 
             {/* Actual value bar */}
             <div
-              className="absolute top-2 h-4 rounded-sm transition-all"
+              className="absolute top-1.5 h-4 rounded-sm transition-all shadow-sm"
               style={{
                 width: `${actualPercent}%`,
                 backgroundColor: getBarColor(),
               }}
             />
 
-            {/* Target marker - theme aware */}
+            {/* Target marker */}
             <div
-              className="absolute top-0 h-8 w-1 rounded-sm bg-foreground"
+              className="absolute top-0 h-7 w-0.5 rounded-sm bg-foreground/80 shadow-sm"
               style={{
                 left: `${targetPercent}%`,
                 transform: "translateX(-50%)",
@@ -117,15 +133,15 @@ export function BulletChart({
 
           {/* Values */}
           <div className="flex items-center justify-between text-xs">
-            <div>
-              <span className="font-bold text-base tabular-nums">
+            <div className="flex items-baseline gap-1">
+              <span className="font-bold text-base tabular-nums text-foreground">
                 {actual.toFixed(1)}
               </span>
-              <span className="text-muted-foreground ml-0.5">{unit}</span>
+              <span className="text-muted-foreground text-[10px]">{unit}</span>
             </div>
             <div className="text-right">
-              <span className="text-muted-foreground">Target: </span>
-              <span className="font-semibold">
+              <span className="text-muted-foreground text-[10px]">Target: </span>
+              <span className="font-semibold text-xs">
                 {target}
                 {unit}
               </span>
@@ -133,11 +149,12 @@ export function BulletChart({
           </div>
 
           <p
-            className={`text-xs font-medium ${
+            className={cn(
+              "text-[10px] font-medium",
               gap > 0
                 ? "text-red-600 dark:text-red-400"
-                : "text-green-600 dark:text-green-400"
-            }`}
+                : "text-green-600 dark:text-green-400",
+            )}
           >
             {gapText}
           </p>

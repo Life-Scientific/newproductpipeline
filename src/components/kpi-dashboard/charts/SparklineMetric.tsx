@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
 import { chartColors } from "@/lib/utils/chart-theme";
+import { cn } from "@/lib/utils";
 
 interface SparklineMetricProps {
   label: string;
@@ -36,36 +37,48 @@ export function SparklineMetric({
   const maxVal = Math.max(...data.map((d) => d.value));
 
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1 flex-1">
-            <p className="text-xs text-muted-foreground font-medium">{label}</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-bold tabular-nums">
+    <Card className="border-border/50 hover:border-border transition-colors">
+      <CardContent className="p-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1 flex-1 min-w-0">
+            <p className="text-[11px] text-muted-foreground font-medium leading-tight">
+              {label}
+            </p>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xl font-bold tabular-nums text-foreground">
                 {displayValue}
               </span>
-              <span className="text-xs text-muted-foreground">{unit}</span>
+              {unit && (
+                <span className="text-xs text-muted-foreground font-medium">
+                  {unit}
+                </span>
+              )}
             </div>
             <div
-              className={`flex items-center gap-1 text-xs font-medium ${
+              className={cn(
+                "flex items-center gap-1 text-[10px] font-semibold",
                 isPositive
                   ? "text-green-600 dark:text-green-400"
-                  : "text-red-600 dark:text-red-400"
-              }`}
+                  : "text-red-600 dark:text-red-400",
+              )}
             >
               {isPositive ? (
-                <TrendingUp className="h-3 w-3" />
+                <TrendingUp className="h-2.5 w-2.5" />
               ) : (
-                <TrendingDown className="h-3 w-3" />
+                <TrendingDown className="h-2.5 w-2.5" />
               )}
-              {isPositive ? "+" : ""}
-              {trend.toFixed(1)}% vs last month
+              <span className="tabular-nums">
+                {isPositive ? "+" : ""}
+                {trend.toFixed(1)}%
+              </span>
+              <span className="text-muted-foreground font-normal ml-0.5">
+                vs last month
+              </span>
             </div>
           </div>
-          <div className="w-24 h-12">
+          <div className="w-20 h-10 min-h-[40px] shrink-0">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data}>
+              <LineChart data={data} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
                 <YAxis domain={[minVal * 0.95, maxVal * 1.05]} hide />
                 <Line
                   type="monotone"
@@ -73,6 +86,7 @@ export function SparklineMetric({
                   stroke={isPositive ? chartColors.success : chartColors.destructive}
                   strokeWidth={2}
                   dot={false}
+                  strokeLinecap="round"
                 />
               </LineChart>
             </ResponsiveContainer>

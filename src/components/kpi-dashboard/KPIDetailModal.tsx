@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -93,17 +93,17 @@ export function KPIDetailModal({
 
   if (!keyResult) return null;
 
-  const config = statusConfig[keyResult.status];
-  const auditLog = generateMockAuditLog(keyResult);
+  const config = useMemo(() => statusConfig[keyResult.status], [keyResult.status]);
+  const auditLog = useMemo(() => generateMockAuditLog(keyResult), [keyResult]);
 
-  const handleChange = <K extends keyof KeyResult>(field: K, value: KeyResult[K]) => {
+  const handleChange = useCallback(<K extends keyof KeyResult>(field: K, value: KeyResult[K]) => {
     if (keyResult.isLocked) return;
     onUpdate({ ...keyResult, [field]: value });
-  };
+  }, [keyResult, onUpdate]);
 
-  const toggleLock = () => {
+  const toggleLock = useCallback(() => {
     onUpdate({ ...keyResult, isLocked: !keyResult.isLocked });
-  };
+  }, [keyResult, onUpdate]);
 
   const TrendIcon = keyResult.trend === "up" ? TrendingUp : keyResult.trend === "down" ? TrendingDown : Minus;
 

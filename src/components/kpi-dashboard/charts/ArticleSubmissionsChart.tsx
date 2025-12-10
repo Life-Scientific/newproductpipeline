@@ -53,7 +53,7 @@ export function ArticleSubmissionsChart({
           </span>
         </div>
       </div>
-      <div className="w-full" style={{ height }}>
+      <div className="w-full" style={{ height, minHeight: height }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data}
