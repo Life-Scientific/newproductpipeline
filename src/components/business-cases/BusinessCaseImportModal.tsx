@@ -215,13 +215,8 @@ export function BusinessCaseImportModal({
               `year_${yearNum}_${field}` as keyof BusinessCaseImportRow;
             if (field === "volume" || field === "nsp") {
               if (!value || value === "") {
-                const fieldName =
-                  field === "volume"
-                    ? "Volume"
-                    : "NSP (Net Selling Price)";
-                parseErrors.push(
-                  `Year ${yearNum} ${fieldName} is empty. Please enter a number (>= 0). For Volume, use Litres. For NSP, use Euros per Litre. Use 0 to indicate zero values.`,
-                );
+                // Empty cell - leave field undefined (will be caught by validation)
+                // Don't add parse error here, let validation handle it
               } else {
                 const numValue = parseFloat(value);
                 if (isNaN(numValue)) {
@@ -238,10 +233,14 @@ export function BusinessCaseImportModal({
                       ? "Volume"
                       : "NSP (Net Selling Price)";
                   parseErrors.push(
-                    `Year ${yearNum} ${fieldName} cannot be negative. You entered "${value}". Please enter a number >= 0. Use 0 to indicate zero values.`,
+                    `Year ${yearNum} ${fieldName} cannot be negative. You entered "${value}". Please enter a positive number.`,
                   );
+                } else if (numValue === 0) {
+                  // Treat 0 as blank - don't set the field (will be caught by validation)
+                  // This prevents the confusing error about "leave blank instead of 0"
                 } else {
-                (row as any)[key] = numValue;
+                  // Only set the field if it's a positive number
+                  (row as any)[key] = numValue;
                 }
               }
             } else if (field === "cogs" && value) {
