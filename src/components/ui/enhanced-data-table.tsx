@@ -459,6 +459,7 @@ export function EnhancedDataTable<TData, TValue>({
   // Use a ref to track previous filter state to detect changes
   const prevFilterParamsRef = React.useRef<string>("");
   const prevPageParamRef = React.useRef<string | null>(null);
+  const isUpdatingPaginationRef = React.useRef<boolean>(false);
   React.useEffect(() => {
     if (!enableUrlPagination) return;
 

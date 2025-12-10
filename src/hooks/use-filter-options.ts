@@ -119,8 +119,9 @@ export function useFilterOptions(
 
     referenceFormulations.forEach((f) => {
       if (f.formulation_code) {
+        // Show code first for better discoverability, then name
         const display = f.formulation_name
-          ? `${f.formulation_name} (${f.formulation_code})`
+          ? `${f.formulation_code} - ${f.formulation_name}`
           : f.formulation_code;
         formulationCodeToDisplay.set(f.formulation_code, display);
         displayToFormulationCode.set(display, f.formulation_code);

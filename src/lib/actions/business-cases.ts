@@ -472,9 +472,9 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
       ? Number(formData.get(cogsKey))
       : null;
 
-    if (volume === null || nsp === null || volume <= 0 || nsp <= 0) {
+    if (volume === null || nsp === null || volume < 0 || nsp < 0) {
       return {
-        error: `Year ${yearOffset}: Volume and NSP (Net Selling Price) are required and must be greater than 0. Volume must be in Litres, and NSP must be in Euros per Litre. If there is no value for this year, leave the cell blank instead of entering 0.`,
+        error: `Year ${yearOffset}: Volume and NSP (Net Selling Price) are required and cannot be negative. Volume must be in Litres, and NSP must be in Euros per Litre. Use 0 to indicate zero values, or leave blank if there is no data for this year.`,
       };
     }
 
@@ -631,9 +631,9 @@ export async function updateBusinessCaseGroupAction(
       : null;
     const nsp = formData.get(nspKey) ? Number(formData.get(nspKey)) : null;
 
-    if (volume === null || nsp === null || volume <= 0 || nsp <= 0) {
+    if (volume === null || nsp === null || volume < 0 || nsp < 0) {
       return {
-        error: `Year ${yearOffset}: Volume and NSP (Net Selling Price) are required and must be greater than 0. Volume must be in Litres, and NSP must be in Euros per Litre. If there is no value for this year, leave the cell blank instead of entering 0.`,
+        error: `Year ${yearOffset}: Volume and NSP (Net Selling Price) are required and cannot be negative. Volume must be in Litres, and NSP must be in Euros per Litre. Use 0 to indicate zero values, or leave blank if there is no data for this year.`,
       };
     }
 

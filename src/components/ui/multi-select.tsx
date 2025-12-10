@@ -82,7 +82,12 @@ export function MultiSelect({
   };
 
   const filteredOptions = options.filter((option) => {
-    return option.label.toLowerCase().includes(searchValue.toLowerCase());
+    const searchLower = searchValue.toLowerCase();
+    // Search by both label and value (code) for better discoverability
+    return (
+      option.label.toLowerCase().includes(searchLower) ||
+      option.value.toLowerCase().includes(searchLower)
+    );
   });
 
   const selectedOptions = options.filter((option) =>
@@ -108,7 +113,7 @@ export function MultiSelect({
             aria-expanded={open}
             className={cn(
               "group flex items-center justify-between gap-2 rounded-md border bg-background px-3 text-sm transition-all duration-150",
-              compact ? "h-8 min-w-[120px]" : "h-9 w-full min-w-[180px]",
+              compact ? "h-8 min-w-[120px]" : "h-9 w-full min-w-[280px] sm:min-w-[320px]",
               "border-border/60 hover:border-border hover:bg-muted/30",
               "focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring/50",
               hasSelected && "border-primary/30 bg-primary/[0.02]",
@@ -176,7 +181,7 @@ export function MultiSelect({
         </PopoverAnchor>
       </div>
       <PopoverContent
-        className="w-[var(--radix-popover-trigger-width)] min-w-[200px] p-0 shadow-lg border-border/60"
+        className="w-[var(--radix-popover-trigger-width)] min-w-[280px] sm:min-w-[320px] max-w-[90vw] sm:max-w-[500px] p-0 shadow-lg border-border/60"
         align="start"
         sideOffset={4}
         onOpenAutoFocus={(e) => {
@@ -241,7 +246,7 @@ export function MultiSelect({
                     >
                       {isSelected && <Check className="h-3 w-3" />}
                     </span>
-                    <span className="truncate">{option.label}</span>
+                    <span className="break-words whitespace-normal">{option.label}</span>
                   </button>
                 );
               })}

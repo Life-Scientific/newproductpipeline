@@ -74,8 +74,9 @@ export function BusinessCaseFilters({
         countries.set(bc.country_id, bc.country_name);
       }
       if (bc.formulation_id && bc.formulation_name) {
+        // Show code first for better discoverability
         const display = bc.formulation_code
-          ? `${bc.formulation_name} (${bc.formulation_code})`
+          ? `${bc.formulation_code} - ${bc.formulation_name}`
           : bc.formulation_name;
         formulations.set(bc.formulation_id, display);
       }
@@ -114,8 +115,9 @@ export function BusinessCaseFilters({
     businessCases.forEach((bc) => {
       if (selectedCountryIds.includes(bc.country_id)) {
         if (bc.formulation_id && bc.formulation_name) {
+          // Show code first for better discoverability
           const display = bc.formulation_code
-            ? `${bc.formulation_name} (${bc.formulation_code})`
+            ? `${bc.formulation_code} - ${bc.formulation_name}`
             : bc.formulation_name;
           filteredFormulations.set(bc.formulation_id, display);
         }

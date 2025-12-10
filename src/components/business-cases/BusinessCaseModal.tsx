@@ -858,20 +858,25 @@ export function BusinessCaseModal({
 
     if (isEditMode) {
       yearDataArray.forEach((year) => {
-        if (!year.volume || year.volume <= 0) {
+        if (year.volume === null || year.volume === undefined || year.volume < 0) {
           missingData.push(`Year ${year.year_offset}: Volume is required`);
         }
-        if (!year.nsp || year.nsp <= 0) {
+        if (year.nsp === null || year.nsp === undefined || year.nsp < 0) {
           missingData.push(`Year ${year.year_offset}: NSP is required`);
         }
       });
     } else {
       for (let yearOffset = 1; yearOffset <= 10; yearOffset++) {
         const year = yearDataRecord[yearOffset];
-        if (!year || !year.volume || parseFloat(year.volume) <= 0) {
+        // Check if value exists (not empty string), then parse - allows "0" to be valid
+        const volumeStr = year?.volume?.trim();
+        const nspStr = year?.nsp?.trim();
+        const volume = volumeStr !== undefined && volumeStr !== "" ? parseFloat(volumeStr) : null;
+        const nsp = nspStr !== undefined && nspStr !== "" ? parseFloat(nspStr) : null;
+        if (volume === null || volume === undefined || isNaN(volume) || volume < 0) {
           missingData.push(`Year ${yearOffset}: Volume is required`);
         }
-        if (!year || !year.nsp || parseFloat(year.nsp) <= 0) {
+        if (nsp === null || nsp === undefined || isNaN(nsp) || nsp < 0) {
           missingData.push(`Year ${yearOffset}: NSP is required`);
         }
       }
@@ -896,13 +901,14 @@ export function BusinessCaseModal({
         const formDataToSubmit = new FormData();
 
         yearDataArray.forEach((year) => {
+          // Allow 0 values, but ensure we send a string representation
           formDataToSubmit.append(
             `year_${year.year_offset}_volume`,
-            String(year.volume || 0),
+            String(year.volume ?? 0),
           );
           formDataToSubmit.append(
             `year_${year.year_offset}_nsp`,
-            String(year.nsp || 0),
+            String(year.nsp ?? 0),
           );
           if (year.cogs_per_unit !== null && year.cogs_per_unit !== undefined) {
             formDataToSubmit.append(
@@ -956,13 +962,18 @@ export function BusinessCaseModal({
 
         for (let yearOffset = 1; yearOffset <= 10; yearOffset++) {
           const year = yearDataRecord[yearOffset];
-          formDataToSubmit.append(
-            `year_${yearOffset}_volume`,
-            year?.volume || "0",
-          );
-          formDataToSubmit.append(`year_${yearOffset}_nsp`, year?.nsp || "0");
-          if (year?.cogs && parseFloat(year.cogs) > 0) {
-            formDataToSubmit.append(`year_${yearOffset}_cogs`, year.cogs);
+          // Only append if value exists (allows "0" but not empty strings)
+          if (year?.volume !== undefined && year.volume.trim() !== "") {
+            formDataToSubmit.append(
+              `year_${yearOffset}_volume`,
+              year.volume.trim(),
+            );
+          }
+          if (year?.nsp !== undefined && year.nsp.trim() !== "") {
+            formDataToSubmit.append(`year_${yearOffset}_nsp`, year.nsp.trim());
+          }
+          if (year?.cogs && year.cogs.trim() !== "" && parseFloat(year.cogs) >= 0) {
+            formDataToSubmit.append(`year_${yearOffset}_cogs`, year.cogs.trim());
           }
         }
 
