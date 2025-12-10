@@ -10,22 +10,24 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 
-if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error(
-    "SUPABASE_SERVICE_ROLE_KEY environment variable is not set. " +
-      "This is required for admin operations like inviting users.",
-  );
-}
-
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error("NEXT_PUBLIC_SUPABASE_URL environment variable is not set.");
-}
-
 /**
  * Creates a Supabase admin client with service role privileges.
  * This client bypasses RLS and should only be used server-side.
+ * 
+ * @throws Error if SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL is not set
  */
 export function createAdminClient() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY environment variable is not set. " +
+        "This is required for admin operations like inviting users.",
+    );
+  }
+
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    throw new Error("NEXT_PUBLIC_SUPABASE_URL environment variable is not set.");
+  }
+
   return createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
