@@ -1,9 +1,20 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import {
+  ArrowUpDown,
+  ChevronRight,
+  DollarSign,
+  Globe,
+  Package,
+  Search,
+  TrendingUp,
+} from "lucide-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
+import { FiscalYearSelector } from "@/components/countries/FiscalYearSelector";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,21 +23,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { CountryWithStats } from "@/lib/db/countries";
 import type { Database } from "@/lib/supabase/database.types";
-import { FiscalYearSelector } from "@/components/countries/FiscalYearSelector";
-import {
-  Globe,
-  TrendingUp,
-  Search,
-  ArrowUpDown,
-  ChevronRight,
-  Package,
-  DollarSign,
-} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 
@@ -65,15 +65,18 @@ export function CountryList({ countries, businessCases }: CountryListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>("revenue");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [, startTransition] = useTransition();
 
   // Get selected FY from URL params, default to FY30
-  const selectedFY = parseInt(searchParams.get("fy") || "30", 10);
+  const selectedFY = Number.parseInt(searchParams.get("fy") || "30", 10);
 
-  // Update URL when FY changes
+  // Update URL when FY changes - wrapped in transition for non-blocking update
   const handleFYChange = (fy: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("fy", fy.toString());
-    router.push(`?${params.toString()}`, { scroll: false });
+    startTransition(() => {
+      router.push(`?${params.toString()}`, { scroll: false });
+    });
   };
 
   // Filter business cases by selected FY and calculate revenue/margin per country

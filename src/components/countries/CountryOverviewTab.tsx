@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useTransition } from "react";
+import { FiscalYearSelector } from "@/components/countries/FiscalYearSelector";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -10,12 +12,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import { getStatusVariant } from "@/lib/design-system";
-import { FiscalYearSelector } from "@/components/countries/FiscalYearSelector";
 import type { Database } from "@/lib/supabase/database.types";
+import { cn } from "@/lib/utils";
 
 type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
 type FormulationCountryDetail =
@@ -67,15 +67,18 @@ export function CountryOverviewTab({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { formatCurrencyCompact } = useDisplayPreferences();
+  const [, startTransition] = useTransition();
 
   // Get selected FY from URL params, default to FY30
-  const selectedFY = parseInt(searchParams.get("fy") || "30", 10);
+  const selectedFY = Number.parseInt(searchParams.get("fy") || "30", 10);
 
-  // Update URL when FY changes
+  // Update URL when FY changes - wrapped in transition for non-blocking update
   const handleFYChange = (fy: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("fy", fy.toString());
-    router.push(`?${params.toString()}`, { scroll: false });
+    startTransition(() => {
+      router.push(`?${params.toString()}`, { scroll: false });
+    });
   };
 
   // Filter business cases by selected FY
