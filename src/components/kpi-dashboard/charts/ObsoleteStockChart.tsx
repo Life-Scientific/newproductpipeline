@@ -18,12 +18,17 @@ import {
   chartTheme,
   chartColors,
 } from "@/lib/utils/chart-theme";
+import {
+  CHART_MARGINS,
+  CHART_HEIGHTS,
+  CHART_TYPOGRAPHY,
+} from "@/lib/kpi-dashboard/chart-constants";
 
 interface ObsoleteStockChartProps {
   height?: number;
 }
 
-export function ObsoleteStockChart({ height = 220 }: ObsoleteStockChartProps) {
+export function ObsoleteStockChart({ height = CHART_HEIGHTS.medium }: ObsoleteStockChartProps) {
   // Round data values
   const formattedData = OBSOLETE_STOCK_DATA.map((d) => ({
     ...d,
@@ -42,12 +47,12 @@ export function ObsoleteStockChart({ height = 220 }: ObsoleteStockChartProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground font-medium">
+      <div className="flex items-center justify-between">
+        <span className={CHART_TYPOGRAPHY.label}>
           Obsolete Stock % of Total Stock
         </span>
         <div className="flex gap-4">
-          <span>
+          <span className={CHART_TYPOGRAPHY.description}>
             Current:{" "}
             <strong
               className={
@@ -59,7 +64,7 @@ export function ObsoleteStockChart({ height = 220 }: ObsoleteStockChartProps) {
               {currentValue.toFixed(1)}%
             </strong>
           </span>
-          <span>
+          <span className={CHART_TYPOGRAPHY.description}>
             Target: <strong>≤{targetValue}%</strong>
           </span>
         </div>
@@ -68,7 +73,7 @@ export function ObsoleteStockChart({ height = 220 }: ObsoleteStockChartProps) {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={formattedData}
-            margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+            margin={CHART_MARGINS.standard}
           >
             <CartesianGrid {...chartTheme.grid} />
             <XAxis dataKey="month" {...getAxisProps()} />

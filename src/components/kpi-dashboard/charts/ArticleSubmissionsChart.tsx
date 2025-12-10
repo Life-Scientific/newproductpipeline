@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -17,6 +18,11 @@ import {
   chartTheme,
   chartColors,
 } from "@/lib/utils/chart-theme";
+import {
+  CHART_MARGINS,
+  CHART_HEIGHTS,
+  CHART_TYPOGRAPHY,
+} from "@/lib/kpi-dashboard/chart-constants";
 
 interface ArticleSubmissionsChartProps {
   articleType: "34" | "33";
@@ -25,27 +31,32 @@ interface ArticleSubmissionsChartProps {
 
 export function ArticleSubmissionsChart({
   articleType,
-  height = 200,
+  height = CHART_HEIGHTS.medium,
 }: ArticleSubmissionsChartProps) {
   const data = articleType === "34" ? ARTICLE_34_DATA : ARTICLE_33_DATA;
   const title = `Article ${articleType} Submissions`;
 
-  // Calculate totals for summary
-  const totalApproved = data.reduce((sum, d) => sum + d.approved, 0);
-  const totalNotApproved = data.reduce((sum, d) => sum + d.notApproved, 0);
-  const overallSuccessRate = Math.round(
-    (totalApproved / (totalApproved + totalNotApproved)) * 100,
-  );
+  const { totalApproved, totalNotApproved, overallSuccessRate } = useMemo(() => {
+    const approved = data.reduce((sum, d) => sum + d.approved, 0);
+    const notApproved = data.reduce((sum, d) => sum + d.notApproved, 0);
+    const total = approved + notApproved;
+    const successRate = total > 0 ? Math.round((approved / total) * 100) : 0;
+    return {
+      totalApproved: approved,
+      totalNotApproved: notApproved,
+      overallSuccessRate: successRate,
+    };
+  }, [data]);
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground font-medium">{title}</span>
+      <div className="flex items-center justify-between">
+        <span className={CHART_TYPOGRAPHY.label}>{title}</span>
         <div className="flex gap-4">
-          <span>
-            Total: <strong>{totalApproved + totalNotApproved}</strong>
+          <span className={CHART_TYPOGRAPHY.description}>
+            Total: <strong className="text-foreground">{totalApproved + totalNotApproved}</strong>
           </span>
-          <span>
+          <span className={CHART_TYPOGRAPHY.description}>
             Success Rate:{" "}
             <strong className="text-green-600 dark:text-green-400">
               {overallSuccessRate}%
@@ -57,7 +68,7 @@ export function ArticleSubmissionsChart({
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data}
-            margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+            margin={CHART_MARGINS.standard}
           >
             <CartesianGrid {...chartTheme.grid} />
             <XAxis dataKey="month" {...getAxisProps()} />

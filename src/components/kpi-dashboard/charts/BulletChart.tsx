@@ -2,6 +2,12 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { chartColors } from "@/lib/utils/chart-theme";
+import {
+  CHART_PADDING,
+  CHART_TYPOGRAPHY,
+  CHART_CARD_STYLES,
+  TREND_COLORS,
+} from "@/lib/kpi-dashboard/chart-constants";
 import { cn } from "@/lib/utils";
 
 interface BulletChartProps {
@@ -60,11 +66,11 @@ export function BulletChart({
   };
 
   return (
-    <Card className="border-border/50 hover:border-border transition-colors">
-      <CardContent className="p-3">
+    <Card className={cn(CHART_CARD_STYLES.base, CHART_CARD_STYLES.background)}>
+      <CardContent className={CHART_PADDING.cardCompact}>
         <div className="space-y-2.5">
           <div className="flex items-start justify-between">
-            <span className="text-[11px] text-muted-foreground font-medium leading-tight">
+            <span className={CHART_TYPOGRAPHY.label}>
               {label}
             </span>
             <span
@@ -132,16 +138,16 @@ export function BulletChart({
           </div>
 
           {/* Values */}
-          <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center justify-between">
             <div className="flex items-baseline gap-1">
-              <span className="font-bold text-base tabular-nums text-foreground">
+              <span className={CHART_TYPOGRAPHY.valueMedium}>
                 {actual.toFixed(1)}
               </span>
-              <span className="text-muted-foreground text-[10px]">{unit}</span>
+              <span className={CHART_TYPOGRAPHY.unitSmall}>{unit}</span>
             </div>
             <div className="text-right">
-              <span className="text-muted-foreground text-[10px]">Target: </span>
-              <span className="font-semibold text-xs">
+              <span className={CHART_TYPOGRAPHY.unitSmall}>Target: </span>
+              <span className={CHART_TYPOGRAPHY.valueSmall}>
                 {target}
                 {unit}
               </span>
@@ -150,10 +156,10 @@ export function BulletChart({
 
           <p
             className={cn(
-              "text-[10px] font-medium",
+              CHART_TYPOGRAPHY.trend,
               gap > 0
-                ? "text-red-600 dark:text-red-400"
-                : "text-green-600 dark:text-green-400",
+                ? TREND_COLORS.negative.text
+                : TREND_COLORS.positive.text,
             )}
           >
             {gapText}

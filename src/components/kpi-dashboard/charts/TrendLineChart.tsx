@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, TrendingDown } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -22,6 +21,14 @@ import {
   chartTheme,
   chartColors,
 } from "@/lib/utils/chart-theme";
+import { TrendIndicator } from "./TrendIndicator";
+import {
+  CHART_PADDING,
+  CHART_TYPOGRAPHY,
+  CHART_CARD_STYLES,
+  CHART_MARGINS,
+  CHART_HEIGHTS,
+} from "@/lib/kpi-dashboard/chart-constants";
 import { cn } from "@/lib/utils";
 
 interface TrendLineChartProps {
@@ -54,8 +61,8 @@ export function TrendLineChart({
   return (
     <div className="space-y-3">
       {/* Current Value Tile */}
-      <Card className="border-border/50 bg-muted/20">
-        <CardContent className="p-3">
+      <Card className={cn(CHART_CARD_STYLES.base, "bg-muted/20")}>
+        <CardContent className={CHART_PADDING.cardCompact}>
           <div className="flex items-start justify-between">
             <div className="space-y-0.5">
               <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
@@ -65,39 +72,25 @@ export function TrendLineChart({
                 <span className="text-2xl font-bold tabular-nums text-foreground">
                   {currentValue.toFixed(1)}
                 </span>
-                <span className="text-xs text-muted-foreground font-medium">
+                <span className={CHART_TYPOGRAPHY.unit}>
                   {unit}
                 </span>
               </div>
             </div>
-            <div
-              className={cn(
-                "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold border",
-                changeIsGood
-                  ? "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30"
-                  : "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30",
-              )}
-            >
-              {isPositive ? (
-                <TrendingUp className="h-3 w-3" />
-              ) : (
-                <TrendingDown className="h-3 w-3" />
-              )}
-              <span className="tabular-nums">
-                {isPositive ? "+" : ""}
-                {change.toFixed(1)}%
-              </span>
-            </div>
+            <TrendIndicator value={change} size="md" showIcon={true} />
           </div>
         </CardContent>
       </Card>
 
       {/* Trend Line Chart */}
-      <div className="h-[180px] min-h-[180px] w-full rounded-lg border border-border/50 bg-muted/10 p-2">
+      <div
+        className="w-full rounded-lg border border-border/50 bg-muted/10 p-2"
+        style={{ height: CHART_HEIGHTS.small, minHeight: CHART_HEIGHTS.small }}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={formattedData}
-            margin={{ top: 5, right: 5, left: 0, bottom: 0 }}
+            margin={CHART_MARGINS.compact}
           >
             <CartesianGrid {...chartTheme.grid} strokeDasharray="3 3" />
             <XAxis dataKey="month" {...getAxisProps()} />

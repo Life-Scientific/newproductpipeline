@@ -85,7 +85,6 @@ export function KPIDashboardView({
     return user?.email?.split("@")[0] || null;
   }, [users]);
 
-  // Calculate totals - memoized to prevent recalculation on every render
   const totals = useMemo(() => {
     return kpiData.coreDrivers.reduce(
       (acc, cd) => {
@@ -252,11 +251,9 @@ export function KPIDashboardView({
           ))}
         </CardGrid>
 
-        {/* Visualizations Section - Below the fold */}
         <VisualizationsSection defaultOpen={true} />
       </div>
 
-      {/* Detail Modal */}
       <KPIDetailModal
         keyResult={selectedKR?.keyResult || null}
         users={users}

@@ -18,12 +18,17 @@ import {
   chartTheme,
   chartColors,
 } from "@/lib/utils/chart-theme";
+import {
+  CHART_MARGINS,
+  CHART_HEIGHTS,
+  CHART_TYPOGRAPHY,
+} from "@/lib/kpi-dashboard/chart-constants";
 
 interface ForecastAccuracyChartProps {
   height?: number;
 }
 
-export function ForecastAccuracyChart({ height = 220 }: ForecastAccuracyChartProps) {
+export function ForecastAccuracyChart({ height = CHART_HEIGHTS.medium }: ForecastAccuracyChartProps) {
   // Generate plan data (target + some variance)
   const formattedData = FORECAST_ACCURACY_DATA.map((d, i) => ({
     month: d.month,
@@ -37,24 +42,24 @@ export function ForecastAccuracyChart({ height = 220 }: ForecastAccuracyChartPro
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground font-medium">
+      <div className="flex items-center justify-between">
+        <span className={CHART_TYPOGRAPHY.label}>
           % Forecast Accuracy (Plan vs Actual)
         </span>
         <div className="flex gap-4">
-          <span>
+          <span className={CHART_TYPOGRAPHY.description}>
             Actual:{" "}
             <strong className="text-cyan-600 dark:text-cyan-400">
               {currentActual.toFixed(1)}%
             </strong>
           </span>
-          <span>
+          <span className={CHART_TYPOGRAPHY.description}>
             Plan:{" "}
             <strong className="text-violet-600 dark:text-violet-400">
               {currentPlan.toFixed(1)}%
             </strong>
           </span>
-          <span>
+          <span className={CHART_TYPOGRAPHY.description}>
             Variance:{" "}
             <strong
               className={
@@ -73,7 +78,7 @@ export function ForecastAccuracyChart({ height = 220 }: ForecastAccuracyChartPro
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={formattedData}
-            margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+            margin={CHART_MARGINS.standard}
           >
             <CartesianGrid {...chartTheme.grid} />
             <XAxis dataKey="month" {...getAxisProps()} />

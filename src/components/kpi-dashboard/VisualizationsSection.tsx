@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, BarChart3, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronUp, BarChart3 } from "lucide-react";
 import {
   RevenueTable,
   MarketShareChart,
@@ -36,36 +35,17 @@ export function VisualizationsSection({
   defaultOpen = true,
 }: VisualizationsSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Memoize expensive calculations
-  const freightTrend = useMemo(
-    () => getMonthOverMonthChange(FREIGHT_COSTS_DATA),
-    [],
-  );
+  const freightTrend = getMonthOverMonthChange(FREIGHT_COSTS_DATA);
 
   return (
     <div className="space-y-4">
-      {/* Section Header */}
-      <motion.div
-        initial={mounted ? { opacity: 0, y: -10 } : false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: mounted ? 0.3 : 0 }}
-        className="flex items-center justify-between pb-2"
-      >
+      <div className="flex items-center justify-between pb-2">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-lg bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 border border-primary/20">
             <BarChart3 className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              Visualizations
-              <Sparkles className="h-4 w-4 text-amber-500 animate-pulse" />
-            </h2>
+            <h2 className="text-lg font-semibold">Visualizations</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               Click expand to drill down into details
             </p>
@@ -89,20 +69,10 @@ export function VisualizationsSection({
             </>
           )}
         </Button>
-      </motion.div>
+      </div>
 
-      {/* Charts Grid */}
       {isOpen && (
-        <motion.div
-          initial={mounted ? { opacity: 0, height: 0 } : false}
-          animate={{ opacity: 1, height: "auto" }}
-          transition={{ duration: mounted ? 0.3 : 0 }}
-          className="overflow-hidden"
-        >
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 pt-2">
-            {/* Row 1: Revenue, Market Share, Article Submissions, Product Margins */}
-
-            {/* Revenue by Territory */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pt-2">
             <ChartCard
               title="Revenue by Territory"
               description="Breakdown with period-over-period trends"
@@ -113,7 +83,6 @@ export function VisualizationsSection({
               <RevenueTable />
             </ChartCard>
 
-            {/* Market Share Trend */}
             <ChartCard
               title="Market Share Trend"
               description="12-month comparison across territories"
@@ -124,7 +93,6 @@ export function VisualizationsSection({
               <MarketShareChart />
             </ChartCard>
 
-            {/* Article Submissions - Combined 34 & 33 */}
             <ChartCard
               title="Article Submissions"
               description="Art 34 & Art 33 approval rates"
@@ -207,7 +175,6 @@ export function VisualizationsSection({
               </div>
             </ChartCard>
 
-            {/* Product Margin Metrics - Stacked */}
             <ChartCard
               title="Product Margins"
               description="Stock Write Off & GM per FTE"
@@ -230,9 +197,6 @@ export function VisualizationsSection({
               </div>
             </ChartCard>
 
-            {/* Row 2: Supply Chain, Freight, Tariff, Obsolete Stock */}
-
-            {/* Supply Chain Performance */}
             <ChartCard
               title="Supply Chain"
               description="OTIF & Supplier delivery"
@@ -254,7 +218,6 @@ export function VisualizationsSection({
               </div>
             </ChartCard>
 
-            {/* Freight Costs Trend */}
             <ChartCard
               title="Freight Costs"
               description="Monthly % with target"
@@ -269,7 +232,6 @@ export function VisualizationsSection({
               />
             </ChartCard>
 
-            {/* Tariff Costs Trend */}
             <ChartCard
               title="Tariff Costs"
               description="Monthly % with target"
@@ -284,7 +246,6 @@ export function VisualizationsSection({
               />
             </ChartCard>
 
-            {/* Obsolete Stock */}
             <ChartCard
               title="Obsolete Stock"
               description="% of total with threshold"
@@ -319,8 +280,7 @@ export function VisualizationsSection({
               <ObsoleteStockChart />
             </ChartCard>
 
-            {/* Row 3: Forecast Accuracy - Full Width */}
-            <div className="md:col-span-2 xl:col-span-4">
+            <div className="md:col-span-2 lg:col-span-3 xl:col-span-4">
               <ChartCard
                 title="Forecast Accuracy"
                 description="Plan vs Actual comparison over 12 months"
@@ -361,8 +321,7 @@ export function VisualizationsSection({
                 <ForecastAccuracyChart />
               </ChartCard>
             </div>
-          </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );

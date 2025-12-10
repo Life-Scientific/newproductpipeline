@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, type ReactNode } from "react";
-import { motion } from "framer-motion";
+import { useState, useMemo, type ReactNode } from "react";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Button } from "@/components/ui/button";
 import { Expand, TrendingUp, TrendingDown, Minus } from "lucide-react";
@@ -87,12 +86,7 @@ export function ChartCard({
   className,
 }: ChartCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const accent = accentStyles[accentColor];
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const TrendIcon = useMemo(() => {
     if (!trend) return Minus;
@@ -101,44 +95,33 @@ export function ChartCard({
 
   return (
     <>
-      <motion.div
-        initial={mounted ? { opacity: 0, y: 20 } : false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: mounted ? 0.4 : 0, ease: "easeOut" }}
-        className={cn(colSpanClasses[colSpan], className)}
-      >
+      <div className={cn(colSpanClasses[colSpan], className)}>
         <div
           className={cn(
-            "group relative rounded-xl border bg-card/50 backdrop-blur-sm overflow-hidden",
-            "transition-all duration-300 ease-out",
-            "hover:bg-card hover:shadow-lg",
+            "group relative rounded-xl border bg-card/50 backdrop-blur-sm overflow-hidden h-full flex flex-col",
+            "transition-all duration-200",
+            "hover:bg-card hover:shadow-md",
             accent.glow,
             accent.border,
           )}
         >
-          {/* Gradient overlay */}
           <div
             className={cn(
-              "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0",
+              "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0",
               accent.bg,
             )}
           />
 
-          {/* Card Header */}
-          <div className="relative flex items-start justify-between p-4 pb-3 z-10">
+          <div className="relative flex items-start justify-between p-4 pb-3 z-10 flex-shrink-0">
             <div className="flex-1 min-w-0 pr-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-sm font-semibold text-foreground truncate">
                   {title}
                 </h3>
                 {trend && (
-                  <motion.div
-                    initial={mounted ? { scale: 0.8, opacity: 0 } : false}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: mounted ? 0.2 : 0, delay: 0.1 }}
+                  <div
                     className={cn(
                       "flex items-center gap-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-md shrink-0",
-                      "backdrop-blur-sm",
                       trend.value >= 0
                         ? "bg-green-500/15 text-green-700 dark:text-green-400 border border-green-500/20"
                         : "bg-red-500/15 text-red-700 dark:text-red-400 border border-red-500/20",
@@ -149,26 +132,24 @@ export function ChartCard({
                       {trend.value >= 0 ? "+" : ""}
                       {trend.value.toFixed(1)}%
                     </span>
-                  </motion.div>
+                  </div>
                 )}
               </div>
               {description && (
-                <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-1 leading-relaxed">
+                <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-1">
                   {description}
                 </p>
               )}
             </div>
 
-            {/* Expand Button */}
             <Button
               variant="ghost"
               size="icon"
               className={cn(
-                "h-7 w-7 shrink-0 rounded-md transition-all duration-200",
+                "h-7 w-7 shrink-0 rounded-md transition-all",
                 "bg-muted/40 hover:bg-muted/80",
                 "border border-border/50 hover:border-border",
                 "opacity-70 group-hover:opacity-100",
-                "hover:scale-105 active:scale-95",
               )}
               onClick={() => setIsExpanded(true)}
             >
@@ -176,20 +157,18 @@ export function ChartCard({
             </Button>
           </div>
 
-          {/* Card Content */}
-          <div className="relative px-4 pb-4 z-10">
+          <div className="relative px-4 pb-4 z-10 flex-1 flex flex-col min-h-0">
             {children}
           </div>
 
-          {/* Bottom accent line */}
           <div
             className={cn(
-              "absolute bottom-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10",
+              "absolute bottom-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10",
               `bg-gradient-to-r from-transparent ${accent.accentLine} to-transparent`,
             )}
           />
         </div>
-      </motion.div>
+      </div>
 
       {/* Expanded Modal with Drill-Down */}
       <BaseModal

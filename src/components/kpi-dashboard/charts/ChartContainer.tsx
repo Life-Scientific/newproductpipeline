@@ -8,10 +8,6 @@ interface ChartContainerProps {
   className?: string;
 }
 
-/**
- * Wrapper component that ensures charts only render when container has dimensions
- * Prevents Recharts warnings about negative width/height
- */
 export function ChartContainer({
   children,
   height,
@@ -30,14 +26,10 @@ export function ChartContainer({
       }
     };
 
-    // Check immediately
     checkDimensions();
-
-    // Also check after a short delay to handle SSR hydration
     const timeout = setTimeout(checkDimensions, 100);
-
-    // Watch for resize
     const resizeObserver = new ResizeObserver(checkDimensions);
+    
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current);
     }

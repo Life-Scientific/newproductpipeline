@@ -16,6 +16,7 @@ export { ObsoleteStockChart } from "./ObsoleteStockChart";
 export { ExpandableChart } from "./ExpandableChart";
 export { ChartCard } from "./ChartCard";
 export { ChartContainer } from "./ChartContainer";
+export { TrendIndicator } from "./TrendIndicator";
 
 // Drilldowns
 export { RevenueDrilldown, MarketShareDrilldown } from "./drilldowns";

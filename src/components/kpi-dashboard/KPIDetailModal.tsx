@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, Component, type ReactNode } from "react";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -51,7 +51,8 @@ const statusConfig = {
   green: { variant: "success" as const, label: "On Track", color: "bg-green-500" },
 };
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string | undefined | null): string {
+  if (!dateString) return "Unknown";
   return new Date(dateString).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
@@ -59,6 +60,27 @@ function formatDate(dateString: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+class ChartErrorBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode; fallback: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
 }
 
 // Mock audit log entries
@@ -91,19 +113,34 @@ export function KPIDetailModal({
 }: KPIDetailModalProps) {
   const [activeTab, setActiveTab] = useState("details");
 
-  if (!keyResult) return null;
+  // Validate keyResult - use safe defaults to ensure hooks always run
+  const isValidKeyResult = keyResult && keyResult.id && keyResult.label && keyResult.status;
 
-  const config = useMemo(() => statusConfig[keyResult.status], [keyResult.status]);
-  const auditLog = useMemo(() => generateMockAuditLog(keyResult), [keyResult]);
+  const config = useMemo(() => {
+    if (!keyResult?.status || !statusConfig[keyResult.status]) {
+      return statusConfig.yellow;
+    }
+    return statusConfig[keyResult.status];
+  }, [keyResult?.status]);
+  
+  const auditLog = useMemo(() => {
+    if (!keyResult) return [];
+    return generateMockAuditLog(keyResult);
+  }, [keyResult]);
 
   const handleChange = useCallback(<K extends keyof KeyResult>(field: K, value: KeyResult[K]) => {
-    if (keyResult.isLocked) return;
+    if (!keyResult || keyResult.isLocked || !onUpdate) return;
     onUpdate({ ...keyResult, [field]: value });
   }, [keyResult, onUpdate]);
 
   const toggleLock = useCallback(() => {
+    if (!keyResult || !onUpdate) return;
     onUpdate({ ...keyResult, isLocked: !keyResult.isLocked });
   }, [keyResult, onUpdate]);
+
+  if (!isValidKeyResult || !keyResult) {
+    return null;
+  }
 
   const TrendIcon = keyResult.trend === "up" ? TrendingUp : keyResult.trend === "down" ? TrendingDown : Minus;
 
@@ -116,7 +153,7 @@ export function KPIDetailModal({
 
   const description = (
     <span className="text-xs">
-      {coreDriverLabel} → {strategicDriverLabel}
+      {coreDriverLabel || "Core Driver"} → {strategicDriverLabel || "Strategic Driver"}
     </span>
   );
 
@@ -284,7 +321,13 @@ export function KPIDetailModal({
 
         <TabsContent value="charts" className="mt-0">
           {strategicDriverId ? (
-            <StrategicDriverCharts strategicDriverId={strategicDriverId} />
+            <ChartErrorBoundary fallback={
+              <div className="flex items-center justify-center h-32 text-muted-foreground">
+                <p className="text-sm">Error loading visualizations.</p>
+              </div>
+            }>
+              <StrategicDriverCharts strategicDriverId={strategicDriverId} />
+            </ChartErrorBoundary>
           ) : (
             <div className="flex items-center justify-center h-32 text-muted-foreground">
               <p className="text-sm">No visualizations available for this KPI.</p>
@@ -298,16 +341,16 @@ export function KPIDetailModal({
               <span className="text-sm font-medium">System</span>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="font-medium">
-                  {keyResult.source.system}
+                  {keyResult?.source?.system || "Unknown"}
                 </Badge>
-                {keyResult.source.endpoint && (
+                {keyResult?.source?.endpoint && (
                   <Button variant="ghost" size="icon" className="h-7 w-7">
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Button>
                 )}
               </div>
             </div>
-            {keyResult.source.endpoint && (
+            {keyResult?.source?.endpoint && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Endpoint</span>
                 <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
@@ -319,14 +362,14 @@ export function KPIDetailModal({
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Sync Frequency</span>
               <Badge variant="outline" className="capitalize">
-                {keyResult.source.frequency}
+                {keyResult?.source?.frequency || "Unknown"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Last Synced</span>
               <div className="flex items-center gap-1.5 text-sm">
                 <RefreshCw className="h-3.5 w-3.5 text-green-500" />
-                {formatDate(keyResult.source.lastSync)}
+                {formatDate(keyResult?.source?.lastSync)}
               </div>
             </div>
           </div>

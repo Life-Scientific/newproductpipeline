@@ -23,14 +23,9 @@ interface StrategicDriverChartsProps {
   strategicDriverId: string;
 }
 
-/**
- * Maps Strategic Driver IDs to their relevant chart visualizations.
- * Used in the KPIDetailModal to show contextual charts.
- */
 export function StrategicDriverCharts({
   strategicDriverId,
 }: StrategicDriverChartsProps) {
-  // Render charts based on the strategic driver
   switch (strategicDriverId) {
     case "markets-regions":
       return (
@@ -155,7 +150,6 @@ export function StrategicDriverCharts({
         </div>
       );
 
-    // Additional mappings for other strategic drivers
     case "working-capital-optimization":
     case "process-efficiency":
     case "adjacent-offerings":

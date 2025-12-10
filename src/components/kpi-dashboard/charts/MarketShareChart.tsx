@@ -17,6 +17,7 @@ import {
   chartTheme,
   chartColors,
 } from "@/lib/utils/chart-theme";
+import { CHART_MARGINS, CHART_HEIGHTS } from "@/lib/kpi-dashboard/chart-constants";
 
 // Territory colors - use semantic colors from chart theme
 const COLORS = {
@@ -30,7 +31,7 @@ interface MarketShareChartProps {
   height?: number;
 }
 
-export function MarketShareChart({ height = 300 }: MarketShareChartProps) {
+export function MarketShareChart({ height = CHART_HEIGHTS.large }: MarketShareChartProps) {
   // Round the data values for cleaner display
   const formattedData = MARKET_SHARE_DATA.map((d) => ({
     ...d,
@@ -45,7 +46,7 @@ export function MarketShareChart({ height = 300 }: MarketShareChartProps) {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={formattedData}
-          margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+          margin={CHART_MARGINS.spacious}
         >
           <CartesianGrid {...chartTheme.grid} />
           <XAxis dataKey="month" {...getAxisProps()} />

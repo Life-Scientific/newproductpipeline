@@ -1,9 +1,14 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, TrendingDown } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
 import { chartColors } from "@/lib/utils/chart-theme";
+import { TrendIndicator } from "./TrendIndicator";
+import {
+  CHART_PADDING,
+  CHART_TYPOGRAPHY,
+  CHART_CARD_STYLES,
+} from "@/lib/kpi-dashboard/chart-constants";
 import { cn } from "@/lib/utils";
 
 interface SparklineMetricProps {
@@ -37,44 +42,28 @@ export function SparklineMetric({
   const maxVal = Math.max(...data.map((d) => d.value));
 
   return (
-    <Card className="border-border/50 hover:border-border transition-colors">
-      <CardContent className="p-3">
+    <Card className={cn(CHART_CARD_STYLES.base, CHART_CARD_STYLES.background)}>
+      <CardContent className={CHART_PADDING.cardCompact}>
         <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1 flex-1 min-w-0">
-            <p className="text-[11px] text-muted-foreground font-medium leading-tight">
+          <div className="space-y-1.5 flex-1 min-w-0">
+            <p className={CHART_TYPOGRAPHY.label}>
               {label}
             </p>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-bold tabular-nums text-foreground">
+              <span className={CHART_TYPOGRAPHY.value}>
                 {displayValue}
               </span>
               {unit && (
-                <span className="text-xs text-muted-foreground font-medium">
+                <span className={CHART_TYPOGRAPHY.unit}>
                   {unit}
                 </span>
               )}
             </div>
-            <div
-              className={cn(
-                "flex items-center gap-1 text-[10px] font-semibold",
-                isPositive
-                  ? "text-green-600 dark:text-green-400"
-                  : "text-red-600 dark:text-red-400",
-              )}
-            >
-              {isPositive ? (
-                <TrendingUp className="h-2.5 w-2.5" />
-              ) : (
-                <TrendingDown className="h-2.5 w-2.5" />
-              )}
-              <span className="tabular-nums">
-                {isPositive ? "+" : ""}
-                {trend.toFixed(1)}%
-              </span>
-              <span className="text-muted-foreground font-normal ml-0.5">
-                vs last month
-              </span>
-            </div>
+            <TrendIndicator
+              value={trend}
+              label="vs last month"
+              size="sm"
+            />
           </div>
           <div className="w-20 h-10 min-h-[40px] shrink-0">
             <ResponsiveContainer width="100%" height="100%">
