@@ -112,7 +112,7 @@ export function BusinessCaseImportModal({
 
     if (dataLines.length < 2) {
       throw new Error(
-        "CSV file must have at least a header row and one data row",
+        "The CSV file appears to be empty or incomplete. It must have at least a header row (with column names) and one data row. Please check your file and try again.",
       );
     }
 
@@ -135,8 +135,22 @@ export function BusinessCaseImportModal({
     );
 
     if (missingRequired.length > 0) {
+      const headerNames: Record<string, string> = {
+        formulation_code: "Formulation Code",
+        country_code: "Country Code",
+        use_group_variant: "Use Group Variant",
+      };
+      const friendlyNames = missingRequired.map(
+        (h) =>
+          headerNames[h] ||
+          h
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (l) => l.toUpperCase())
+            .replace(/Year (\d+) Volume/g, "Year $1 Volume")
+            .replace(/Year (\d+) Nsp/g, "Year $1 NSP (Net Selling Price)"),
+      );
       throw new Error(
-        `Missing required headers: ${missingRequired.join(", ")}`,
+        `The CSV file is missing required column headers: ${friendlyNames.join(", ")}. Please download the template and ensure all required columns are present.`,
       );
     }
 
@@ -194,16 +208,30 @@ export function BusinessCaseImportModal({
               `year_${yearNum}_${field}` as keyof BusinessCaseImportRow;
             if (field === "volume" || field === "nsp") {
               if (!value || value === "") {
-                parseErrors.push(`Year ${yearNum} ${field} is empty`);
+                const fieldName =
+                  field === "volume"
+                    ? "Volume"
+                    : "NSP (Net Selling Price)";
+                parseErrors.push(
+                  `Year ${yearNum} ${fieldName} is empty. Please enter a number greater than 0. For Volume, use Litres. For NSP, use Euros per Litre.`,
+                );
               } else {
                 const numValue = parseFloat(value);
                 if (isNaN(numValue)) {
+                  const fieldName =
+                    field === "volume"
+                      ? "Volume"
+                      : "NSP (Net Selling Price)";
                   parseErrors.push(
-                    `Year ${yearNum} ${field} is not a valid number: "${value}"`,
+                    `Year ${yearNum} ${fieldName} contains invalid text: "${value}". Please enter a number only (no letters or special characters).`,
                   );
                 } else if (numValue <= 0) {
+                  const fieldName =
+                    field === "volume"
+                      ? "Volume"
+                      : "NSP (Net Selling Price)";
                   parseErrors.push(
-                    `Year ${yearNum} ${field} must be greater than 0 (got ${numValue})`,
+                    `Year ${yearNum} ${fieldName} must be greater than 0. You entered "${value}". If there is no value for this year, leave the cell blank instead of entering 0.`,
                   );
                 } else {
                   (row as any)[key] = numValue;
@@ -221,13 +249,19 @@ export function BusinessCaseImportModal({
 
       // Check required identifiers
       if (!row.formulation_code) {
-        parseErrors.push("Missing formulation_code");
+        parseErrors.push(
+          "Formulation Code is missing. Please enter the product formulation code in the formulation_code column (e.g., 001-01, 302-01).",
+        );
       }
       if (!row.country_code) {
-        parseErrors.push("Missing country_code");
+        parseErrors.push(
+          "Country Code is missing. Please enter the 2-letter country code in the country_code column (e.g., FR for France, IT for Italy, CA for Canada).",
+        );
       }
       if (!row.use_group_variant) {
-        parseErrors.push("Missing use_group_variant");
+        parseErrors.push(
+          'Use Group Variant is missing. Please enter the use group variant code in the use_group_variant column. The format must be "001" (3 digits, e.g., 001, 002).',
+        );
       }
 
       // Check all 10 years have volume and nsp
@@ -236,15 +270,19 @@ export function BusinessCaseImportModal({
         const nspKey = `year_${year}_nsp` as keyof BusinessCaseImportRow;
         if (
           row[volumeKey] === undefined &&
-          !parseErrors.some((e) => e.includes(`Year ${year} volume`))
+          !parseErrors.some((e) => e.includes(`Year ${year} Volume`))
         ) {
-          parseErrors.push(`Year ${year} volume is missing`);
+          parseErrors.push(
+            `Year ${year} Volume is missing. Please enter a number greater than 0 in the year_${year}_volume column (in Litres).`,
+          );
         }
         if (
           row[nspKey] === undefined &&
-          !parseErrors.some((e) => e.includes(`Year ${year} nsp`))
+          !parseErrors.some((e) => e.includes(`Year ${year} NSP`))
         ) {
-          parseErrors.push(`Year ${year} nsp is missing`);
+          parseErrors.push(
+            `Year ${year} NSP (Net Selling Price) is missing. Please enter a number greater than 0 in the year_${year}_nsp column (in Euros per Litre).`,
+          );
         }
       }
 
@@ -490,6 +528,100 @@ export function BusinessCaseImportModal({
     }
   }, [toast]);
 
+  // Export failed rows as CSV for fixing
+  const handleExportFailedRows = useCallback(() => {
+    if (!importResult) return;
+
+    const headers = [
+      "formulation_code",
+      "country_code",
+      "use_group_variant",
+      "effective_start_fiscal_year",
+      "business_case_name",
+      "change_reason",
+      ...Array.from({ length: 10 }, (_, i) => [
+        `year_${i + 1}_volume`,
+        `year_${i + 1}_nsp`,
+        `year_${i + 1}_cogs`,
+      ]).flat(),
+    ];
+
+    // Get all failed rows (invalid + errors)
+    const failedRows = importResult.rowValidations
+      .filter(
+        (v) =>
+          !v.isValid ||
+          importResult.rowProgress.some(
+            (p) => p.rowIndex === v.rowIndex && p.status === "error",
+          ),
+      )
+      .map((v) => {
+        const row = v.row;
+        return [
+          row.formulation_code || "",
+          row.country_code || "",
+          row.use_group_variant || "",
+          row.effective_start_fiscal_year || "",
+          row.business_case_name || "",
+          row.change_reason || "",
+          ...Array.from({ length: 10 }, (_, i) => {
+            const year = i + 1;
+            const volumeKey =
+              `year_${year}_volume` as keyof BusinessCaseImportRow;
+            const nspKey = `year_${year}_nsp` as keyof BusinessCaseImportRow;
+            const cogsKey = `year_${year}_cogs` as keyof BusinessCaseImportRow;
+            return [
+              row[volumeKey]?.toString() || "",
+              row[nspKey]?.toString() || "",
+              row[cogsKey]?.toString() || "",
+            ];
+          }).flat(),
+        ];
+      });
+
+    if (failedRows.length === 0) {
+      toast({
+        title: "No failed rows",
+        description: "All rows were successfully imported.",
+      });
+      return;
+    }
+
+    const csvContent = [
+      headers.join(","),
+      ...failedRows.map((row) =>
+        row
+          .map((cell) => {
+            const cellStr = String(cell);
+            if (
+              cellStr.includes(",") ||
+              cellStr.includes('"') ||
+              cellStr.includes("\n")
+            ) {
+              return `"${cellStr.replace(/"/g, '""')}"`;
+            }
+            return cellStr;
+          })
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `failed_import_rows_${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Failed rows exported",
+      description: `${failedRows.length} failed row${failedRows.length !== 1 ? "s" : ""} exported. Fix and re-import.`,
+    });
+  }, [importResult, toast]);
+
   const validCount = validations.filter((v) => v.isValid).length;
   const invalidCount = validations.length - validCount;
   const canImport = validCount > 0 && !isValidating && !isImporting;
@@ -690,52 +822,147 @@ export function BusinessCaseImportModal({
           <div className="space-y-4">
             <div className="space-y-2">
               <h3 className="font-semibold text-lg">Import Results</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground">Total Rows</p>
-                  <p className="text-2xl font-bold">{importResult.totalRows}</p>
+              
+              {/* Complete Breakdown */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div className="p-3 border rounded-lg">
+                  <p className="text-xs text-muted-foreground">Total CSV Lines</p>
+                  <p className="text-xl font-bold">{totalCsvLines}</p>
                 </div>
-                <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-950/20">
-                  <p className="text-sm text-muted-foreground">Created</p>
-                  <p className="text-2xl font-bold text-green-600">
+                {skippedRows.length > 0 && (
+                  <div className="p-3 border rounded-lg bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700">
+                    <p className="text-xs text-muted-foreground">Skipped (Parse)</p>
+                    <p className="text-xl font-bold text-amber-600">
+                      {skippedRows.length}
+                    </p>
+                  </div>
+                )}
+                <div className="p-3 border rounded-lg">
+                  <p className="text-xs text-muted-foreground">Validated</p>
+                  <p className="text-xl font-bold">{importResult.validRows}</p>
+                </div>
+                {importResult.invalidRows > 0 && (
+                  <div className="p-3 border rounded-lg bg-orange-50 dark:bg-orange-950/20 border-orange-300 dark:border-orange-700">
+                    <p className="text-xs text-muted-foreground">Invalid</p>
+                    <p className="text-xl font-bold text-orange-600">
+                      {importResult.invalidRows}
+                    </p>
+                  </div>
+                )}
+                <div className="p-3 border rounded-lg bg-green-50 dark:bg-green-950/20">
+                  <p className="text-xs text-muted-foreground">Created</p>
+                  <p className="text-xl font-bold text-green-600">
                     {importResult.created}
                   </p>
                 </div>
-                <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                  <p className="text-sm text-muted-foreground">Updated</p>
-                  <p className="text-2xl font-bold text-blue-600">
+                <div className="p-3 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                  <p className="text-xs text-muted-foreground">Updated</p>
+                  <p className="text-xl font-bold text-blue-600">
                     {importResult.updated}
                   </p>
                 </div>
-                <div className="p-4 border rounded-lg bg-red-50 dark:bg-red-950/20">
-                  <p className="text-sm text-muted-foreground">Errors</p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {importResult.errors}
-                  </p>
-                </div>
+                {importResult.errors > 0 && (
+                  <div className="p-3 border rounded-lg bg-red-50 dark:bg-red-950/20">
+                    <p className="text-xs text-muted-foreground">Import Errors</p>
+                    <p className="text-xl font-bold text-red-600">
+                      {importResult.errors}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Summary */}
+              <div className="p-3 bg-muted rounded-lg text-sm">
+                <p className="font-medium mb-1">Summary:</p>
+                <p>
+                  {totalCsvLines} total CSV lines → {skippedRows.length} skipped during parsing → {importResult.totalRows} validated → {importResult.created + importResult.updated} successfully imported ({importResult.created} created, {importResult.updated} updated)
+                  {importResult.errors > 0 && ` → ${importResult.errors} failed during import`}
+                </p>
               </div>
             </div>
 
-            {importResult.rowProgress.some((p) => p.status === "error") && (
+            {/* Skipped Rows (Parse Errors) */}
+            {skippedRows.length > 0 && (
               <div className="space-y-2">
-                <h4 className="font-medium text-destructive">Errors</h4>
-                <div className="border rounded-lg p-4 max-h-48 overflow-y-auto space-y-2">
-                  {importResult.rowProgress
-                    .filter((p) => p.status === "error")
-                    .map((p) => (
-                      <div key={p.rowIndex} className="text-sm">
-                        <span className="font-medium">
-                          Row {p.rowIndex + 1}:
-                        </span>{" "}
-                        <span className="text-muted-foreground">
-                          {p.message}
-                        </span>
+                <h4 className="font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  {skippedRows.length} Row{skippedRows.length !== 1 ? "s" : ""} Skipped During Parsing
+                </h4>
+                <div className="border border-amber-300 dark:border-amber-700 rounded-lg bg-amber-50 dark:bg-amber-950/20 max-h-64 overflow-y-auto">
+                  <div className="p-2 space-y-1">
+                    {skippedRows.map((skipped) => (
+                      <div
+                        key={skipped.lineNumber}
+                        className="text-sm p-2 border-b border-amber-200 dark:border-amber-800 last:border-0"
+                      >
+                        <div className="flex items-start gap-2">
+                          <span className="font-mono text-xs bg-amber-200 dark:bg-amber-800 px-1.5 py-0.5 rounded shrink-0">
+                            Line {skipped.lineNumber}
+                          </span>
+                          <span className="text-amber-800 dark:text-amber-300 font-medium">
+                            {skipped.rawData}
+                          </span>
+                        </div>
+                        <p className="text-xs text-amber-600 dark:text-amber-500 mt-1 ml-14">
+                          {skipped.reason}
+                        </p>
                       </div>
                     ))}
+                  </div>
                 </div>
               </div>
             )}
 
+            {/* Import Errors */}
+            {importResult.rowProgress.some((p) => p.status === "error") && (
+              <div className="space-y-2">
+                <h4 className="font-medium text-destructive flex items-center gap-2">
+                  <XCircle className="h-4 w-4" />
+                  {importResult.errors} Row{importResult.errors !== 1 ? "s" : ""} Failed During Import
+                </h4>
+                <div className="border border-red-300 dark:border-red-700 rounded-lg bg-red-50 dark:bg-red-950/20 p-4 max-h-64 overflow-y-auto space-y-2">
+                  {importResult.rowProgress
+                    .filter((p) => p.status === "error")
+                    .map((p) => {
+                      const validation = importResult.rowValidations.find(
+                        (v) => v.rowIndex === p.rowIndex
+                      );
+                      return (
+                        <div key={p.rowIndex} className="text-sm border-b border-red-200 dark:border-red-800 last:border-0 pb-2 last:pb-0">
+                          <div className="flex items-start gap-2">
+                            <span className="font-mono text-xs bg-red-200 dark:bg-red-800 px-1.5 py-0.5 rounded shrink-0">
+                              Row {p.rowIndex + 1}
+                            </span>
+                            {validation && (
+                              <span className="text-red-800 dark:text-red-300 font-medium">
+                                {validation.row.formulation_code} / {validation.row.country_code} / {validation.row.use_group_variant}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-red-600 dark:text-red-500 mt-1 ml-14">
+                            {p.message || "Import failed"}
+                          </p>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+
+            {/* Invalid Rows (Validation Failed) */}
+            {importResult.invalidRows > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium text-orange-700 dark:text-orange-400 flex items-center gap-2">
+                  <XCircle className="h-4 w-4" />
+                  {importResult.invalidRows} Row{importResult.invalidRows !== 1 ? "s" : ""} Failed Validation
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  These rows passed parsing but failed validation. See details below.
+                </p>
+              </div>
+            )}
+
+            {/* Full Validation Preview */}
             <BusinessCaseImportPreview
               validations={importResult.rowValidations}
             />
@@ -785,7 +1012,23 @@ export function BusinessCaseImportModal({
             </Button>
           )}
 
-          {step === "results" && <Button onClick={handleClose}>Close</Button>}
+          {step === "results" && (
+            <>
+              {importResult &&
+                (importResult.invalidRows > 0 ||
+                  importResult.errors > 0 ||
+                  skippedRows.length > 0) && (
+                  <Button
+                    variant="outline"
+                    onClick={handleExportFailedRows}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Export Failed Rows
+                  </Button>
+                )}
+              <Button onClick={handleClose}>Close</Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

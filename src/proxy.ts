@@ -16,3 +16,4 @@ export const config = {
     "/((?!_next|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js)$).*)",
   ],
 };
+

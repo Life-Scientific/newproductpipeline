@@ -474,7 +474,7 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
 
     if (volume === null || nsp === null || volume <= 0 || nsp <= 0) {
       return {
-        error: `Year ${yearOffset}: Volume and NSP are required and must be greater than 0`,
+        error: `Year ${yearOffset}: Volume and NSP (Net Selling Price) are required and must be greater than 0. Volume must be in Litres, and NSP must be in Euros per Litre. If there is no value for this year, leave the cell blank instead of entering 0.`,
       };
     }
 
@@ -633,7 +633,7 @@ export async function updateBusinessCaseGroupAction(
 
     if (volume === null || nsp === null || volume <= 0 || nsp <= 0) {
       return {
-        error: `Year ${yearOffset}: Volume and NSP are required and must be greater than 0`,
+        error: `Year ${yearOffset}: Volume and NSP (Net Selling Price) are required and must be greater than 0. Volume must be in Litres, and NSP must be in Euros per Litre. If there is no value for this year, leave the cell blank instead of entering 0.`,
       };
     }
 
@@ -980,15 +980,21 @@ async function validateImportRow(
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  // Required field checks
+  // Required field checks with user-friendly messages
   if (!row.formulation_code?.trim()) {
-    errors.push("formulation_code is required");
+    errors.push(
+      "Formulation Code is missing. Please enter the product formulation code (e.g., 001-01, 302-01).",
+    );
   }
   if (!row.country_code?.trim()) {
-    errors.push("country_code is required");
+    errors.push(
+      "Country Code is missing. Please enter the 2-letter country code (e.g., FR, IT, CA).",
+    );
   }
   if (!row.use_group_variant?.trim()) {
-    errors.push("use_group_variant is required");
+    errors.push(
+      'Use Group Variant is missing. Please enter the use group variant code in "001" format (3 digits, e.g., 001, 002).',
+    );
   }
 
   // If basic fields missing, return early
@@ -1004,7 +1010,9 @@ async function validateImportRow(
     .single();
 
   if (formError || !formulation) {
-    errors.push(`Formulation not found: "${row.formulation_code}"`);
+    errors.push(
+      `Formulation Code "${row.formulation_code}" was not found in the system. Please check the code is correct or add this formulation first.`,
+    );
   }
 
   // Lookup country by code
@@ -1015,7 +1023,9 @@ async function validateImportRow(
     .single();
 
   if (countryError || !country) {
-    errors.push(`Country not found: "${row.country_code}"`);
+    errors.push(
+      `Country Code "${row.country_code}" was not found. Please check the 2-letter country code is correct (e.g., FR for France, IT for Italy, CA for Canada).`,
+    );
   }
 
   // If formulation or country not found, can't proceed
@@ -1033,7 +1043,7 @@ async function validateImportRow(
 
   if (fcError || !formCountry) {
     errors.push(
-      `Formulation "${row.formulation_code}" is not registered in country "${row.country_code}"`,
+      `The formulation "${row.formulation_code}" is not registered for the country "${row.country_code}". Please register this formulation for this country first, or check that the formulation and country codes are correct.`,
     );
     return { rowIndex, row, isValid: false, errors, warnings };
   }
@@ -1050,13 +1060,15 @@ async function validateImportRow(
 
   if (ugError || !useGroup) {
     errors.push(
-      `Use group variant "${row.use_group_variant}" not found for this formulation-country combination`,
+      `Use Group Variant "${row.use_group_variant}" was not found for formulation "${row.formulation_code}" in country "${row.country_code}". Please check the use group variant code is correct (must be in "001" format - 3 digits). You may need to create this use group first.`,
     );
     return { rowIndex, row, isValid: false, errors, warnings };
   }
 
   if (!useGroup.is_active) {
-    warnings.push(`Use group "${row.use_group_variant}" is inactive`);
+    warnings.push(
+      `Use Group "${row.use_group_variant}" is currently inactive. The import will proceed, but you may want to activate this use group first.`,
+    );
   }
 
   // Check target_market_entry_fy
@@ -1064,7 +1076,7 @@ async function validateImportRow(
     row.effective_start_fiscal_year?.trim() || useGroup.target_market_entry_fy;
   if (!targetMarketEntry) {
     errors.push(
-      "No effective_start_fiscal_year provided and use group has no target_market_entry_fy set",
+      `No Effective Start Fiscal Year was provided and the use group "${row.use_group_variant}" does not have a target market entry year set. Please add an effective_start_fiscal_year column value (format: FY##, e.g., FY26) or set the target market entry year for this use group.`,
     );
     return { rowIndex, row, isValid: false, errors, warnings };
   }
@@ -1075,7 +1087,7 @@ async function validateImportRow(
     !/^FY\d{2}$/.test(row.effective_start_fiscal_year.trim())
   ) {
     errors.push(
-      `Invalid effective_start_fiscal_year format: "${row.effective_start_fiscal_year}". Expected format: FY## (e.g., FY26)`,
+      `Invalid Effective Start Fiscal Year format: "${row.effective_start_fiscal_year}". The format must be FY followed by 2 digits (e.g., FY26, FY30). Please correct this value.`,
     );
   }
 
@@ -1092,15 +1104,23 @@ async function validateImportRow(
       volume === null ||
       Number.isNaN(Number(volume))
     ) {
-      errors.push(`Year ${year}: volume is required`);
+      errors.push(
+        `Year ${year} Volume is missing or invalid. Please enter a number greater than 0 (in Litres). Leave blank cells empty, but do not enter 0 or text.`,
+      );
     } else if (Number(volume) <= 0) {
-      errors.push(`Year ${year}: volume must be greater than 0`);
+      errors.push(
+        `Year ${year} Volume must be greater than 0. You entered "${volume}". Please enter a positive number (in Litres). If there is no volume for this year, leave the cell blank instead of entering 0.`,
+      );
     }
 
     if (nsp === undefined || nsp === null || Number.isNaN(Number(nsp))) {
-      errors.push(`Year ${year}: nsp is required`);
+      errors.push(
+        `Year ${year} NSP (Net Selling Price) is missing or invalid. Please enter a number greater than 0 (in Euros per Litre). Leave blank cells empty, but do not enter 0 or text.`,
+      );
     } else if (Number(nsp) <= 0) {
-      errors.push(`Year ${year}: nsp must be greater than 0`);
+      errors.push(
+        `Year ${year} NSP (Net Selling Price) must be greater than 0. You entered "${nsp}". Please enter a positive number (in Euros per Litre). If there is no NSP for this year, leave the cell blank instead of entering 0.`,
+      );
     }
   }
 
@@ -1114,12 +1134,14 @@ async function validateImportRow(
   // If updating existing, change_reason is required
   if (existingGroupId && !row.change_reason?.trim()) {
     errors.push(
-      "change_reason is required when updating an existing business case",
+      `Change Reason is required because a business case already exists for formulation "${row.formulation_code}", country "${row.country_code}", and use group "${row.use_group_variant}". Please provide a reason for this update in the change_reason column (e.g., "Updated pricing", "LRP December 8th, 2025 Upload").`,
     );
   }
 
   if (existingGroupId) {
-    warnings.push("Will update existing business case (create new version)");
+    warnings.push(
+      `A business case already exists for this combination. This import will create a new version and archive the previous one. The change reason "${row.change_reason || "not provided"}" will be recorded in the audit log.`,
+    );
   }
 
   return {
