@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
-import { BusinessCaseForm } from "@/components/forms/BusinessCaseForm";
+import { BusinessCaseModal } from "@/components/business-cases/BusinessCaseModal";
 import { DeleteConfirmDialog } from "@/components/forms/DeleteConfirmDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useSupabase } from "@/hooks/use-supabase";
@@ -74,8 +74,6 @@ function PerUnitCell({
   );
 }
 
-type BusinessCaseTable = Database["public"]["Tables"]["business_case"]["Row"];
-
 const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({
   businessCase,
 }: {
@@ -83,8 +81,7 @@ const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({
 }) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [businessCaseData, setBusinessCaseData] =
-    useState<BusinessCaseTable | null>(null);
+  const [groupId, setGroupId] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
   const supabase = useSupabase();
@@ -105,14 +102,21 @@ const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({
       return;
     }
     if (!businessCase.business_case_id) return;
+    // Get the business_case_group_id from the business case
     const { data } = await supabase
       .from("business_case")
-      .select("*")
+      .select("business_case_group_id")
       .eq("business_case_id", businessCase.business_case_id)
       .single();
-    if (data) {
-      setBusinessCaseData(data);
+    if (data?.business_case_group_id) {
+      setGroupId(data.business_case_group_id);
       setEditOpen(true);
+    } else {
+      toast({
+        title: "Error",
+        description: "Could not find business case group",
+        variant: "destructive",
+      });
     }
   };
 
@@ -187,11 +191,14 @@ const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({
           </Button>
         )}
       </div>
-      {businessCaseData && (
-        <BusinessCaseForm
-          businessCase={businessCaseData}
+      {groupId && (
+        <BusinessCaseModal
+          groupId={groupId}
           open={editOpen}
           onOpenChange={setEditOpen}
+          onSuccess={() => {
+            router.refresh();
+          }}
         />
       )}
       <DeleteConfirmDialog
