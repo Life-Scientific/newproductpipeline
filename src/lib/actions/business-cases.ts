@@ -1105,21 +1105,21 @@ async function validateImportRow(
       Number.isNaN(Number(volume))
     ) {
       errors.push(
-        `Year ${year} Volume is missing or invalid. Please enter a number greater than 0 (in Litres). Leave blank cells empty, but do not enter 0 or text.`,
+        `Year ${year} Volume is missing or invalid. Please enter a number (0 or greater) in the year_${year}_volume column (in Litres).`,
       );
-    } else if (Number(volume) <= 0) {
+    } else if (Number(volume) < 0) {
       errors.push(
-        `Year ${year} Volume must be greater than 0. You entered "${volume}". Please enter a positive number (in Litres). If there is no volume for this year, leave the cell blank instead of entering 0.`,
+        `Year ${year} Volume cannot be negative. You entered "${volume}". Please enter a number that is 0 or greater (in Litres).`,
       );
     }
 
     if (nsp === undefined || nsp === null || Number.isNaN(Number(nsp))) {
       errors.push(
-        `Year ${year} NSP (Net Selling Price) is missing or invalid. Please enter a number greater than 0 (in Euros per Litre). Leave blank cells empty, but do not enter 0 or text.`,
+        `Year ${year} NSP (Net Selling Price) is missing or invalid. Please enter a number (0 or greater) in the year_${year}_nsp column (in Euros per Litre).`,
       );
-    } else if (Number(nsp) <= 0) {
+    } else if (Number(nsp) < 0) {
       errors.push(
-        `Year ${year} NSP (Net Selling Price) must be greater than 0. You entered "${nsp}". Please enter a positive number (in Euros per Litre). If there is no NSP for this year, leave the cell blank instead of entering 0.`,
+        `Year ${year} NSP (Net Selling Price) cannot be negative. You entered "${nsp}". Please enter a number that is 0 or greater (in Euros per Litre).`,
       );
     }
   }
@@ -1259,7 +1259,7 @@ export async function previewBusinessCaseImport(
           volume === undefined ||
           volume === null ||
           Number.isNaN(Number(volume)) ||
-          Number(volume) <= 0
+          Number(volume) < 0
         ) {
           hasYearError = true;
           break;
@@ -1268,7 +1268,7 @@ export async function previewBusinessCaseImport(
           nsp === undefined ||
           nsp === null ||
           Number.isNaN(Number(nsp)) ||
-          Number(nsp) <= 0
+          Number(nsp) < 0
         ) {
           hasYearError = true;
           break;
@@ -1280,7 +1280,7 @@ export async function previewBusinessCaseImport(
         if (progressIdx >= 0) {
           rowProgress[progressIdx].status = "error";
           rowProgress[progressIdx].message =
-            "Year data validation would fail: Volume and NSP must be greater than 0";
+            "Year data validation would fail: Volume and NSP must be 0 or greater (cannot be negative)";
         }
       } else {
         // Simulate successful import
@@ -1405,8 +1405,11 @@ export async function importBusinessCases(
         const nspKey = `year_${year}_nsp` as keyof BusinessCaseImportRow;
         const cogsKey = `year_${year}_cogs` as keyof BusinessCaseImportRow;
 
-        formData.append(`year_${year}_volume`, String(row[volumeKey] || 0));
-        formData.append(`year_${year}_nsp`, String(row[nspKey] || 0));
+        // Preserve 0 values explicitly (validation ensures these values exist)
+        const volume = row[volumeKey] ?? 0;
+        const nsp = row[nspKey] ?? 0;
+        formData.append(`year_${year}_volume`, String(volume));
+        formData.append(`year_${year}_nsp`, String(nsp));
 
         const cogsValue = row[cogsKey];
         if (
@@ -1672,7 +1675,7 @@ export async function generateBusinessCaseImportTemplate(): Promise<string> {
     "#   use_group_variant: Must be zero-padded (e.g. '001' '002' NOT '1' or '2')",
     "#   All monetary values: EUR only (no currency conversion)",
     "#   All volume values: Litres or KG (base units)",
-    "#   Volume and NSP: Must be greater than 0 (blanks and zeros will be rejected)",
+    "#   Volume and NSP: Must be 0 or greater (negative values will be rejected)",
     "#   change_reason: Required when updating existing business cases",
     "#",
     "# Required fields: formulation_code, country_code, use_group_variant, year_1-10_volume, year_1-10_nsp",

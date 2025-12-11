@@ -233,13 +233,10 @@ export function BusinessCaseImportModal({
                       ? "Volume"
                       : "NSP (Net Selling Price)";
                   parseErrors.push(
-                    `Year ${yearNum} ${fieldName} cannot be negative. You entered "${value}". Please enter a positive number.`,
+                    `Year ${yearNum} ${fieldName} cannot be negative. You entered "${value}". Please enter a number that is 0 or greater.`,
                   );
-                } else if (numValue === 0) {
-                  // Treat 0 as blank - don't set the field (will be caught by validation)
-                  // This prevents the confusing error about "leave blank instead of 0"
                 } else {
-                  // Only set the field if it's a positive number
+                  // Set the field if it's 0 or greater (0 is now allowed)
                   (row as any)[key] = numValue;
                 }
               }
@@ -279,7 +276,7 @@ export function BusinessCaseImportModal({
           !parseErrors.some((e) => e.includes(`Year ${year} Volume`))
         ) {
           parseErrors.push(
-            `Year ${year} Volume is missing. Please enter a number greater than 0 in the year_${year}_volume column (in Litres).`,
+            `Year ${year} Volume is missing. Please enter a number (0 or greater) in the year_${year}_volume column (in Litres).`,
           );
         }
         if (
@@ -287,7 +284,7 @@ export function BusinessCaseImportModal({
           !parseErrors.some((e) => e.includes(`Year ${year} NSP`))
         ) {
           parseErrors.push(
-            `Year ${year} NSP (Net Selling Price) is missing. Please enter a number greater than 0 in the year_${year}_nsp column (in Euros per Litre).`,
+            `Year ${year} NSP (Net Selling Price) is missing. Please enter a number (0 or greater) in the year_${year}_nsp column (in Euros per Litre).`,
           );
         }
       }
