@@ -293,7 +293,7 @@ function KeyResultRow({
       <Icon className={cn("h-4 w-4 shrink-0", config.color)} />
 
       {/* Label */}
-      <span className="text-sm flex-1 min-w-0 truncate group-hover:text-primary transition-colors">
+      <span className="text-sm flex-1 min-w-0 break-words group-hover:text-primary transition-colors">
         {keyResult.label}
       </span>
 
