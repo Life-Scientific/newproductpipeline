@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { BusinessCaseForm } from "./BusinessCaseForm";
+import { BusinessCaseModal } from "@/components/business-cases/BusinessCaseModal";
 import { usePermissions } from "@/hooks/use-permissions";
 
 export function BusinessCaseFormButton() {
@@ -21,7 +21,14 @@ export function BusinessCaseFormButton() {
         <Plus className="mr-2 h-5 w-5" />
         Create/Update Business Case
       </Button>
-      <BusinessCaseForm open={open} onOpenChange={setOpen} />
+      <BusinessCaseModal
+        open={open}
+        onOpenChange={setOpen}
+        onSuccess={() => {
+          // Refresh the page to show new business case
+          window.location.reload();
+        }}
+      />
     </>
   );
 }

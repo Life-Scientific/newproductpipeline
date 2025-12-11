@@ -34,6 +34,13 @@ type Country = Database["public"]["Tables"]["countries"]["Row"];
 type FormulationCountryUseGroup =
   Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
 
+/**
+ * @deprecated This component uses single-record actions that don't handle versioning properly.
+ * Use BusinessCaseModal instead, which uses group-based actions (createBusinessCaseGroupAction/updateBusinessCaseGroupAction)
+ * that properly check for existing business cases and supersede old versions.
+ * 
+ * This component is kept for legacy support only and should not be used in new code.
+ */
 interface BusinessCaseFormProps {
   businessCase?: BusinessCase | null;
   open: boolean;
@@ -43,6 +50,9 @@ interface BusinessCaseFormProps {
   defaultCountryId?: string;
 }
 
+/**
+ * @deprecated Use BusinessCaseModal instead. This form doesn't handle versioning properly.
+ */
 export function BusinessCaseForm({
   businessCase,
   open,
