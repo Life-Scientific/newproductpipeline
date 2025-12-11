@@ -10,7 +10,8 @@ import { OwnerDisplay } from "./OwnerDisplay";
 import { VisualizationsSection } from "./VisualizationsSection";
 import { KeyResultCreateModal } from "./KeyResultCreateModal";
 import { usePermissions } from "@/hooks/use-permissions";
-import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Plus, Settings } from "lucide-react";
 import type { UserManagementData } from "@/lib/actions/user-management";
 import type { KPIData, KeyResult, StrategicDriver } from "@/lib/kpi-dashboard/types";
 import {
@@ -26,6 +27,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface KPIDashboardViewProps {
   kpiData: KPIData;
@@ -393,15 +399,21 @@ function KeyResultRow({
 
         {/* Trend */}
         {keyResult.trend && (
-          <TrendIcon
-            className={cn(
-              "h-3 w-3",
-              keyResult.trend === "up" && "text-green-500",
-              keyResult.trend === "down" && "text-red-500",
-              keyResult.trend === "flat" && "text-muted-foreground",
-            )}
-            title={`Trend: ${keyResult.trend}`}
-          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <TrendIcon
+                className={cn(
+                  "h-3 w-3",
+                  keyResult.trend === "up" && "text-green-500",
+                  keyResult.trend === "down" && "text-red-500",
+                  keyResult.trend === "flat" && "text-muted-foreground",
+                )}
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Trend: {keyResult.trend}</p>
+            </TooltipContent>
+          </Tooltip>
         )}
 
         {/* Last Updated */}
@@ -412,7 +424,14 @@ function KeyResultRow({
 
         {/* Lock */}
         {keyResult.isLocked && (
-          <Lock className="h-3 w-3 text-muted-foreground" title="Locked" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Lock className="h-3 w-3 text-muted-foreground" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Locked</p>
+            </TooltipContent>
+          </Tooltip>
         )}
       </div>
     </button>

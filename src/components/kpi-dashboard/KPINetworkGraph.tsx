@@ -29,6 +29,11 @@ import type {
   KeyResult,
 } from "@/lib/kpi-dashboard/types";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Target, TrendingUp, BarChart3, Lock, TrendingDown, Minus, Clock } from "lucide-react";
 
 interface KPINetworkGraphProps {
@@ -216,7 +221,6 @@ const StrategicDriverNode = ({
                             kr.trend === "down" && "text-red-500",
                             kr.trend === "flat" && "text-muted-foreground",
                           )}
-                          title={`Trend: ${kr.trend}`}
                         />
                       )}
                       <Badge
@@ -260,7 +264,14 @@ const StrategicDriverNode = ({
                     )}
                     <div className="flex items-center gap-1 shrink-0">
                       {kr.isLocked && (
-                        <Lock className="h-2.5 w-2.5 text-muted-foreground" title="Locked" />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Lock className="h-2.5 w-2.5 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Locked</p>
+                          </TooltipContent>
+                        </Tooltip>
                       )}
                       <div className="flex items-center gap-0.5 text-[7px] text-muted-foreground">
                         <Clock className="h-2 w-2" />
