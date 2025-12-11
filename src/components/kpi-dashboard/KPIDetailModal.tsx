@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, Component, type ReactNode } from "react";
+import { useState } from "react";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { OwnerSelector } from "./OwnerSelector";
-import { StrategicDriverCharts } from "./StrategicDriverCharts";
 import type { UserManagementData } from "@/lib/actions/user-management";
 import type { KeyResult, StatusColor } from "@/lib/kpi-dashboard/mock-data";
 import {
@@ -31,7 +30,6 @@ import {
   Minus,
   ExternalLink,
   History,
-  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -41,7 +39,6 @@ interface KPIDetailModalProps {
   onUpdate: (updated: KeyResult) => void;
   onClose: () => void;
   strategicDriverLabel?: string;
-  strategicDriverId?: string;
   coreDriverLabel?: string;
 }
 
@@ -51,8 +48,7 @@ const statusConfig = {
   green: { variant: "success" as const, label: "On Track", color: "bg-green-500" },
 };
 
-function formatDate(dateString: string | undefined | null): string {
-  if (!dateString) return "Unknown";
+function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
@@ -60,27 +56,6 @@ function formatDate(dateString: string | undefined | null): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-class ChartErrorBoundary extends Component<
-  { children: ReactNode; fallback: ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: ReactNode; fallback: ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    return this.props.children;
-  }
 }
 
 // Mock audit log entries
@@ -108,39 +83,23 @@ export function KPIDetailModal({
   onUpdate,
   onClose,
   strategicDriverLabel,
-  strategicDriverId,
   coreDriverLabel,
 }: KPIDetailModalProps) {
   const [activeTab, setActiveTab] = useState("details");
 
-  // Validate keyResult - use safe defaults to ensure hooks always run
-  const isValidKeyResult = keyResult && keyResult.id && keyResult.label && keyResult.status;
+  if (!keyResult) return null;
 
-  const config = useMemo(() => {
-    if (!keyResult?.status || !statusConfig[keyResult.status]) {
-      return statusConfig.yellow;
-    }
-    return statusConfig[keyResult.status];
-  }, [keyResult?.status]);
-  
-  const auditLog = useMemo(() => {
-    if (!keyResult) return [];
-    return generateMockAuditLog(keyResult);
-  }, [keyResult]);
+  const config = statusConfig[keyResult.status];
+  const auditLog = generateMockAuditLog(keyResult);
 
-  const handleChange = useCallback(<K extends keyof KeyResult>(field: K, value: KeyResult[K]) => {
-    if (!keyResult || keyResult.isLocked || !onUpdate) return;
+  const handleChange = <K extends keyof KeyResult>(field: K, value: KeyResult[K]) => {
+    if (keyResult.isLocked) return;
     onUpdate({ ...keyResult, [field]: value });
-  }, [keyResult, onUpdate]);
+  };
 
-  const toggleLock = useCallback(() => {
-    if (!keyResult || !onUpdate) return;
+  const toggleLock = () => {
     onUpdate({ ...keyResult, isLocked: !keyResult.isLocked });
-  }, [keyResult, onUpdate]);
-
-  if (!isValidKeyResult || !keyResult) {
-    return null;
-  }
+  };
 
   const TrendIcon = keyResult.trend === "up" ? TrendingUp : keyResult.trend === "down" ? TrendingDown : Minus;
 
@@ -153,7 +112,7 @@ export function KPIDetailModal({
 
   const description = (
     <span className="text-xs">
-      {coreDriverLabel || "Core Driver"} → {strategicDriverLabel || "Strategic Driver"}
+      {coreDriverLabel} → {strategicDriverLabel}
     </span>
   );
 
@@ -199,16 +158,12 @@ export function KPIDetailModal({
       showSave={false}
     >
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-4 mb-4">
+        <TabsList className="w-full grid grid-cols-3 mb-4">
           <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="charts">
-            <BarChart3 className="h-3.5 w-3.5 mr-1.5" />
-            Charts
-          </TabsTrigger>
           <TabsTrigger value="source">Data Source</TabsTrigger>
           <TabsTrigger value="audit">
             <History className="h-3.5 w-3.5 mr-1.5" />
-            Audit
+            Audit Log
           </TabsTrigger>
         </TabsList>
 
@@ -319,38 +274,22 @@ export function KPIDetailModal({
           </div>
         </TabsContent>
 
-        <TabsContent value="charts" className="mt-0">
-          {strategicDriverId ? (
-            <ChartErrorBoundary fallback={
-              <div className="flex items-center justify-center h-32 text-muted-foreground">
-                <p className="text-sm">Error loading visualizations.</p>
-              </div>
-            }>
-              <StrategicDriverCharts strategicDriverId={strategicDriverId} />
-            </ChartErrorBoundary>
-          ) : (
-            <div className="flex items-center justify-center h-32 text-muted-foreground">
-              <p className="text-sm">No visualizations available for this KPI.</p>
-            </div>
-          )}
-        </TabsContent>
-
         <TabsContent value="source" className="space-y-4 mt-0">
           <div className="bg-muted/50 rounded-lg p-4 space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">System</span>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="font-medium">
-                  {keyResult?.source?.system || "Unknown"}
+                  {keyResult.source.system}
                 </Badge>
-                {keyResult?.source?.endpoint && (
+                {keyResult.source.endpoint && (
                   <Button variant="ghost" size="icon" className="h-7 w-7">
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Button>
                 )}
               </div>
             </div>
-            {keyResult?.source?.endpoint && (
+            {keyResult.source.endpoint && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Endpoint</span>
                 <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
@@ -362,14 +301,14 @@ export function KPIDetailModal({
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Sync Frequency</span>
               <Badge variant="outline" className="capitalize">
-                {keyResult?.source?.frequency || "Unknown"}
+                {keyResult.source.frequency}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Last Synced</span>
               <div className="flex items-center gap-1.5 text-sm">
                 <RefreshCw className="h-3.5 w-3.5 text-green-500" />
-                {formatDate(keyResult?.source?.lastSync)}
+                {formatDate(keyResult.source.lastSync)}
               </div>
             </div>
           </div>
