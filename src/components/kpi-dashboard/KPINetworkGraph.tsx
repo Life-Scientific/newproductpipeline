@@ -27,7 +27,7 @@ import type {
   CoreDriver,
   StrategicDriver,
   KeyResult,
-} from "@/lib/kpi-dashboard/mock-data";
+} from "@/lib/kpi-dashboard/types";
 import { cn } from "@/lib/utils";
 import { Target, TrendingUp, BarChart3, Lock, TrendingDown, Minus, Clock } from "lucide-react";
 
@@ -380,6 +380,10 @@ export function KPINetworkGraph({
   };
 
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
+    if (kpiData.coreDrivers.length === 0) {
+      return { nodes: [], edges: [] };
+    }
+
     const nodes: Node[] = [];
     const edges: Edge[] = [];
 
@@ -439,6 +443,18 @@ export function KPINetworkGraph({
 
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+
+  if (kpiData.coreDrivers.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            No KPIs yet. Create core drivers and strategic drivers to get started.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>

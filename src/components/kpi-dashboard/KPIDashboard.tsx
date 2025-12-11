@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useOptimistic } from "react";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, Network, Pencil } from "lucide-react";
 import type { UserManagementData } from "@/lib/actions/user-management";
@@ -9,36 +9,44 @@ import type {
   CoreDriver,
   StrategicDriver,
   KeyResult,
-} from "@/lib/kpi-dashboard/mock-data";
-import { initialKPIData } from "@/lib/kpi-dashboard/mock-data";
+} from "@/lib/kpi-dashboard/types";
+import { updateKeyResult as updateKeyResultAction } from "@/lib/actions/kpi-actions";
 import { KPINetworkGraph } from "./KPINetworkGraph";
 import { KPIDashboardView } from "./KPIDashboardView";
 import { KPIEditView } from "./KPIEditView";
+import { HierarchyManager } from "./HierarchyManager";
+import { Settings } from "lucide-react";
 
 interface KPIDashboardProps {
   users: UserManagementData[];
+  initialData: KPIData;
 }
 
-type ViewMode = "graph" | "dashboard" | "edit";
+type ViewMode = "graph" | "dashboard" | "edit" | "hierarchy";
 
-export function KPIDashboard({ users }: KPIDashboardProps) {
-  const [kpiData, setKpiData] = useState<KPIData>(initialKPIData);
+export function KPIDashboard({ users, initialData }: KPIDashboardProps) {
+  const [kpiData, setKpiData] = useState<KPIData>(initialData);
+  const [optimisticData, setOptimisticData] = useOptimistic(
+    kpiData,
+    (state, newData: KPIData) => newData,
+  );
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard");
 
   const updateKeyResult = useCallback(
-    (
+    async (
       coreDriverId: string,
       strategicDriverId: string,
       keyResultId: string,
       updated: KeyResult,
     ) => {
+      // Optimistic update
       const updatedWithTimestamp = {
         ...updated,
         lastUpdated: new Date().toISOString(),
       };
 
-      setKpiData((prev) => ({
-        coreDrivers: prev.coreDrivers.map((cd) =>
+      const optimisticUpdate: KPIData = {
+        coreDrivers: optimisticData.coreDrivers.map((cd) =>
           cd.id === coreDriverId
             ? {
                 ...cd,
@@ -55,9 +63,34 @@ export function KPIDashboard({ users }: KPIDashboardProps) {
               }
             : cd,
         ),
-      }));
+      };
+
+      setOptimisticData(optimisticUpdate);
+
+      try {
+        // Call server action
+        await updateKeyResultAction(keyResultId, {
+          label: updated.label,
+          status: updated.status,
+          target: updated.target || null,
+          reality: updated.reality || null,
+          trend: updated.trend,
+          owner_id: updated.ownerId || null,
+          justification: updated.justification || null,
+          notes: updated.notes || null,
+          strategic_driver_id: strategicDriverId,
+        });
+
+        // Update local state with server response
+        setKpiData(optimisticUpdate);
+      } catch (error) {
+        console.error("Error updating key result:", error);
+        // Revert optimistic update on error
+        setKpiData(kpiData);
+        throw error;
+      }
     },
-    [],
+    [optimisticData, kpiData, setOptimisticData],
   );
 
   const updateCoreDriver = useCallback(
@@ -101,6 +134,7 @@ export function KPIDashboard({ users }: KPIDashboardProps) {
           {viewMode === "graph" && "Visual hierarchy of strategic KPIs"}
           {viewMode === "dashboard" && "Summary view with status overview"}
           {viewMode === "edit" && "Edit KPI values and status"}
+          {viewMode === "hierarchy" && "Manage Core Drivers and Strategic Drivers"}
         </p>
         <div className="flex gap-1 bg-muted/50 p-1 rounded-lg">
           <Button
@@ -130,31 +164,48 @@ export function KPIDashboard({ users }: KPIDashboardProps) {
             <Pencil className="h-4 w-4 mr-1.5" />
             Edit
           </Button>
+          <Button
+            variant={viewMode === "hierarchy" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("hierarchy")}
+            className="h-8"
+          >
+            <Settings className="h-4 w-4 mr-1.5" />
+            Hierarchy
+          </Button>
         </div>
       </div>
 
       {/* Content */}
       {viewMode === "dashboard" && (
         <KPIDashboardView
-          kpiData={kpiData}
+          kpiData={optimisticData}
           users={users}
           onUpdateKeyResult={updateKeyResult}
         />
       )}
       {viewMode === "graph" && (
         <KPINetworkGraph
-          kpiData={kpiData}
+          kpiData={optimisticData}
           users={users}
           onUpdateKeyResult={updateKeyResult}
         />
       )}
       {viewMode === "edit" && (
         <KPIEditView
-          kpiData={kpiData}
+          kpiData={optimisticData}
           users={users}
           onUpdateKeyResult={updateKeyResult}
           onUpdateCoreDriver={updateCoreDriver}
           onUpdateStrategicDriver={updateStrategicDriver}
+        />
+      )}
+      {viewMode === "hierarchy" && (
+        <HierarchyManager
+          onUpdate={() => {
+            // Refresh data after hierarchy changes
+            window.location.reload();
+          }}
         />
       )}
     </div>

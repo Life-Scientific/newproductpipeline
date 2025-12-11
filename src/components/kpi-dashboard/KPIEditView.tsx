@@ -16,7 +16,10 @@ import {
 import { CardGrid } from "@/components/layout/CardGrid";
 import { OwnerSelector } from "./OwnerSelector";
 import { OwnerDisplay } from "./OwnerDisplay";
+import { KeyResultCreateModal } from "./KeyResultCreateModal";
+import { usePermissions } from "@/hooks/use-permissions";
 import { useSupabase } from "@/hooks/use-supabase";
+import { Plus } from "lucide-react";
 import type { UserManagementData } from "@/lib/actions/user-management";
 import type {
   KPIData,
@@ -24,7 +27,7 @@ import type {
   StrategicDriver,
   KeyResult,
   StatusColor,
-} from "@/lib/kpi-dashboard/mock-data";
+} from "@/lib/kpi-dashboard/types";
 import { Lock, Unlock, TrendingUp, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -68,7 +71,13 @@ export function KPIEditView({
   onUpdateKeyResult,
 }: KPIEditViewProps) {
   const supabase = useSupabase();
+  const { canCreateKPIs } = usePermissions();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [selectedStrategicDriver, setSelectedStrategicDriver] = useState<{
+    strategicDriver: StrategicDriver;
+    coreDriverId: string;
+  } | null>(null);
 
   useEffect(() => {
     async function getCurrentUser() {
@@ -162,8 +171,17 @@ export function KPIEditView({
       )}
 
       {/* All KPIs by Core Driver */}
-      <CardGrid columns={{ mobile: 1, tablet: 1, desktop: 3 }} gap="md">
-        {kpiData.coreDrivers.map((coreDriver) => (
+      {kpiData.coreDrivers.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              No KPIs yet. Create core drivers and strategic drivers to get started.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <CardGrid columns={{ mobile: 1, tablet: 1, desktop: 3 }} gap="md">
+          {kpiData.coreDrivers.map((coreDriver) => (
           <Card key={coreDriver.id}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
@@ -183,8 +201,27 @@ export function KPIEditView({
             <CardContent className="space-y-4">
               {coreDriver.strategicDrivers.map((sd) => (
                 <div key={sd.id}>
-                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    {sd.label}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {sd.label}
+                    </div>
+                    {canCreateKPIs && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-2 text-xs"
+                        onClick={() => {
+                          setSelectedStrategicDriver({
+                            strategicDriver: sd,
+                            coreDriverId: coreDriver.id,
+                          });
+                          setCreateModalOpen(true);
+                        }}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add
+                      </Button>
+                    )}
                   </div>
                   <div className="space-y-2">
                     {sd.keyResults.map((kr) => (
@@ -207,7 +244,22 @@ export function KPIEditView({
             </CardContent>
           </Card>
         ))}
-      </CardGrid>
+        </CardGrid>
+      )}
+
+      {/* Create KPI Modal */}
+      {selectedStrategicDriver && (
+        <KeyResultCreateModal
+          open={createModalOpen}
+          onOpenChange={setCreateModalOpen}
+          strategicDriver={selectedStrategicDriver.strategicDriver}
+          coreDriverId={selectedStrategicDriver.coreDriverId}
+          users={users}
+          onSuccess={() => {
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { OwnerSelector } from "./OwnerSelector";
 import type { UserManagementData } from "@/lib/actions/user-management";
-import type { KeyResult, StatusColor } from "@/lib/kpi-dashboard/mock-data";
+import type { KeyResult, StatusColor, AuditLogEntry } from "@/lib/kpi-dashboard/types";
+import { updateKeyResult, toggleLock, getAuditLogAction } from "@/lib/actions/kpi-actions";
 import {
   Lock,
   Unlock,
@@ -30,6 +31,7 @@ import {
   Minus,
   ExternalLink,
   History,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -58,25 +60,6 @@ function formatDate(dateString: string): string {
   });
 }
 
-// Mock audit log entries
-function generateMockAuditLog(keyResult: KeyResult) {
-  const actions = [
-    { action: "Status changed", from: "Yellow", to: "Green", field: "status" },
-    { action: "Value updated", from: "15%", to: keyResult.reality, field: "reality" },
-    { action: "Target set", from: "—", to: keyResult.target, field: "target" },
-    { action: "Owner assigned", from: "Unassigned", to: "john.doe", field: "owner" },
-    { action: "Locked", from: "Unlocked", to: "Locked", field: "lock" },
-    { action: "Note added", from: "—", to: "Added context", field: "notes" },
-  ];
-
-  return actions.slice(0, 5).map((a, i) => ({
-    ...a,
-    id: `audit-${i}`,
-    timestamp: new Date(Date.now() - i * 24 * 60 * 60 * 1000 * (i + 1)).toISOString(),
-    user: ["john.doe@company.com", "jane.smith@company.com", "admin@company.com"][i % 3],
-  }));
-}
-
 export function KPIDetailModal({
   keyResult,
   users,
@@ -88,6 +71,8 @@ export function KPIDetailModal({
   const [activeTab, setActiveTab] = useState("details");
   const [localKeyResult, setLocalKeyResult] = useState<KeyResult | null>(keyResult);
   const [hasChanges, setHasChanges] = useState(false);
+  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
+  const [isLoadingAudit, setIsLoadingAudit] = useState(false);
 
   // Update local state when keyResult prop changes
   React.useEffect(() => {
@@ -97,10 +82,26 @@ export function KPIDetailModal({
     }
   }, [keyResult]);
 
+  // Fetch audit log when audit tab is opened
+  useEffect(() => {
+    if (activeTab === "audit" && keyResult && auditLog.length === 0) {
+      setIsLoadingAudit(true);
+      getAuditLogAction("key_result", keyResult.id)
+        .then((log: AuditLogEntry[]) => {
+          setAuditLog(log);
+        })
+        .catch((error: unknown) => {
+          console.error("Error fetching audit log:", error);
+        })
+        .finally(() => {
+          setIsLoadingAudit(false);
+        });
+    }
+  }, [activeTab, keyResult, auditLog.length]);
+
   if (!keyResult || !localKeyResult) return null;
 
   const config = statusConfig[localKeyResult.status];
-  const auditLog = generateMockAuditLog(localKeyResult);
 
   const handleChange = <K extends keyof KeyResult>(field: K, value: KeyResult[K]) => {
     if (localKeyResult.isLocked) return;
@@ -109,18 +110,44 @@ export function KPIDetailModal({
     setHasChanges(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (localKeyResult && hasChanges) {
-      onUpdate(localKeyResult);
-      setHasChanges(false);
+      try {
+        await updateKeyResult(localKeyResult.id, {
+          label: localKeyResult.label,
+          status: localKeyResult.status,
+          target: localKeyResult.target || null,
+          reality: localKeyResult.reality || null,
+          trend: localKeyResult.trend,
+          owner_id: localKeyResult.ownerId || null,
+          justification: localKeyResult.justification || null,
+          notes: localKeyResult.notes || null,
+          strategic_driver_id: "", // Not needed for update
+        });
+        onUpdate(localKeyResult);
+        setHasChanges(false);
+      } catch (error) {
+        console.error("Error saving key result:", error);
+        // Could show error toast here
+      }
     }
   };
 
-  const toggleLock = () => {
-    const updated = { ...localKeyResult, isLocked: !localKeyResult.isLocked, lastUpdated: new Date().toISOString() };
-    setLocalKeyResult(updated);
-    onUpdate(updated);
-    setHasChanges(false);
+  const handleToggleLock = async () => {
+    try {
+      await toggleLock(localKeyResult.id);
+      const updated = {
+        ...localKeyResult,
+        isLocked: !localKeyResult.isLocked,
+        lastUpdated: new Date().toISOString(),
+      };
+      setLocalKeyResult(updated);
+      onUpdate(updated);
+      setHasChanges(false);
+    } catch (error) {
+      console.error("Error toggling lock:", error);
+      // Could show error toast here
+    }
   };
 
   const TrendIcon = localKeyResult.trend === "up" ? TrendingUp : localKeyResult.trend === "down" ? TrendingDown : Minus;
@@ -164,7 +191,7 @@ export function KPIDetailModal({
         )}
         <Button
           variant={localKeyResult.isLocked ? "outline" : "secondary"}
-          onClick={toggleLock}
+          onClick={handleToggleLock}
         >
           {localKeyResult.isLocked ? (
             <>
@@ -368,7 +395,11 @@ export function KPIDetailModal({
 
         <TabsContent value="audit" className="mt-0">
           <div className="space-y-2">
-            {auditLog.length === 0 ? (
+            {isLoadingAudit ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : auditLog.length === 0 ? (
               <div className="text-center py-8 text-sm text-muted-foreground">
                 No audit log entries yet
               </div>
@@ -382,17 +413,21 @@ export function KPIDetailModal({
                     <History className="h-3 w-3 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium">{entry.action}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {entry.from} → {entry.to}
+                    <div className="font-medium capitalize">
+                      {entry.action} {entry.fieldName ? `(${entry.fieldName})` : ""}
                     </div>
+                    {entry.oldValue && entry.newValue && (
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {entry.oldValue} → {entry.newValue}
+                      </div>
+                    )}
                   </div>
                   <div className="text-right shrink-0">
                     <div className="text-xs text-muted-foreground">
-                      {formatDate(entry.timestamp)}
+                      {formatDate(entry.createdAt)}
                     </div>
                     <div className="text-xs text-muted-foreground truncate max-w-[120px]">
-                      {entry.user}
+                      {entry.userName || entry.userId || "System"}
                     </div>
                   </div>
                 </div>

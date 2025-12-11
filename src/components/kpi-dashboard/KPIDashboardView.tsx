@@ -8,8 +8,11 @@ import { MetricCard } from "@/components/layout/MetricCard";
 import { KPIDetailModal } from "./KPIDetailModal";
 import { OwnerDisplay } from "./OwnerDisplay";
 import { VisualizationsSection } from "./VisualizationsSection";
+import { KeyResultCreateModal } from "./KeyResultCreateModal";
+import { usePermissions } from "@/hooks/use-permissions";
+import { Plus } from "lucide-react";
 import type { UserManagementData } from "@/lib/actions/user-management";
-import type { KPIData, KeyResult } from "@/lib/kpi-dashboard/mock-data";
+import type { KPIData, KeyResult, StrategicDriver } from "@/lib/kpi-dashboard/types";
 import {
   Lock,
   Clock,
@@ -22,6 +25,7 @@ import {
   Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
 
 interface KPIDashboardViewProps {
   kpiData: KPIData;
@@ -73,12 +77,19 @@ export function KPIDashboardView({
   users,
   onUpdateKeyResult,
 }: KPIDashboardViewProps) {
+  const { canCreateKPIs } = usePermissions();
+  const { toast } = useToast();
   const [selectedKR, setSelectedKR] = useState<{
     keyResult: KeyResult;
     coreDriverId: string;
     coreDriverLabel: string;
     strategicDriverId: string;
     strategicDriverLabel: string;
+  } | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [selectedStrategicDriver, setSelectedStrategicDriver] = useState<{
+    strategicDriver: StrategicDriver;
+    coreDriverId: string;
   } | null>(null);
 
   const getUserName = (ownerId: string | null) => {
@@ -108,9 +119,13 @@ export function KPIDashboardView({
     { total: 0, red: 0, yellow: 0, green: 0, locked: 0 },
   );
 
-  const healthScore = Math.round(
-    ((totals.green * 100 + totals.yellow * 50) / (totals.total * 100)) * 100,
-  );
+  const healthScore =
+    totals.total > 0
+      ? Math.round(
+          ((totals.green * 100 + totals.yellow * 50) / (totals.total * 100)) *
+            100,
+        )
+      : 0;
 
   const handleKRClick = (
     keyResult: KeyResult,
@@ -197,8 +212,34 @@ export function KPIDashboardView({
         </CardGrid>
 
         {/* Core Drivers - Most Important, Allows Editing */}
-        <CardGrid columns={{ mobile: 1, tablet: 1, desktop: 3 }} gap="md">
-          {kpiData.coreDrivers.map((coreDriver) => (
+        {kpiData.coreDrivers.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center space-y-4">
+              <p className="text-sm text-muted-foreground">
+                No KPIs yet. Create core drivers and strategic drivers to get started.
+              </p>
+              {canCreateKPIs && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    // Switch to hierarchy view - we'll need to pass a callback
+                    // For now, show a message
+                    toast({
+                      title: "Manage Hierarchy",
+                      description:
+                        "Switch to the 'Hierarchy' tab to create Core Drivers and Strategic Drivers.",
+                    });
+                  }}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Manage Hierarchy
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <CardGrid columns={{ mobile: 1, tablet: 1, desktop: 3 }} gap="md">
+            {kpiData.coreDrivers.map((coreDriver) => (
             <Card key={coreDriver.id}>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
@@ -218,8 +259,27 @@ export function KPIDashboardView({
               <CardContent className="space-y-4">
                 {coreDriver.strategicDrivers.map((sd) => (
                   <div key={sd.id}>
-                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                      {sd.label}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        {sd.label}
+                      </div>
+                      {canCreateKPIs && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 px-2 text-xs"
+                          onClick={() => {
+                            setSelectedStrategicDriver({
+                              strategicDriver: sd,
+                              coreDriverId: coreDriver.id,
+                            });
+                            setCreateModalOpen(true);
+                          }}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Add KPI
+                        </Button>
+                      )}
                     </div>
                     <div className="space-y-1">
                       {sd.keyResults.map((kr) => (
@@ -245,7 +305,8 @@ export function KPIDashboardView({
               </CardContent>
             </Card>
           ))}
-        </CardGrid>
+          </CardGrid>
+        )}
 
         {/* Visualizations - Below Core Drivers */}
         <VisualizationsSection defaultOpen={true} />
@@ -260,6 +321,20 @@ export function KPIDashboardView({
         coreDriverLabel={selectedKR?.coreDriverLabel}
         strategicDriverLabel={selectedKR?.strategicDriverLabel}
       />
+
+      {/* Create KPI Modal */}
+      {selectedStrategicDriver && (
+        <KeyResultCreateModal
+          open={createModalOpen}
+          onOpenChange={setCreateModalOpen}
+          strategicDriver={selectedStrategicDriver.strategicDriver}
+          coreDriverId={selectedStrategicDriver.coreDriverId}
+          users={users}
+          onSuccess={() => {
+            window.location.reload();
+          }}
+        />
+      )}
     </>
   );
 }
