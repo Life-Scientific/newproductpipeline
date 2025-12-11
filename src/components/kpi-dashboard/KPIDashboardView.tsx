@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { CardGrid } from "@/components/layout/CardGrid";
 import { MetricCard } from "@/components/layout/MetricCard";
 import { KPIDetailModal } from "./KPIDetailModal";
+import { OwnerDisplay } from "./OwnerDisplay";
+import { VisualizationsSection } from "./VisualizationsSection";
 import type { UserManagementData } from "@/lib/actions/user-management";
 import type { KPIData, KeyResult } from "@/lib/kpi-dashboard/mock-data";
 import {
@@ -85,6 +87,12 @@ export function KPIDashboardView({
     return user?.email?.split("@")[0] || null;
   };
 
+  const getUserEmail = (ownerId: string | null) => {
+    if (!ownerId) return null;
+    const user = users.find((u) => u.id === ownerId);
+    return user?.email || null;
+  };
+
   // Calculate totals
   const totals = kpiData.coreDrivers.reduce(
     (acc, cd) => {
@@ -136,12 +144,7 @@ export function KPIDashboardView({
     <>
       <div className="space-y-6">
         {/* Metrics Row */}
-        <CardGrid columns={{ mobile: 2, tablet: 3, desktop: 5 }} gap="md">
-          <MetricCard
-            title="Total KPIs"
-            value={totals.total}
-            subtitle={`${totals.locked} locked`}
-          />
+        <CardGrid columns={{ mobile: 2, tablet: 2, desktop: 4 }} gap="md">
           <MetricCard
             title="Health Score"
             value={`${healthScore}%`}
@@ -193,7 +196,7 @@ export function KPIDashboardView({
           </Card>
         </CardGrid>
 
-        {/* Core Drivers */}
+        {/* Core Drivers - Most Important, Allows Editing */}
         <CardGrid columns={{ mobile: 1, tablet: 1, desktop: 3 }} gap="md">
           {kpiData.coreDrivers.map((coreDriver) => (
             <Card key={coreDriver.id}>
@@ -224,6 +227,7 @@ export function KPIDashboardView({
                           key={kr.id}
                           keyResult={kr}
                           ownerName={getUserName(kr.ownerId)}
+                          ownerEmail={getUserEmail(kr.ownerId)}
                           onClick={() =>
                             handleKRClick(
                               kr,
@@ -242,6 +246,9 @@ export function KPIDashboardView({
             </Card>
           ))}
         </CardGrid>
+
+        {/* Visualizations - Below Core Drivers */}
+        <VisualizationsSection defaultOpen={true} />
       </div>
 
       {/* Detail Modal */}
@@ -260,10 +267,12 @@ export function KPIDashboardView({
 function KeyResultRow({
   keyResult,
   ownerName,
+  ownerEmail,
   onClick,
 }: {
   keyResult: KeyResult;
   ownerName: string | null;
+  ownerEmail: string | null;
   onClick: () => void;
 }) {
   const config = statusConfig[keyResult.status];
@@ -288,8 +297,25 @@ function KeyResultRow({
         {keyResult.label}
       </span>
 
-      {/* Meta */}
-      <div className="flex items-center gap-2 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
+      {/* Owner - Prioritized */}
+      <div className="shrink-0">
+        <OwnerDisplay
+          ownerName={ownerName}
+          ownerEmail={ownerEmail}
+          variant="compact"
+          className="opacity-70 group-hover:opacity-100 transition-opacity"
+        />
+      </div>
+
+      {/* Meta - Secondary Info */}
+      <div className="flex items-center gap-1.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
+        {/* Target/Reality */}
+        {keyResult.target && (
+          <span className="text-xs font-medium tabular-nums whitespace-nowrap">
+            {keyResult.reality || "—"}/{keyResult.target}
+          </span>
+        )}
+
         {/* Trend */}
         {keyResult.trend && (
           <TrendIcon
@@ -299,27 +325,20 @@ function KeyResultRow({
               keyResult.trend === "down" && "text-red-500",
               keyResult.trend === "flat" && "text-muted-foreground",
             )}
+            title={`Trend: ${keyResult.trend}`}
           />
         )}
 
-        {/* Target/Reality */}
-        {keyResult.target && (
-          <span className="text-xs font-medium tabular-nums">
-            {keyResult.reality || "—"}/{keyResult.target}
-          </span>
-        )}
-
-        {/* Source indicator */}
-        <Database className="h-3 w-3 text-muted-foreground" title={keyResult.source.system} />
-
         {/* Last Updated */}
-        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5 whitespace-nowrap">
           <Clock className="h-2.5 w-2.5" />
           {formatRelativeTime(keyResult.lastUpdated)}
         </span>
 
         {/* Lock */}
-        {keyResult.isLocked && <Lock className="h-3 w-3 text-muted-foreground" />}
+        {keyResult.isLocked && (
+          <Lock className="h-3 w-3 text-muted-foreground" title="Locked" />
+        )}
       </div>
     </button>
   );

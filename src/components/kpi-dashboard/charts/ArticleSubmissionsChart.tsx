@@ -36,7 +36,7 @@ export function ArticleSubmissionsChart({
   const data = articleType === "34" ? ARTICLE_34_DATA : ARTICLE_33_DATA;
   const title = `Article ${articleType} Submissions`;
 
-  const { totalApproved, totalNotApproved, overallSuccessRate } = useMemo(() => {
+  const { totalApproved, totalNotApproved, overallSuccessRate, total } = useMemo(() => {
     const approved = data.reduce((sum, d) => sum + d.approved, 0);
     const notApproved = data.reduce((sum, d) => sum + d.notApproved, 0);
     const total = approved + notApproved;
@@ -45,6 +45,7 @@ export function ArticleSubmissionsChart({
       totalApproved: approved,
       totalNotApproved: notApproved,
       overallSuccessRate: successRate,
+      total,
     };
   }, [data]);
 
@@ -54,7 +55,7 @@ export function ArticleSubmissionsChart({
         <span className={CHART_TYPOGRAPHY.label}>{title}</span>
         <div className="flex gap-4">
           <span className={CHART_TYPOGRAPHY.description}>
-            Total: <strong className="text-foreground">{totalApproved + totalNotApproved}</strong>
+            Total: <strong className="text-foreground">{total}</strong>
           </span>
           <span className={CHART_TYPOGRAPHY.description}>
             Success Rate:{" "}

@@ -18,7 +18,9 @@ import "reactflow/dist/style.css";
 import dagre from "dagre";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { KPIDetailModal } from "./KPIDetailModal";
+import { OwnerDisplay } from "./OwnerDisplay";
 import type { UserManagementData } from "@/lib/actions/user-management";
 import type {
   KPIData,
@@ -27,7 +29,7 @@ import type {
   KeyResult,
 } from "@/lib/kpi-dashboard/mock-data";
 import { cn } from "@/lib/utils";
-import { Target, TrendingUp, BarChart3 } from "lucide-react";
+import { Target, TrendingUp, BarChart3, Lock, TrendingDown, Minus, Clock } from "lucide-react";
 
 interface KPINetworkGraphProps {
   kpiData: KPIData;
@@ -150,47 +152,125 @@ const StrategicDriverNode = ({
   strategicDriver: StrategicDriver;
   coreDriverId: string;
   coreDriverLabel: string;
+  getUserName: (ownerId: string | null) => string | null;
+  getUserEmail: (ownerId: string | null) => string | null;
   onKRClick: (kr: KeyResult, sdLabel: string) => void;
 }>) => {
+  const formatRelativeTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "1d";
+    if (diffDays < 7) return `${diffDays}d`;
+    return `${Math.floor(diffDays / 7)}w`;
+  };
+
+  const krCount = data.strategicDriver.keyResults.length;
+  const maxKpisPerRow = 2; // Stagger 2 KPIs per row
+  const rows = Math.ceil(krCount / maxKpisPerRow);
+
   return (
     <Card
       className={cn(
-        "w-[260px] shadow-sm hover:shadow-md transition-all bg-background",
+        "shadow-sm hover:shadow-md transition-all bg-background min-w-[500px]",
         selected ? "border-chart-2 ring-2 ring-chart-2/20" : "border",
       )}
     >
-      <CardContent className="p-2.5">
+      <CardContent className="p-3">
         <Handle
           type="target"
           position={Position.Left}
           className="!bg-chart-2 !w-2 !h-2 !border-2 !border-background"
         />
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-3.5 w-3.5 text-chart-2 shrink-0" />
-            <span className="font-medium text-xs leading-tight">{data.strategicDriver.label}</span>
+        <div className="flex flex-col gap-2.5">
+          <div className="flex items-center gap-2 pb-1.5 border-b">
+            <BarChart3 className="h-4 w-4 text-chart-2 shrink-0" />
+            <span className="font-semibold text-xs leading-tight">{data.strategicDriver.label}</span>
           </div>
-          <div className="space-y-1">
-            {data.strategicDriver.keyResults.map((kr) => (
-              <button
-                key={kr.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  data.onKRClick(kr, data.strategicDriver.label);
-                }}
-                className="w-full flex items-center justify-between gap-2 text-[10px] bg-muted/50 hover:bg-muted rounded px-2 py-1 transition-colors text-left"
-              >
-                <span className="truncate" title={kr.label}>
-                  {kr.label}
-                </span>
-                <Badge
-                  variant={statusConfig[kr.status].variant}
-                  className="text-[9px] px-1.5 h-4 shrink-0"
+          {/* Horizontal staggered grid of KPIs */}
+          <div className="grid grid-cols-2 gap-2">
+            {data.strategicDriver.keyResults.map((kr, index) => {
+              const TrendIcon = kr.trend === "up" ? TrendingUp : kr.trend === "down" ? TrendingDown : Minus;
+              return (
+                <button
+                  key={kr.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    data.onKRClick(kr, data.strategicDriver.label);
+                  }}
+                  className="flex flex-col gap-1 text-[10px] bg-muted/50 hover:bg-muted rounded px-2 py-1.5 transition-colors text-left border border-transparent hover:border-border"
                 >
-                  {statusConfig[kr.status].label}
-                </Badge>
-              </button>
-            ))}
+                  {/* Header: Label + Status */}
+                  <div className="flex items-start justify-between gap-1.5">
+                    <span className="truncate font-medium text-[10px] leading-tight flex-1" title={kr.label}>
+                      {kr.label}
+                    </span>
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      {kr.trend && (
+                        <TrendIcon
+                          className={cn(
+                            "h-2.5 w-2.5",
+                            kr.trend === "up" && "text-green-500",
+                            kr.trend === "down" && "text-red-500",
+                            kr.trend === "flat" && "text-muted-foreground",
+                          )}
+                          title={`Trend: ${kr.trend}`}
+                        />
+                      )}
+                      <Badge
+                        variant={statusConfig[kr.status].variant}
+                        className="text-[8px] px-1 h-3.5 shrink-0"
+                      >
+                        {statusConfig[kr.status].label}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Values */}
+                  {kr.target && (
+                    <div className="text-[9px] font-medium tabular-nums text-muted-foreground">
+                      {kr.reality || "—"} / {kr.target}
+                    </div>
+                  )}
+
+                  {/* Footer: Owner + Meta */}
+                  <div className="flex items-center justify-between gap-1.5 pt-0.5 border-t">
+                    {data.getUserName(kr.ownerId) ? (
+                      <div className="flex items-center gap-1 min-w-0 flex-1">
+                        <Avatar className="h-3 w-3 shrink-0">
+                          <AvatarFallback className="bg-primary/10 text-primary text-[7px] leading-none">
+                            {data.getUserName(kr.ownerId)
+                              ?.split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .toUpperCase()
+                              .slice(0, 2) || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-[8px] text-muted-foreground truncate">
+                          {data.getUserName(kr.ownerId)}
+                        </span>
+                      </div>
+                    ) : (
+                      <Badge variant="outline" className="text-[7px] px-1 h-3">
+                        —
+                      </Badge>
+                    )}
+                    <div className="flex items-center gap-1 shrink-0">
+                      {kr.isLocked && (
+                        <Lock className="h-2.5 w-2.5 text-muted-foreground" title="Locked" />
+                      )}
+                      <div className="flex items-center gap-0.5 text-[7px] text-muted-foreground">
+                        <Clock className="h-2 w-2" />
+                        {formatRelativeTime(kr.lastUpdated)}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </CardContent>
@@ -208,7 +288,7 @@ const nodeTypes = {
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
-  dagreGraph.setGraph({ rankdir: "LR", ranksep: 100, nodesep: 30, edgesep: 15 });
+  dagreGraph.setGraph({ rankdir: "LR", ranksep: 120, nodesep: 50, edgesep: 20 });
 
   nodes.forEach((node) => {
     let width = 240;
@@ -220,10 +300,11 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
     } else if (node.type === "coreDriver") {
       width = 240;
       height = 100;
-    } else if (node.type === "strategicDriver") {
+    } else     if (node.type === "strategicDriver") {
       const krCount = (node.data as any)?.strategicDriver?.keyResults?.length || 1;
-      height = 55 + krCount * 24;
-      width = 260;
+      const rows = Math.ceil(krCount / 2); // 2 KPIs per row
+      height = 50 + rows * 65; // Reduced height due to horizontal layout
+      width = 500; // Wider for horizontal KPIs
     }
 
     dagreGraph.setNode(node.id, { width, height });
@@ -257,6 +338,18 @@ export function KPINetworkGraph({
     strategicDriverId: string;
     strategicDriverLabel: string;
   } | null>(null);
+
+  const getUserName = (ownerId: string | null) => {
+    if (!ownerId) return null;
+    const user = users.find((u) => u.id === ownerId);
+    return user?.email?.split("@")[0] || null;
+  };
+
+  const getUserEmail = (ownerId: string | null) => {
+    if (!ownerId) return null;
+    const user = users.find((u) => u.id === ownerId);
+    return user?.email || null;
+  };
 
   const handleKRClick = (
     kr: KeyResult,
@@ -323,6 +416,8 @@ export function KPINetworkGraph({
             strategicDriver: sd,
             coreDriverId: coreDriver.id,
             coreDriverLabel: coreDriver.label,
+            getUserName,
+            getUserEmail,
             onKRClick: (kr: KeyResult, sdLabel: string) =>
               handleKRClick(kr, coreDriver.id, coreDriver.label, sd.id, sdLabel),
           },
@@ -340,7 +435,7 @@ export function KPINetworkGraph({
     });
 
     return getLayoutedElements(nodes, edges);
-  }, [kpiData]);
+  }, [kpiData, getUserName, getUserEmail]);
 
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, , onEdgesChange] = useEdgesState(initialEdges);
