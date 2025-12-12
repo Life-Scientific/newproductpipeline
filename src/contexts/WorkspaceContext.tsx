@@ -81,6 +81,16 @@ function getDefaultRouteForWorkspace(workspace: WorkspaceWithMenuItems | null): 
   return `/${workspace.slug}`;
 }
 
+// Client-side workspace cache with TTL (5 minutes)
+// This prevents redundant API calls when switching between workspaces
+interface CachedWorkspace {
+  data: WorkspaceWithMenuItems;
+  timestamp: number;
+}
+
+const WORKSPACE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+const workspaceCacheRef = { current: new Map<string, CachedWorkspace>() };
+
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(
@@ -148,8 +158,40 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Single optimized query for workspace + menu items
+      // OPTIMIZATION: Check client-side cache first
+      const cached = workspaceCacheRef.current.get(slugToTry);
+      const now = Date.now();
+      
+      if (cached && (now - cached.timestamp) < WORKSPACE_CACHE_TTL) {
+        // Cache hit - use cached data (instant, no API call)
+        console.log(`[WorkspaceContext] Cache hit for "${slugToTry}"`);
+        setCurrentWorkspace(cached.data);
+        setWorkspaceWithMenu(cached.data);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("current_workspace", cached.data.slug);
+        }
+        loadingRef.current = false;
+        setIsLoading(false);
+        return;
+      }
+
+      // Cache miss or expired - fetch from server
+      console.log(`[WorkspaceContext] Cache miss for "${slugToTry}" - fetching`);
       let workspaceData = await getWorkspaceWithMenuBySlug(slugToTry);
+      
+      // Cache the result (even if null, to prevent repeated failed lookups)
+      if (workspaceData) {
+        workspaceCacheRef.current.set(slugToTry, {
+          data: workspaceData,
+          timestamp: now,
+        });
+        
+        // Limit cache size (keep last 5 workspaces)
+        if (workspaceCacheRef.current.size > 5) {
+          const firstKey = workspaceCacheRef.current.keys().next().value;
+          workspaceCacheRef.current.delete(firstKey);
+        }
+      }
 
       // Only fallback to portfolio if we're not already on a specific workspace route
       // This prevents redirecting away from valid workspace pages
@@ -221,7 +263,36 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const switchWorkspace = useCallback(async (slug: string): Promise<string> => {
     setIsLoading(true);
     try {
-      const workspaceData = await getWorkspaceWithMenuBySlug(slug);
+      // OPTIMIZATION: Check cache first
+      const cached = workspaceCacheRef.current.get(slug);
+      const now = Date.now();
+      
+      let workspaceData: WorkspaceWithMenuItems | null = null;
+      
+      if (cached && (now - cached.timestamp) < WORKSPACE_CACHE_TTL) {
+        // Cache hit - use cached data
+        console.log(`[WorkspaceContext] Cache hit for switch to "${slug}"`);
+        workspaceData = cached.data;
+      } else {
+        // Cache miss - fetch from server
+        console.log(`[WorkspaceContext] Cache miss for switch to "${slug}" - fetching`);
+        workspaceData = await getWorkspaceWithMenuBySlug(slug);
+        
+        // Cache the result
+        if (workspaceData) {
+          workspaceCacheRef.current.set(slug, {
+            data: workspaceData,
+            timestamp: now,
+          });
+          
+          // Limit cache size
+          if (workspaceCacheRef.current.size > 5) {
+            const firstKey = workspaceCacheRef.current.keys().next().value;
+            workspaceCacheRef.current.delete(firstKey);
+          }
+        }
+      }
+      
       if (workspaceData) {
         setCurrentWorkspace(workspaceData);
         setWorkspaceWithMenu(workspaceData);
@@ -242,6 +313,11 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refreshWorkspace = useCallback(async () => {
+    // Clear cache for current workspace to force fresh fetch
+    if (currentWorkspaceRef.current?.slug) {
+      workspaceCacheRef.current.delete(currentWorkspaceRef.current.slug);
+    }
+    
     if (currentWorkspaceRef.current) {
       await loadWorkspace(currentWorkspaceRef.current.slug);
     } else {

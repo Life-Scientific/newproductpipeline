@@ -289,14 +289,28 @@ export function AppSidebar() {
     return pathname?.startsWith(url);
   };
 
+  // OPTIMIZATION: Use stable keys for memoization to prevent unnecessary re-renders
+  // Only re-compute when workspace_id or menu_items count changes, not on object reference changes
+  const workspaceId = workspaceWithMenu?.workspace_id;
+  const menuItemsLength = workspaceWithMenu?.menu_items?.length ?? 0;
+  const menuItems = workspaceWithMenu?.menu_items ?? [];
+  
+  // Create a stable key from menu items for comparison
+  // This prevents re-computation when the array reference changes but content is the same
+  const menuItemsKey = useMemo(() => {
+    if (!menuItems || menuItems.length === 0) return '';
+    // Create a stable key from menu item IDs and their order
+    return menuItems.map(item => `${item.menu_item_id}-${item.display_order}`).join('|');
+  }, [menuItems]);
+  
   // Get menu items from database (respects is_active flag)
   const menuGroups = useMemo(() => {
-    if (!workspaceWithMenu || !workspaceWithMenu.menu_items) return [];
+    if (!workspaceWithMenu || !menuItems || menuItems.length === 0) return [];
 
     // Group items by group_name
     const grouped = new Map<string, WorkspaceMenuItem[]>();
 
-    workspaceWithMenu.menu_items.forEach((item) => {
+    menuItems.forEach((item) => {
       if (!grouped.has(item.group_name)) {
         grouped.set(item.group_name, []);
       }
@@ -340,7 +354,7 @@ export function AppSidebar() {
     });
 
     return orderedGroups;
-  }, [workspaceWithMenu]);
+  }, [workspaceId, menuItemsKey]);
 
   const userInitial = user?.email?.charAt(0).toUpperCase() || "U";
   const userName = user?.email?.split("@")[0] || "User";
