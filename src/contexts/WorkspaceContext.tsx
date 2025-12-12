@@ -189,7 +189,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         // Limit cache size (keep last 5 workspaces)
         if (workspaceCacheRef.current.size > 5) {
           const firstKey = workspaceCacheRef.current.keys().next().value;
-          workspaceCacheRef.current.delete(firstKey);
+          if (firstKey) {
+            workspaceCacheRef.current.delete(firstKey);
+          }
         }
       }
 
@@ -288,7 +290,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           // Limit cache size
           if (workspaceCacheRef.current.size > 5) {
             const firstKey = workspaceCacheRef.current.keys().next().value;
-            workspaceCacheRef.current.delete(firstKey);
+            if (firstKey) {
+              workspaceCacheRef.current.delete(firstKey);
+            }
           }
         }
       }

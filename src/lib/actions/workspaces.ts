@@ -98,8 +98,11 @@ export async function getWorkspaceWithMenuBySlug(
 
   if (!data) return null;
 
+  // Extract workspace data (without menu_items)
+  const { workspace_menu_items, ...workspace } = data;
+
   // Filter active menu items and check permissions
-  const allMenuItems = (data.workspace_menu_items as WorkspaceMenuItem[]) || [];
+  const allMenuItems = (workspace_menu_items as WorkspaceMenuItem[]) || [];
   const activeMenuItems = allMenuItems.filter((item) => item.is_active);
   
   // OPTIMIZATION: Batch permission check instead of individual calls
@@ -118,7 +121,7 @@ export async function getWorkspaceWithMenuBySlug(
     if (permError) {
       console.warn("Failed to check permissions:", permError);
       // Fallback: return empty menu items if permission check fails
-      return { ...workspace, menu_items: [] };
+      return { ...workspace, menu_items: [] } as WorkspaceWithMenuItems;
     }
     
     // Create set of accessible URLs
@@ -142,7 +145,6 @@ export async function getWorkspaceWithMenuBySlug(
     });
 
   // Return workspace with filtered and sorted menu items
-  const { workspace_menu_items, ...workspace } = data;
   return {
     ...workspace,
     menu_items: menuItems,
