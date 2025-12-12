@@ -332,7 +332,7 @@ export function FormulationForm({
           });
           onOpenChange(false);
           if (onSuccess) onSuccess();
-          router.refresh();
+          // No router.refresh() - revalidatePath in server action handles cache invalidation
         }
       } catch (error) {
         toast({
@@ -524,7 +524,9 @@ export function FormulationForm({
               <div>
                 <EPPOCropSelector
                   formulationId={formulation.formulation_id}
-                  onUpdate={() => router.refresh()}
+                  onUpdate={() => {
+                    // No router.refresh() - revalidatePath in server action handles cache invalidation
+                  }}
                 />
               </div>
 
@@ -532,7 +534,9 @@ export function FormulationForm({
               <div>
                 <EPPOTargetSelector
                   formulationId={formulation.formulation_id}
-                  onUpdate={() => router.refresh()}
+                  onUpdate={() => {
+                    // No router.refresh() - revalidatePath in server action handles cache invalidation
+                  }}
                 />
               </div>
             </div>

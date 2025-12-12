@@ -241,7 +241,9 @@ export function AppSidebar() {
     try {
       const result = await revalidateAllCaches();
       if (result.success) {
-        // Force a page refresh to load fresh data
+        // Invalidate server cache - Next.js will refetch on next navigation
+        // Use router.refresh() only as a background refresh, not blocking
+        // This allows the UI to remain responsive
         router.refresh();
       }
     } catch (error) {
@@ -276,8 +278,8 @@ export function AppSidebar() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    // Navigate to home - no need for refresh since we're leaving the app
     router.push("/");
-    router.refresh();
   };
 
   const isActive = (url: string) => {

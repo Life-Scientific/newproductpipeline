@@ -108,7 +108,7 @@ export function SupplierForm({
           });
           onOpenChange(false);
           if (onSuccess) onSuccess();
-          router.refresh();
+          // No router.refresh() - revalidatePath in server action handles cache invalidation
         }
       } catch (error) {
         toast({

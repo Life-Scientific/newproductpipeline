@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useId, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Card,
@@ -60,6 +61,7 @@ export function TenYearProjectionChart({
   formulations,
   noCard = false,
 }: TenYearProjectionChartProps) {
+  const router = useRouter();
   const { currentTheme } = useTheme();
   const {
     currencySymbol,
@@ -295,8 +297,8 @@ export function TenYearProjectionChart({
 
   const handleDrillDown = (fiscalYear: string) => {
     // Filters are now in URL, so they'll persist automatically
-    // Just navigate to business cases page with fiscal year
-    window.location.href = `/portfolio/business-cases?fiscalYear=${fiscalYear}`;
+    // Navigate to business cases page with fiscal year using client-side navigation
+    router.push(`/portfolio/business-cases?fiscalYear=${fiscalYear}`);
   };
 
   // Calculate unique formulations in the filtered view

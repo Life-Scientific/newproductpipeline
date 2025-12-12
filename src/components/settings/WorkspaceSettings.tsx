@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -19,6 +20,7 @@ import { Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export function WorkspaceSettings() {
+  const router = useRouter();
   const { currentWorkspace, switchWorkspace } = useWorkspace();
   const { toast } = useToast();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -52,7 +54,8 @@ export function WorkspaceSettings() {
       if (workspace) {
         const defaultRoute = await switchWorkspace(workspace.slug);
         // Navigate to the default route for this workspace
-        window.location.href = defaultRoute;
+        // Use router.replace to maintain SPA navigation
+        router.replace(defaultRoute);
       }
       toast({
         title: "Success",

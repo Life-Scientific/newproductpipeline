@@ -26,7 +26,7 @@ export function FormulationCountryUseGroupFormButton() {
         onOpenChange={setOpen}
         onSuccess={() => {
           setOpen(false);
-          window.location.reload();
+          // Server action already calls revalidatePath() - no need for full page reload
         }}
       />
     </>

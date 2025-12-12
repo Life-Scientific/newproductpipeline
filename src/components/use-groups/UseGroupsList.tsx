@@ -470,7 +470,7 @@ export function UseGroupsList({ useGroups }: UseGroupsListProps) {
           }}
           onSuccess={() => {
             setEditingUseGroupId(null);
-            router.refresh();
+            // No router.refresh() - revalidatePath in server action handles cache invalidation
           }}
         />
       )}

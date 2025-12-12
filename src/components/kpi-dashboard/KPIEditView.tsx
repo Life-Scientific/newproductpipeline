@@ -258,7 +258,7 @@ export function KPIEditView({
           coreDriverId={selectedStrategicDriver.coreDriverId}
           users={users}
           onSuccess={() => {
-            window.location.reload();
+            // Server action already calls revalidatePath() - no need for full page reload
           }}
         />
       )}
