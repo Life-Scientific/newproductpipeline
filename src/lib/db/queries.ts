@@ -288,16 +288,24 @@ async function fetchAllPaginatedFromView<T>(
   return allData;
 }
 
-export async function getFormulationsWithNestedData(): Promise<FormulationWithNestedData[]> {
+export async function getFormulationsWithNestedData(
+  limit?: number,
+): Promise<FormulationWithNestedData[]> {
   const supabase = await createClient();
 
     // Get formulations with pagination (Supabase default limit is 10k)
-    const formulations = await fetchAllPaginatedFromView<Formulation>(
+    // If limit is provided, only fetch first N formulations for progressive loading
+    const allFormulations = await fetchAllPaginatedFromView<Formulation>(
       supabase,
       "vw_formulations_with_ingredients",
       "*",
       { column: "formulation_code", ascending: true },
     );
+    
+    // Apply limit if provided (for progressive loading)
+    const formulations = limit 
+      ? allFormulations.slice(0, limit)
+      : allFormulations;
 
     if (!formulations || formulations.length === 0) {
       return [];
@@ -338,6 +346,12 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       ),
     ]);
 
+    // OPTIMIZATION: When limit is provided, only aggregate for formulations in the limited set
+    // This significantly speeds up initial load by skipping aggregation for non-displayed formulations
+    const formulationCodesSet = limit
+      ? new Set(formulations.map((f) => f.formulation_code).filter(Boolean))
+      : null;
+
     // Aggregate data by formulation_code
     const aggregated = new Map<
       string,
@@ -371,9 +385,13 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       }
     >();
 
-    // Process countries
+    // Process countries (only for formulations in limited set if limit provided)
     countriesData.forEach((item: any) => {
       if (!item.formulation_code) return;
+      // Skip aggregation if this formulation is not in the limited set
+      if (formulationCodesSet && !formulationCodesSet.has(item.formulation_code)) {
+        return;
+      }
       if (!aggregated.has(item.formulation_code)) {
         aggregated.set(item.formulation_code, {
           countries: new Set(),
@@ -412,9 +430,13 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       }
     });
 
-    // Process use groups
+    // Process use groups (only for formulations in limited set if limit provided)
     useGroupsData.forEach((item: any) => {
       if (!item.formulation_code) return;
+      // Skip aggregation if this formulation is not in the limited set
+      if (formulationCodesSet && !formulationCodesSet.has(item.formulation_code)) {
+        return;
+      }
       if (!aggregated.has(item.formulation_code)) {
         aggregated.set(item.formulation_code, {
           countries: new Set(),
@@ -442,9 +464,13 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       });
     });
 
-    // Process business cases
+    // Process business cases (only for formulations in limited set if limit provided)
     businessCasesData.forEach((item: any) => {
       if (!item.formulation_code) return;
+      // Skip aggregation if this formulation is not in the limited set
+      if (formulationCodesSet && !formulationCodesSet.has(item.formulation_code)) {
+        return;
+      }
       if (!aggregated.has(item.formulation_code)) {
         aggregated.set(item.formulation_code, {
           countries: new Set(),
@@ -466,9 +492,13 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       agg.totalMargin += item.total_margin || 0;
     });
 
-    // Process COGS
+    // Process COGS (only for formulations in limited set if limit provided)
     cogsData.forEach((item: any) => {
       if (!item.formulation_code) return;
+      // Skip aggregation if this formulation is not in the limited set
+      if (formulationCodesSet && !formulationCodesSet.has(item.formulation_code)) {
+        return;
+      }
       if (!aggregated.has(item.formulation_code)) {
         aggregated.set(item.formulation_code, {
           countries: new Set(),
@@ -491,9 +521,13 @@ export async function getFormulationsWithNestedData(): Promise<FormulationWithNe
       });
     });
 
-    // Process protection
+    // Process protection (only for formulations in limited set if limit provided)
     protectionData.forEach((item: any) => {
       if (!item.formulation_code) return;
+      // Skip aggregation if this formulation is not in the limited set
+      if (formulationCodesSet && !formulationCodesSet.has(item.formulation_code)) {
+        return;
+      }
       if (!aggregated.has(item.formulation_code)) {
         aggregated.set(item.formulation_code, {
           countries: new Set(),
@@ -1473,7 +1507,9 @@ function getEffectiveStartYearFromStored(
 /**
  * Get business cases grouped by business_case_group_id for projection table display
  */
-export async function getBusinessCasesForProjectionTable(): Promise<BusinessCaseGroupData[]> {
+export async function getBusinessCasesForProjectionTable(
+  limit?: number,
+): Promise<BusinessCaseGroupData[]> {
   const supabase = await createClient();
 
     // Supabase has a default limit - we need to fetch all rows with pagination
@@ -1484,13 +1520,13 @@ export async function getBusinessCasesForProjectionTable(): Promise<BusinessCase
       .eq("status", "active");
 
     const pageSize = 10000;
-    const totalPages = Math.ceil((count || 0) / pageSize);
+    const totalPages = limit
+      ? Math.ceil(Math.min(limit, count || 0) / pageSize) // Only fetch pages needed for limit
+      : Math.ceil((count || 0) / pageSize);
 
-    let allData: any[] = [];
-
-    // Fetch all pages
-    for (let page = 0; page < totalPages; page++) {
-      const { data: pageData, error: pageError } = await supabase
+    // OPTIMIZATION: Fetch all pages in parallel instead of sequentially
+    const pagePromises = Array.from({ length: totalPages }, (_, page) =>
+      supabase
         .from("vw_business_case")
         .select("*")
         .eq("status", "active")
@@ -1498,14 +1534,19 @@ export async function getBusinessCasesForProjectionTable(): Promise<BusinessCase
         .order("country_name", { ascending: true })
         .order("use_group_name", { ascending: true })
         .order("year_offset", { ascending: true })
-        .range(page * pageSize, (page + 1) * pageSize - 1);
+        .range(page * pageSize, (page + 1) * pageSize - 1),
+    );
 
-      if (pageError) {
-        throw new Error(`Failed to fetch business cases: ${pageError.message}`);
+    const pageResults = await Promise.all(pagePromises);
+
+    // Check for errors and combine data
+    const allData: any[] = [];
+    for (const result of pageResults) {
+      if (result.error) {
+        throw new Error(`Failed to fetch business cases: ${result.error.message}`);
       }
-
-      if (pageData) {
-        allData = allData.concat(pageData);
+      if (result.data) {
+        allData.push(...result.data);
       }
     }
 
@@ -1521,17 +1562,26 @@ export async function getBusinessCasesForProjectionTable(): Promise<BusinessCase
       .map((bc) => bc.business_case_id)
       .filter(Boolean) as string[];
 
-    // Fetch junction data in batches if needed (Supabase .in() has URL length limits)
+    // OPTIMIZATION: Fetch junction data in parallel batches instead of sequentially
     const junctionBatchSize = 5000;
-    let junctionData: any[] = [];
+    const junctionBatches = [];
     for (let i = 0; i < businessCaseIds.length; i += junctionBatchSize) {
       const batch = businessCaseIds.slice(i, i + junctionBatchSize);
-      const { data: batchData } = await supabase
+      junctionBatches.push(batch);
+    }
+
+    const junctionPromises = junctionBatches.map((batch) =>
+      supabase
         .from("business_case_use_groups")
         .select("business_case_id, formulation_country_use_group_id")
-        .in("business_case_id", batch);
-      if (batchData) {
-        junctionData = junctionData.concat(batchData);
+        .in("business_case_id", batch),
+    );
+
+    const junctionResults = await Promise.all(junctionPromises);
+    const junctionData: any[] = [];
+    for (const result of junctionResults) {
+      if (result.data) {
+        junctionData.push(...result.data);
       }
     }
 

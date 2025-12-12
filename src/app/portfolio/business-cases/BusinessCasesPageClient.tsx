@@ -45,6 +45,8 @@ import {
   generateBusinessCaseImportTemplate,
 } from "@/lib/actions/business-cases";
 import { useToast } from "@/components/ui/use-toast";
+import { useProgressiveLoad } from "@/hooks/use-progressive-load";
+import { fetchBusinessCasesRemaining } from "@/lib/actions/progressive-actions";
 import type { Country } from "@/lib/db/types";
 import type { Formulation } from "@/lib/db/types";
 import type { FormulationCountryDetail } from "@/lib/db/types";
@@ -57,6 +59,8 @@ interface BusinessCaseWithStatus extends BusinessCaseGroupData {
 
 interface BusinessCasesPageClientProps {
   initialBusinessCases: BusinessCaseGroupData[];
+  totalCount: number;
+  hasMore: boolean;
   formulationStatuses?: Map<string, string>; // formulation_id -> status
   countryStatuses?: Map<string, string>; // formulation_country_id or composite key -> status
   formulations: Formulation[]; // Reference data for filter lookups
@@ -66,12 +70,31 @@ interface BusinessCasesPageClientProps {
 
 function BusinessCasesContent({
   initialBusinessCases,
+  totalCount: initialTotalCount,
+  hasMore: initialHasMore,
   formulationStatuses,
   countryStatuses,
   formulations,
   countries,
   formulationCountries,
 }: BusinessCasesPageClientProps) {
+  // OPTIMIZATION: Progressive loading - load remaining data in background
+  const {
+    data: businessCases,
+    isBackgroundLoading,
+    totalCount,
+  } = useProgressiveLoad(
+    initialBusinessCases,
+    initialTotalCount,
+    initialHasMore,
+    fetchBusinessCasesRemaining,
+    {
+      onProgress: (loaded, total) => {
+        console.log(`[Business Cases] Loaded ${loaded} of ${total}`);
+      },
+    },
+  );
+
   // Use global portfolio filters from URL
   const { filters } = usePortfolioFilters();
   const [createModalOpen, setCreateModalOpen] = useState(false);

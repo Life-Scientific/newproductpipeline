@@ -1,9 +1,9 @@
 import {
-  getBusinessCasesForProjectionTable,
   getFormulations,
   getFormulationCountries,
 } from "@/lib/db/queries";
 import { getCountries } from "@/lib/db/countries";
+import { getBusinessCasesForProjectionTableProgressive } from "@/lib/db/progressive-queries";
 import { createClient } from "@/lib/supabase/server";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { BusinessCasesPageClient } from "./BusinessCasesPageClient";
@@ -18,37 +18,38 @@ export default async function BusinessCasesPage() {
   // This eliminates the sequential loop that was causing slowness
   const fetchFormulationCountryStatuses = async () => {
     let allStatuses: any[] = [];
-    let page = 0;
-    const pageSize = 10000;
-    let hasMore = true;
+  let page = 0;
+  const pageSize = 10000;
+  let hasMore = true;
 
-    while (hasMore) {
-      const { data: pageData } = await supabase
-        .from("formulation_country")
-        .select("formulation_id, country_id, country_status")
-        .eq("is_active", true)
-        .range(page * pageSize, (page + 1) * pageSize - 1);
+  while (hasMore) {
+    const { data: pageData } = await supabase
+      .from("formulation_country")
+      .select("formulation_id, country_id, country_status")
+      .eq("is_active", true)
+      .range(page * pageSize, (page + 1) * pageSize - 1);
 
-      if (!pageData || pageData.length === 0) {
-        hasMore = false;
-      } else {
+    if (!pageData || pageData.length === 0) {
+      hasMore = false;
+    } else {
         allStatuses = [...allStatuses, ...pageData];
-        hasMore = pageData.length === pageSize;
-        page++;
-      }
+      hasMore = pageData.length === pageSize;
+      page++;
     }
+  }
     return allStatuses;
   };
 
-  // Fetch everything in parallel - this is much faster than sequential
+  // OPTIMIZATION: Fetch initial batch (100 business case groups) for fast first load
+  const INITIAL_LIMIT = 100;
   const [
-    businessCases,
+    initialDataResult,
     formulations,
     countries,
     formulationCountriesData,
     formulationCountriesRaw,
   ] = await Promise.all([
-    getBusinessCasesForProjectionTable(),
+    getBusinessCasesForProjectionTableProgressive(INITIAL_LIMIT),
     getFormulations(), // Reference data for filter lookups
     getCountries(), // Reference data for filter lookups
     getFormulationCountries(), // For accurate filter counts
@@ -88,7 +89,9 @@ export default async function BusinessCasesPage() {
           </div>
 
           <BusinessCasesPageClient
-            initialBusinessCases={businessCases}
+            initialBusinessCases={initialDataResult.initialData}
+            totalCount={initialDataResult.totalCount}
+            hasMore={initialDataResult.hasMore}
             formulationStatuses={formulationStatuses}
             countryStatuses={countryStatuses}
             formulations={formulations}

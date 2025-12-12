@@ -125,16 +125,16 @@ export async function getWorkspaceWithMenuBySlug(
       
       const individualChecks = await Promise.all(
         activeMenuItems.map(async (item) => {
-          const { data: canAccess } = await supabase.rpc("can_access_url", {
-            p_url: item.url,
-          });
+        const { data: canAccess } = await supabase.rpc("can_access_url", {
+          p_url: item.url,
+        });
           return { url: item.url, canAccess: canAccess !== false };
-        })
-      );
-      
+      })
+  );
+
       accessibleUrls = new Set(
         individualChecks
-          .filter(({ canAccess }) => canAccess)
+    .filter(({ canAccess }) => canAccess)
           .map(({ url }) => url)
       );
     } else {
