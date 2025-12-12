@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useId, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Card,
@@ -62,6 +62,7 @@ export function TenYearProjectionChart({
   noCard = false,
 }: TenYearProjectionChartProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { currentTheme } = useTheme();
   const {
     currencySymbol,
@@ -73,6 +74,12 @@ export function TenYearProjectionChart({
   const { filters, hasActiveFilters } = usePortfolioFilters();
   const [chartType, setChartType] = useState<"line" | "bar">("line");
   const chartId = useId().replace(/:/g, "-");
+  
+  // Create a key based on pathname and filters to ensure chart remounts and animates
+  const chartKey = useMemo(() => {
+    const filterKey = JSON.stringify(filters);
+    return `${pathname}-${filterKey}`;
+  }, [pathname, filters]);
 
   // Year range selection state
   const [startYear, setStartYear] = useState<number | null>(null);
@@ -458,6 +465,7 @@ export function TenYearProjectionChart({
     <div className="space-y-4">
       {/* Chart */}
       <motion.div
+        key={chartKey} // Key ensures remount and animation retrigger on route/filter change
         className="w-full h-[400px] sm:h-[500px] relative"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

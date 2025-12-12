@@ -2,6 +2,7 @@
 
 import { ChevronDown, ChevronUp, Filter, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,6 +42,7 @@ export function GlobalFilterBar({
   integrated = false,
   containerClassName,
 }: GlobalFilterBarProps) {
+  const pathname = usePathname();
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const { filters, setFilter, clearAllFilters, hasActiveFilters } =
     usePortfolioFilters();
@@ -336,9 +338,10 @@ export function GlobalFilterBar({
       </AnimatePresence>
 
       {/* Filter Controls */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isExpanded && (
           <motion.div
+            key={`${pathname}-filters-expanded`} // Key ensures animation retriggers on navigation
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -353,6 +356,7 @@ export function GlobalFilterBar({
             >
               {/* Country Filter */}
               <motion.div
+                key={`${pathname}-country-filter`} // Key ensures animation retriggers
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
@@ -379,6 +383,7 @@ export function GlobalFilterBar({
 
               {/* Formulation Filter */}
               <motion.div
+                key={`${pathname}-formulation-filter`} // Key ensures animation retriggers
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
@@ -405,6 +410,7 @@ export function GlobalFilterBar({
 
               {/* Use Group Filter */}
               <motion.div
+                key={`${pathname}-usegroup-filter`} // Key ensures animation retriggers
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
@@ -432,6 +438,7 @@ export function GlobalFilterBar({
 
               {/* Formulation Status Filter */}
               <motion.div
+                key={`${pathname}-formulation-status-filter`} // Key ensures animation retriggers
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -458,6 +465,7 @@ export function GlobalFilterBar({
 
               {/* Country Status Filter */}
               <motion.div
+                key={`${pathname}-country-status-filter`} // Key ensures animation retriggers
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
