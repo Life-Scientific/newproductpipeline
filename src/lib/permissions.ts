@@ -169,6 +169,7 @@ export const SYSTEM_ROLES = {
   COUNTRY_MANAGER: "Country Manager",
   VIEWER: "Viewer",
   KPI_MANAGER: "KPI Manager",
+  KPI_CONTRIBUTOR: "KPI Contributor",
 } as const;
 
 export type SystemRole = (typeof SYSTEM_ROLES)[keyof typeof SYSTEM_ROLES];

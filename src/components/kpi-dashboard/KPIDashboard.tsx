@@ -15,7 +15,6 @@ import { KPINetworkGraph } from "./KPINetworkGraph";
 import { KPIDashboardView } from "./KPIDashboardView";
 import { KPIEditView } from "./KPIEditView";
 import { HierarchyManager } from "./HierarchyManager";
-import { KPIPermissionManager } from "./KPIPermissionManager";
 import { Settings } from "lucide-react";
 
 interface KPIDashboardProps {
@@ -23,7 +22,7 @@ interface KPIDashboardProps {
   initialData: KPIData;
 }
 
-type ViewMode = "graph" | "dashboard" | "edit" | "hierarchy" | "permissions";
+type ViewMode = "graph" | "dashboard" | "edit" | "hierarchy";
 
 export function KPIDashboard({ users, initialData }: KPIDashboardProps) {
   const [kpiData, setKpiData] = useState<KPIData>(initialData);
@@ -174,15 +173,6 @@ export function KPIDashboard({ users, initialData }: KPIDashboardProps) {
             <Settings className="h-4 w-4 mr-1.5" />
             Hierarchy
           </Button>
-          <Button
-            variant={viewMode === "permissions" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("permissions")}
-            className="h-8"
-          >
-            <Shield className="h-4 w-4 mr-1.5" />
-            Permissions
-          </Button>
         </div>
       </div>
 
@@ -218,7 +208,6 @@ export function KPIDashboard({ users, initialData }: KPIDashboardProps) {
           }}
         />
       )}
-      {viewMode === "permissions" && <KPIPermissionManager />}
     </div>
   );
 }

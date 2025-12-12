@@ -94,6 +94,7 @@ export function usePermissions(
           "KPI Manager",
           "Portfolio Manager",
           "Country Manager",
+          "KPI Contributor",
           "Viewer",
         ];
         const userRoleList = userRoles || ["Viewer"];

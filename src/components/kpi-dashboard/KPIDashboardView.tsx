@@ -245,7 +245,9 @@ export function KPIDashboardView({
           </Card>
         ) : (
           <CardGrid columns={{ mobile: 1, tablet: 1, desktop: 3 }} gap="md">
-            {kpiData.coreDrivers.map((coreDriver) => (
+            {kpiData.coreDrivers
+              .filter((cd) => cd.strategicDrivers.length > 0)
+              .map((coreDriver) => (
             <Card key={coreDriver.id}>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">

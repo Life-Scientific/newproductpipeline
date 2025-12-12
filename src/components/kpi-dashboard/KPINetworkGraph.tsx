@@ -405,7 +405,12 @@ export function KPINetworkGraph({
       data: {},
     });
 
-    kpiData.coreDrivers.forEach((coreDriver) => {
+    // Filter out core drivers with no strategic drivers (empty core drivers)
+    const activeCoreDrivers = kpiData.coreDrivers.filter(
+      (cd) => cd.strategicDrivers.length > 0,
+    );
+
+    activeCoreDrivers.forEach((coreDriver) => {
       nodes.push({
         id: `core-${coreDriver.id}`,
         type: "coreDriver",
