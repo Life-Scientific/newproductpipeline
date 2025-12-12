@@ -187,12 +187,15 @@ export function WorkspaceSwitcher() {
             try {
               // Switch workspace and get the default route
               const defaultRoute = await switchWorkspace(workspace.slug);
-              // Navigate to the default route (first menu item or workspace root)
-              router.push(defaultRoute);
-              // Small delay to ensure workspace context updates before refresh
-              setTimeout(() => {
-                router.refresh();
-              }, 100);
+              // Only navigate if we got a valid default route
+              // If user has no permissions, defaultRoute will be workspace root (e.g., /operations)
+              if (defaultRoute) {
+                router.push(defaultRoute);
+                // Small delay to ensure workspace context updates before refresh
+                setTimeout(() => {
+                  router.refresh();
+                }, 100);
+              }
             } catch (error) {
               console.error("Failed to switch workspace:", error);
             }
