@@ -8,6 +8,15 @@ import { PERMISSIONS } from "@/lib/permissions";
 import type { UserManagementData } from "@/lib/actions/user-management";
 import type { KPIData } from "@/lib/kpi-dashboard/types";
 
+/**
+ * KPI Dashboard Page
+ * 
+ * NOTE: This is currently the only page in the Operations workspace.
+ * As more Operations pages are added, users without kpi.view will still be able
+ * to access the Operations workspace and see other pages they have permission for.
+ * 
+ * See docs/OPERATIONS_WORKSPACE.md for details on the Operations workspace structure.
+ */
 export default async function KPIDashboardPage() {
   // Check if user has permission to view KPIs
   const canViewKPIs = await hasPermission(PERMISSIONS.KPI_VIEW);
