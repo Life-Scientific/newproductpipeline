@@ -13,8 +13,28 @@ export default async function KPIDashboardPage() {
   const canViewKPIs = await hasPermission(PERMISSIONS.KPI_VIEW);
   
   if (!canViewKPIs) {
-    // Redirect to Operations placeholder page instead of home
-    redirect("/operations");
+    // Show placeholder page instead of redirecting (user is already in Operations workspace)
+    return (
+      <PageLayout
+        title="KPI Dashboard"
+        description="Operations-focused KPI dashboard"
+        variant="single"
+      >
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-semibold">Access Restricted</h2>
+            <p className="text-muted-foreground">
+              You don't have permission to view the KPI Dashboard.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Please contact your administrator to request access. You need the{" "}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">kpi.view</code> permission
+              or a KPI Contributor/Manager role.
+            </p>
+          </div>
+        </div>
+      </PageLayout>
+    );
   }
   // Fetch users for owner assignment
   // If this fails (e.g., no permission), we'll use an empty array

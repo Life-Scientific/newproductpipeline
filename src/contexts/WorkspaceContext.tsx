@@ -48,6 +48,8 @@ function getWorkspaceSlugFromPath(pathname: string | null): string | null {
 
 /**
  * Get default route for a workspace (first menu item or workspace root)
+ * IMPORTANT: Menu items are already filtered by can_access_url RLS policy,
+ * so we can safely use the first available item
  */
 function getDefaultRouteForWorkspace(workspace: WorkspaceWithMenuItems | null): string {
   if (!workspace) {
@@ -59,6 +61,8 @@ function getDefaultRouteForWorkspace(workspace: WorkspaceWithMenuItems | null): 
   }
   
   // Find first menu item in "Overview" group, or first item overall
+  // Note: menu_items are already filtered by RLS (can_access_url), so
+  // only items the user can access will be here
   const overviewItem = workspace.menu_items.find(
     (item) => item.group_name === "Overview" && item.is_active
   );
@@ -174,6 +178,10 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         if (typeof window !== "undefined") {
           localStorage.setItem("current_workspace", workspaceData.slug);
         }
+        
+        // IMPORTANT: Do NOT navigate here - let the current page handle routing
+        // Navigation should only happen when explicitly switching workspaces via WorkspaceSwitcher
+        // This prevents redirect loops when users are on valid pages (like /operations placeholder)
       } else {
         console.error("Could not load any workspace - all fallbacks failed");
       }
@@ -258,13 +266,15 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       // This is just for syncing the sidebar/context - it should NOT redirect
       if (pathSlug && currentWorkspaceRef.current?.slug !== pathSlug) {
         // Load the workspace but don't navigate - the user is already on the correct page
+        // Use skipPathnameCheck=true to prevent any navigation logic
         loadWorkspace(pathSlug, true).catch((error) => {
           console.error("Failed to sync workspace from pathname:", error);
           // Don't fallback or redirect - let the current page handle it
         });
       }
     }
-  }, [pathname, isInitialLoad, isLoading, loadWorkspace]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]); // Only depend on pathname - don't include loadWorkspace to avoid loops
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(
