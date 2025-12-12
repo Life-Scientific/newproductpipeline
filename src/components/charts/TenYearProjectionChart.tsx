@@ -75,11 +75,19 @@ export function TenYearProjectionChart({
   const [chartType, setChartType] = useState<"line" | "bar">("line");
   const chartId = useId().replace(/:/g, "-");
   
-  // Create a key based on pathname and filters to ensure chart remounts and animates
+  // Track navigation to force chart remount and animation
+  const [mountKey, setMountKey] = useState(0);
+  
+  // Force remount when pathname changes (even if data is the same)
+  useEffect(() => {
+    setMountKey((prev) => prev + 1);
+  }, [pathname]);
+  
+  // Create a key based on pathname, filters, and mount counter to ensure chart remounts and animates
   const chartKey = useMemo(() => {
     const filterKey = JSON.stringify(filters);
-    return `${pathname}-${filterKey}`;
-  }, [pathname, filters]);
+    return `${pathname}-${filterKey}-${mountKey}`;
+  }, [pathname, filters, mountKey]);
 
   // Year range selection state
   const [startYear, setStartYear] = useState<number | null>(null);
@@ -462,10 +470,9 @@ export function TenYearProjectionChart({
   );
 
   const chartContent = (
-    <div className="space-y-4">
+    <div className="space-y-4" key={chartKey}>
       {/* Chart */}
       <motion.div
-        key={chartKey} // Key ensures remount and animation retrigger on route/filter change
         className="w-full h-[400px] sm:h-[500px] relative"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -481,9 +488,10 @@ export function TenYearProjectionChart({
             className="w-full h-full"
           >
             {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minHeight={400}>
+              <ResponsiveContainer width="100%" height="100%" minHeight={400} key={chartKey}>
                 {chartType === "line" ? (
                   <AreaChart
+                    key={`${chartKey}-area`} // Key ensures chart remounts for animation
                     data={chartData}
                     onClick={(data: any) => {
                       if (data?.activePayload?.[0]?.payload?.fiscalYear) {
@@ -494,7 +502,6 @@ export function TenYearProjectionChart({
                     }}
                     style={{ cursor: "pointer" }}
                     margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
-                    // Animation props removed - not supported in this chart type
                   >
                     <defs>
                       {/* Revenue gradient using theme color */}
@@ -716,6 +723,7 @@ export function TenYearProjectionChart({
                   </AreaChart>
                 ) : (
                   <BarChart
+                    key={`${chartKey}-bar`} // Key ensures chart remounts for animation
                     data={chartData}
                     onClick={(data: any) => {
                       if (data?.activePayload?.[0]?.payload?.fiscalYear) {
@@ -726,7 +734,6 @@ export function TenYearProjectionChart({
                     }}
                     style={{ cursor: "pointer" }}
                     margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
-                    // Animation props removed - not supported in this chart type
                   >
                     <CartesianGrid
                       strokeDasharray="3 3"
