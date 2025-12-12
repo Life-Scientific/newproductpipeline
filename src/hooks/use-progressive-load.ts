@@ -25,6 +25,7 @@ export function useProgressiveLoad<T>(
   
   const abortControllerRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
+  const hasStartedLoadingRef = useRef(false);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -36,16 +37,6 @@ export function useProgressiveLoad<T>(
       }
     };
   }, []);
-
-  // Initialize with server-provided data and start background loading if needed
-  useEffect(() => {
-    setData(initialData);
-    
-    // Start background loading if there's more data
-    if (initialHasMore && initialData.length > 0) {
-      loadRemaining(initialData.length);
-    }
-  }, [initialData, initialHasMore]);
 
   const loadRemaining = useCallback(async (offset: number) => {
     // Cancel any existing background load
@@ -79,6 +70,17 @@ export function useProgressiveLoad<T>(
       setIsBackgroundLoading(false);
     }
   }, [fetchRemaining, onProgress, initialTotalCount]);
+
+  // Initialize with server-provided data and start background loading if needed
+  useEffect(() => {
+    setData(initialData);
+    
+    // Start background loading if there's more data (only once)
+    if (initialHasMore && initialData.length > 0 && !hasStartedLoadingRef.current) {
+      hasStartedLoadingRef.current = true;
+      loadRemaining(initialData.length);
+    }
+  }, [initialData, initialHasMore, loadRemaining]);
 
   return {
     data,
