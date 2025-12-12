@@ -119,17 +119,32 @@ export async function getWorkspaceWithMenuBySlug(
     );
     
     if (permError) {
-      console.warn("Failed to check permissions:", permError);
-      // Fallback: return empty menu items if permission check fails
-      return { ...workspace, menu_items: [] } as WorkspaceWithMenuItems;
+      // FALLBACK: If batch function doesn't exist or fails, use individual checks
+      // This handles the case where migration hasn't been applied yet
+      console.warn("Batch permission check failed, falling back to individual checks:", permError);
+      
+      const individualChecks = await Promise.all(
+        activeMenuItems.map(async (item) => {
+          const { data: canAccess } = await supabase.rpc("can_access_url", {
+            p_url: item.url,
+          });
+          return { url: item.url, canAccess: canAccess !== false };
+        })
+      );
+      
+      accessibleUrls = new Set(
+        individualChecks
+          .filter(({ canAccess }) => canAccess)
+          .map(({ url }) => url)
+      );
+    } else {
+      // Batch check succeeded - create set of accessible URLs
+      accessibleUrls = new Set(
+        permissionResults
+          ?.filter((r: { can_access: boolean }) => r.can_access)
+          .map((r: { url: string }) => r.url) || []
+      );
     }
-    
-    // Create set of accessible URLs
-    accessibleUrls = new Set(
-      permissionResults
-        ?.filter((r: { can_access: boolean }) => r.can_access)
-        .map((r: { url: string }) => r.url) || []
-    );
   } else {
     accessibleUrls = new Set();
   }

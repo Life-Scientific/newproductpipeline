@@ -302,7 +302,7 @@ export function AppSidebar() {
     // Create a stable key from menu item IDs and their order
     return menuItems.map(item => `${item.menu_item_id}-${item.display_order}`).join('|');
   }, [menuItems]);
-  
+
   // Get menu items from database (respects is_active flag)
   const menuGroups = useMemo(() => {
     if (!workspaceWithMenu || !menuItems || menuItems.length === 0) return [];
