@@ -925,7 +925,7 @@ async function enrichBusinessCases(
  * For chart aggregations, use getBusinessCaseSummaryByFiscalYear instead
  */
 export async function getBusinessCases() {
-  const supabase = createCachedClient();
+  const supabase = await createClient();
 
   // Supabase has a default limit of 10k rows - we need to fetch all
   // First get total count, then fetch in batches if needed
