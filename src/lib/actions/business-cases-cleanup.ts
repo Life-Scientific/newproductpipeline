@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { withUserContext } from "@/lib/supabase/user-context";
 import { hasPermission } from "./user-management";
 import { PERMISSIONS } from "@/lib/permissions";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 interface DuplicateRecord {
   business_case_id: string;
@@ -274,8 +274,7 @@ export async function fixDuplicateActiveBusinessCases(): Promise<{
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
-  revalidateTag("business-cases", "page");
-  revalidateTag("formulations", "page");
+  // No cache to invalidate - direct database queries
 
   return result;
 }

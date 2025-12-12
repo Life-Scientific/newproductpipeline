@@ -1,7 +1,6 @@
-import { createClient, createCachedClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
-import { unstable_cache } from "next/cache";
 
 // Re-export types from types.ts
 export type {
@@ -87,9 +86,8 @@ import type {
   BusinessCaseYearData,
 } from "./types";
 
-export const getFormulations = unstable_cache(
-  async () => {
-    const supabase = createCachedClient();
+export async function getFormulations() {
+  const supabase = await createClient();
 
     // Supabase limit is 10k rows - fetch all with pagination if needed
     const { count } = await supabase
@@ -118,10 +116,7 @@ export const getFormulations = unstable_cache(
     }
 
     return allData as Formulation[];
-  },
-  ["formulations"],
-  { tags: ["formulations"] },
-);
+}
 
 // =============================================================================
 // Dashboard Optimization Queries
@@ -148,9 +143,8 @@ export interface DashboardSummary {
   active_portfolio_count: number;
 }
 
-export const getDashboardSummary = unstable_cache(
-  async (): Promise<DashboardSummary | null> => {
-    const supabase = createCachedClient();
+export async function getDashboardSummary(): Promise<DashboardSummary | null> {
+  const supabase = await createClient();
 
     const { data, error } = await supabase
       .from("vw_dashboard_summary")
@@ -163,10 +157,7 @@ export const getDashboardSummary = unstable_cache(
     }
 
     return data as DashboardSummary;
-  },
-  ["dashboard-summary"],
-  { tags: ["formulations", "business-cases"], revalidate: 60 },
-);
+}
 
 /**
  * Chart data aggregated by fiscal year and country.
@@ -188,9 +179,8 @@ export interface ChartDataByYear {
   total_margin_eur: number;
 }
 
-export const getChartDataByYear = unstable_cache(
-  async (): Promise<ChartDataByYear[]> => {
-    const supabase = createCachedClient();
+export async function getChartDataByYear(): Promise<ChartDataByYear[]> {
+  const supabase = await createClient();
 
     const { data, error } = await supabase
       .from("vw_chart_data_by_year")
@@ -203,10 +193,7 @@ export const getChartDataByYear = unstable_cache(
     }
 
     return (data || []) as ChartDataByYear[];
-  },
-  ["chart-data-by-year"],
-  { tags: ["business-cases"], revalidate: 60 },
-);
+}
 
 /**
  * Simple yearly totals for basic charts.
@@ -222,9 +209,8 @@ export interface ChartYearlyTotals {
   country_count: number;
 }
 
-export const getChartYearlyTotals = unstable_cache(
-  async (): Promise<ChartYearlyTotals[]> => {
-    const supabase = createCachedClient();
+export async function getChartYearlyTotals(): Promise<ChartYearlyTotals[]> {
+  const supabase = await createClient();
 
     const { data, error } = await supabase
       .from("vw_chart_data_totals_by_year")
@@ -237,10 +223,7 @@ export const getChartYearlyTotals = unstable_cache(
     }
 
     return (data || []) as ChartYearlyTotals[];
-  },
-  ["chart-yearly-totals"],
-  { tags: ["business-cases"], revalidate: 60 },
-);
+}
 
 // =============================================================================
 // End Dashboard Optimization Queries
@@ -266,7 +249,7 @@ export async function getBlacklistedFormulations() {
 
 // Helper function to fetch all rows from a view/table with pagination
 async function fetchAllPaginatedFromView<T>(
-  supabase: ReturnType<typeof createCachedClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   viewName: string,
   selectQuery: string,
   orderBy?: { column: string; ascending: boolean },
@@ -305,9 +288,8 @@ async function fetchAllPaginatedFromView<T>(
   return allData;
 }
 
-export const getFormulationsWithNestedData = unstable_cache(
-  async (): Promise<FormulationWithNestedData[]> => {
-    const supabase = createCachedClient();
+export async function getFormulationsWithNestedData(): Promise<FormulationWithNestedData[]> {
+  const supabase = await createClient();
 
     // Get formulations with pagination (Supabase default limit is 10k)
     const formulations = await fetchAllPaginatedFromView<Formulation>(
@@ -632,10 +614,7 @@ export const getFormulationsWithNestedData = unstable_cache(
         targets_list: Array.from(agg.targets).join(", ") || "—",
       } as FormulationWithNestedData;
     });
-  },
-  ["formulations", "nested-data"],
-  { tags: ["formulations"] },
-);
+}
 
 export async function getFormulationById(id: string) {
   const supabase = await createClient();
@@ -755,7 +734,7 @@ async function enrichBusinessCases(
     return [];
   }
 
-  const supabase = createCachedClient();
+  const supabase = await createClient();
 
   // Get unique business_case_ids
   const businessCaseIds = [
@@ -1000,7 +979,7 @@ export async function getBusinessCases() {
  * NOT cached - data is too large (>2MB) for Next.js cache limits
  */
 export async function getBusinessCasesForChart() {
-  const supabase = createCachedClient();
+  const supabase = await createClient();
 
   const { count } = await supabase
     .from("vw_business_case")
@@ -1494,9 +1473,8 @@ function getEffectiveStartYearFromStored(
 /**
  * Get business cases grouped by business_case_group_id for projection table display
  */
-export const getBusinessCasesForProjectionTable = unstable_cache(
-  async (): Promise<BusinessCaseGroupData[]> => {
-    const supabase = createCachedClient();
+export async function getBusinessCasesForProjectionTable(): Promise<BusinessCaseGroupData[]> {
+  const supabase = await createClient();
 
     // Supabase has a default limit - we need to fetch all rows with pagination
     // First get total count
@@ -1740,10 +1718,7 @@ export const getBusinessCasesForProjectionTable = unstable_cache(
     });
 
     return Array.from(deduplicatedGroups.values());
-  },
-  ["business-cases-projection"],
-  { tags: ["business-cases"] },
-);
+}
 
 /**
  * Get all 10 years of data for a specific business case group

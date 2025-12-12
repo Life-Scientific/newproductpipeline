@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import type {
   Workspace,
@@ -210,7 +210,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
    * Switch to a different workspace - single optimized query
    * Returns the default route for the workspace
    */
-  const switchWorkspace = async (slug: string): Promise<string> => {
+  const switchWorkspace = useCallback(async (slug: string): Promise<string> => {
     setIsLoading(true);
     try {
       const workspaceData = await getWorkspaceWithMenuBySlug(slug);
@@ -231,15 +231,15 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const refreshWorkspace = async () => {
-    if (currentWorkspace) {
-      await loadWorkspace(currentWorkspace.slug);
+  const refreshWorkspace = useCallback(async () => {
+    if (currentWorkspaceRef.current) {
+      await loadWorkspace(currentWorkspaceRef.current.slug);
     } else {
       await loadWorkspace();
     }
-  };
+  }, [loadWorkspace]);
 
   // Load workspace on mount (initial load)
   useEffect(() => {
@@ -266,16 +266,20 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, isInitialLoad, isLoading, loadWorkspace]);
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      currentWorkspace,
+      workspaceWithMenu,
+      isLoading,
+      switchWorkspace,
+      refreshWorkspace,
+    }),
+    [currentWorkspace, workspaceWithMenu, isLoading, switchWorkspace, refreshWorkspace],
+  );
+
   return (
-    <WorkspaceContext.Provider
-      value={{
-        currentWorkspace,
-        workspaceWithMenu,
-        isLoading,
-        switchWorkspace,
-        refreshWorkspace,
-      }}
-    >
+    <WorkspaceContext.Provider value={contextValue}>
       {children}
     </WorkspaceContext.Provider>
   );

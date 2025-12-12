@@ -1,26 +1,17 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 /**
- * Revalidate all cached data in the application.
- * This clears all unstable_cache entries and revalidates key routes.
- * Use this when you need to force a complete data refresh.
+ * Revalidate routes to refresh server components.
+ * No cache to invalidate - we use direct database queries.
  */
 export async function revalidateAllCaches(): Promise<{
   success: boolean;
   message: string;
 }> {
   try {
-    // Invalidate all cache tags used by unstable_cache
-    // Next.js 16 requires second parameter - using "page" type
-    revalidateTag("business-cases", "page");
-    revalidateTag("formulations", "page");
-    revalidateTag("dashboard-summary", "page");
-    revalidateTag("chart-data-by-year", "page");
-    revalidateTag("chart-yearly-totals", "page");
-
-    // Revalidate key routes
+    // Revalidate key routes to refresh server components
     revalidatePath("/portfolio", "layout");
     revalidatePath("/portfolio/business-cases");
     revalidatePath("/portfolio/analytics");
@@ -30,14 +21,14 @@ export async function revalidateAllCaches(): Promise<{
 
     return {
       success: true,
-      message: "All caches invalidated. Data will refresh on next load.",
+      message: "Routes refreshed. Data will reload on next navigation.",
     };
   } catch (error) {
-    console.error("Failed to revalidate caches:", error);
+    console.error("Failed to revalidate routes:", error);
     return {
       success: false,
       message:
-        error instanceof Error ? error.message : "Failed to revalidate caches",
+        error instanceof Error ? error.message : "Failed to revalidate routes",
     };
   }
 }
