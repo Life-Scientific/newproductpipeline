@@ -237,101 +237,136 @@ export function GlobalFilterBar({
             className="flex flex-wrap gap-2 mb-4 pb-4"
           >
             {filters.countries.length > 0 && (
-              <Badge
-                variant="secondary"
-                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              <motion.div
+                key={`${pathname}-country-badge`}
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.05 }}
               >
-                <span className="font-semibold">
-                  {filters.countries.length}
-                </span>
-                <span>
-                  Country{filters.countries.length !== 1 ? "ies" : ""}
-                </span>
-                <button
-                  onClick={() => setFilter("countries", [])}
-                  className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                <Badge
+                  variant="secondary"
+                  className="text-xs font-medium gap-1.5 px-2.5 py-1"
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
+                  <span className="font-semibold">
+                    {filters.countries.length}
+                  </span>
+                  <span>
+                    Country{filters.countries.length !== 1 ? "ies" : ""}
+                  </span>
+                  <button
+                    onClick={() => setFilter("countries", [])}
+                    className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              </motion.div>
             )}
             {filters.formulations.length > 0 && (
-              <Badge
-                variant="secondary"
-                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              <motion.div
+                key={`${pathname}-formulation-badge`}
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
               >
-                <span className="font-semibold">
-                  {filters.formulations.length}
-                </span>
-                <span>
-                  Formulation{filters.formulations.length !== 1 ? "s" : ""}
-                </span>
-                <button
-                  onClick={() => setFilter("formulations", [])}
-                  className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                <Badge
+                  variant="secondary"
+                  className="text-xs font-medium gap-1.5 px-2.5 py-1"
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
+                  <span className="font-semibold">
+                    {filters.formulations.length}
+                  </span>
+                  <span>
+                    Formulation{filters.formulations.length !== 1 ? "s" : ""}
+                  </span>
+                  <button
+                    onClick={() => setFilter("formulations", [])}
+                    className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              </motion.div>
             )}
             {filters.useGroups.length > 0 && (
-              <Badge
-                variant="secondary"
-                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              <motion.div
+                key={`${pathname}-usegroup-badge`}
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.15 }}
               >
-                <span className="font-semibold">
-                  {filters.useGroups.length}
-                </span>
-                <span>
-                  Use Group{filters.useGroups.length !== 1 ? "s" : ""}
-                </span>
-                <button
-                  onClick={() => setFilter("useGroups", [])}
-                  className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                <Badge
+                  variant="secondary"
+                  className="text-xs font-medium gap-1.5 px-2.5 py-1"
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
+                  <span className="font-semibold">
+                    {filters.useGroups.length}
+                  </span>
+                  <span>
+                    Use Group{filters.useGroups.length !== 1 ? "s" : ""}
+                  </span>
+                  <button
+                    onClick={() => setFilter("useGroups", [])}
+                    className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              </motion.div>
             )}
             {filters.formulationStatuses.length > 0 && (
-              <Badge
-                variant="secondary"
-                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              <motion.div
+                key={`${pathname}-formulation-status-badge`}
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.2 }}
               >
-                <span className="font-semibold">
-                  {filters.formulationStatuses.length}
-                </span>
-                <span>
-                  Form Status
-                  {filters.formulationStatuses.length !== 1 ? "es" : ""}
-                </span>
-                <button
-                  onClick={() => setFilter("formulationStatuses", [])}
-                  className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                <Badge
+                  variant="secondary"
+                  className="text-xs font-medium gap-1.5 px-2.5 py-1"
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
+                  <span className="font-semibold">
+                    {filters.formulationStatuses.length}
+                  </span>
+                  <span>
+                    Form Status
+                    {filters.formulationStatuses.length !== 1 ? "es" : ""}
+                  </span>
+                  <button
+                    onClick={() => setFilter("formulationStatuses", [])}
+                    className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              </motion.div>
             )}
             {filters.countryStatuses.length > 0 && (
-              <Badge
-                variant="secondary"
-                className="text-xs font-medium gap-1.5 px-2.5 py-1"
+              <motion.div
+                key={`${pathname}-country-status-badge`}
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.25 }}
               >
-                <span className="font-semibold">
-                  {filters.countryStatuses.length}
-                </span>
-                <span>
-                  Country Status
-                  {filters.countryStatuses.length !== 1 ? "es" : ""}
-                </span>
-                <button
-                  onClick={() => setFilter("countryStatuses", [])}
-                  className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                <Badge
+                  variant="secondary"
+                  className="text-xs font-medium gap-1.5 px-2.5 py-1"
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
+                  <span className="font-semibold">
+                    {filters.countryStatuses.length}
+                  </span>
+                  <span>
+                    Country Status
+                    {filters.countryStatuses.length !== 1 ? "es" : ""}
+                  </span>
+                  <button
+                    onClick={() => setFilter("countryStatuses", [])}
+                    className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              </motion.div>
             )}
           </motion.div>
         )}

@@ -12,38 +12,48 @@ import { BusinessCasesPageClient } from "./BusinessCasesPageClient";
 export const dynamic = "force-dynamic";
 
 export default async function BusinessCasesPage() {
-  // Fetch business cases, formulations, countries, and formulation-countries in parallel
-  const [businessCases, formulations, countries, formulationCountriesData] =
-    await Promise.all([
-      getBusinessCasesForProjectionTable(),
-      getFormulations(), // Reference data for filter lookups
-      getCountries(), // Reference data for filter lookups
-      getFormulationCountries(), // For accurate filter counts
-    ]);
-
-  // Also fetch formulation-country data for country status lookup (with pagination)
-  // This is still needed for enriching business cases with country_status
   const supabase = await createClient();
-  let formulationCountriesRaw: any[] = [];
-  let page = 0;
-  const pageSize = 10000;
-  let hasMore = true;
+  
+  // OPTIMIZATION: Fetch all data in parallel, including formulation_country status lookup
+  // This eliminates the sequential loop that was causing slowness
+  const fetchFormulationCountryStatuses = async () => {
+    let allStatuses: any[] = [];
+    let page = 0;
+    const pageSize = 10000;
+    let hasMore = true;
 
-  while (hasMore) {
-    const { data: pageData } = await supabase
-      .from("formulation_country")
-      .select("formulation_id, country_id, country_status")
-      .eq("is_active", true)
-      .range(page * pageSize, (page + 1) * pageSize - 1);
+    while (hasMore) {
+      const { data: pageData } = await supabase
+        .from("formulation_country")
+        .select("formulation_id, country_id, country_status")
+        .eq("is_active", true)
+        .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    if (!pageData || pageData.length === 0) {
-      hasMore = false;
-    } else {
-      formulationCountriesRaw = [...formulationCountriesRaw, ...pageData];
-      hasMore = pageData.length === pageSize;
-      page++;
+      if (!pageData || pageData.length === 0) {
+        hasMore = false;
+      } else {
+        allStatuses = [...allStatuses, ...pageData];
+        hasMore = pageData.length === pageSize;
+        page++;
+      }
     }
-  }
+    return allStatuses;
+  };
+
+  // Fetch everything in parallel - this is much faster than sequential
+  const [
+    businessCases,
+    formulations,
+    countries,
+    formulationCountriesData,
+    formulationCountriesRaw,
+  ] = await Promise.all([
+    getBusinessCasesForProjectionTable(),
+    getFormulations(), // Reference data for filter lookups
+    getCountries(), // Reference data for filter lookups
+    getFormulationCountries(), // For accurate filter counts
+    fetchFormulationCountryStatuses(), // Country status lookup - now parallel!
+  ]);
 
   // Build status lookup maps
   const formulationStatuses = new Map<string, string>();
