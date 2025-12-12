@@ -257,24 +257,33 @@ export function AppSidebar() {
   useForesightInit();
 
   useEffect(() => {
+    let mounted = true;
+    
     // Get initial user state from session (no network request)
     // We use getSession() instead of getUser() to avoid redundant auth calls
     // The middleware already validates auth on every request
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      if (mounted) {
+        setUser(session?.user ?? null);
+      }
     });
 
     // Listen for auth state changes - this handles login/logout reactively
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      if (mounted) {
+        setUser(session?.user ?? null);
+      }
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase]);
+    // supabase is a singleton from useSupabase() - it never changes, so we don't need it in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
