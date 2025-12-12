@@ -11,6 +11,14 @@ Shareholder Value
           └── Key Results (Level 3)
 ```
 
+## Operations Workspace
+
+**Note**: The Operations workspace currently contains only the KPI Dashboard, but it is designed to accommodate additional operational tools and dashboards in the future.
+
+- **Current State**: Only users with `kpi.view` permission (KPI Contributors, KPI Managers, Admins) can access Operations content
+- **Future State**: As more pages are added to Operations, they will have their own permission requirements. Users without KPI permissions will be able to access Operations workspace but will only see pages they have permission for
+- **Placeholder Behavior**: Users without permission see a placeholder page explaining they need access, rather than being redirected away from the workspace
+
 ## Current Structure
 
 ### Core Drivers (Top Level)

@@ -260,18 +260,27 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   // Only run after initial load to avoid conflicts
   // IMPORTANT: This should NOT cause navigation - it only updates the workspace context
   useEffect(() => {
-    if (!isInitialLoad && pathname && typeof window !== "undefined" && !isLoading && !loadingRef.current) {
-      const pathSlug = getWorkspaceSlugFromPath(pathname);
-      // Only reload if we detect a different workspace and we're not already loading
-      // This is just for syncing the sidebar/context - it should NOT redirect
-      if (pathSlug && currentWorkspaceRef.current?.slug !== pathSlug) {
-        // Load the workspace but don't navigate - the user is already on the correct page
-        // Use skipPathnameCheck=true to prevent any navigation logic
-        loadWorkspace(pathSlug, true).catch((error) => {
-          console.error("Failed to sync workspace from pathname:", error);
-          // Don't fallback or redirect - let the current page handle it
-        });
-      }
+    // Skip if still initializing or already loading
+    if (isInitialLoad || isLoading || loadingRef.current) {
+      return;
+    }
+    
+    // Skip if no pathname (shouldn't happen, but safety check)
+    if (!pathname || typeof window === "undefined") {
+      return;
+    }
+    
+    const pathSlug = getWorkspaceSlugFromPath(pathname);
+    
+    // Only reload if we detect a different workspace
+    // This is just for syncing the sidebar/context - it should NOT redirect
+    if (pathSlug && currentWorkspaceRef.current?.slug !== pathSlug) {
+      // Load the workspace but don't navigate - the user is already on the correct page
+      // Use skipPathnameCheck=true to prevent any navigation logic
+      loadWorkspace(pathSlug, true).catch((error) => {
+        console.error("Failed to sync workspace from pathname:", error);
+        // Don't fallback or redirect - let the current page handle it
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]); // Only depend on pathname - don't include loadWorkspace to avoid loops
