@@ -48,10 +48,12 @@ export function WorkspaceSettings() {
     setIsSaving(true);
     try {
       await setUserDefaultWorkspace(workspaceId);
-      await switchWorkspace(
-        workspaces.find((w) => w.workspace_id === workspaceId)?.slug ||
-          "portfolio",
-      );
+      const workspace = workspaces.find((w) => w.workspace_id === workspaceId);
+      if (workspace) {
+        const defaultRoute = await switchWorkspace(workspace.slug);
+        // Navigate to the default route for this workspace
+        window.location.href = defaultRoute;
+      }
       toast({
         title: "Success",
         description: "Default workspace updated",

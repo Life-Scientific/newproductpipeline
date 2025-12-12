@@ -184,9 +184,18 @@ export function WorkspaceSwitcher() {
             currentWorkspace?.workspace_id === workspace.workspace_id;
 
           const handleSwitch = async () => {
-            await switchWorkspace(workspace.slug);
-            // Navigate to the workspace root
-            router.push(`/${workspace.slug}`);
+            try {
+              // Switch workspace and get the default route
+              const defaultRoute = await switchWorkspace(workspace.slug);
+              // Navigate to the default route (first menu item or workspace root)
+              router.push(defaultRoute);
+              // Small delay to ensure workspace context updates before refresh
+              setTimeout(() => {
+                router.refresh();
+              }, 100);
+            } catch (error) {
+              console.error("Failed to switch workspace:", error);
+            }
           };
 
           return (

@@ -77,6 +77,15 @@ export const PERMISSIONS = {
   // Settings
   SETTINGS_VIEW: "settings.view",
   SETTINGS_EDIT: "settings.edit",
+
+  // KPI Dashboard
+  KPI_VIEW: "kpi.view",
+  KPI_CREATE: "kpi.create",
+  KPI_EDIT: "kpi.edit",
+  KPI_DELETE: "kpi.delete",
+  KPI_MANAGE_HIERARCHY: "kpi.manage_hierarchy",
+  KPI_LOCK: "kpi.lock",
+  KPI_VIEW_AUDIT: "kpi.view_audit",
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -138,6 +147,15 @@ export const PERMISSION_CATEGORIES = {
   ],
   Analytics: [PERMISSIONS.ANALYTICS_VIEW, PERMISSIONS.ANALYTICS_EXPORT],
   Settings: [PERMISSIONS.SETTINGS_VIEW, PERMISSIONS.SETTINGS_EDIT],
+  KPIs: [
+    PERMISSIONS.KPI_VIEW,
+    PERMISSIONS.KPI_CREATE,
+    PERMISSIONS.KPI_EDIT,
+    PERMISSIONS.KPI_DELETE,
+    PERMISSIONS.KPI_MANAGE_HIERARCHY,
+    PERMISSIONS.KPI_LOCK,
+    PERMISSIONS.KPI_VIEW_AUDIT,
+  ],
 } as const;
 
 // ============================================================================
@@ -150,6 +168,8 @@ export const SYSTEM_ROLES = {
   PORTFOLIO_MANAGER: "Portfolio Manager",
   COUNTRY_MANAGER: "Country Manager",
   VIEWER: "Viewer",
+  KPI_MANAGER: "KPI Manager",
+  KPI_CONTRIBUTOR: "KPI Contributor",
 } as const;
 
 export type SystemRole = (typeof SYSTEM_ROLES)[keyof typeof SYSTEM_ROLES];
@@ -335,4 +355,13 @@ export interface PermissionContextType {
   // Settings
   canViewSettings: boolean;
   canEditSettings: boolean;
+
+  // KPI Dashboard
+  canViewKPIs: boolean;
+  canCreateKPIs: boolean;
+  canEditKPIs: boolean;
+  canDeleteKPIs: boolean;
+  canManageKPIHierarchy: boolean;
+  canLockKPIs: boolean;
+  canViewKPIAudit: boolean;
 }

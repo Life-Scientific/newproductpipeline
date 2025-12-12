@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -12,15 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { CardGrid } from "@/components/layout/CardGrid";
 import { OwnerSelector } from "./OwnerSelector";
+import { OwnerDisplay } from "./OwnerDisplay";
+import { KeyResultCreateModal } from "./KeyResultCreateModal";
+import { usePermissions } from "@/hooks/use-permissions";
+import { useSupabase } from "@/hooks/use-supabase";
+import { Plus } from "lucide-react";
 import type { UserManagementData } from "@/lib/actions/user-management";
 import type {
   KPIData,
@@ -28,8 +27,8 @@ import type {
   StrategicDriver,
   KeyResult,
   StatusColor,
-} from "@/lib/kpi-dashboard/mock-data";
-import { Lock, Unlock, Clock, TrendingUp } from "lucide-react";
+} from "@/lib/kpi-dashboard/types";
+import { Lock, Unlock, TrendingUp, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface KPIEditViewProps {
@@ -71,69 +70,217 @@ export function KPIEditView({
   users,
   onUpdateKeyResult,
 }: KPIEditViewProps) {
+  const supabase = useSupabase();
+  const { canCreateKPIs } = usePermissions();
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [selectedStrategicDriver, setSelectedStrategicDriver] = useState<{
+    strategicDriver: StrategicDriver;
+    coreDriverId: string;
+  } | null>(null);
+
+  useEffect(() => {
+    async function getCurrentUser() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setCurrentUserId(session?.user?.id || null);
+    }
+    getCurrentUser();
+  }, [supabase]);
+
+  const getUserName = (ownerId: string | null) => {
+    if (!ownerId) return null;
+    const user = users.find((u) => u.id === ownerId);
+    return user?.email?.split("@")[0] || null;
+  };
+
+  const getUserEmail = (ownerId: string | null) => {
+    if (!ownerId) return null;
+    const user = users.find((u) => u.id === ownerId);
+    return user?.email || null;
+  };
+
+  // Collect all KPIs assigned to current user
+  const myKPIs: Array<{
+    keyResult: KeyResult;
+    coreDriverId: string;
+    coreDriverLabel: string;
+    strategicDriverId: string;
+    strategicDriverLabel: string;
+  }> = [];
+
+  if (currentUserId) {
+    kpiData.coreDrivers.forEach((cd) => {
+      cd.strategicDrivers.forEach((sd) => {
+        sd.keyResults.forEach((kr) => {
+          if (kr.ownerId === currentUserId) {
+            myKPIs.push({
+              keyResult: kr,
+              coreDriverId: cd.id,
+              coreDriverLabel: cd.label,
+              strategicDriverId: sd.id,
+              strategicDriverLabel: sd.label,
+            });
+          }
+        });
+      });
+    });
+  }
+
   return (
-    <div className="space-y-4">
-      {kpiData.coreDrivers.map((coreDriver) => (
-        <Card key={coreDriver.id}>
-          <CardHeader className="py-3 px-4">
+    <div className="space-y-6">
+      {/* My KPIs Section */}
+      {currentUserId && myKPIs.length > 0 && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <div className="bg-primary/10 p-1.5 rounded">
-                <TrendingUp className="h-4 w-4 text-primary" />
+              <div className="bg-primary/10 p-1.5 rounded-md">
+                <User className="h-4 w-4 text-primary" />
               </div>
-              <div>
-                <CardTitle className="text-base">{coreDriver.label}</CardTitle>
-                <p className="text-xs text-muted-foreground">{coreDriver.target}</p>
-              </div>
+              <CardTitle className="text-base">My KPIs</CardTitle>
+              <Badge variant="secondary" className="ml-auto">
+                {myKPIs.length}
+              </Badge>
             </div>
           </CardHeader>
-          <CardContent className="px-4 pb-4 pt-0">
-            {coreDriver.strategicDrivers.map((sd) => (
-              <div key={sd.id} className="mb-4 last:mb-0">
-                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide py-2 border-b bg-muted/30 px-2 -mx-2 rounded-t">
-                  {sd.label}
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {myKPIs.map((item) => (
+                <KeyResultCard
+                  key={item.keyResult.id}
+                  keyResult={item.keyResult}
+                  users={users}
+                  ownerName={getUserName(item.keyResult.ownerId)}
+                  ownerEmail={getUserEmail(item.keyResult.ownerId)}
+                  coreDriverLabel={item.coreDriverLabel}
+                  strategicDriverLabel={item.strategicDriverLabel}
+                  onUpdate={(updated) =>
+                    onUpdateKeyResult(
+                      item.coreDriverId,
+                      item.strategicDriverId,
+                      item.keyResult.id,
+                      updated,
+                    )
+                  }
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* All KPIs by Core Driver */}
+      {kpiData.coreDrivers.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              No KPIs yet. Create core drivers and strategic drivers to get started.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <CardGrid columns={{ mobile: 1, tablet: 1, desktop: 3 }} gap="md">
+          {kpiData.coreDrivers
+            .filter((cd) => cd.strategicDrivers.length > 0)
+            .map((coreDriver) => (
+          <Card key={coreDriver.id}>
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="bg-primary/10 p-1.5 rounded-md">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">{coreDriver.label}</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {coreDriver.target}
+                    </p>
+                  </div>
                 </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="w-[30px] px-1"></TableHead>
-                      <TableHead className="text-xs">KPI</TableHead>
-                      <TableHead className="text-xs w-[100px]">Status</TableHead>
-                      <TableHead className="text-xs w-[80px]">Target</TableHead>
-                      <TableHead className="text-xs w-[80px]">Current</TableHead>
-                      <TableHead className="text-xs w-[140px]">Owner</TableHead>
-                      <TableHead className="text-xs w-[50px]">Updated</TableHead>
-                      <TableHead className="w-[30px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {coreDriver.strategicDrivers.map((sd) => (
+                <div key={sd.id}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {sd.label}
+                    </div>
+                    {canCreateKPIs && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-2 text-xs"
+                        onClick={() => {
+                          setSelectedStrategicDriver({
+                            strategicDriver: sd,
+                            coreDriverId: coreDriver.id,
+                          });
+                          setCreateModalOpen(true);
+                        }}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add
+                      </Button>
+                    )}
+                  </div>
+                  <div className="space-y-2">
                     {sd.keyResults.map((kr) => (
-                      <KeyResultRow
+                      <KeyResultCard
                         key={kr.id}
                         keyResult={kr}
                         users={users}
+                        ownerName={getUserName(kr.ownerId)}
+                        ownerEmail={getUserEmail(kr.ownerId)}
+                        coreDriverLabel={coreDriver.label}
+                        strategicDriverLabel={sd.label}
                         onUpdate={(updated) =>
                           onUpdateKeyResult(coreDriver.id, sd.id, kr.id, updated)
                         }
                       />
                     ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      ))}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        ))}
+        </CardGrid>
+      )}
+
+      {/* Create KPI Modal */}
+      {selectedStrategicDriver && (
+        <KeyResultCreateModal
+          open={createModalOpen}
+          onOpenChange={setCreateModalOpen}
+          strategicDriver={selectedStrategicDriver.strategicDriver}
+          coreDriverId={selectedStrategicDriver.coreDriverId}
+          users={users}
+          onSuccess={() => {
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function KeyResultRow({
+function KeyResultCard({
   keyResult,
   users,
+  ownerName,
+  ownerEmail,
+  coreDriverLabel,
+  strategicDriverLabel,
   onUpdate,
 }: {
   keyResult: KeyResult;
   users: UserManagementData[];
+  ownerName: string | null;
+  ownerEmail: string | null;
+  coreDriverLabel: string;
+  strategicDriverLabel: string;
   onUpdate: (updated: KeyResult) => void;
 }) {
   const handleChange = <K extends keyof KeyResult>(field: K, value: KeyResult[K]) => {
@@ -146,103 +293,112 @@ function KeyResultRow({
   };
 
   const statusColor = statusOptions.find((s) => s.value === keyResult.status)?.color;
+  const statusConfig = statusOptions.find((s) => s.value === keyResult.status);
 
   return (
-    <TableRow className={cn(keyResult.isLocked && "opacity-60 bg-muted/20")}>
-      {/* Status Dot */}
-      <TableCell className="px-1">
-        <div className={cn("w-2.5 h-2.5 rounded-full", statusColor)} />
-      </TableCell>
-
-      {/* Label */}
-      <TableCell className="py-1.5">
-        <Input
-          value={keyResult.label}
-          onChange={(e) => handleChange("label", e.target.value)}
-          className="h-7 text-xs border-none bg-transparent px-0 focus-visible:ring-1 disabled:opacity-100"
-          disabled={keyResult.isLocked}
-        />
-      </TableCell>
-
-      {/* Status */}
-      <TableCell className="py-1.5">
-        <Select
-          value={keyResult.status}
-          onValueChange={(v) => handleChange("status", v as StatusColor)}
-          disabled={keyResult.isLocked}
-        >
-          <SelectTrigger className="h-7 text-xs w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {statusOptions.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                <div className="flex items-center gap-1.5">
-                  <div className={cn("w-2 h-2 rounded-full", opt.color)} />
-                  {opt.label}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </TableCell>
-
-      {/* Target */}
-      <TableCell className="py-1.5">
-        <Input
-          value={keyResult.target || ""}
-          onChange={(e) => handleChange("target", e.target.value)}
-          placeholder="—"
-          className="h-7 text-xs w-full"
-          disabled={keyResult.isLocked}
-        />
-      </TableCell>
-
-      {/* Current */}
-      <TableCell className="py-1.5">
-        <Input
-          value={keyResult.reality || ""}
-          onChange={(e) => handleChange("reality", e.target.value)}
-          placeholder="—"
-          className="h-7 text-xs w-full"
-          disabled={keyResult.isLocked}
-        />
-      </TableCell>
-
-      {/* Owner */}
-      <TableCell className="py-1.5">
-        <OwnerSelector
-          users={users}
-          selectedOwnerId={keyResult.ownerId}
-          onOwnerChange={(id) => handleChange("ownerId", id)}
-          className="h-7 text-xs"
-          disabled={keyResult.isLocked}
-        />
-      </TableCell>
-
-      {/* Updated */}
-      <TableCell className="py-1.5 text-[10px] text-muted-foreground">
-        <div className="flex items-center gap-0.5">
-          <Clock className="h-2.5 w-2.5" />
-          {formatRelativeTime(keyResult.lastUpdated)}
+    <Card
+      className={cn(
+        "border",
+        keyResult.isLocked && "opacity-60 bg-muted/20",
+        keyResult.status === "red" && "border-red-500/20",
+        keyResult.status === "yellow" && "border-yellow-500/20",
+        keyResult.status === "green" && "border-green-500/20",
+      )}
+    >
+      <CardContent className="p-3 space-y-3">
+        {/* Header: Status + Label + Lock */}
+        <div className="flex items-start gap-2">
+          <div className={cn("w-3 h-3 rounded-full shrink-0 mt-0.5", statusColor)} />
+          <div className="flex-1 min-w-0">
+            <Input
+              value={keyResult.label}
+              onChange={(e) => handleChange("label", e.target.value)}
+              className="h-8 text-sm font-medium border-none bg-transparent pl-2 focus-visible:ring-1 disabled:opacity-100"
+              disabled={keyResult.isLocked}
+              placeholder="KPI name..."
+            />
+            <p className="text-[10px] text-muted-foreground mt-0.5 pl-2">
+              {coreDriverLabel} → {strategicDriverLabel}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleLock}
+            className={cn(
+              "h-6 w-6 shrink-0",
+              keyResult.isLocked && "text-yellow-600 dark:text-yellow-400"
+            )}
+            title={keyResult.isLocked ? "Unlock to edit" : "Lock"}
+          >
+            {keyResult.isLocked ? (
+              <Lock className="h-3.5 w-3.5" />
+            ) : (
+              <Unlock className="h-3.5 w-3.5 text-muted-foreground" />
+            )}
+          </Button>
         </div>
-      </TableCell>
 
-      {/* Lock */}
-      <TableCell className="py-1.5 px-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleLock}
-          className="h-6 w-6"
-        >
-          {keyResult.isLocked ? (
-            <Lock className="h-3 w-3" />
-          ) : (
-            <Unlock className="h-3 w-3 text-muted-foreground" />
-          )}
-        </Button>
-      </TableCell>
-    </TableRow>
+        {/* Status */}
+        <div className="space-y-1.5 pl-2">
+          <Label className="text-xs">Status</Label>
+          <Select
+            value={keyResult.status}
+            onValueChange={(v) => handleChange("status", v as StatusColor)}
+            disabled={keyResult.isLocked}
+          >
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  <div className="flex items-center gap-1.5">
+                    <div className={cn("w-2 h-2 rounded-full", opt.color)} />
+                    {opt.label}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Target & Current */}
+        <div className="grid grid-cols-2 gap-2 pl-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Target</Label>
+            <Input
+              value={keyResult.target || ""}
+              onChange={(e) => handleChange("target", e.target.value)}
+              placeholder="—"
+              className="h-8 text-xs"
+              disabled={keyResult.isLocked}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Current</Label>
+            <Input
+              value={keyResult.reality || ""}
+              onChange={(e) => handleChange("reality", e.target.value)}
+              placeholder="—"
+              className="h-8 text-xs"
+              disabled={keyResult.isLocked}
+            />
+          </div>
+        </div>
+
+        {/* Owner */}
+        <div className="space-y-1.5 pl-2">
+          <Label className="text-xs">Owner</Label>
+          <OwnerSelector
+            users={users}
+            selectedOwnerId={keyResult.ownerId}
+            onOwnerChange={(id) => handleChange("ownerId", id)}
+            className="h-8 text-xs w-full"
+            disabled={keyResult.isLocked}
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 }

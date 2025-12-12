@@ -317,6 +317,7 @@ export function AppSidebar() {
       "Core Data",
       "Financials",
       "Analysis",
+      "Workspace",
       "System",
     ];
 

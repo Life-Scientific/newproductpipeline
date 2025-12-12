@@ -91,8 +91,10 @@ export function usePermissions(
         const roleOrder = [
           "Admin",
           "Editor",
+          "KPI Manager",
           "Portfolio Manager",
           "Country Manager",
+          "KPI Contributor",
           "Viewer",
         ];
         const userRoleList = userRoles || ["Viewer"];
@@ -295,6 +297,18 @@ export function usePermissions(
       // Settings
       canViewSettings: checkPermission(permissions, PERMISSIONS.SETTINGS_VIEW),
       canEditSettings: checkPermission(permissions, PERMISSIONS.SETTINGS_EDIT),
+
+      // KPI Dashboard
+      canViewKPIs: checkPermission(permissions, PERMISSIONS.KPI_VIEW),
+      canCreateKPIs: checkPermission(permissions, PERMISSIONS.KPI_CREATE),
+      canEditKPIs: checkPermission(permissions, PERMISSIONS.KPI_EDIT),
+      canDeleteKPIs: checkPermission(permissions, PERMISSIONS.KPI_DELETE),
+      canManageKPIHierarchy: checkPermission(
+        permissions,
+        PERMISSIONS.KPI_MANAGE_HIERARCHY,
+      ),
+      canLockKPIs: checkPermission(permissions, PERMISSIONS.KPI_LOCK),
+      canViewKPIAudit: checkPermission(permissions, PERMISSIONS.KPI_VIEW_AUDIT),
     }),
     [permissions],
   );

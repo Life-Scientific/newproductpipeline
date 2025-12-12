@@ -21,6 +21,16 @@ const generateMonths = () => {
 export const MONTHS = generateMonths();
 
 // ============================================================================
+// Deterministic Random Function (must be defined before use)
+// ============================================================================
+
+// Using deterministic pseudo-random based on index to avoid hydration mismatches
+const seededRandom = (seed: number) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
+// ============================================================================
 // Markets/Regions Data
 // ============================================================================
 
@@ -31,22 +41,31 @@ export const REVENUE_BY_TERRITORY = [
   { territory: "Other", percentage: 12, trend: "+0.8%" },
 ];
 
-export const MARKET_SHARE_DATA = MONTHS.map((m, i) => ({
-  month: m.label,
-  northAmerica: 12 + Math.sin(i * 0.5) * 2 + Math.random() * 1,
-  france: 18 + Math.cos(i * 0.4) * 2 + Math.random() * 1,
-  ukIreland: 15 + Math.sin(i * 0.3) * 1.5 + Math.random() * 1,
-  other: 8 + Math.cos(i * 0.6) * 1 + Math.random() * 0.5,
-}));
+export const MARKET_SHARE_DATA = MONTHS.map((m, i) => {
+  const random1 = seededRandom(i * 0.555);
+  const random2 = seededRandom(i * 0.666);
+  const random3 = seededRandom(i * 0.777);
+  const random4 = seededRandom(i * 0.888);
+  return {
+    month: m.label,
+    northAmerica: 12 + Math.sin(i * 0.5) * 2 + random1 * 1,
+    france: 18 + Math.cos(i * 0.4) * 2 + random2 * 1,
+    ukIreland: 15 + Math.sin(i * 0.3) * 1.5 + random3 * 1,
+    other: 8 + Math.cos(i * 0.6) * 1 + random4 * 0.5,
+  };
+});
 
 // ============================================================================
 // Products Data - Article Submissions
 // ============================================================================
 
 // Article 34 - Higher volume, ~75% success rate
+
 export const ARTICLE_34_DATA = MONTHS.map((m, i) => {
-  const total = Math.floor(15 + Math.sin(i * 0.4) * 5 + Math.random() * 3);
-  const approved = Math.floor(total * (0.72 + Math.random() * 0.08));
+  const random1 = seededRandom(i * 0.123);
+  const random2 = seededRandom(i * 0.456);
+  const total = Math.floor(15 + Math.sin(i * 0.4) * 5 + random1 * 3);
+  const approved = Math.floor(total * (0.72 + random2 * 0.08));
   return {
     month: m.label,
     approved,
@@ -58,8 +77,10 @@ export const ARTICLE_34_DATA = MONTHS.map((m, i) => {
 
 // Article 33 - Lower volume, ~65% success rate
 export const ARTICLE_33_DATA = MONTHS.map((m, i) => {
-  const total = Math.floor(8 + Math.cos(i * 0.5) * 3 + Math.random() * 2);
-  const approved = Math.floor(total * (0.60 + Math.random() * 0.12));
+  const random1 = seededRandom(i * 0.789);
+  const random2 = seededRandom(i * 0.321);
+  const total = Math.floor(8 + Math.cos(i * 0.5) * 3 + random1 * 2);
+  const approved = Math.floor(total * (0.60 + random2 * 0.12));
   return {
     month: m.label,
     approved,
@@ -73,15 +94,21 @@ export const ARTICLE_33_DATA = MONTHS.map((m, i) => {
 // Product Margins Data - Sparkline Trends
 // ============================================================================
 
-export const STOCK_WRITE_OFF_TREND = MONTHS.map((m, i) => ({
-  month: m.label,
-  value: 2.5 + Math.sin(i * 0.3) * 0.8 + Math.random() * 0.3,
-}));
+export const STOCK_WRITE_OFF_TREND = MONTHS.map((m, i) => {
+  const random = seededRandom(i * 0.654);
+  return {
+    month: m.label,
+    value: 2.5 + Math.sin(i * 0.3) * 0.8 + random * 0.3,
+  };
+});
 
-export const GM_PER_FTE_TREND = MONTHS.map((m, i) => ({
-  month: m.label,
-  value: 125000 + i * 2000 + Math.sin(i * 0.4) * 8000 + Math.random() * 3000,
-}));
+export const GM_PER_FTE_TREND = MONTHS.map((m, i) => {
+  const random = seededRandom(i * 0.987);
+  return {
+    month: m.label,
+    value: 125000 + i * 2000 + Math.sin(i * 0.4) * 8000 + random * 3000,
+  };
+});
 
 // ============================================================================
 // Supply Chain Data - Bullet Charts
@@ -106,29 +133,41 @@ export const SUPPLY_CHAIN_METRICS = {
 // Freight & Tariff Data - Line Charts
 // ============================================================================
 
-export const FREIGHT_COSTS_DATA = MONTHS.map((m, i) => ({
-  month: m.label,
-  value: 4.2 + Math.sin(i * 0.5) * 0.8 + Math.random() * 0.3,
-}));
+export const FREIGHT_COSTS_DATA = MONTHS.map((m, i) => {
+  const random = seededRandom(i * 0.111);
+  return {
+    month: m.label,
+    value: 4.2 + Math.sin(i * 0.5) * 0.8 + random * 0.3,
+  };
+});
 
-export const TARIFF_COSTS_DATA = MONTHS.map((m, i) => ({
-  month: m.label,
-  value: 2.8 + Math.cos(i * 0.4) * 0.5 + Math.random() * 0.2,
-}));
+export const TARIFF_COSTS_DATA = MONTHS.map((m, i) => {
+  const random = seededRandom(i * 0.222);
+  return {
+    month: m.label,
+    value: 2.8 + Math.cos(i * 0.4) * 0.5 + random * 0.2,
+  };
+});
 
 // ============================================================================
 // Planning Data
 // ============================================================================
 
-export const FORECAST_ACCURACY_DATA = MONTHS.map((m, i) => ({
-  month: m.label,
-  value: 78 + i * 0.8 + Math.sin(i * 0.6) * 5 + Math.random() * 3,
-}));
+export const FORECAST_ACCURACY_DATA = MONTHS.map((m, i) => {
+  const random = seededRandom(i * 0.333);
+  return {
+    month: m.label,
+    value: 78 + i * 0.8 + Math.sin(i * 0.6) * 5 + random * 3,
+  };
+});
 
-export const OBSOLETE_STOCK_DATA = MONTHS.map((m, i) => ({
-  month: m.label,
-  value: 6.5 - i * 0.15 + Math.sin(i * 0.3) * 1.2 + Math.random() * 0.5,
-}));
+export const OBSOLETE_STOCK_DATA = MONTHS.map((m, i) => {
+  const random = seededRandom(i * 0.444);
+  return {
+    month: m.label,
+    value: 6.5 - i * 0.15 + Math.sin(i * 0.3) * 1.2 + random * 0.5,
+  };
+});
 
 // ============================================================================
 // Helper Functions
