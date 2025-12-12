@@ -27,12 +27,18 @@ export default async function KPIDashboardPage() {
   }
 
   // Fetch KPI data from database
+  // This will throw if user doesn't have permission (enforced by RLS + explicit check)
   let kpiData: KPIData = { coreDrivers: [] };
   try {
     kpiData = await getKPIDashboardData();
   } catch (error) {
+    // If permission error, redirect (shouldn't happen due to check above, but safety net)
+    if (error instanceof Error && error.message.includes("Unauthorized")) {
+      redirect("/operations");
+    }
     console.error("Error fetching KPI dashboard data:", error);
-    // Continue with empty data - component will handle gracefully
+    // Don't continue with empty data on permission errors
+    throw error;
   }
 
   return (

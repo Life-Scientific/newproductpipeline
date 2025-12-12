@@ -235,3 +235,61 @@ export async function getUserKPIRole(
   return null;
 }
 
+/**
+ * Batch fetch KPI roles for multiple users in a single query
+ * Returns a map of userId -> role type
+ */
+export async function getAllUserKPIRoles(
+  userIds: string[],
+): Promise<Record<string, "manager" | "contributor">> {
+  if (userIds.length === 0) {
+    return {};
+  }
+
+  const supabase = await createClient();
+
+  // Get both KPI role IDs in one query
+  const { data: kpiRoles } = await supabase
+    .from("roles")
+    .select("role_id, role_name")
+    .in("role_name", ["KPI Manager", "KPI Contributor"]);
+
+  if (!kpiRoles || kpiRoles.length === 0) {
+    return {};
+  }
+
+  const managerRoleId = kpiRoles.find((r) => r.role_name === "KPI Manager")?.role_id;
+  const contributorRoleId = kpiRoles.find((r) => r.role_name === "KPI Contributor")?.role_id;
+
+  if (!managerRoleId && !contributorRoleId) {
+    return {};
+  }
+
+  const roleIds = [managerRoleId, contributorRoleId].filter(Boolean) as string[];
+
+  // Fetch all user-role mappings for these users and KPI roles in one query
+  const { data: userRoles } = await supabase
+    .from("user_roles")
+    .select("user_id, role_id")
+    .in("user_id", userIds)
+    .in("role_id", roleIds);
+
+  // Build result map (manager takes precedence over contributor)
+  const result: Record<string, "manager" | "contributor"> = {};
+
+  if (userRoles) {
+    userRoles.forEach((ur) => {
+      // Only set if not already set (manager takes precedence)
+      if (!result[ur.user_id]) {
+        if (ur.role_id === managerRoleId) {
+          result[ur.user_id] = "manager";
+        } else if (ur.role_id === contributorRoleId) {
+          result[ur.user_id] = "contributor";
+        }
+      }
+    });
+  }
+
+  return result;
+}
+
