@@ -450,6 +450,11 @@ function BusinessCasesContent({
 
           {/* Business Cases Table */}
           <div>
+            {isBackgroundLoading && (
+              <div className="mb-4 text-sm text-muted-foreground text-center">
+                Loading more business cases... ({businessCases.length} of {totalCount})
+              </div>
+            )}
             <BusinessCasesProjectionTable
               businessCases={filteredBusinessCases}
               canEdit={canEditBusinessCases}
