@@ -70,6 +70,7 @@ export async function getWorkspaceBySlug(
 /**
  * Get workspace with menu items in a single query using Supabase's nested select.
  * This is optimized for performance - reduces multiple DB round-trips to just one.
+ * Menu items are filtered based on user permissions.
  */
 export async function getWorkspaceWithMenuBySlug(
   slug: string,
@@ -97,9 +98,26 @@ export async function getWorkspaceWithMenuBySlug(
 
   if (!data) return null;
 
-  // Filter active menu items and sort by group_name then display_order
-  const menuItems = ((data.workspace_menu_items as WorkspaceMenuItem[]) || [])
-    .filter((item) => item.is_active)
+  // Filter active menu items and check permissions
+  const allMenuItems = (data.workspace_menu_items as WorkspaceMenuItem[]) || [];
+  
+  // Check permissions for each menu item
+  const menuItemsWithPermissions = await Promise.all(
+    allMenuItems
+      .filter((item) => item.is_active)
+      .map(async (item) => {
+        // Check if user can access this URL
+        const { data: canAccess } = await supabase.rpc("can_access_url", {
+          p_url: item.url,
+        });
+        return { item, canAccess: canAccess !== false };
+      })
+  );
+
+  // Filter out items user can't access
+  const menuItems = menuItemsWithPermissions
+    .filter(({ canAccess }) => canAccess)
+    .map(({ item }) => item)
     .sort((a, b) => {
       // Sort by group_name first, then by display_order
       const groupCompare = a.group_name.localeCompare(b.group_name);

@@ -56,6 +56,7 @@ export interface InvitationData {
 
 /**
  * Check if the current user has a specific permission
+ * Admin role automatically has all permissions
  */
 export async function hasPermission(
   permission: PermissionKey,
@@ -66,6 +67,24 @@ export async function hasPermission(
   } = await supabase.auth.getUser();
 
   if (!user) return false;
+
+  // Check if user is Admin first (Admin has all permissions)
+  try {
+    const { data: userRoles } = await supabase
+      .from("user_roles")
+      .select("roles!inner(role_name)")
+      .eq("user_id", user.id);
+    
+    if (userRoles && userRoles.length > 0) {
+      const roleNames = userRoles.map((ur: any) => ur.roles?.role_name).filter(Boolean);
+      if (roleNames.includes("Admin")) {
+        return true; // Admin has all permissions
+      }
+    }
+  } catch (error) {
+    // Fall through to permission check
+    console.warn("Error checking Admin role:", error);
+  }
 
   // Try to get permissions from JWT first
   try {
@@ -81,7 +100,7 @@ export async function hasPermission(
     // Fall back to database query
   }
 
-  // Fallback: use database function
+  // Fallback: use database function (which also checks for Admin)
   const { data, error } = await supabase.rpc("has_permission", {
     p_key: permission,
   });

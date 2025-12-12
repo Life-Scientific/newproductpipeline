@@ -12,11 +12,9 @@ export default async function KPIDashboardPage() {
   // Check if user has permission to view KPIs
   const canViewKPIs = await hasPermission(PERMISSIONS.KPI_VIEW);
   
-  console.log("[KPIDashboardPage] Permission check:", { canViewKPIs });
-  
   if (!canViewKPIs) {
-    console.log("[KPIDashboardPage] No permission, redirecting to /");
-    redirect("/");
+    // Redirect to Operations placeholder page instead of home
+    redirect("/operations");
   }
   // Fetch users for owner assignment
   // If this fails (e.g., no permission), we'll use an empty array

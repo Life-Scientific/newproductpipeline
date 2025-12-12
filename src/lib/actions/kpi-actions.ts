@@ -68,13 +68,15 @@ export async function updateKeyResult(
   }
 
   const isOwner = keyResult.data.owner_id === user.id;
+  // Only owner OR KPI Manager/Admin can edit KPI values
+  // KPI Manager has KPI_MANAGE_HIERARCHY permission
   const canEdit =
-    isOwner ||
-    (await hasPermission(PERMISSIONS.KPI_EDIT)) ||
-    (await hasPermission(PERMISSIONS.KPI_MANAGE_HIERARCHY));
+    isOwner || (await hasPermission(PERMISSIONS.KPI_MANAGE_HIERARCHY));
 
   if (!canEdit) {
-    throw new Error("You do not have permission to edit this KPI");
+    throw new Error(
+      "Only the assigned owner or KPI Manager can edit this KPI. Please contact a KPI Manager to update values.",
+    );
   }
 
   // Get old values for audit log

@@ -114,20 +114,11 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     
     try {
-      const currentPath = pathnameRef.current || "";
-      console.log("[WorkspaceContext] loadWorkspace called", {
-        workspaceSlug,
-        skipPathnameCheck,
-        currentPath,
-        currentWorkspace: currentWorkspaceRef.current?.slug,
-      });
-      
       let slugToTry = workspaceSlug;
       
       // If no slug provided, try to detect from pathname (unless we're skipping this check)
       if (!slugToTry && !skipPathnameCheck && typeof window !== "undefined") {
         const pathSlug = getWorkspaceSlugFromPath(pathnameRef.current);
-        console.log("[WorkspaceContext] Detected pathname slug:", pathSlug);
         if (pathSlug) {
           slugToTry = pathSlug;
         }
@@ -136,7 +127,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       // Try localStorage
       if (!slugToTry && typeof window !== "undefined") {
         const stored = localStorage.getItem("current_workspace");
-        console.log("[WorkspaceContext] localStorage workspace:", stored);
         if (stored) {
           slugToTry = stored;
         }
@@ -145,14 +135,10 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       // Final fallback
       if (!slugToTry) {
         slugToTry = "portfolio";
-        console.log("[WorkspaceContext] Using fallback:", slugToTry);
       }
-
-      console.log("[WorkspaceContext] Attempting to load workspace:", slugToTry);
 
       // Don't reload if we already have this workspace loaded
       if (currentWorkspaceRef.current?.slug === slugToTry) {
-        console.log("[WorkspaceContext] Already have this workspace loaded, skipping");
         loadingRef.current = false;
         setIsLoading(false);
         return;
@@ -160,7 +146,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
       // Single optimized query for workspace + menu items
       let workspaceData = await getWorkspaceWithMenuBySlug(slugToTry);
-      console.log("[WorkspaceContext] Workspace data loaded:", workspaceData ? { slug: workspaceData.slug, menuItems: workspaceData.menu_items?.length } : null);
 
       // Only fallback to portfolio if we're not already on a specific workspace route
       // This prevents redirecting away from valid workspace pages
@@ -184,14 +169,13 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (workspaceData) {
-        console.log("[WorkspaceContext] Setting workspace:", workspaceData.slug);
         setCurrentWorkspace(workspaceData);
         setWorkspaceWithMenu(workspaceData);
         if (typeof window !== "undefined") {
           localStorage.setItem("current_workspace", workspaceData.slug);
         }
       } else {
-        console.error("[WorkspaceContext] Could not load any workspace - all fallbacks failed");
+        console.error("Could not load any workspace - all fallbacks failed");
       }
     } catch (error) {
       console.error("Failed to load workspace:", error);
@@ -270,21 +254,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isInitialLoad && pathname && typeof window !== "undefined" && !isLoading && !loadingRef.current) {
       const pathSlug = getWorkspaceSlugFromPath(pathname);
-      console.log("[WorkspaceContext] Pathname changed:", {
-        pathname,
-        pathSlug,
-        currentWorkspace: currentWorkspaceRef.current?.slug,
-        isLoading,
-        loadingRef: loadingRef.current,
-      });
-      
       // Only reload if we detect a different workspace and we're not already loading
       // This is just for syncing the sidebar/context - it should NOT redirect
       if (pathSlug && currentWorkspaceRef.current?.slug !== pathSlug) {
-        console.log("[WorkspaceContext] Syncing workspace from pathname:", pathSlug);
         // Load the workspace but don't navigate - the user is already on the correct page
         loadWorkspace(pathSlug, true).catch((error) => {
-          console.error("[WorkspaceContext] Failed to sync workspace from pathname:", error);
+          console.error("Failed to sync workspace from pathname:", error);
           // Don't fallback or redirect - let the current page handle it
         });
       }
