@@ -7,6 +7,9 @@ import { ThemeProviderWrapper } from "@/components/providers/ThemeProviderWrappe
 import { DisplayPreferencesProvider } from "@/contexts/DisplayPreferencesContext";
 import { KonamiCode } from "@/components/easter-eggs/KonamiCode";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
+import { getExchangeRates } from "@/lib/db/countries";
+import { transformExchangeRatesForDisplay } from "@/lib/utils/exchange-rates";
+import type { CurrencyCode } from "@/contexts/DisplayPreferencesContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,11 +64,21 @@ const themeScript = `
 })();
 `;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetch exchange rates server-side to eliminate client-side fetch
+  let initialExchangeRates: Record<CurrencyCode, number> | undefined;
+  try {
+    const exchangeRates = await getExchangeRates();
+    initialExchangeRates = transformExchangeRatesForDisplay(exchangeRates);
+  } catch (error) {
+    console.warn("Failed to fetch exchange rates in layout:", error);
+    // Will fall back to defaults in DisplayPreferencesProvider
+  }
+
   return (
     <html lang="en" suppressHydrationWarning data-theme="light">
       <head>
@@ -76,7 +89,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProviderWrapper>
-          <DisplayPreferencesProvider>
+          <DisplayPreferencesProvider initialExchangeRates={initialExchangeRates}>
             {children}
             <Toaster />
             <SonnerToaster position="bottom-right" richColors />

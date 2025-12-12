@@ -16,9 +16,22 @@ import type {
 /**
  * Fetch full KPI dashboard data from operations.vw_kpi_dashboard
  * Returns hierarchical structure for UI consumption
+ * 
+ * IMPORTANT: This function assumes the caller has already verified
+ * kpi.view permission. RLS policies on underlying tables will enforce
+ * that only users with kpi.view can see the data.
  */
 export async function getKPIDashboardData(): Promise<KPIData> {
   const supabase = await createClient();
+
+  // Verify permission before querying
+  const { data: hasPermission } = await supabase.rpc("has_permission", {
+    p_key: "kpi.view",
+  });
+
+  if (!hasPermission) {
+    throw new Error("Unauthorized: kpi.view permission required");
+  }
 
   const { data, error } = await supabase
     .schema("operations")

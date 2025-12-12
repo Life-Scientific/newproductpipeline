@@ -29,7 +29,7 @@ export function MenuVisibilitySettings() {
   const [updating, setUpdating] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!currentWorkspace) return;
+    if (!currentWorkspace?.workspace_id) return;
 
     const loadMenuItems = async () => {
       try {
@@ -51,7 +51,8 @@ export function MenuVisibilitySettings() {
     };
 
     loadMenuItems();
-  }, [currentWorkspace]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentWorkspace?.workspace_id]); // Only depend on workspace_id, not the entire object
 
   const handleToggle = async (menuItemId: string, currentValue: boolean) => {
     try {

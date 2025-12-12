@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 /**
  * Finds and fixes duplicate active business case records.
@@ -357,8 +357,7 @@ export async function fixDuplicateBusinessCases(): Promise<{
     revalidatePath("/portfolio/formulations");
     revalidatePath("/portfolio");
     revalidatePath("/");
-    revalidateTag("business-cases", "page");
-    revalidateTag("formulations", "page");
+    // No cache to invalidate - direct database queries
 
     return {
       success: true,

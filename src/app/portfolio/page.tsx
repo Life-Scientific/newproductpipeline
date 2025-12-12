@@ -1,11 +1,4 @@
-import {
-  getFormulations,
-  getBusinessCasesForChart,
-  getActivePortfolio,
-  getExchangeRates,
-  getFormulationCountries,
-} from "@/lib/db/queries";
-import { getAllUseGroups } from "@/lib/db/use-groups";
+import { getDashboardData } from "@/lib/db/dashboard-data";
 import { getCountries } from "@/lib/db/countries";
 import { FormulationsList } from "@/components/formulations/FormulationsList";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -27,50 +20,39 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 
-// Cache dashboard data for 60 seconds
-export const revalidate = 60;
+// No caching - direct database queries
 
 type StatusHistory =
   Database["public"]["Tables"]["formulation_status_history"]["Row"];
 
 export default async function Home() {
-  let formulations: any[] = [];
-  let countries: any[] = [];
-  let businessCases: any[] = [];
-  let activePortfolio: any[] = [];
-  let allExchangeRates: any[] = [];
-  let formulationCountries: any[] = [];
-  let useGroups: any[] = [];
-
+  // Single unified call - gets all dashboard data in one function
+  let dashboardData;
   try {
-    [
-      formulations,
-      countries,
-      businessCases,
-      activePortfolio,
-      allExchangeRates,
-      formulationCountries,
-      useGroups,
-    ] = await Promise.all([
-      getFormulations(),
-      getCountries(), // Reference data for filter lookups
-      getBusinessCasesForChart(), // Lightweight version for chart - only essential columns
-      getActivePortfolio(),
-      getExchangeRates(),
-      getFormulationCountries(), // For accurate counts
-      getAllUseGroups(), // For use group counts
-    ]);
+    dashboardData = await getDashboardData();
   } catch (error) {
     console.error("Dashboard data fetch error:", error);
     // Set defaults on error
-    formulations = [];
-    countries = [];
-    businessCases = [];
-    activePortfolio = [];
-    allExchangeRates = [];
-    formulationCountries = [];
-    useGroups = [];
+    dashboardData = {
+      formulations: [],
+      countries: [],
+      businessCases: [],
+      activePortfolio: [],
+      allExchangeRates: [],
+      formulationCountries: [],
+      useGroups: [],
+    };
   }
+
+  const {
+    formulations,
+    countries,
+    businessCases,
+    activePortfolio,
+    allExchangeRates,
+    formulationCountries,
+    useGroups,
+  } = dashboardData;
 
   // Create exchange rate map: country_id -> exchange_rate_to_eur
   // Get the latest rate for each country

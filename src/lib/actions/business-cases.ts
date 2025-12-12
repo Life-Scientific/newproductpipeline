@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import {
   checkExistingBusinessCase,
@@ -126,10 +126,7 @@ export async function createBusinessCase(formData: FormData) {
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
-  // Invalidate cached data (unstable_cache uses tags)
-  // Next.js 16 requires second parameter - using "page" type
-  revalidateTag("business-cases", "page");
-  revalidateTag("formulations", "page");
+  // No cache to invalidate - direct database queries
   return { data: businessCase, success: true };
 }
 
@@ -265,10 +262,7 @@ export async function updateBusinessCase(
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
-  // Invalidate cached data (unstable_cache uses tags)
-  // Next.js 16 requires second parameter - using "page" type
-  revalidateTag("business-cases", "page");
-  revalidateTag("formulations", "page");
+  // No cache to invalidate - direct database queries
   return { data, success: true };
 }
 
@@ -298,10 +292,7 @@ export async function deleteBusinessCase(businessCaseId: string) {
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
-  // Invalidate cached data (unstable_cache uses tags)
-  // Next.js 16 requires second parameter - using "page" type
-  revalidateTag("business-cases", "page");
-  revalidateTag("formulations", "page");
+  // No cache to invalidate - direct database queries
   return { success: true };
 }
 
@@ -585,10 +576,7 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
-  // Invalidate cached data (unstable_cache uses tags)
-  // Next.js 16 requires second parameter - using "page" type
-  revalidateTag("business-cases", "page");
-  revalidateTag("formulations", "page");
+  // No cache to invalidate - direct database queries
   return { data: { business_case_group_id: groupId }, success: true };
 }
 
@@ -856,10 +844,7 @@ export async function updateBusinessCaseGroupAction(
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
-  // Invalidate cached data (unstable_cache uses tags)
-  // Next.js 16 requires second parameter - using "page" type
-  revalidateTag("business-cases", "page");
-  revalidateTag("formulations", "page");
+  // No cache to invalidate - direct database queries
   return { success: true, data: result.data };
 }
 
@@ -1457,10 +1442,7 @@ export async function importBusinessCases(
   revalidatePath("/portfolio/formulations");
   revalidatePath("/portfolio");
   revalidatePath("/");
-  // Invalidate cached data (unstable_cache uses tags)
-  // Next.js 16 requires second parameter - using "page" type
-  revalidateTag("business-cases", "page");
-  revalidateTag("formulations", "page");
+  // No cache to invalidate - direct database queries
 
   return {
     totalRows: rows.length,

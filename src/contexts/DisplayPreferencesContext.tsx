@@ -134,15 +134,17 @@ const DisplayPreferencesContext =
 
 export function DisplayPreferencesProvider({
   children,
+  initialExchangeRates,
 }: {
   children: React.ReactNode;
+  initialExchangeRates?: Record<CurrencyCode, number>;
 }) {
   const [preferences, setPreferences] =
     useState<DisplayPreferences>(DEFAULT_PREFERENCES);
   const [isLoaded, setIsLoaded] = useState(false);
   const [exchangeRates, setExchangeRates] = useState<
     Record<CurrencyCode, number>
-  >(DEFAULT_EXCHANGE_RATES);
+  >(initialExchangeRates || DEFAULT_EXCHANGE_RATES);
 
   // Load preferences from localStorage and fetch exchange rates on mount
   useEffect(() => {
@@ -157,43 +159,45 @@ export function DisplayPreferencesProvider({
       console.warn("Failed to load display preferences:", e);
     }
 
-    // Fetch exchange rates from database
-    const fetchRates = async () => {
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from("exchange_rates")
-          .select("currency_code, exchange_rate_to_eur")
-          .eq("is_active", true);
+    // Only fetch exchange rates if not provided as prop (fallback for client-side updates)
+    if (!initialExchangeRates) {
+      const fetchRates = async () => {
+        try {
+          const supabase = createClient();
+          const { data, error } = await supabase
+            .from("exchange_rates")
+            .select("currency_code, exchange_rate_to_eur")
+            .eq("is_active", true);
 
-        if (error) {
-          console.warn("Failed to fetch exchange rates:", error);
-          return;
+          if (error) {
+            console.warn("Failed to fetch exchange rates:", error);
+            return;
+          }
+
+          if (data && data.length > 0) {
+            const rates: Record<CurrencyCode, number> = {
+              EUR: 1,
+              USD: 0.86,
+              GBP: 1.14,
+              CAD: 0.61,
+            };
+            data.forEach((row) => {
+              const code = row.currency_code as CurrencyCode;
+              if (code in rates) {
+                rates[code] = parseFloat(row.exchange_rate_to_eur);
+              }
+            });
+            setExchangeRates(rates);
+          }
+        } catch (e) {
+          console.warn("Failed to fetch exchange rates:", e);
         }
+      };
 
-        if (data && data.length > 0) {
-          const rates: Record<CurrencyCode, number> = {
-            EUR: 1,
-            USD: 0.86,
-            GBP: 1.14,
-            CAD: 0.61,
-          };
-          data.forEach((row) => {
-            const code = row.currency_code as CurrencyCode;
-            if (code in rates) {
-              rates[code] = parseFloat(row.exchange_rate_to_eur);
-            }
-          });
-          setExchangeRates(rates);
-        }
-      } catch (e) {
-        console.warn("Failed to fetch exchange rates:", e);
-      }
-    };
-
-    fetchRates();
+      fetchRates();
+    }
     setIsLoaded(true);
-  }, []);
+  }, [initialExchangeRates]);
 
   // Update preferences and persist to localStorage
   const updatePreferences = useCallback(

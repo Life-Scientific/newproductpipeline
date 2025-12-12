@@ -29,26 +29,20 @@ import {
   Trash2,
   Shield,
   UserCog,
-  Target,
   UserPlus,
-  UserMinus,
 } from "lucide-react";
 import {
   getAllUsers,
   getAllRoles,
   updateUserRoles,
   getAllInvitations,
+  getUserManagementData,
   resendInvitation,
   cancelInvitation,
   deleteUser,
   type UserManagementData,
   type InvitationData,
 } from "@/lib/actions/user-management";
-import {
-  grantKPIAccess,
-  revokeKPIAccess,
-  getUserKPIRole,
-} from "@/lib/actions/kpi-permissions";
 import { type Role } from "@/lib/permissions";
 import { useToast } from "@/components/ui/use-toast";
 import { InviteUserModal } from "./InviteUserModal";
@@ -76,13 +70,6 @@ export function UserManagement() {
   const [resending, setResending] = useState<string | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [userKPIRoles, setUserKPIRoles] = useState<
-    Record<string, "manager" | "contributor">
-  >({});
-  const [grantingKPIAccess, setGrantingKPIAccess] = useState<string | null>(
-    null,
-  );
-
   // Role editing state
   const [editingUser, setEditingUser] = useState<UserManagementData | null>(
     null,
@@ -93,28 +80,12 @@ export function UserManagement() {
     try {
       setLoading(true);
       setError(null);
-      const [usersData, rolesData, invitationsData] = await Promise.all([
-        getAllUsers(),
-        getAllRoles(),
-        getAllInvitations(),
-      ]);
+      // Use batch function to fetch all data in parallel (more efficient)
+      const { users: usersData, roles: rolesData, invitations: invitationsData } =
+        await getUserManagementData();
       setUsers(usersData);
       setRoles(rolesData);
       setInvitations(invitationsData);
-
-      // Load KPI roles for each user
-      const kpiRolePromises = usersData.map(async (user) => {
-        const role = await getUserKPIRole(user.id);
-        return { userId: user.id, role };
-      });
-      const kpiRoles = await Promise.all(kpiRolePromises);
-      const roleMap: Record<string, "manager" | "contributor"> = {};
-      kpiRoles.forEach(({ userId, role }) => {
-        if (role) {
-          roleMap[userId] = role;
-        }
-      });
-      setUserKPIRoles(roleMap);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to load data";
@@ -273,70 +244,6 @@ export function UserManagement() {
     }
   };
 
-  const handleGrantKPIAccess = async (
-    userId: string,
-    roleType: "contributor" | "manager",
-  ) => {
-    setGrantingKPIAccess(userId);
-    try {
-      const result = await grantKPIAccess(userId, roleType);
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        });
-        await loadData();
-      } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to grant KPI access",
-        variant: "destructive",
-      });
-    } finally {
-      setGrantingKPIAccess(null);
-    }
-  };
-
-  const handleRevokeKPIAccess = async (userId: string) => {
-    setGrantingKPIAccess(userId);
-    try {
-      const result = await revokeKPIAccess(userId);
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
-        });
-        await loadData();
-      } else {
-        toast({
-          title: "Error",
-          description: result.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to revoke KPI access",
-        variant: "destructive",
-      });
-    } finally {
-      setGrantingKPIAccess(null);
-    }
-  };
 
   const userColumns = useMemo<ColumnDef<UserManagementData>[]>(
     () => [
@@ -418,65 +325,18 @@ export function UserManagement() {
           // Don't show actions if user has no permissions
           if (!canManageUsers && !canDeleteUsers) return null;
 
-          const kpiRole = userKPIRoles[user.id];
-          const hasKPIAccess = !!kpiRole;
-
           return (
             <div className="flex items-center justify-end gap-2">
               {canManageUsers && (
-                <>
-                  {hasKPIAccess ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRevokeKPIAccess(user.id)}
-                      disabled={grantingKPIAccess === user.id}
-                      className="h-8"
-                      title={`Revoke ${kpiRole === "manager" ? "KPI Manager" : "KPI Contributor"} access`}
-                    >
-                      <UserMinus className="h-4 w-4 mr-1" />
-                      {kpiRole === "manager" ? "KPI Mgr" : "KPI Contr"}
-                    </Button>
-                  ) : (
-                    <div className="flex gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleGrantKPIAccess(user.id, "contributor")
-                        }
-                        disabled={grantingKPIAccess === user.id}
-                        className="h-8"
-                        title="Grant KPI Contributor access"
-                      >
-                        <Target className="h-4 w-4 mr-1" />
-                        KPI
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleGrantKPIAccess(user.id, "manager")
-                        }
-                        disabled={grantingKPIAccess === user.id}
-                        className="h-8"
-                        title="Grant KPI Manager access"
-                      >
-                        <Shield className="h-4 w-4 mr-1" />
-                        KPI Mgr
-                      </Button>
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => openRoleEditDialog(user)}
-                    className="h-8"
-                  >
-                    <UserCog className="h-4 w-4 mr-1" />
-                    Edit Roles
-                  </Button>
-                </>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openRoleEditDialog(user)}
+                  className="h-8"
+                >
+                  <UserCog className="h-4 w-4 mr-1" />
+                  Edit Roles
+                </Button>
               )}
               {canDeleteUsers && (
                 <Button
@@ -496,7 +356,7 @@ export function UserManagement() {
         },
       },
     ],
-    [canManageUsers, canDeleteUsers, userKPIRoles, grantingKPIAccess],
+    [canManageUsers, canDeleteUsers],
   );
 
   const invitationColumns = useMemo<ColumnDef<InvitationData>[]>(

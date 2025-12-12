@@ -323,6 +323,85 @@ export async function getAllUsers(): Promise<UserManagementData[]> {
 }
 
 /**
+ * Batch fetch all user management data in parallel
+ * Returns users, roles, and invitations in a single call
+ * This is more efficient than calling each function separately
+ */
+export async function getUserManagementData(): Promise<{
+  users: UserManagementData[];
+  roles: Role[];
+  invitations: InvitationData[];
+}> {
+  // Check permissions once
+  const supabase = await createClient();
+  const [canViewUsers, canViewRoles] = await Promise.all([
+    hasPermission(PERMISSIONS.USER_VIEW),
+    hasPermission(PERMISSIONS.ROLE_VIEW),
+  ]);
+
+  if (!canViewUsers) {
+    throw new Error("Unauthorized: user.view permission required");
+  }
+
+  // Fetch all data in parallel
+  const [usersResult, rolesResult, invitationsResult] = await Promise.all([
+    // Users
+    supabase.rpc("get_all_users_with_roles").then(({ data, error }) => {
+      if (error) {
+        throw new Error(`Failed to fetch users: ${error.message}`);
+      }
+      return (data || []).map((user: any) => ({
+        id: user.id,
+        email: user.email,
+        user_created_at: user.user_created_at,
+        last_sign_in_at: user.last_sign_in_at,
+        email_confirmed_at: user.email_confirmed_at,
+        roles: user.roles || [],
+        role_names: user.role_names || ["Viewer"],
+      }));
+    }),
+    // Roles (only if user has permission)
+    canViewRoles
+      ? supabase.rpc("get_all_roles").then(({ data, error }) => {
+          if (error) {
+            throw new Error(`Failed to fetch roles: ${error.message}`);
+          }
+          return (data || []).map((role: any) => ({
+            role_id: role.role_id,
+            role_name: role.role_name,
+            description: role.description,
+            is_system_role: role.is_system_role,
+            created_at: role.created_at,
+            permissions: role.permissions || [],
+          }));
+        })
+      : Promise.resolve([]),
+    // Invitations
+    supabase.rpc("get_all_invitations").then(({ data, error }) => {
+      if (error) {
+        throw new Error(`Failed to fetch invitations: ${error.message}`);
+      }
+      return (data || []).map((invitation: any) => ({
+        id: invitation.id,
+        email: invitation.email,
+        role: invitation.role,
+        invited_by_email: invitation.invited_by_email,
+        expires_at: invitation.expires_at,
+        accepted_at: invitation.accepted_at,
+        created_at: invitation.created_at,
+        status: invitation.status as "pending" | "accepted" | "expired",
+      }));
+    }),
+  ]);
+
+  return {
+    users: usersResult,
+    roles: rolesResult,
+    invitations: invitationsResult,
+  };
+}
+
+/**
  * Update a user's roles (replaces all current roles)
  * Requires user.edit_role permission
  */
