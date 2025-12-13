@@ -231,6 +231,7 @@ export function AppSidebar() {
     WEIGHT_OPTIONS,
   } = useDisplayPreferences();
   const [user, setUser] = useState<any>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [santaHatOpen, setSantaHatOpen] = useState(false);
   const [santaHatDropdownOpen, setSantaHatDropdownOpen] = useState(false);
@@ -262,18 +263,46 @@ export function AppSidebar() {
     // Get initial user state from session (no network request)
     // We use getSession() instead of getUser() to avoid redundant auth calls
     // The middleware already validates auth on every request
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted) {
-        setUser(session?.user ?? null);
+    async function checkAuth() {
+      try {
+        setIsCheckingAuth(true);
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("[AppSidebar] getSession error:", error);
+        }
+        if (mounted) {
+          setUser(session?.user ?? null);
+          if (!session?.user) {
+            // Fallback: try getUser() if getSession() returns null
+            // This might happen if cookies aren't being read correctly
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError) {
+              console.error("[AppSidebar] getUser error:", userError);
+            } else if (user && mounted) {
+              console.log("[AppSidebar] Found user via getUser() fallback");
+              setUser(user);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("[AppSidebar] Auth check failed:", err);
+      } finally {
+        if (mounted) {
+          setIsCheckingAuth(false);
+        }
       }
-    });
+    }
+    
+    checkAuth();
 
     // Listen for auth state changes - this handles login/logout reactively
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("[AppSidebar] Auth state changed:", _event, session?.user?.email || "no user");
       if (mounted) {
         setUser(session?.user ?? null);
+        setIsCheckingAuth(false);
       }
     });
 

@@ -170,3 +170,4 @@
 The goal is to move as much as possible to server-side and eliminate redundancy, not necessarily reduce the number of parallel queries (which is fine).
 
 
+
