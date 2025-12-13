@@ -33,7 +33,9 @@ export function COGSFormButton({
         open={open}
         onOpenChange={setOpen}
         defaultFormulationId={defaultFormulationId}
-        onSuccess={() => router.refresh()}
+        onSuccess={() => {
+          // Server action already calls revalidatePath() - no need for router.refresh()
+        }}
       />
     </>
   );

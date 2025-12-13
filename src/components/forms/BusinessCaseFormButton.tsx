@@ -25,8 +25,8 @@ export function BusinessCaseFormButton() {
         open={open}
         onOpenChange={setOpen}
         onSuccess={() => {
-          // Refresh the page to show new business case
-          window.location.reload();
+          // Server action already calls revalidatePath() - no need for full page reload
+          // The page will automatically refetch on next navigation or component remount
         }}
       />
     </>

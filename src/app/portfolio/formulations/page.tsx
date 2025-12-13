@@ -3,24 +3,26 @@ import { FormulationFormButton } from "@/components/forms/FormulationFormButton"
 import { FormulationsViewSwitcher } from "@/components/formulations/FormulationsViewSwitcher";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import {
-  getFormulationsWithNestedData,
   getFormulations,
   getFormulationCountries,
 } from "@/lib/db/queries";
 import { getCountries } from "@/lib/db/countries";
+import { getFormulationsWithNestedDataProgressive } from "@/lib/db/progressive-queries";
 import { FormulationsClient } from "./FormulationsClient";
 
 // Cache formulations data for 60 seconds
 export const revalidate = 60;
 
 export default async function FormulationsPage() {
+  // OPTIMIZATION: Fetch initial batch (100 formulations) for fast first load
+  const INITIAL_LIMIT = 100;
   const [
-    formulationsWithNested,
+    initialDataResult,
     formulations,
     countries,
     formulationCountries,
   ] = await Promise.all([
-    getFormulationsWithNestedData(),
+    getFormulationsWithNestedDataProgressive(INITIAL_LIMIT),
     getFormulations(), // Reference data for filter lookups
     getCountries(), // Reference data for filter lookups
     getFormulationCountries(), // For accurate filter counts
@@ -45,7 +47,9 @@ export default async function FormulationsPage() {
         </div>
 
         <FormulationsClient
-          formulationsWithNested={formulationsWithNested}
+          initialFormulations={initialDataResult.initialData}
+          totalCount={initialDataResult.totalCount}
+          hasMore={initialDataResult.hasMore}
           formulations={formulations}
           countries={countries}
           formulationCountries={formulationCountries || []}

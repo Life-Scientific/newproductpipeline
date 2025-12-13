@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useId, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Card,
@@ -60,6 +61,8 @@ export function TenYearProjectionChart({
   formulations,
   noCard = false,
 }: TenYearProjectionChartProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const { currentTheme } = useTheme();
   const {
     currencySymbol,
@@ -71,6 +74,20 @@ export function TenYearProjectionChart({
   const { filters, hasActiveFilters } = usePortfolioFilters();
   const [chartType, setChartType] = useState<"line" | "bar">("line");
   const chartId = useId().replace(/:/g, "-");
+  
+  // Track navigation to force chart remount and animation
+  const [mountKey, setMountKey] = useState(0);
+  
+  // Force remount when pathname changes (even if data is the same)
+  useEffect(() => {
+    setMountKey((prev) => prev + 1);
+  }, [pathname]);
+  
+  // Create a key based on pathname, filters, and mount counter to ensure chart remounts and animates
+  const chartKey = useMemo(() => {
+    const filterKey = JSON.stringify(filters);
+    return `${pathname}-${filterKey}-${mountKey}`;
+  }, [pathname, filters, mountKey]);
 
   // Year range selection state
   const [startYear, setStartYear] = useState<number | null>(null);
@@ -295,8 +312,8 @@ export function TenYearProjectionChart({
 
   const handleDrillDown = (fiscalYear: string) => {
     // Filters are now in URL, so they'll persist automatically
-    // Just navigate to business cases page with fiscal year
-    window.location.href = `/portfolio/business-cases?fiscalYear=${fiscalYear}`;
+    // Navigate to business cases page with fiscal year using client-side navigation
+    router.push(`/portfolio/business-cases?fiscalYear=${fiscalYear}`);
   };
 
   // Calculate unique formulations in the filtered view
@@ -453,7 +470,7 @@ export function TenYearProjectionChart({
   );
 
   const chartContent = (
-    <div className="space-y-4">
+    <div className="space-y-4" key={chartKey}>
       {/* Chart */}
       <motion.div
         className="w-full h-[400px] sm:h-[500px] relative"
@@ -471,9 +488,10 @@ export function TenYearProjectionChart({
             className="w-full h-full"
           >
             {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minHeight={400}>
+              <ResponsiveContainer width="100%" height="100%" minHeight={400} key={chartKey}>
                 {chartType === "line" ? (
                   <AreaChart
+                    key={`${chartKey}-area`} // Key ensures chart remounts for animation
                     data={chartData}
                     onClick={(data: any) => {
                       if (data?.activePayload?.[0]?.payload?.fiscalYear) {
@@ -484,7 +502,6 @@ export function TenYearProjectionChart({
                     }}
                     style={{ cursor: "pointer" }}
                     margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
-                    // Animation props removed - not supported in this chart type
                   >
                     <defs>
                       {/* Revenue gradient using theme color */}
@@ -706,6 +723,7 @@ export function TenYearProjectionChart({
                   </AreaChart>
                 ) : (
                   <BarChart
+                    key={`${chartKey}-bar`} // Key ensures chart remounts for animation
                     data={chartData}
                     onClick={(data: any) => {
                       if (data?.activePayload?.[0]?.payload?.fiscalYear) {
@@ -716,7 +734,6 @@ export function TenYearProjectionChart({
                     }}
                     style={{ cursor: "pointer" }}
                     margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
-                    // Animation props removed - not supported in this chart type
                   >
                     <CartesianGrid
                       strokeDasharray="3 3"

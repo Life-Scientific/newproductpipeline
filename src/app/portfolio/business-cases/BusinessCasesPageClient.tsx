@@ -45,6 +45,8 @@ import {
   generateBusinessCaseImportTemplate,
 } from "@/lib/actions/business-cases";
 import { useToast } from "@/components/ui/use-toast";
+import { useProgressiveLoad } from "@/hooks/use-progressive-load";
+import { fetchBusinessCasesRemaining } from "@/lib/actions/progressive-actions";
 import type { Country } from "@/lib/db/types";
 import type { Formulation } from "@/lib/db/types";
 import type { FormulationCountryDetail } from "@/lib/db/types";
@@ -57,6 +59,8 @@ interface BusinessCaseWithStatus extends BusinessCaseGroupData {
 
 interface BusinessCasesPageClientProps {
   initialBusinessCases: BusinessCaseGroupData[];
+  totalCount: number;
+  hasMore: boolean;
   formulationStatuses?: Map<string, string>; // formulation_id -> status
   countryStatuses?: Map<string, string>; // formulation_country_id or composite key -> status
   formulations: Formulation[]; // Reference data for filter lookups
@@ -66,12 +70,31 @@ interface BusinessCasesPageClientProps {
 
 function BusinessCasesContent({
   initialBusinessCases,
+  totalCount: initialTotalCount,
+  hasMore: initialHasMore,
   formulationStatuses,
   countryStatuses,
   formulations,
   countries,
   formulationCountries,
 }: BusinessCasesPageClientProps) {
+  // OPTIMIZATION: Progressive loading - load remaining data in background
+  const {
+    data: businessCases,
+    isBackgroundLoading,
+    totalCount,
+  } = useProgressiveLoad(
+    initialBusinessCases,
+    initialTotalCount,
+    initialHasMore,
+    fetchBusinessCasesRemaining,
+    {
+      onProgress: (loaded, total) => {
+        console.log(`[Business Cases] Loaded ${loaded} of ${total}`);
+      },
+    },
+  );
+
   // Use global portfolio filters from URL
   const { filters } = usePortfolioFilters();
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -127,18 +150,18 @@ function BusinessCasesContent({
   }, [countries]);
 
   // Enrich business cases with status fields from lookup maps
-  const businessCases: BusinessCaseWithStatus[] = useMemo(() => {
-    return initialBusinessCases.map((bc) => ({
+  const enrichedBusinessCases: BusinessCaseWithStatus[] = useMemo(() => {
+    return businessCases.map((bc) => ({
       ...bc,
       formulation_status: formulationStatuses?.get(bc.formulation_id) || null,
       country_status:
         countryStatuses?.get(`${bc.formulation_id}-${bc.country_id}`) || null,
     }));
-  }, [initialBusinessCases, formulationStatuses, countryStatuses]);
+  }, [businessCases, formulationStatuses, countryStatuses]);
 
   // Convert business cases to filterable format
   const filterableBusinessCases = useMemo(() => {
-    return businessCases.map((bc) => ({
+    return enrichedBusinessCases.map((bc) => ({
       business_case_group_id: bc.business_case_group_id,
       country_id: bc.country_id,
       country_code: bc.country_code || null,
@@ -150,7 +173,7 @@ function BusinessCasesContent({
       formulation_country_id: null, // Not available in BusinessCaseGroupData
       use_group_name: bc.use_group_name || null,
     }));
-  }, [businessCases]);
+  }, [enrichedBusinessCases]);
 
   // Compute filter options with cascading logic using standardized reference data
   const filterOptions = useFilterOptions(
@@ -176,7 +199,7 @@ function BusinessCasesContent({
 
   // Filter business cases based on global filters
   const filteredBusinessCases = useMemo(() => {
-    return businessCases.filter((bc) => {
+    return enrichedBusinessCases.filter((bc) => {
       // Country filter - filters.countries now contains country codes
       if (filters.countries.length > 0) {
         if (!bc.country_code || !filters.countries.includes(bc.country_code)) {
@@ -217,7 +240,7 @@ function BusinessCasesContent({
       }
       return true;
     });
-  }, [businessCases, filters, selectedFormulationCodes]);
+  }, [enrichedBusinessCases, filters, selectedFormulationCodes]);
 
   // Filter formulation-countries based on global filters for accurate counts
   const filteredFormulationCountries = useMemo(() => {
@@ -427,6 +450,11 @@ function BusinessCasesContent({
 
           {/* Business Cases Table */}
           <div>
+            {isBackgroundLoading && (
+              <div className="mb-4 text-sm text-muted-foreground text-center">
+                Loading more business cases... ({businessCases.length} of {totalCount})
+              </div>
+            )}
             <BusinessCasesProjectionTable
               businessCases={filteredBusinessCases}
               canEdit={canEditBusinessCases}
@@ -485,6 +513,8 @@ function BusinessCasesSkeleton() {
 // Wrap in Suspense for useSearchParams
 export function BusinessCasesPageClient({
   initialBusinessCases,
+  totalCount,
+  hasMore,
   formulationStatuses,
   countryStatuses,
   formulations,
@@ -495,6 +525,8 @@ export function BusinessCasesPageClient({
     <Suspense fallback={<BusinessCasesSkeleton />}>
       <BusinessCasesContent
         initialBusinessCases={initialBusinessCases}
+        totalCount={totalCount}
+        hasMore={hasMore}
         formulationStatuses={formulationStatuses}
         countryStatuses={countryStatuses}
         formulations={formulations}

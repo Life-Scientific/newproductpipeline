@@ -2,6 +2,7 @@
 
 import { ChevronDown, ChevronUp, Filter, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,6 +42,7 @@ export function GlobalFilterBar({
   integrated = false,
   containerClassName,
 }: GlobalFilterBarProps) {
+  const pathname = usePathname();
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const { filters, setFilter, clearAllFilters, hasActiveFilters } =
     usePortfolioFilters();
@@ -235,6 +237,12 @@ export function GlobalFilterBar({
             className="flex flex-wrap gap-2 mb-4 pb-4"
           >
             {filters.countries.length > 0 && (
+              <motion.div
+                key={`${pathname}-country-badge`}
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.05 }}
+              >
               <Badge
                 variant="secondary"
                 className="text-xs font-medium gap-1.5 px-2.5 py-1"
@@ -252,8 +260,15 @@ export function GlobalFilterBar({
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
+              </motion.div>
             )}
             {filters.formulations.length > 0 && (
+              <motion.div
+                key={`${pathname}-formulation-badge`}
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+              >
               <Badge
                 variant="secondary"
                 className="text-xs font-medium gap-1.5 px-2.5 py-1"
@@ -271,8 +286,15 @@ export function GlobalFilterBar({
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
+              </motion.div>
             )}
             {filters.useGroups.length > 0 && (
+              <motion.div
+                key={`${pathname}-usegroup-badge`}
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.15 }}
+              >
               <Badge
                 variant="secondary"
                 className="text-xs font-medium gap-1.5 px-2.5 py-1"
@@ -290,8 +312,15 @@ export function GlobalFilterBar({
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
+              </motion.div>
             )}
             {filters.formulationStatuses.length > 0 && (
+              <motion.div
+                key={`${pathname}-formulation-status-badge`}
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.2 }}
+              >
               <Badge
                 variant="secondary"
                 className="text-xs font-medium gap-1.5 px-2.5 py-1"
@@ -310,8 +339,15 @@ export function GlobalFilterBar({
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
+              </motion.div>
             )}
             {filters.countryStatuses.length > 0 && (
+              <motion.div
+                key={`${pathname}-country-status-badge`}
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.25 }}
+              >
               <Badge
                 variant="secondary"
                 className="text-xs font-medium gap-1.5 px-2.5 py-1"
@@ -330,15 +366,17 @@ export function GlobalFilterBar({
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
+              </motion.div>
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Filter Controls */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isExpanded && (
           <motion.div
+            key={`${pathname}-filters-expanded`} // Key ensures animation retriggers on navigation
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -353,6 +391,7 @@ export function GlobalFilterBar({
             >
               {/* Country Filter */}
               <motion.div
+                key={`${pathname}-country-filter`} // Key ensures animation retriggers
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
@@ -379,6 +418,7 @@ export function GlobalFilterBar({
 
               {/* Formulation Filter */}
               <motion.div
+                key={`${pathname}-formulation-filter`} // Key ensures animation retriggers
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
@@ -405,6 +445,7 @@ export function GlobalFilterBar({
 
               {/* Use Group Filter */}
               <motion.div
+                key={`${pathname}-usegroup-filter`} // Key ensures animation retriggers
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
@@ -432,6 +473,7 @@ export function GlobalFilterBar({
 
               {/* Formulation Status Filter */}
               <motion.div
+                key={`${pathname}-formulation-status-filter`} // Key ensures animation retriggers
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -458,6 +500,7 @@ export function GlobalFilterBar({
 
               {/* Country Status Filter */}
               <motion.div
+                key={`${pathname}-country-status-filter`} // Key ensures animation retriggers
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}

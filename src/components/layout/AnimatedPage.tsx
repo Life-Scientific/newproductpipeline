@@ -2,6 +2,7 @@
 
 import { motion, type Variants } from "framer-motion";
 import { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 
 // Container variants for orchestrating children
 const containerVariants: Variants = {
@@ -32,10 +33,15 @@ const itemVariants: Variants = {
 /**
  * Wraps page content with a fade-in animation.
  * Use AnimatedPageStagger for staggered children animations.
+ * 
+ * Uses pathname as key to ensure animations retrigger on navigation.
  */
 export function AnimatedPage({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  
   return (
     <motion.div
+      key={pathname} // Key based on route ensures remount and animation retrigger
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
@@ -61,6 +67,8 @@ export function AnimatedPage({ children }: { children: ReactNode }) {
  *   <Card>Content 2</Card>
  * </AnimatedPageStagger>
  * ```
+ * 
+ * Uses pathname as key to ensure animations retrigger on navigation.
  */
 export function AnimatedPageStagger({
   children,
@@ -71,8 +79,11 @@ export function AnimatedPageStagger({
   className?: string;
   style?: React.CSSProperties;
 }) {
+  const pathname = usePathname();
+  
   return (
     <motion.div
+      key={pathname} // Key based on route ensures remount and animation retrigger
       className={className}
       style={style}
       variants={containerVariants}

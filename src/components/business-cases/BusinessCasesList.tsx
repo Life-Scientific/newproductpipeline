@@ -147,7 +147,7 @@ const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({
             title: "Success",
             description: "Business case deleted successfully",
           });
-          router.refresh();
+          // No router.refresh() - revalidatePath in server action handles cache invalidation
         }
       } catch (error) {
         toast({
@@ -197,7 +197,8 @@ const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({
           open={editOpen}
           onOpenChange={setEditOpen}
           onSuccess={() => {
-            router.refresh();
+            // Server action already calls revalidatePath() - no need for router.refresh()
+            // The page will automatically refetch on next navigation or component remount
           }}
         />
       )}

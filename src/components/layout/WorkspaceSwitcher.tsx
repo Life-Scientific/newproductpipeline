@@ -190,11 +190,10 @@ export function WorkspaceSwitcher() {
               // Only navigate if we got a valid default route
               // If user has no permissions, defaultRoute will be workspace root (e.g., /operations)
               if (defaultRoute) {
-                router.push(defaultRoute);
-                // Small delay to ensure workspace context updates before refresh
-                setTimeout(() => {
-                  router.refresh();
-                }, 100);
+                // Use replace to avoid adding to history and prevent full page reload
+                router.replace(defaultRoute);
+                // REMOVED: router.refresh() - let Next.js handle client-side navigation
+                // The workspace context update and route change will trigger necessary re-renders
               }
             } catch (error) {
               console.error("Failed to switch workspace:", error);

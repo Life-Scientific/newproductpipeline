@@ -86,7 +86,7 @@ export function CropForm({
           });
           onOpenChange(false);
           if (onSuccess) onSuccess();
-          router.refresh();
+          // Server action already calls revalidatePath() - no need for router.refresh()
         }
       } catch (error) {
         toast({

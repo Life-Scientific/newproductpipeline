@@ -98,26 +98,60 @@ export async function getWorkspaceWithMenuBySlug(
 
   if (!data) return null;
 
+  // Extract workspace data (without menu_items)
+  const { workspace_menu_items, ...workspace } = data;
+
   // Filter active menu items and check permissions
-  const allMenuItems = (data.workspace_menu_items as WorkspaceMenuItem[]) || [];
+  const allMenuItems = (workspace_menu_items as WorkspaceMenuItem[]) || [];
+  const activeMenuItems = allMenuItems.filter((item) => item.is_active);
   
-  // Check permissions for each menu item
-  const menuItemsWithPermissions = await Promise.all(
-    allMenuItems
-      .filter((item) => item.is_active)
-      .map(async (item) => {
-        // Check if user can access this URL
+  // OPTIMIZATION: Batch permission check instead of individual calls
+  // This reduces N queries to 1 query, saving 100-500ms
+  const urls = activeMenuItems.map(item => item.url);
+  
+  let accessibleUrls: Set<string>;
+  
+  if (urls.length > 0) {
+    // Batch permission check - single RPC call for all URLs
+    const { data: permissionResults, error: permError } = await supabase.rpc(
+      'can_access_multiple_urls',
+      { p_urls: urls }
+    );
+    
+    if (permError) {
+      // FALLBACK: If batch function doesn't exist or fails, use individual checks
+      // This handles the case where migration hasn't been applied yet
+      console.warn("Batch permission check failed, falling back to individual checks:", permError);
+      
+      const individualChecks = await Promise.all(
+        activeMenuItems.map(async (item) => {
         const { data: canAccess } = await supabase.rpc("can_access_url", {
           p_url: item.url,
         });
-        return { item, canAccess: canAccess !== false };
+          return { url: item.url, canAccess: canAccess !== false };
       })
   );
 
-  // Filter out items user can't access
-  const menuItems = menuItemsWithPermissions
+      accessibleUrls = new Set(
+        individualChecks
     .filter(({ canAccess }) => canAccess)
-    .map(({ item }) => item)
+          .map(({ url }) => url)
+      );
+    } else {
+      // Batch check succeeded - create set of accessible URLs
+      accessibleUrls = new Set(
+        permissionResults
+          ?.filter((r: { can_access: boolean }) => r.can_access)
+          .map((r: { url: string }) => r.url) || []
+      );
+    }
+  } else {
+    accessibleUrls = new Set();
+  }
+
+  // Filter menu items based on batch permission check
+  const menuItems = activeMenuItems
+    .filter((item) => accessibleUrls.has(item.url))
     .sort((a, b) => {
       // Sort by group_name first, then by display_order
       const groupCompare = a.group_name.localeCompare(b.group_name);
@@ -126,7 +160,6 @@ export async function getWorkspaceWithMenuBySlug(
     });
 
   // Return workspace with filtered and sorted menu items
-  const { workspace_menu_items, ...workspace } = data;
   return {
     ...workspace,
     menu_items: menuItems,

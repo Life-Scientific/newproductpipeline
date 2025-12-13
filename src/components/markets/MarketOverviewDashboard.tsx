@@ -369,7 +369,7 @@ export function MarketOverviewDashboard({
         open={createModalOpen}
         onOpenChange={setCreateModalOpen}
         onSuccess={() => {
-          window.location.reload();
+          // Server action already calls revalidatePath() - no need for full page reload
         }}
       />
     </>

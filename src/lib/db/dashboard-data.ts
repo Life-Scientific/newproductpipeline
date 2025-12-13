@@ -21,14 +21,81 @@ export interface DashboardData {
   allExchangeRates: Awaited<ReturnType<typeof getExchangeRates>>;
   formulationCountries: Awaited<ReturnType<typeof getFormulationCountries>>;
   useGroups: Awaited<ReturnType<typeof getAllUseGroups>>;
+  // Status counts for dashboard metrics
+  formulationCountryStatuses: Array<{ country_status: string | null }>;
+  useGroupStatuses: Array<{ use_group_status: string | null; is_active: boolean }>;
 }
 
 /**
  * Fetch all dashboard data in a single function call.
  * This consolidates what was previously 7 separate Promise.all calls.
+ * Now includes status counts to eliminate sequential queries.
  */
 export async function getDashboardData(): Promise<DashboardData> {
-  // Single Promise.all - all queries run in parallel, but it's ONE function call from the page
+  const supabase = await createClient();
+
+  // OPTIMIZATION: Fetch status counts in parallel with other data
+  // This eliminates 2 sequential paginated queries from the portfolio page
+  const fetchStatusCounts = async () => {
+    // Fetch formulation country statuses with pagination (parallel)
+    const fetchFormulationCountryStatuses = async () => {
+      let allStatuses: Array<{ country_status: string | null }> = [];
+      let page = 0;
+      const pageSize = 10000;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data: pageData } = await supabase
+          .from("formulation_country")
+          .select("country_status")
+          .eq("is_active", true)
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (!pageData || pageData.length === 0) {
+          hasMore = false;
+        } else {
+          allStatuses = [...allStatuses, ...pageData];
+          hasMore = pageData.length === pageSize;
+          page++;
+        }
+      }
+      return allStatuses;
+    };
+
+    // Fetch use group statuses with pagination (parallel)
+    const fetchUseGroupStatuses = async () => {
+      let allStatuses: Array<{ use_group_status: string | null; is_active: boolean }> = [];
+      let page = 0;
+      const pageSize = 10000;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data: pageData } = await supabase
+          .from("formulation_country_use_group")
+          .select("use_group_status, is_active")
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (!pageData || pageData.length === 0) {
+          hasMore = false;
+        } else {
+          allStatuses = [...allStatuses, ...pageData];
+          hasMore = pageData.length === pageSize;
+          page++;
+        }
+      }
+      return allStatuses;
+    };
+
+    // Run both status queries in parallel
+    const [formulationCountryStatuses, useGroupStatuses] = await Promise.all([
+      fetchFormulationCountryStatuses(),
+      fetchUseGroupStatuses(),
+    ]);
+
+    return { formulationCountryStatuses, useGroupStatuses };
+  };
+
+  // Single Promise.all - all queries run in parallel, including status counts
   const [
     formulations,
     countries,
@@ -37,6 +104,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     allExchangeRates,
     formulationCountries,
     useGroups,
+    statusCounts,
   ] = await Promise.all([
     getFormulations(),
     getCountries(),
@@ -45,6 +113,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     getExchangeRates(),
     getFormulationCountries(),
     getAllUseGroups(),
+    fetchStatusCounts(),
   ]);
 
   return {
@@ -55,5 +124,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     allExchangeRates,
     formulationCountries,
     useGroups,
+    formulationCountryStatuses: statusCounts.formulationCountryStatuses,
+    useGroupStatuses: statusCounts.useGroupStatuses,
   };
 }

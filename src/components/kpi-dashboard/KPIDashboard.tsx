@@ -203,8 +203,7 @@ export function KPIDashboard({ users, initialData }: KPIDashboardProps) {
       {viewMode === "hierarchy" && (
         <HierarchyManager
           onUpdate={() => {
-            // Refresh data after hierarchy changes
-            window.location.reload();
+            // Server action already calls revalidatePath() - no need for full page reload
           }}
         />
       )}

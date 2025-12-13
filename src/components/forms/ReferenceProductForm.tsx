@@ -122,7 +122,7 @@ export function ReferenceProductForm({
           });
           onOpenChange(false);
           if (onSuccess) onSuccess();
-          router.refresh();
+          // Server action already calls revalidatePath() - no need for router.refresh()
         }
       } catch (error) {
         toast({
@@ -271,7 +271,9 @@ export function ReferenceProductForm({
               <div>
                 <EPPOCropSelector
                   formulationId={referenceProduct.reference_product_id}
-                  onUpdate={() => router.refresh()}
+                  onUpdate={() => {
+                    // Server action already calls revalidatePath() - no need for router.refresh()
+                  }}
                 />
               </div>
 
@@ -279,7 +281,9 @@ export function ReferenceProductForm({
               <div>
                 <EPPOTargetSelector
                   formulationId={referenceProduct.reference_product_id}
-                  onUpdate={() => router.refresh()}
+                  onUpdate={() => {
+                    // Server action already calls revalidatePath() - no need for router.refresh()
+                  }}
                 />
               </div>
             </div>

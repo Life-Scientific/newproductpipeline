@@ -1,9 +1,9 @@
 import {
-  getBusinessCasesForProjectionTable,
   getFormulations,
   getFormulationCountries,
 } from "@/lib/db/queries";
 import { getCountries } from "@/lib/db/countries";
+import { getBusinessCasesForProjectionTableProgressive } from "@/lib/db/progressive-queries";
 import { createClient } from "@/lib/supabase/server";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { BusinessCasesPageClient } from "./BusinessCasesPageClient";
@@ -12,19 +12,12 @@ import { BusinessCasesPageClient } from "./BusinessCasesPageClient";
 export const dynamic = "force-dynamic";
 
 export default async function BusinessCasesPage() {
-  // Fetch business cases, formulations, countries, and formulation-countries in parallel
-  const [businessCases, formulations, countries, formulationCountriesData] =
-    await Promise.all([
-      getBusinessCasesForProjectionTable(),
-      getFormulations(), // Reference data for filter lookups
-      getCountries(), // Reference data for filter lookups
-      getFormulationCountries(), // For accurate filter counts
-    ]);
-
-  // Also fetch formulation-country data for country status lookup (with pagination)
-  // This is still needed for enriching business cases with country_status
   const supabase = await createClient();
-  let formulationCountriesRaw: any[] = [];
+  
+  // OPTIMIZATION: Fetch all data in parallel, including formulation_country status lookup
+  // This eliminates the sequential loop that was causing slowness
+  const fetchFormulationCountryStatuses = async () => {
+    let allStatuses: any[] = [];
   let page = 0;
   const pageSize = 10000;
   let hasMore = true;
@@ -39,11 +32,29 @@ export default async function BusinessCasesPage() {
     if (!pageData || pageData.length === 0) {
       hasMore = false;
     } else {
-      formulationCountriesRaw = [...formulationCountriesRaw, ...pageData];
+        allStatuses = [...allStatuses, ...pageData];
       hasMore = pageData.length === pageSize;
       page++;
     }
   }
+    return allStatuses;
+  };
+
+  // OPTIMIZATION: Fetch initial batch (100 business case groups) for fast first load
+  const INITIAL_LIMIT = 100;
+  const [
+    initialDataResult,
+    formulations,
+    countries,
+    formulationCountriesData,
+    formulationCountriesRaw,
+  ] = await Promise.all([
+    getBusinessCasesForProjectionTableProgressive(INITIAL_LIMIT),
+    getFormulations(), // Reference data for filter lookups
+    getCountries(), // Reference data for filter lookups
+    getFormulationCountries(), // For accurate filter counts
+    fetchFormulationCountryStatuses(), // Country status lookup - now parallel!
+  ]);
 
   // Build status lookup maps
   const formulationStatuses = new Map<string, string>();
@@ -78,7 +89,9 @@ export default async function BusinessCasesPage() {
           </div>
 
           <BusinessCasesPageClient
-            initialBusinessCases={businessCases}
+            initialBusinessCases={initialDataResult.initialData}
+            totalCount={initialDataResult.totalCount}
+            hasMore={initialDataResult.hasMore}
             formulationStatuses={formulationStatuses}
             countryStatuses={countryStatuses}
             formulations={formulations}

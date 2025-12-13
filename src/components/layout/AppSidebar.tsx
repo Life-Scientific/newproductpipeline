@@ -231,6 +231,7 @@ export function AppSidebar() {
     WEIGHT_OPTIONS,
   } = useDisplayPreferences();
   const [user, setUser] = useState<any>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [santaHatOpen, setSantaHatOpen] = useState(false);
   const [santaHatDropdownOpen, setSantaHatDropdownOpen] = useState(false);
@@ -241,7 +242,9 @@ export function AppSidebar() {
     try {
       const result = await revalidateAllCaches();
       if (result.success) {
-        // Force a page refresh to load fresh data
+        // Invalidate server cache - Next.js will refetch on next navigation
+        // Use router.refresh() only as a background refresh, not blocking
+        // This allows the UI to remain responsive
         router.refresh();
       }
     } catch (error) {
@@ -255,29 +258,66 @@ export function AppSidebar() {
   useForesightInit();
 
   useEffect(() => {
+    let mounted = true;
+    
     // Get initial user state from session (no network request)
     // We use getSession() instead of getUser() to avoid redundant auth calls
     // The middleware already validates auth on every request
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    async function checkAuth() {
+      try {
+        setIsCheckingAuth(true);
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("[AppSidebar] getSession error:", error);
+        }
+        if (mounted) {
+          setUser(session?.user ?? null);
+          if (!session?.user) {
+            // Fallback: try getUser() if getSession() returns null
+            // This might happen if cookies aren't being read correctly
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError) {
+              console.error("[AppSidebar] getUser error:", userError);
+            } else if (user && mounted) {
+              console.log("[AppSidebar] Found user via getUser() fallback");
+              setUser(user);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("[AppSidebar] Auth check failed:", err);
+      } finally {
+        if (mounted) {
+          setIsCheckingAuth(false);
+        }
+      }
+    }
+    
+    checkAuth();
 
     // Listen for auth state changes - this handles login/logout reactively
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      console.log("[AppSidebar] Auth state changed:", _event, session?.user?.email || "no user");
+      if (mounted) {
+        setUser(session?.user ?? null);
+        setIsCheckingAuth(false);
+      }
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase]);
+    // supabase is a singleton from useSupabase() - it never changes, so we don't need it in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    // Navigate to home - no need for refresh since we're leaving the app
     router.push("/");
-    router.refresh();
   };
 
   const isActive = (url: string) => {
@@ -287,14 +327,28 @@ export function AppSidebar() {
     return pathname?.startsWith(url);
   };
 
+  // OPTIMIZATION: Use stable keys for memoization to prevent unnecessary re-renders
+  // Only re-compute when workspace_id or menu_items count changes, not on object reference changes
+  const workspaceId = workspaceWithMenu?.workspace_id;
+  const menuItemsLength = workspaceWithMenu?.menu_items?.length ?? 0;
+  const menuItems = workspaceWithMenu?.menu_items ?? [];
+  
+  // Create a stable key from menu items for comparison
+  // This prevents re-computation when the array reference changes but content is the same
+  const menuItemsKey = useMemo(() => {
+    if (!menuItems || menuItems.length === 0) return '';
+    // Create a stable key from menu item IDs and their order
+    return menuItems.map(item => `${item.menu_item_id}-${item.display_order}`).join('|');
+  }, [menuItems]);
+
   // Get menu items from database (respects is_active flag)
   const menuGroups = useMemo(() => {
-    if (!workspaceWithMenu || !workspaceWithMenu.menu_items) return [];
+    if (!workspaceWithMenu || !menuItems || menuItems.length === 0) return [];
 
     // Group items by group_name
     const grouped = new Map<string, WorkspaceMenuItem[]>();
 
-    workspaceWithMenu.menu_items.forEach((item) => {
+    menuItems.forEach((item) => {
       if (!grouped.has(item.group_name)) {
         grouped.set(item.group_name, []);
       }
@@ -338,7 +392,7 @@ export function AppSidebar() {
     });
 
     return orderedGroups;
-  }, [workspaceWithMenu]);
+  }, [workspaceId, menuItemsKey]);
 
   const userInitial = user?.email?.charAt(0).toUpperCase() || "U";
   const userName = user?.email?.split("@")[0] || "User";

@@ -59,7 +59,7 @@ const IngredientActionsCell = memo(function IngredientActionsCell({
             title: "Success",
             description: "Ingredient deleted successfully",
           });
-          router.refresh();
+          // No router.refresh() - revalidatePath in server action handles cache invalidation
         }
       } catch (error) {
         toast({

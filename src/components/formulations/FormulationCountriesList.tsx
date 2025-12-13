@@ -413,7 +413,7 @@ export function FormulationCountriesList({
           }}
           onSuccess={() => {
             setEditingCountryId(null);
-            router.refresh();
+            // No router.refresh() - revalidatePath in server action handles cache invalidation
           }}
         />
       )}

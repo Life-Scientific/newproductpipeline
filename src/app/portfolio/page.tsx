@@ -52,6 +52,8 @@ export default async function Home() {
     allExchangeRates,
     formulationCountries,
     useGroups,
+    formulationCountryStatuses,
+    useGroupStatuses,
   } = dashboardData;
 
   // Create exchange rate map: country_id -> exchange_rate_to_eur
@@ -83,51 +85,11 @@ export default async function Home() {
     (f) => f.status === "Being Monitored",
   ).length;
 
-  // Fetch formulation countries and use groups for status counts (with pagination)
+  // OPTIMIZATION: Status counts are now included in getDashboardData()
+  // No need to fetch them separately - they're already parallelized
+
+  // Still need supabase client for status history and registration pipeline queries
   const supabase = await createClient();
-
-  // Fetch formulation country statuses with pagination
-  let formulationCountryStatuses: any[] = [];
-  let fcPage = 0;
-  const fcPageSize = 10000;
-  let fcHasMore = true;
-
-  while (fcHasMore) {
-    const { data: pageData } = await supabase
-      .from("formulation_country")
-      .select("country_status")
-      .eq("is_active", true)
-      .range(fcPage * fcPageSize, (fcPage + 1) * fcPageSize - 1);
-
-    if (!pageData || pageData.length === 0) {
-      fcHasMore = false;
-    } else {
-      formulationCountryStatuses = [...formulationCountryStatuses, ...pageData];
-      fcHasMore = pageData.length === fcPageSize;
-      fcPage++;
-    }
-  }
-
-  // Fetch use group statuses with pagination (for status counts only)
-  let useGroupStatuses: any[] = [];
-  let ugPage = 0;
-  const ugPageSize = 10000;
-  let ugHasMore = true;
-
-  while (ugHasMore) {
-    const { data: pageData } = await supabase
-      .from("formulation_country_use_group")
-      .select("use_group_status, is_active")
-      .range(ugPage * ugPageSize, (ugPage + 1) * ugPageSize - 1);
-
-    if (!pageData || pageData.length === 0) {
-      ugHasMore = false;
-    } else {
-      useGroupStatuses = [...useGroupStatuses, ...pageData];
-      ugHasMore = pageData.length === ugPageSize;
-      ugPage++;
-    }
-  }
 
   // Calculate formulation status counts
   const formulationStatusCounts = formulations.reduce(
@@ -140,7 +102,7 @@ export default async function Home() {
   );
 
   // Calculate country status counts
-  const countryStatusCounts = formulationCountryStatuses.reduce(
+  const countryStatusCounts = (formulationCountryStatuses || []).reduce(
     (acc, fc) => {
       const status = getCountryStatus(fc) || "Unknown";
       acc[status] = (acc[status] || 0) + 1;
@@ -150,7 +112,7 @@ export default async function Home() {
   );
 
   // Calculate use group status counts (use is_active if use_group_status is null)
-  const useGroupStatusCounts = useGroupStatuses.reduce(
+  const useGroupStatusCounts = (useGroupStatuses || []).reduce(
     (acc, ug) => {
       const status =
         getUseGroupStatus(ug) || (ug.is_active ? "Active" : "Inactive");

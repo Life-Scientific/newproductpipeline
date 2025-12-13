@@ -13,24 +13,48 @@ import {
   type FilterableFormulationCountry,
 } from "@/hooks/use-filter-options";
 import { computeFilteredCounts } from "@/lib/utils/filter-counts";
+import { useProgressiveLoad } from "@/hooks/use-progressive-load";
+import { fetchFormulationsInitial, fetchFormulationsRemaining } from "@/lib/actions/progressive-actions";
 import type { FormulationWithNestedData } from "@/lib/db/queries";
 import type { Formulation } from "@/lib/db/types";
 import type { Country } from "@/lib/db/types";
 import type { FormulationCountryDetail } from "@/lib/db/types";
 
 interface FormulationsClientProps {
-  formulationsWithNested: FormulationWithNestedData[];
+  initialFormulations: FormulationWithNestedData[];
+  totalCount: number;
+  hasMore: boolean;
   formulations: Formulation[];
   countries: Country[];
   formulationCountries: FormulationCountryDetail[];
 }
 
 function FormulationsContent({
-  formulationsWithNested,
+  initialFormulations,
+  totalCount: initialTotalCount,
+  hasMore: initialHasMore,
   formulations,
   countries,
   formulationCountries,
 }: FormulationsClientProps) {
+  // OPTIMIZATION: Progressive loading - load remaining data in background
+  const {
+    data: formulationsWithNested,
+    isBackgroundLoading,
+    totalCount,
+  } = useProgressiveLoad(
+    initialFormulations,
+    initialTotalCount,
+    initialHasMore,
+    fetchFormulationsRemaining,
+    {
+      onProgress: (loaded, total) => {
+        // Optional: Could show progress indicator
+        console.log(`[Formulations] Loaded ${loaded} of ${total}`);
+      },
+    },
+  );
+
   // Use global portfolio filters from URL
   const { filters } = usePortfolioFilters();
 
@@ -228,6 +252,11 @@ function FormulationsContent({
         defaultExpanded={true}
         filteredCounts={filteredCounts}
       />
+      {isBackgroundLoading && (
+        <div className="mb-4 text-sm text-muted-foreground text-center">
+          Loading more formulations... ({formulationsWithNested.length} of {totalCount})
+        </div>
+      )}
       <FormulationsPageContent formulationsWithNested={filteredFormulations} />
     </>
   );

@@ -792,7 +792,7 @@ export function FormulationsExcelView({
           });
           setEditedData({});
           setEditingCell(null);
-          router.refresh();
+          // No router.refresh() - revalidatePath in server action handles cache invalidation
         }
       } catch (error) {
         toast({
