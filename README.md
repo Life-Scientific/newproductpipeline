@@ -272,28 +272,16 @@ This checks for common problems in the code.
 
 ---
 
-## 📖 Additional Documentation
+## 📖 Documentation
 
-More detailed documentation is in the `docs/` folder:
+**👉 [View Documentation Hub](./docs/README.md)** - Complete guide to all documentation
 
-### Getting Started
-| Document | Description |
-|----------|-------------|
-| [Git Workflow](./docs/workflow/GIT_WORKFLOW.md) | **Start here!** How to create branches, make changes, and submit PRs |
-| [SETUP.md](./docs/SETUP.md) | Original setup notes |
-| [PRODUCT_CONTEXT.md](./docs/PRODUCT_CONTEXT.md) | What this app does and who uses it |
+### Quick Links
+- **[Git Workflow](./docs/workflow/GIT_WORKFLOW.md)** - **Start here!** How to create branches and make changes
+- **[Documentation Index](./docs/INDEX.md)** - Full list of all docs
+- **[Setup Guide](./docs/SETUP.md)** - Detailed setup instructions
 
-### Development Guides
-| Document | Description |
-|----------|-------------|
-| [DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md) | Spacing, typography, component patterns |
-| [SCHEMA_MIGRATION.md](./docs/SCHEMA_MIGRATION.md) | Database field naming conventions |
-| [SUPABASE_LOCAL_DEVELOPMENT.md](./docs/SUPABASE_LOCAL_DEVELOPMENT.md) | Supabase database setup and migrations |
-
-### Planning & Improvements
-| Document | Description |
-|----------|-------------|
-| [Overhaul Plans](./docs/overhaul/) | Technical improvement plans and optimizations |
+**Tip:** All markdown files render beautifully on GitHub - just browse the `docs/` folder!
 
 ---
 
