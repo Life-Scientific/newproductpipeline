@@ -1095,17 +1095,28 @@ export async function getBusinessCasesForChart() {
   );
 
   // Resolve use groups to formulation_country_ids
+  // OPTIMIZATION: Parallelize batch processing instead of sequential loop
   let useGroupFormulationCountryIds: string[] = [];
   const useGroupToFormulationCountryMap = new Map<string, string>();
   if (useGroupIds.length > 0) {
     const batchSize = 5000;
+    const batches: string[][] = [];
     for (let i = 0; i < useGroupIds.length; i += batchSize) {
-      const batch = useGroupIds.slice(i, i + batchSize);
-      const { data: ugData } = await supabase
+      batches.push(useGroupIds.slice(i, i + batchSize));
+    }
+
+    // Fetch all batches in parallel
+    const batchPromises = batches.map((batch) =>
+      supabase
         .from("formulation_country_use_group")
         .select("formulation_country_use_group_id, formulation_country_id")
-        .in("formulation_country_use_group_id", batch);
+        .in("formulation_country_use_group_id", batch),
+    );
 
+    const batchResults = await Promise.all(batchPromises);
+
+    // Process all results
+    batchResults.forEach(({ data: ugData }) => {
       if (ugData) {
         ugData.forEach((ug) => {
           if (
@@ -1120,7 +1131,7 @@ export async function getBusinessCasesForChart() {
           }
         });
       }
-    }
+    });
   }
 
   // Combine all formulation_country_ids (direct + via use groups)
@@ -1143,21 +1154,29 @@ export async function getBusinessCasesForChart() {
 
   if (allFormulationCountryIds.length > 0) {
     try {
-      // Fetch all country statuses from the view (it's a relatively small dataset)
-      // Use pagination to handle large results
-      const pageSize = 1000;
-      let page = 0;
-      let hasMore = true;
+      // OPTIMIZATION: Get total count first, then parallelize pagination
+      const { count: totalCount } = await supabase
+        .from("vw_formulation_country_detail")
+        .select("formulation_country_id", { count: "exact", head: true });
 
-      while (hasMore) {
-        const { data: fcData, error: fcError } = await supabase
+      const pageSize = 1000;
+      const totalPages = Math.ceil((totalCount || 0) / pageSize);
+
+      // Fetch all pages in parallel
+      const pagePromises = Array.from({ length: totalPages }, (_, page) =>
+        supabase
           .from("vw_formulation_country_detail")
           .select("formulation_country_id, country_status")
-          .range(page * pageSize, (page + 1) * pageSize - 1);
+          .range(page * pageSize, (page + 1) * pageSize - 1),
+      );
 
+      const pageResults = await Promise.all(pagePromises);
+
+      // Process all results
+      for (const { data: fcData, error: fcError } of pageResults) {
         if (fcError) {
           console.error(
-            `[getBusinessCasesForChart] Failed to fetch country_status from view (page ${page}):`,
+            `[getBusinessCasesForChart] Failed to fetch country_status from view:`,
             fcError.message,
             fcError.code,
             fcError.details,
@@ -1179,19 +1198,11 @@ export async function getBusinessCasesForChart() {
               );
             }
           });
-
-          if (fcData.length < pageSize) {
-            hasMore = false;
-          } else {
-            page++;
-          }
-        } else {
-          hasMore = false;
         }
       }
 
       console.log(
-        `[getBusinessCasesForChart] Fetched ${countryStatusMap.size} country_status records (from ${page + 1} pages)`,
+        `[getBusinessCasesForChart] Fetched ${countryStatusMap.size} country_status records (from ${totalPages} pages)`,
       );
     } catch (err) {
       console.error(

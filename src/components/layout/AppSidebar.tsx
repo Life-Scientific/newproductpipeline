@@ -271,7 +271,7 @@ export function AppSidebar() {
           console.error("[AppSidebar] getSession error:", error);
         }
         if (mounted) {
-          setUser(session?.user ?? null);
+      setUser(session?.user ?? null);
           if (!session?.user) {
             // Fallback: try getUser() if getSession() returns null
             // This might happen if cookies aren't being read correctly
@@ -301,7 +301,7 @@ export function AppSidebar() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log("[AppSidebar] Auth state changed:", _event, session?.user?.email || "no user");
       if (mounted) {
-        setUser(session?.user ?? null);
+      setUser(session?.user ?? null);
         setIsCheckingAuth(false);
       }
     });

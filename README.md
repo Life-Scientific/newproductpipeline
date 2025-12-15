@@ -268,21 +268,20 @@ This checks for common problems in the code.
 - **Don't modify files in `supabase/migrations/`** - these are database changes that need coordination
 - Don't delete files unless you're sure they're unused
 - Don't change `package.json` without asking
-- Don't commit directly to `main` branch (use pull requests)
+- **Don't commit directly to `main` branch** - always create a branch first (see [Git Workflow](./docs/workflow/GIT_WORKFLOW.md))
 
 ---
 
-## 📖 Additional Documentation
+## 📖 Documentation
 
-More detailed documentation is in the `docs/` folder:
+**👉 [View Documentation Hub](./docs/README.md)** - Complete guide to all documentation
 
-| Document | Description |
-|----------|-------------|
-| [SETUP.md](./docs/SETUP.md) | Original setup notes |
-| [DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md) | Spacing, typography, component patterns |
-| [PRODUCT_CONTEXT.md](./docs/PRODUCT_CONTEXT.md) | What this app does and who uses it |
-| [SCHEMA_MIGRATION.md](./docs/SCHEMA_MIGRATION.md) | Database field naming conventions |
-| [SUPABASE_LOCAL_DEVELOPMENT.md](./docs/SUPABASE_LOCAL_DEVELOPMENT.md) | Supabase database setup and migrations |
+### Quick Links
+- **[Git Workflow](./docs/workflow/GIT_WORKFLOW.md)** - **Start here!** How to create branches and make changes
+- **[Documentation Index](./docs/INDEX.md)** - Full list of all docs
+- **[Setup Guide](./docs/SETUP.md)** - Detailed setup instructions
+
+**Tip:** All markdown files render beautifully on GitHub - just browse the `docs/` folder!
 
 ---
 

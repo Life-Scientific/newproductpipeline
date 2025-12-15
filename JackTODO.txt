@@ -1,1 +1,0 @@
-Formulation table pagination not working. filtering too or it needs a refresh at least. 
