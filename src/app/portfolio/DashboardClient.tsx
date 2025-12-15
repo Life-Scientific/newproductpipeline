@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
+import { Suspense, useMemo, useState, useEffect, useRef } from "react";
 import { GlobalFilterBar } from "@/components/filters/GlobalFilterBar";
 import { TenYearProjectionChart } from "@/components/charts/TenYearProjectionChart";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +13,11 @@ import {
 } from "@/hooks/use-filter-options";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { computeFilteredCounts } from "@/lib/utils/filter-counts";
+import { fetchBusinessCasesForChartAction } from "@/lib/actions/chart-actions";
+import {
+  getCachedChartData,
+  setCachedChartData,
+} from "@/lib/utils/chart-cache";
 import type { Database } from "@/lib/supabase/database.types";
 import type { Country } from "@/lib/db/types";
 import type { Formulation } from "@/lib/db/types";
@@ -42,7 +47,7 @@ interface DashboardClientProps {
 }
 
 function DashboardContent({
-  businessCases,
+  businessCases: initialBusinessCases,
   formulations,
   countries,
   formulationCountries,
@@ -50,6 +55,74 @@ function DashboardContent({
 }: DashboardClientProps) {
   // Use global portfolio filters from URL
   const { filters } = usePortfolioFilters();
+
+  // OPTIMIZATION: Stale-while-revalidate caching pattern
+  // 1. Check cache first for instant render
+  // 2. Always fetch fresh data in background
+  // 3. Update cache when fresh data arrives
+  
+  // Serialize filters for stable comparison
+  const filtersKey = useMemo(() => JSON.stringify(filters), [filters]);
+  
+  const [businessCases, setBusinessCases] = useState<BusinessCase[]>(() => {
+    // Initialize from cache if available, otherwise use server-provided empty array
+    const cached = getCachedChartData(filters);
+    return cached || initialBusinessCases;
+  });
+  const [isLoadingBusinessCases, setIsLoadingBusinessCases] = useState(
+    businessCases.length === 0,
+  );
+  const fetchInProgressRef = useRef(false); // Prevent duplicate fetches
+  const lastFiltersKeyRef = useRef<string>(filtersKey); // Track filter changes
+  const hasInitializedRef = useRef(false); // Track if we've done initial fetch
+
+  useEffect(() => {
+    const filtersChanged = lastFiltersKeyRef.current !== filtersKey;
+    
+    // Only proceed if filters actually changed or this is the first run
+    if (!filtersChanged && hasInitializedRef.current) {
+      return; // No change, skip - prevents infinite loops
+    }
+    
+    lastFiltersKeyRef.current = filtersKey;
+
+    // Check cache first (only on mount or filter change)
+    const cached = getCachedChartData(filters);
+    const hasCachedData = cached && cached.length > 0;
+    
+    if (hasCachedData) {
+      // Use cached data immediately for instant render
+      setBusinessCases(cached);
+      setIsLoadingBusinessCases(false);
+    } else if (initialBusinessCases.length === 0) {
+      // No cache and no initial data - show loading
+      setIsLoadingBusinessCases(true);
+    }
+
+    // Fetch fresh data in background (stale-while-revalidate)
+    // Only fetch if not already fetching
+    if (!fetchInProgressRef.current) {
+      fetchInProgressRef.current = true;
+      hasInitializedRef.current = true;
+
+      fetchBusinessCasesForChartAction()
+        .then((freshData) => {
+          // Update cache with fresh data
+          setCachedChartData(filters, freshData);
+          // Update UI with fresh data (may be same as cached, but ensures freshness)
+          setBusinessCases(freshData);
+          setIsLoadingBusinessCases(false);
+          fetchInProgressRef.current = false;
+        })
+        .catch((error) => {
+          console.error("Failed to fetch business cases for chart:", error);
+          setIsLoadingBusinessCases(false);
+          fetchInProgressRef.current = false;
+          // On error, keep cached data if available (already set above)
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtersKey, initialBusinessCases.length]); // Only depend on filtersKey, filters is stable from useMemo
 
   // Create formulation status lookup map
   const formulationStatusMap = useMemo(() => {

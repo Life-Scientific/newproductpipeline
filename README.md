@@ -268,7 +268,7 @@ This checks for common problems in the code.
 - **Don't modify files in `supabase/migrations/`** - these are database changes that need coordination
 - Don't delete files unless you're sure they're unused
 - Don't change `package.json` without asking
-- Don't commit directly to `main` branch (use pull requests)
+- **Don't commit directly to `main` branch** - always create a branch first (see [Git Workflow](./docs/workflow/GIT_WORKFLOW.md))
 
 ---
 
@@ -276,13 +276,24 @@ This checks for common problems in the code.
 
 More detailed documentation is in the `docs/` folder:
 
+### Getting Started
 | Document | Description |
 |----------|-------------|
+| [Git Workflow](./docs/workflow/GIT_WORKFLOW.md) | **Start here!** How to create branches, make changes, and submit PRs |
 | [SETUP.md](./docs/SETUP.md) | Original setup notes |
-| [DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md) | Spacing, typography, component patterns |
 | [PRODUCT_CONTEXT.md](./docs/PRODUCT_CONTEXT.md) | What this app does and who uses it |
+
+### Development Guides
+| Document | Description |
+|----------|-------------|
+| [DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md) | Spacing, typography, component patterns |
 | [SCHEMA_MIGRATION.md](./docs/SCHEMA_MIGRATION.md) | Database field naming conventions |
 | [SUPABASE_LOCAL_DEVELOPMENT.md](./docs/SUPABASE_LOCAL_DEVELOPMENT.md) | Supabase database setup and migrations |
+
+### Planning & Improvements
+| Document | Description |
+|----------|-------------|
+| [Overhaul Plans](./docs/overhaul/) | Technical improvement plans and optimizations |
 
 ---
 
