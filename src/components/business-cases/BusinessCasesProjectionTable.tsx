@@ -455,6 +455,23 @@ export function BusinessCasesProjectionTable({
                     bc.effective_start_fiscal_year,
                   );
 
+                  // Helper to check if a column fiscal year has data for this business case
+                  // The column fiscal year might be FY26, but if this business case starts at FY30,
+                  // we need to calculate which year_offset corresponds to FY26 (or if it even exists)
+                  const getFiscalYearForColumn = (columnFy: number): string | null => {
+                    // Calculate year_offset: columnFy = effectiveStartYear + (year_offset - 1)
+                    // So: year_offset = columnFy - effectiveStartYear + 1
+                    const yearOffset = columnFy - effectiveStartYear + 1;
+                    // Only return valid year offsets (1-10)
+                    if (yearOffset >= 1 && yearOffset <= 10) {
+                      // The fiscal year string in years_data is calculated as:
+                      // effectiveStartYear + (year_offset - 1)
+                      // Which equals columnFy, so we can use it directly
+                      return getFiscalYearStr(columnFy);
+                    }
+                    return null;
+                  };
+
                   return (
                     <TableRow
                       key={`${bc.business_case_group_id}-${metricIndex}`}
@@ -551,16 +568,19 @@ export function BusinessCasesProjectionTable({
                       {fiscalYearColumns.map((col) => {
                         const isBeforeEffectiveStart =
                           col.fiscalYear < effectiveStartYear;
+                        const fiscalYearStr = getFiscalYearForColumn(col.fiscalYear);
+                        const hasData = fiscalYearStr !== null && bc.years_data[fiscalYearStr] !== undefined;
+                        
                         return (
                           <TableCell
                             key={col.key}
                             className={cn(
                               "text-center text-sm tabular-nums",
-                              isBeforeEffectiveStart &&
+                              (isBeforeEffectiveStart || !hasData) &&
                                 "bg-muted/50 text-muted-foreground",
                             )}
                           >
-                            {isBeforeEffectiveStart
+                            {(isBeforeEffectiveStart || !hasData)
                               ? "—"
                               : metric.getValue(col.fiscalYear)}
                           </TableCell>
@@ -571,9 +591,12 @@ export function BusinessCasesProjectionTable({
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() =>
-                              setEditingGroupId(bc.business_case_group_id)
-                            }
+                            onClick={() => {
+                              if (bc.business_case_group_id) {
+                                setEditingGroupId(bc.business_case_group_id);
+                              }
+                            }}
+                            disabled={!bc.business_case_group_id}
                             className="h-8"
                           >
                             <Edit className="h-3.5 w-3.5 mr-1" />

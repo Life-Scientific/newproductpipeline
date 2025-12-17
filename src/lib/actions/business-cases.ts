@@ -603,6 +603,13 @@ export async function updateBusinessCaseGroupAction(
   // Get change reason from form data
   const changeReason = formData.get("change_reason") as string | null;
 
+  // Validate change_reason is provided (required for updates/versions)
+  if (!changeReason || !changeReason.trim()) {
+    return {
+      error: "Change reason is required. Please provide an explanation for this update for audit tracking.",
+    };
+  }
+
   // Extract year data (10 years)
   const yearData: Array<{
     year_offset: number;

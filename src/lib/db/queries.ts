@@ -1705,14 +1705,17 @@ export async function getBusinessCasesForProjectionTable(
 
       // Always overwrite with the current year_offset's data
       // This ensures we're using the correct mapping regardless of stored fiscal_year
-      group.years_data[displayFiscalYearStr] = {
-        volume: bc.volume,
-        nsp: bc.nsp,
-        cogs_per_unit: bc.cogs_per_unit,
-        total_revenue: bc.total_revenue,
-        total_margin: bc.total_margin,
-        margin_percent: bc.margin_percent,
-      };
+      // Only store data if volume and nsp are not null (null means no data for this year)
+      if (bc.volume !== null && bc.nsp !== null) {
+        group.years_data[displayFiscalYearStr] = {
+          volume: bc.volume,
+          nsp: bc.nsp,
+          cogs_per_unit: bc.cogs_per_unit,
+          total_revenue: bc.total_revenue,
+          total_margin: bc.total_margin,
+          margin_percent: bc.margin_percent,
+        };
+      }
     });
 
     // Update groups with use_group_id (using formulation_country_use_group_id as identifier)
