@@ -65,20 +65,44 @@ export function BusinessCasesProjectionTable({
     CURRENT_FISCAL_YEAR + DEFAULT_YEAR_RANGE - 1,
   );
 
-  // Helper function to get effective start fiscal year from stored value
+  /**
+   * Parse fiscal year string to numeric year (2-digit format)
+   * Follows the codebase pattern of using /FY(\d{2})/ regex for consistency
+   * Includes fallback for 4-digit years (FY2026) as defensive programming
+   * 
+   * @param fy Fiscal year string (e.g., "FY26" or "FY2026")
+   * @returns Numeric year (e.g., 26) or null if invalid
+   */
+  const parseFiscalYear = (fy: string | null): number | null => {
+    if (!fy) return null;
+    
+    // Primary pattern: match 2-digit fiscal years (FY26, FY27, etc.)
+    // This matches the pattern used throughout the codebase
+    const match = fy.match(/FY(\d{2})/);
+    if (match) {
+      return parseInt(match[1], 10);
+    }
+    
+    // Fallback: handle 4-digit years (FY2026) as defensive programming
+    // Database should always return 2-digit, but this handles edge cases
+    const yearStr = fy.replace(/^FY/i, "");
+    const yearNum = parseInt(yearStr, 10);
+    if (!isNaN(yearNum) && yearNum >= 2000) {
+      return yearNum - 2000;
+    }
+    
+    return null;
+  };
+
+  /**
+   * Get effective start fiscal year from stored value
+   * Uses the same parsing logic as parseFiscalYear for consistency
+   */
   const getEffectiveStartFiscalYear = (
     effectiveStartFiscalYear: string | null,
   ): number => {
-    if (!effectiveStartFiscalYear) {
-      return CURRENT_FISCAL_YEAR;
-    }
-
-    const match = effectiveStartFiscalYear.match(/FY(\d{2})/);
-    if (!match) {
-      return CURRENT_FISCAL_YEAR;
-    }
-
-    return parseInt(match[1], 10);
+    const parsed = parseFiscalYear(effectiveStartFiscalYear);
+    return parsed ?? CURRENT_FISCAL_YEAR;
   };
 
   // Calculate the available range of fiscal years from data
@@ -133,13 +157,6 @@ export function BusinessCasesProjectionTable({
 
   const hasMore = displayCount < businessCases.length;
   const remainingCount = businessCases.length - displayCount;
-
-  // Helper function to parse fiscal year
-  const parseFiscalYear = (fy: string | null): number | null => {
-    if (!fy) return null;
-    const match = fy.match(/FY(\d{2})/);
-    return match ? parseInt(match[1], 10) : null;
-  };
 
   // Helper function to format numbers
   const formatNumber = (
@@ -350,6 +367,11 @@ export function BusinessCasesProjectionTable({
                 const productIsDry = isDryProduct(uom);
                 const displayUnit = getDisplayUnit(uom);
 
+                // Helper to get fiscal year string in consistent format
+                const getFiscalYearStr = (fyNum: number): string => {
+                  return `FY${String(fyNum).padStart(2, "0")}`;
+                };
+
                 const metricRows = [
                   {
                     // Show Volume for wet products, Weight for dry products
@@ -359,9 +381,9 @@ export function BusinessCasesProjectionTable({
                         ? `Weight (${weightUnit})`
                         : `Quantity (${uom})`,
                     getValue: (fy: number) => {
-                      const fyStr = `FY${fy.toString().padStart(2, "0")}`;
+                      const fyStr = getFiscalYearStr(fy);
                       const rawValue = bc.years_data[fyStr]?.volume;
-                      if (!rawValue) return "—";
+                      if (rawValue === null || rawValue === undefined) return "—";
                       // Convert based on product type
                       const converted = productIsWet
                         ? convertVolume(rawValue)
@@ -376,7 +398,7 @@ export function BusinessCasesProjectionTable({
                   {
                     label: `NSP (${preferences.currency}/${displayUnit})`,
                     getValue: (fy: number) => {
-                      const fyStr = `FY${fy.toString().padStart(2, "0")}`;
+                      const fyStr = getFiscalYearStr(fy);
                       const eurValue = bc.years_data[fyStr]?.nsp;
                       if (eurValue === null || eurValue === undefined)
                         return "—";
@@ -387,7 +409,7 @@ export function BusinessCasesProjectionTable({
                   {
                     label: `COGS (${preferences.currency}/${displayUnit})`,
                     getValue: (fy: number) => {
-                      const fyStr = `FY${fy.toString().padStart(2, "0")}`;
+                      const fyStr = getFiscalYearStr(fy);
                       const eurValue = bc.years_data[fyStr]?.cogs_per_unit;
                       if (eurValue === null || eurValue === undefined)
                         return "—";
@@ -398,8 +420,10 @@ export function BusinessCasesProjectionTable({
                   {
                     label: `Revenue (${preferences.currency})`,
                     getValue: (fy: number) => {
-                      const fyStr = `FY${fy.toString().padStart(2, "0")}`;
+                      const fyStr = getFiscalYearStr(fy);
                       const eurValue = bc.years_data[fyStr]?.total_revenue;
+                      if (eurValue === null || eurValue === undefined)
+                        return "—";
                       // Data is already in EUR - formatCurrencyCompact handles currency conversion
                       return formatCurrencyCompact(eurValue);
                     },
@@ -407,8 +431,10 @@ export function BusinessCasesProjectionTable({
                   {
                     label: `Margin (${preferences.currency})`,
                     getValue: (fy: number) => {
-                      const fyStr = `FY${fy.toString().padStart(2, "0")}`;
+                      const fyStr = getFiscalYearStr(fy);
                       const eurValue = bc.years_data[fyStr]?.total_margin;
+                      if (eurValue === null || eurValue === undefined)
+                        return "—";
                       // Data is already in EUR - formatCurrencyCompact handles currency conversion
                       return formatCurrencyCompact(eurValue);
                     },
@@ -416,7 +442,7 @@ export function BusinessCasesProjectionTable({
                   {
                     label: "Margin %",
                     getValue: (fy: number) => {
-                      const fyStr = `FY${fy.toString().padStart(2, "0")}`;
+                      const fyStr = getFiscalYearStr(fy);
                       return formatPercent(
                         bc.years_data[fyStr]?.margin_percent,
                       );

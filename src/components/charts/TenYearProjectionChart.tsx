@@ -56,6 +56,35 @@ interface TenYearProjectionChartProps {
 // Default year range
 const DEFAULT_YEAR_RANGE = 10;
 
+/**
+ * Parse fiscal year string to numeric year (2-digit format)
+ * Follows the codebase pattern of using /FY(\d{2})/ regex for consistency
+ * Includes fallback for 4-digit years (FY2026) as defensive programming
+ * 
+ * @param fy Fiscal year string (e.g., "FY26" or "FY2026")
+ * @returns Numeric year (e.g., 26) or null if invalid
+ */
+function parseFiscalYear(fy: string | null | undefined): number | null {
+  if (!fy) return null;
+  
+  // Primary pattern: match 2-digit fiscal years (FY26, FY27, etc.)
+  // This matches the pattern used throughout the codebase
+  const match = fy.match(/FY(\d{2})/);
+  if (match) {
+    return parseInt(match[1], 10);
+  }
+  
+  // Fallback: handle 4-digit years (FY2026) as defensive programming
+  // Database should always return 2-digit, but this handles edge cases
+  const yearStr = fy.replace(/^FY/i, "");
+  const yearNum = parseInt(yearStr, 10);
+  if (!isNaN(yearNum) && yearNum >= 2000) {
+    return yearNum - 2000;
+  }
+  
+  return null;
+}
+
 export function TenYearProjectionChart({
   businessCases,
   formulations,
@@ -152,12 +181,10 @@ export function TenYearProjectionChart({
     let latestYear = -Infinity;
 
     businessCases.forEach((bc) => {
-      if (bc.fiscal_year) {
-        const fyNum = parseInt(bc.fiscal_year.replace("FY", ""), 10);
-        if (!isNaN(fyNum)) {
-          if (fyNum < earliestYear) earliestYear = fyNum;
-          if (fyNum > latestYear) latestYear = fyNum;
-        }
+      const fyNum = parseFiscalYear(bc.fiscal_year);
+      if (fyNum !== null) {
+        if (fyNum < earliestYear) earliestYear = fyNum;
+        if (fyNum > latestYear) latestYear = fyNum;
       }
     });
 
@@ -245,8 +272,12 @@ export function TenYearProjectionChart({
 
     // Aggregate filtered business cases by fiscal year
     businessCases.forEach((bc) => {
-      const fy = bc.fiscal_year || "";
-      const yearIndex = years.findIndex((y) => y.fiscalYear === fy);
+      // Parse fiscal year and normalize to 2-digit format for matching
+      const bcFyNum = parseFiscalYear(bc.fiscal_year);
+      if (bcFyNum === null) return; // Skip if fiscal year is invalid
+      
+      // Find matching year by comparing numeric values (more robust than string matching)
+      const yearIndex = years.findIndex((y) => y.fiscalYearNum === bcFyNum);
       if (yearIndex >= 0) {
         const localRevenue = bc.total_revenue || 0;
         const localMargin = bc.total_margin || 0;
