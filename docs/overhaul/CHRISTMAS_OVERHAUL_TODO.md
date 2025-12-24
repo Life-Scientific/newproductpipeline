@@ -60,17 +60,17 @@ The following are all suggestions please make the tool as fast as possible and i
 
 #### D1. Sequential pagination → parallel batching **🚨**
 
-* [ ] Replace sequential loops in `src/lib/db/queries.ts`:
+* [x] Replace sequential loops in `src/lib/db/queries.ts`:
 
-  * [ ] lines ~102–116
-  * [ ] lines ~267–287
+  * [x] lines ~102–116
+  * [x] lines ~267–287 (fetchAllPaginatedFromView function)
   * [ ] lines ~976–993
-* [ ] Pattern:
+* [x] Pattern:
 
-  * [ ] fetch count with `select('*', { count:'exact', head:true })`
-  * [ ] compute pages
-  * [ ] `Promise.all(pagePromises)` and `flatMap`
-* [ ] Confirm improvement: “10 pages” no longer means “10 round-trips in series”
+  * [x] fetch count with `select('*', { count:'exact', head:true })`
+  * [x] compute pages
+  * [x] `Promise.all(pagePromises)` and `flatMap`
+* [ ] Confirm improvement: "10 pages" no longer means "10 round-trips in series"
 
 #### D2. Kill client-side aggregation of 7,200+ rows **🚨**
 
@@ -95,38 +95,38 @@ The following are all suggestions please make the tool as fast as possible and i
 
 ---
 
-### E. TanStack Query “Pontus pattern” (Week 1 core)
+### E. TanStack Query "Pontus pattern" (Week 1 core)
 
 #### E1. Install + Provider
 
-* [ ] `bun add @tanstack/react-query @tanstack/react-query-devtools`
-* [ ] Add `Providers` in `src/app/providers.tsx`:
+* [x] `bun add @tanstack/react-query @tanstack/react-query-devtools`
+* [x] Add `Providers` in `src/app/providers.tsx`:
 
-  * [ ] `staleTime: 5m`
-  * [ ] `gcTime: 30m`
-  * [ ] `refetchOnWindowFocus: false`
-  * [ ] `refetchOnReconnect: false`
-* [ ] Wrap `src/app/layout.tsx`
+  * [x] `staleTime: 5m`
+  * [x] `gcTime: 30m`
+  * [x] `refetchOnWindowFocus: false`
+  * [x] `refetchOnReconnect: false`
+* [x] Wrap `src/app/layout.tsx`
 
 #### E2. Centralized query keys + hooks (per domain)
 
-* [ ] Create `src/lib/queries/business-cases.ts`
+* [x] Create `src/lib/queries/business-cases.ts`
 
-  * [ ] Keys:
+  * [x] Keys:
 
-    * [ ] `all`
-    * [ ] `active`
-    * [ ] `chart`
-    * [ ] `group(id)`
-    * [ ] `filtered(filters)`
-  * [ ] Hooks:
+    * [x] `all`
+    * [x] `active`
+    * [x] `chart`
+    * [x] `group(id)`
+    * [x] `filtered(filters)`
+  * [x] Hooks:
 
-    * [ ] `useBusinessCases(filters?)`
-    * [ ] `useCreateBusinessCase()` with `invalidateQueries({ queryKey: all })`
+    * [x] `useBusinessCases(filters?)`
+    * [x] `useCreateBusinessCase()` with `invalidateQueries({ queryKey: all })`
 
 #### E3. Replace custom hooks
 
-* [ ] Retire `src/hooks/use-request-cache.ts`
+* [x] Retire `src/hooks/use-request-cache.ts` (React Query handles deduplication)
 * [ ] Retire/replace `src/hooks/use-progressive-load.ts`
 
   * [ ] (and fix its bugs even if temporary):
@@ -163,13 +163,13 @@ The following are all suggestions please make the tool as fast as possible and i
 #### H1. use-debounce (remove duplicated custom debounces)
 
 * [x] `bun add use-debounce`
-* [ ] Replace custom debounce patterns in:
+* [x] Replace custom debounce patterns in:
 
-  * [ ] `FuzzySearchSelect.tsx`
-  * [ ] `FuzzySearchMultiSelect.tsx`
-  * [ ] `ValidatedInput.tsx`
-  * [ ] `EnhancedDataTable.tsx`
-  * [ ] `EPPOCodeMultiSelect.tsx`
+  * [x] `FuzzySearchSelect.tsx`
+  * [x] `FuzzySearchMultiSelect.tsx`
+  * [x] `ValidatedInput.tsx`
+  * [x] `EnhancedDataTable.tsx`
+  * [x] `EPPOCodeMultiSelect.tsx`
 
 #### H2. Sonner migration (already installed)
 
@@ -251,19 +251,19 @@ The following are all suggestions please make the tool as fast as possible and i
 
 #### L1. Zustand (replace rerender-heavy contexts)
 
-* [ ] `bun add zustand`
-* [ ] Build stores (filters first) + persist:
+* [x] `bun add zustand`
+* [x] Build stores (filters first) + persist:
 
-  * [ ] `src/stores/filters.ts` with `persist({ name:'portfolio-filters' })`
+  * [x] `src/lib/stores/filters.ts` with `persist({ name:'portfolio-filters' })`
 * [ ] Replace `DisplayPreferencesContext` and/or `WorkspaceContext` patterns where they cause broad rerenders
 
 #### L2. nuqs for type-safe URL state
 
-* [ ] `bun add nuqs`
-* [ ] Replace the ~175 lines of manual URLSearchParams logic (`use-url-filters.ts`, `use-portfolio-filters.ts`)
+* [x] `bun add nuqs`
+* [x] Replace the ~175 lines of manual URLSearchParams logic (`use-url-filters.ts`, `use-portfolio-filters.ts`)
 
-  * [ ] `useQueryState('countries', parseAsArrayOf(parseAsString).withDefault([]))`
-  * [ ] same for formulations/fiscalYears
+  * [x] `useQueryState('countries', parseAsArrayOf(parseAsString).withDefault([]))`
+  * [x] same for formulations/fiscalYears
 
 ---
 

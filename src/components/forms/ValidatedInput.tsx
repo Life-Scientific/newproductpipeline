@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { Input, type InputProps } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Check, AlertCircle, Loader2 } from "lucide-react";
+import { useDebounce } from "use-debounce";
 
 /**
  * Validation rule for ValidatedInput
@@ -57,8 +58,8 @@ export function ValidatedInput({
   >("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const onValidationChangeRef = useRef(onValidationChange);
+  const [debouncedValue] = useDebounce(value, debounceMs);
 
   // Keep callback ref updated
   useEffect(() => {
@@ -112,15 +113,6 @@ export function ValidatedInput({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     onChange(newValue);
-
-    if (validateOnChange && touched) {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-      debounceRef.current = setTimeout(() => {
-        validate(newValue);
-      }, debounceMs);
-    }
   };
 
   const handleBlur = () => {
@@ -130,14 +122,12 @@ export function ValidatedInput({
     }
   };
 
-  // Cleanup debounce on unmount
+  // Effect for debounced validation
   useEffect(() => {
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, []);
+    if (validateOnChange && touched) {
+      validate(debouncedValue);
+    }
+  }, [debouncedValue, validateOnChange, touched, validate]);
 
   const showSuccess =
     validationState === "valid" && touched && showSuccessState;

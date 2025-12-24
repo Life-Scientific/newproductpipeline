@@ -247,7 +247,7 @@ export async function getBlacklistedFormulations() {
   return data as FormulationTable[];
 }
 
-// Helper function to fetch all rows from a view/table with pagination
+// Helper function to fetch all rows from a view/table with parallel pagination
 async function fetchAllPaginatedFromView<T>(
   supabase: Awaited<ReturnType<typeof createClient>>,
   viewName: string,
@@ -262,7 +262,23 @@ async function fetchAllPaginatedFromView<T>(
     .select("*", { count: "exact", head: true });
 
   const totalPages = Math.ceil((count || 0) / pageSize);
-  let allData: T[] = [];
+
+  // Early exit for single page results
+  if (totalPages <= 1) {
+    const { data, error } = await supabase
+      .from(viewName)
+      .select(selectQuery)
+      .order(orderBy?.column ?? "id", { ascending: orderBy?.ascending ?? true });
+
+    if (error) {
+      throw new Error(`Failed to fetch ${viewName}: ${error.message}`);
+    }
+
+    return (data as T[]) || [];
+  }
+
+  // Fetch all pages in parallel using Promise.all
+  const pagePromises: Promise<T[]>[] = [];
 
   for (let page = 0; page < totalPages; page++) {
     let query = supabase.from(viewName).select(selectQuery);
@@ -271,21 +287,19 @@ async function fetchAllPaginatedFromView<T>(
       query = query.order(orderBy.column, { ascending: orderBy.ascending });
     }
 
-    const { data: pageData, error: pageError } = await query.range(
-      page * pageSize,
-      (page + 1) * pageSize - 1,
+    pagePromises.push(
+      query.range(page * pageSize, (page + 1) * pageSize - 1).then(({ data, error }) => {
+        if (error) {
+          throw new Error(`Failed to fetch ${viewName}: ${error.message}`);
+        }
+        return (data as T[]) || [];
+      }),
     );
-
-    if (pageError) {
-      throw new Error(`Failed to fetch ${viewName}: ${pageError.message}`);
-    }
-
-    if (pageData) {
-      allData = allData.concat(pageData as T[]);
-    }
   }
 
-  return allData;
+  // Flatten all page results
+  const allPages = await Promise.all(pagePromises);
+  return allPages.flat();
 }
 
 export async function getFormulationsWithNestedData(

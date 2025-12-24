@@ -10,6 +10,7 @@ import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { getExchangeRates } from "@/lib/db/countries";
 import { transformExchangeRatesForDisplay } from "@/lib/utils/exchange-rates";
 import type { CurrencyCode } from "@/contexts/DisplayPreferencesContext";
+import { Providers } from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -88,15 +89,17 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProviderWrapper>
-          <DisplayPreferencesProvider initialExchangeRates={initialExchangeRates}>
-            {children}
-            <Toaster />
-            <SonnerToaster position="bottom-right" richColors />
-            <KonamiCode />
-            <FeedbackButton />
-          </DisplayPreferencesProvider>
-        </ThemeProviderWrapper>
+        <Providers>
+          <ThemeProviderWrapper>
+            <DisplayPreferencesProvider initialExchangeRates={initialExchangeRates}>
+              {children}
+              <Toaster />
+              <SonnerToaster position="bottom-right" richColors />
+              <KonamiCode />
+              <FeedbackButton />
+            </DisplayPreferencesProvider>
+          </ThemeProviderWrapper>
+        </Providers>
       </body>
     </html>
   );

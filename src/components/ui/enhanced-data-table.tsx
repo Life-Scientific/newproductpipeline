@@ -188,21 +188,7 @@ const MemoizedTableCell = React.memo(
 /**
  * Debounce hook for view saves
  */
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
-
-  React.useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
+import { useDebounce as useDebounceExternal } from "use-debounce";
 
 export function EnhancedDataTable<TData, TValue>({
   columns,
@@ -581,11 +567,11 @@ export function EnhancedDataTable<TData, TValue>({
   // Debounce view saves to reduce localStorage writes (only save when actually changed)
   const prevViewConfigRef = React.useRef<string>("");
   // Increase debounce delay to reduce writes
-  const debouncedColumnOrder = useDebounce(columnOrder, 2000);
-  const debouncedColumnVisibility = useDebounce(columnVisibility, 2000);
-  const debouncedColumnSizing = useDebounce(columnSizing, 2000);
-  const debouncedPageSize = useDebounce(pagination.pageSize, 2000);
-  const debouncedSorting = useDebounce(sorting, 2000);
+  const debouncedColumnOrder = useDebounceExternal(columnOrder, 2000);
+  const debouncedColumnVisibility = useDebounceExternal(columnVisibility, 2000);
+  const debouncedColumnSizing = useDebounceExternal(columnSizing, 2000);
+  const debouncedPageSize = useDebounceExternal(pagination.pageSize, 2000);
+  const debouncedSorting = useDebounceExternal(sorting, 2000);
 
   // Save view when changes occur (debounced and only if changed)
   React.useEffect(() => {

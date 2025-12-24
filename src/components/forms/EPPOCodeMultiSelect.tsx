@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { searchEPPOCodes } from "@/lib/actions/eppo-codes";
 import type { Database } from "@/lib/supabase/database.types";
+import { useDebounce } from "use-debounce";
 
 type EPPOCode = Database["public"]["Tables"]["eppo_codes"]["Row"];
 
@@ -54,7 +55,7 @@ export function EPPOCodeMultiSelect({
   );
   const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [debouncedSearchValue] = useDebounce(searchValue, 300);
 
   // Search function
   const performSearch = useCallback(
@@ -135,20 +136,8 @@ export function EPPOCodeMultiSelect({
 
   // Debounced search effect
   useEffect(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(() => {
-      performSearch(searchValue);
-    }, 300);
-
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [searchValue, performSearch]);
+    performSearch(debouncedSearchValue);
+  }, [debouncedSearchValue, performSearch]);
 
   // Load selected codes if not in cache
   useEffect(() => {

@@ -28,8 +28,8 @@ import {
 import { X } from "lucide-react";
 import type { Database } from "@/lib/supabase/database.types";
 import Link from "next/link";
-import { useRequestCache } from "@/hooks/use-request-cache";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
+import { useQuery } from "@tanstack/react-query";
 
 type Formulation =
   Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
@@ -59,7 +59,6 @@ function formatNumber(value: number | null | undefined): string {
 export function FormulationComparison({
   formulations,
 }: FormulationComparisonProps) {
-  const { cachedFetch } = useRequestCache();
   const { formatCurrencyCompact } = useDisplayPreferences();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [comparisonData, setComparisonData] = useState<
@@ -75,6 +74,24 @@ export function FormulationComparison({
     );
   }, [formulations, selectedIds]);
 
+  // Helper hook for fetching formulation data with automatic deduplication
+  function useFormulationData<T>(
+    formulationId: string | null,
+    endpoint: string,
+  ): T | undefined {
+    return useQuery({
+      queryKey: ["formulation", formulationId, endpoint],
+      queryFn: async () => {
+        if (!formulationId) return undefined;
+        const res = await fetch(`/api/formulations/${formulationId}/${endpoint}`);
+        if (!res.ok) return [] as unknown as T;
+        return res.json() as Promise<T>;
+      },
+      enabled: Boolean(formulationId),
+      staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    }).data;
+  }
+
   const handleAddFormulation = useCallback(
     async (formulationId: string) => {
       if (
@@ -86,7 +103,8 @@ export function FormulationComparison({
 
       setSelectedIds((prev) => [...prev, formulationId]);
 
-      // Fetch detailed data for the formulation using API route with request deduplication
+      // Fetch detailed data for the formulation
+      // React Query handles deduplication automatically
       try {
         const [
           businessCasesRes,
@@ -97,38 +115,24 @@ export function FormulationComparison({
           protectionRes,
           statusHistoryRes,
         ] = await Promise.all([
-          cachedFetch(`formulation-${formulationId}-business-cases`, () =>
-            fetch(`/api/formulations/${formulationId}/business-cases`).catch(
-              () => null,
-            ),
+          fetch(`/api/formulations/${formulationId}/business-cases`).catch(
+            () => null,
           ),
-          cachedFetch(`formulation-${formulationId}-ingredients`, () =>
-            fetch(`/api/formulations/${formulationId}/ingredients`).catch(
-              () => null,
-            ),
+          fetch(`/api/formulations/${formulationId}/ingredients`).catch(
+            () => null,
           ),
-          cachedFetch(`formulation-${formulationId}-countries`, () =>
-            fetch(`/api/formulations/${formulationId}/countries`).catch(
-              () => null,
-            ),
+          fetch(`/api/formulations/${formulationId}/countries`).catch(
+            () => null,
           ),
-          cachedFetch(`formulation-${formulationId}-use-groups`, () =>
-            fetch(`/api/formulations/${formulationId}/use-groups`).catch(
-              () => null,
-            ),
+          fetch(`/api/formulations/${formulationId}/use-groups`).catch(
+            () => null,
           ),
-          cachedFetch(`formulation-${formulationId}-cogs`, () =>
-            fetch(`/api/formulations/${formulationId}/cogs`).catch(() => null),
+          fetch(`/api/formulations/${formulationId}/cogs`).catch(() => null),
+          fetch(`/api/formulations/${formulationId}/protection`).catch(
+            () => null,
           ),
-          cachedFetch(`formulation-${formulationId}-protection`, () =>
-            fetch(`/api/formulations/${formulationId}/protection`).catch(
-              () => null,
-            ),
-          ),
-          cachedFetch(`formulation-${formulationId}-status-history`, () =>
-            fetch(`/api/formulations/${formulationId}/status-history`).catch(
-              () => null,
-            ),
+          fetch(`/api/formulations/${formulationId}/status-history`).catch(
+            () => null,
           ),
         ]);
 
@@ -172,7 +176,7 @@ export function FormulationComparison({
         console.error("Error fetching formulation data:", error);
       }
     },
-    [formulations, cachedFetch],
+    [formulations, selectedIds],
   );
 
   const handleRemoveFormulation = (formulationId: string) => {
