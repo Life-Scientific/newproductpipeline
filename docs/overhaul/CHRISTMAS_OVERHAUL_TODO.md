@@ -4,6 +4,485 @@
 
 ---
 
+## PROJECT CONTEXT
+
+### What is this application?
+
+**Life Scientific Portfolio Management System** - A Next.js application for managing agrochemical formulation portfolios through their entire lifecycle from concept to market launch to commercialization.
+
+**Current Tech Stack:**
+- **Next.js**: 16.0.7 → **Upgrading to 16.1+**
+- **React**: 19.2.1 (latest)
+- **TypeScript**: 5.x
+- **Package Manager**: pnpm → **Migrating to Bun**
+- **Tailwind CSS**: v4
+- **Database**: Supabase (PostgreSQL)
+- **UI Components**: shadcn/ui + 47 Radix UI packages
+- **Code Quality**: Biome (formatting + linting)
+- **Animations**: Framer Motion
+- **Charts**: Recharts
+- **3D Graphics**: Three.js + React Three Fiber (login page only)
+
+### Key Data Entities
+
+**Core Business Objects:**
+1. **Formulations** (~329 records) - Agrochemical product formulations with ingredients
+2. **Business Cases** (~7,200+ records) - Financial projections and market analysis
+3. **Countries** - Geographic markets for formulations
+4. **Use Groups** - Application categories (crops, pests, etc.)
+5. **Active Ingredients** - Chemical compounds in formulations
+6. **Financial Projections** - 10-year revenue/margin forecasts per business case
+
+### Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Next.js App Router (src/app)                       │
+│  ├── (auth)          - Login/signup                 │
+│  └── (dashboard)     - Main application             │
+│      ├── /portfolio  - Formulations, business cases │
+│      └── /chat       - AI assistant                 │
+└─────────────────────────────────────────────────────┘
+         ↓
+┌─────────────────────────────────────────────────────┐
+│  Components (src/components)                        │
+│  - 223 component files                              │
+│  - Heavy use of Radix UI primitives                │
+│  - Custom forms (600-2844 lines each!)              │
+└─────────────────────────────────────────────────────┘
+         ↓
+┌─────────────────────────────────────────────────────┐
+│  Data Layer (src/lib/db)                            │
+│  - queries.ts (2,478 lines - MASSIVE!)             │
+│  - Custom pagination/caching hooks                  │
+│  - Direct Supabase client calls                     │
+└─────────────────────────────────────────────────────┘
+         ↓
+┌─────────────────────────────────────────────────────┐
+│  Supabase (PostgreSQL)                              │
+│  - ~15 core tables + 5 views                        │
+│  - Row-level security (RLS)                         │
+│  - Materialized views for dashboards                │
+└─────────────────────────────────────────────────────┘
+```
+
+### Performance Characteristics
+
+**Current Performance Issues:**
+- **Initial Page Load**: 3-6 seconds (dashboard)
+- **Data Transfer**: >2MB payloads for business cases query
+- **Filter Changes**: UI freezes when filtering 10k+ records
+- **Chart Rendering**: Expensive recalculations on every filter change
+- **Bundle Size**: 1.2GB node_modules (400MB from Three.js alone)
+
+---
+
+## MIGRATION PLAN: BUN + NEXT.JS 16.1
+
+### Why Bun?
+
+1. **Faster package installation** - 10-25x faster than pnpm
+2. **Faster dev server** - Native TypeScript execution (no transpilation)
+3. **Faster builds** - Native bundler and transpiler
+4. **Built-in SQLite** - Can be used for request caching layer
+5. **Drop-in replacement** - Compatible with Node.js APIs and npm packages
+
+### Why Next.js 16.1?
+
+1. **Partial Prerendering (PPR)** - Stable in 16.1, perfect for our data-heavy app
+2. **Enhanced cacheLife API** - Better control over static/dynamic segments
+3. **Improved parallel route handling** - Better for our multi-tab portfolio views
+4. **React 19 optimizations** - Better streaming and suspense handling
+5. **Security fixes** - CVE-2025-55182 and CVE-2025-66478 already patched in 16.0.7
+
+### Migration Checklist
+
+**Pre-Migration (Do First!):**
+- [ ] Fix critical bugs identified in analysis below
+- [ ] Add bundle analyzer to track size regressions
+- [ ] Implement error boundaries across critical paths
+- [ ] Split queries.ts into domain modules
+- [ ] Remove/lazy-load Three.js from main bundle
+
+**Migration Steps:**
+- [ ] Install Bun: `curl -fsSL https://bun.sh/install | bash`
+- [ ] Update package.json scripts to use `bun` instead of `pnpm`
+- [ ] Update Next.js to 16.1: `bun add next@16.1`
+- [ ] Test all API routes (Bun has different Node.js polyfills)
+- [ ] Test database connections (Supabase client compatibility)
+- [ ] Test build and deployment
+- [ ] Update CI/CD to use Bun
+
+**Post-Migration (Optimize!):**
+- [ ] Enable `experimental.ppr` in next.config.ts
+- [ ] Implement Bun SQLite for request deduplication cache
+- [ ] Optimize cacheLife profiles for different page types
+- [ ] Measure performance improvements
+- [ ] Update documentation
+
+**Known Compatibility Concerns:**
+- ✅ Supabase client works with Bun (uses fetch API)
+- ✅ Radix UI components are Bun-compatible
+- ✅ Recharts works with Bun
+- ⚠️ Three.js may have issues - test thoroughly or lazy-load
+- ⚠️ Biome works with Bun but may need different invocation
+- ⚠️ Next.js build cache may need clearing on first Bun build
+
+---
+
+## CRITICAL ISSUES IDENTIFIED (Beyond Original Analysis)
+
+### PERFORMANCE CRITICAL
+
+#### 1. Sequential Pagination Anti-Pattern (queries.ts)
+**Location**: `src/lib/db/queries.ts` lines 102-116, 267-287, 976-993
+**Issue**: Multiple `for` loops that sequentially fetch paginated data instead of parallel batching
+
+```typescript
+// CURRENT (SLOW):
+for (let page = 0; page < totalPages; page++) {
+  const { data: pageData } = await supabase
+    .from("vw_business_case")
+    .select("*")
+    .range(page * pageSize, (page + 1) * pageSize - 1);
+  allData = allData.concat(pageData);
+}
+// If totalPages = 10, this takes 10 sequential round-trips!
+
+// SHOULD BE (FAST):
+const pagePromises = Array.from({ length: totalPages }, (_, page) =>
+  supabase.from("vw_business_case")
+    .select("*")
+    .range(page * pageSize, (page + 1) * pageSize - 1)
+);
+const results = await Promise.all(pagePromises);
+const allData = results.flatMap(r => r.data ?? []);
+```
+
+**Impact**:
+- 10 sequential round-trips = 10x network latency
+- Blocks main thread during pagination
+- Makes Bun's speed gains less effective
+
+**Priority**: 🚨 **CRITICAL** - Fix before Bun migration
+
+---
+
+#### 2. 2,478-Line queries.ts File
+**Location**: `src/lib/db/queries.ts` (79KB!)
+**Issue**: Monolithic file with all database queries, making TypeScript compilation slow
+
+**Problems**:
+- Slow hot-module replacement (HMR) during development
+- Hard to maintain and review
+- Type inference overhead
+- Already partially split (countries.ts, cogs.ts exist) but not completed
+
+**Impact**:
+- 2-3 second HMR on queries.ts changes
+- Merge conflicts
+- Harder to implement caching per domain
+
+**Priority**: 🟡 **HIGH** - Complete domain splitting
+
+---
+
+#### 3. Client-Side Aggregation of 10k+ Rows
+**Location**: `src/lib/db/queries.ts` lines 388-557
+**Issue**: Fetching ALL business cases then aggregating in JavaScript
+
+```typescript
+// Lines 388-557: JavaScript aggregation
+const allBusinessCases = await fetchAllBusinessCases(); // 7,200+ rows
+const grouped = allBusinessCases.reduce((acc, bc) => {
+  // Complex grouping logic in JS...
+}, {});
+```
+
+**Should be**: Materialized views or SQL aggregations
+
+**Impact**:
+- >2MB data transfer (noted in comments line 959)
+- JavaScript heap pressure
+- Slow chart rendering
+
+**Priority**: 🚨 **CRITICAL** - Use database aggregations
+
+---
+
+#### 4. Three.js Bundle on Every Page Load
+**Location**: `src/components/gl/AuthParticles.tsx`
+**Issue**: 400MB Three.js bundle loaded for login page particle effect
+
+**Current**:
+- Imported in auth layout
+- Loads on every cold start
+- Used for 1 decorative animation
+
+**Should be**:
+- Dynamic import with loading state
+- Or replace with CSS animation
+- Or move to separate route
+
+**Impact**:
+- Large initial JavaScript payload
+- Slow first paint
+- Wasted bandwidth
+
+**Priority**: 🟡 **HIGH** - Lazy load or replace
+
+---
+
+#### 5. Chat API Fetches 7 Datasets on Every Message
+**Location**: `src/app/api/chat/route.ts` lines 40-96
+**Issue**: Refetches entire context on every chat message
+
+```typescript
+// Lines 40-96: Runs on EVERY message
+const [
+  countries,
+  useGroups,
+  businessCases,
+  cogs,
+  protectionData,
+  formulations,
+  dashboardSummary
+] = await Promise.all([...]);
+```
+
+**Should be**:
+- Cache context for session duration
+- Only refetch on user action (refresh button)
+- Stream incremental updates
+
+**Impact**:
+- 500-1000ms delay before AI generation starts
+- Unnecessary database load
+- Poor user experience
+
+**Priority**: 🟡 **HIGH** - Implement session caching
+
+---
+
+### COMPLEXITY & MAINTAINABILITY
+
+#### 6. Overly Complex Form Components
+**Locations**:
+- `BusinessCaseModal.tsx` - **2,844 lines** 🤯
+- `FormulationCountryUseGroupForm.tsx` - **937 lines**
+- `FormulationForm.tsx` - **608 lines**
+- `BusinessCaseImportModal.tsx` - **1,270 lines**
+
+**Issues**:
+- Manual `useState` for every field
+- Custom validation logic
+- Manual FormData construction
+- Difficult to review in PRs
+- High cognitive load
+
+**Solution**: Already in plan (React Hook Form + Zod)
+
+**Priority**: 🟢 **MEDIUM** - Already documented
+
+---
+
+#### 7. Deep Import Dependency Trees
+**Found**: 1,247 import statements across 223 component files
+
+**Issues**:
+- 47 separate @radix-ui packages (200MB)
+- Many imported individually instead of from umbrella package
+- Heavy component coupling
+- Tree-shaking challenges
+
+**Example**:
+```typescript
+import { Dialog } from "@radix-ui/react-dialog"
+import { Select } from "@radix-ui/react-select"
+import { Tooltip } from "@radix-ui/react-tooltip"
+// ... 10+ more Radix imports in single file
+```
+
+**Priority**: 🟢 **LOW** - Audit after migration
+
+---
+
+#### 8. Context Overuse / Prop Drilling
+**Locations**:
+- `DisplayPreferencesContext` - Provides 15+ functions/values
+- `WorkspaceContext` - Similar over-provision
+
+**Issue**:
+- All consumers re-render on any change
+- Should be split into smaller contexts
+- Or use React Query for server state
+
+**Impact**:
+- Unnecessary re-renders
+- Performance degradation on large tables
+
+**Priority**: 🟢 **LOW** - Address in Week 3
+
+---
+
+### BUGS & CODE SMELLS
+
+#### 9. Race Condition in Progressive Loading
+**Location**: `src/hooks/use-progressive-load.ts` lines 74-83
+
+```typescript
+useEffect(() => {
+  setData(initialData);
+
+  if (initialHasMore && initialData.length > 0 && !hasStartedLoadingRef.current) {
+    hasStartedLoadingRef.current = true;
+    loadRemaining(initialData.length);  // <-- uses closure, may be stale
+  }
+}, [initialData, initialHasMore, loadRemaining]);
+```
+
+**Bug**: If `initialData` changes rapidly, `loadRemaining` might be called with stale offset
+
+**Priority**: 🟡 **MEDIUM** - Fix during React Query migration
+
+---
+
+#### 10. Memory Leak: Uncleaned Abort Controllers
+**Location**: `src/hooks/use-progressive-load.ts` lines 34-38
+
+```typescript
+if (abortControllerRef.current) {
+  abortControllerRef.current.abort();
+}
+// Creates new AbortController but doesn't null out old reference
+abortControllerRef.current = new AbortController();
+```
+
+**Bug**: Keeps old controllers in memory
+
+**Fix**:
+```typescript
+if (abortControllerRef.current) {
+  abortControllerRef.current.abort();
+  abortControllerRef.current = null; // <-- Add this
+}
+abortControllerRef.current = new AbortController();
+```
+
+**Priority**: 🟡 **MEDIUM** - Fix before Bun migration
+
+---
+
+#### 11. Incorrect Error Handling in Chat API
+**Location**: `src/app/api/chat/route.ts` lines 98-107
+
+```typescript
+// Log any errors
+if (summaryError) console.error("Dashboard summary error:", summaryError);
+// ... continues execution even with errors
+```
+
+**Bug**: Errors are logged but ignored, leading to incomplete data being sent to AI
+
+**Priority**: 🟢 **LOW** - Add proper error boundaries
+
+---
+
+#### 12. Over-Use of `dynamic = 'force-dynamic'`
+**Found**: 7 page.tsx files with `export const dynamic = 'force-dynamic'`
+
+**Issue**:
+- Disables static optimization for entire routes
+- Forces server-side rendering on every request
+- Should use Next.js 16.1's partial prerendering instead
+
+**Files**:
+- `src/app/portfolio/business-cases/page.tsx`
+- `src/app/portfolio/formulations/[id]/page.tsx`
+- And 5 others
+
+**Impact**:
+- Slow page loads
+- Higher server costs
+- Wasted computing resources
+
+**Priority**: 🟡 **HIGH** - Replace with PPR after 16.1 migration
+
+---
+
+#### 13. Missing Error Boundaries
+**Found**: Only 3 error.tsx files in entire app directory
+
+**Missing from**:
+- API routes
+- Chart components (will crash entire page if data malformed)
+- Form components (validation errors crash)
+- Modal dialogs
+
+**Priority**: 🟡 **MEDIUM** - Add before Bun migration
+
+---
+
+### BUILD & TOOLING
+
+#### 14. Large node_modules (1.2GB)
+
+**Heavy Dependencies**:
+- **three** + **@react-three/fiber** + **@react-three/drei**: ~400MB
+  - Used only for login page particle effect!
+  - Could be lazy-loaded or replaced
+
+- **47 @radix-ui packages**: ~200MB
+  - Many imported individually
+  - Tree-shaking not optimal
+
+- **leva** (GUI controls): 50MB
+  - Used for debugging Three.js
+  - Should be dev-only dependency
+
+**Priority**: 🟡 **HIGH** - Audit and optimize
+
+---
+
+#### 15. Next.js Config Underutilization
+**Location**: `next.config.ts`
+
+**Missing Optimizations**:
+- No `images` config for image optimization
+- No bundle analyzer configured
+- `cacheLife` has only one profile (could add more)
+- No `experimental.ppr` - would greatly benefit this app
+- No `webpack` customizations
+
+**Priority**: 🟢 **LOW** - Add after 16.1 migration
+
+---
+
+## CODE QUALITY METRICS
+
+### Current State
+- **Largest file**: queries.ts (2,478 lines) - 🚨 **CRITICAL**
+- **Most complex component**: BusinessCaseModal.tsx (2,844 lines) - 🚨 **CRITICAL**
+- **Total components**: 223 files
+- **Hook usage**: 125 instances across 13 files (avg 9.6 per file) - 🟡 **HIGH**
+- **Console statements**: 59 files - 🟢 **AUDIT NEEDED**
+- **Import statements**: 1,247 total - 🟢 **ACCEPTABLE**
+- **node_modules size**: 1.2GB - 🟡 **OPTIMIZE**
+- **TypeScript `any` usage**: 127 instances - 🟡 **HIGH**
+- **Bundle size**: Not measured - ⚠️ **UNKNOWN**
+
+### Target Metrics (Post-Overhaul)
+- **Largest file**: <500 lines
+- **Most complex component**: <400 lines
+- **Console statements**: Dev-only logging
+- **TypeScript `any` usage**: <10 instances
+- **node_modules size**: <800MB
+- **Bundle size**: Tracked and monitored
+- **Initial page load**: <1.5 seconds
+- **Data transfer**: <500KB per route
+
+---
+
 ## PRE-WORK: DATA ACCESS PATTERN ANALYSIS ✅ **COMPLETE**
 
 **✅ Analysis complete!** See [`DATA_ACCESS_PATTERNS_ANALYSIS.md`](./DATA_ACCESS_PATTERNS_ANALYSIS.md) for full findings.
