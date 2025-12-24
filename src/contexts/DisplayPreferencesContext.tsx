@@ -184,7 +184,7 @@ export function DisplayPreferencesProvider({
             data.forEach((row) => {
               const code = row.currency_code as CurrencyCode;
               if (code in rates) {
-                rates[code] = parseFloat(row.exchange_rate_to_eur);
+                rates[code] = row.exchange_rate_to_eur;
               }
             });
             setExchangeRates(rates);

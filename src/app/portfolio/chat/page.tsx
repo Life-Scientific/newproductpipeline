@@ -118,6 +118,8 @@ export default function ChatPage() {
         }
       }
 
+      if (!sid) return;
+
       const { data: userMsg } = await supabase
         .from("chat_messages")
         .insert({ session_id: sid, role: "user", content: text.trim() })
