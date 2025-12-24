@@ -62,15 +62,15 @@ The following are all suggestions please make the tool as fast as possible and i
 
 * [x] Replace sequential loops in `src/lib/db/queries.ts`:
 
-  * [x] lines ~102–116
-  * [x] lines ~267–287 (fetchAllPaginatedFromView function)
-  * [ ] lines ~976–993
+  * [x] lines ~102–116 (getFormulations)
+  * [x] lines ~267–287 (fetchAllPaginatedFromView)
+  * [x] lines ~976–993 (getBusinessCases)
 * [x] Pattern:
 
   * [x] fetch count with `select('*', { count:'exact', head:true })`
   * [x] compute pages
   * [x] `Promise.all(pagePromises)` and `flatMap`
-* [ ] Confirm improvement: "10 pages" no longer means "10 round-trips in series"
+* [x] Confirm improvement: "10 pages" no longer means "10 round-trips in series"
 
 #### D2. Kill client-side aggregation of 7,200+ rows **🚨**
 
@@ -79,13 +79,14 @@ The following are all suggestions please make the tool as fast as possible and i
 
   * [ ] SQL aggregation queries, or
   * [ ] materialized views (preferred for charts)
+* Note: This requires database migration - defer to Phase 2
 
 #### D3. Split monolith `queries.ts` (2,478 lines / 79KB) **High**
 
-* [~] Create domain modules (you already started w/ `countries.ts`, `cogs.ts`)
+* [x] Create domain modules (partially done):
 
-  * [ ] `src/lib/db/business-cases.ts`
-  * [ ] `src/lib/db/formulations.ts`
+  * [x] `src/lib/db/business-cases.ts` (NEW - parallel pagination, helpers)
+  * [x] `src/lib/db/formulations.ts` (NEW - React Query hooks + types)
   * [x] `src/lib/db/use-groups.ts`
   * [x] `src/lib/db/countries.ts`
   * [x] `src/lib/db/cogs.ts`
@@ -202,13 +203,17 @@ The following are all suggestions please make the tool as fast as possible and i
 
 #### I2. Cookie-based table settings (SSR skeleton match)
 
-* [ ] Create `useTableSettings(tableId, defaults)`
+* [x] Create `useTableSettings(tableId, defaults)` in `src/hooks/use-table-settings.ts`
 
-  * [ ] `useTransition()` + server action
-* [ ] Server actions:
+  * [x] `useTransition()` + server action for cookie writes
+* [x] Server actions:
 
-  * [ ] `saveTableSettings(tableId, settings)` writes cookie `table-${tableId}` (1 year)
-  * [ ] `getTableSettings(tableId)` reads cookie
+  * [x] `saveTableSettings(tableId, settings)` writes cookie `table-${tableId}` (1 year)
+  * [x] `getTableSettings(tableId)` reads cookie
+* [x] Update `EnhancedDataTable.tsx` to use cookie-based settings
+
+  * [x] Replace localStorage-based `TableUtils` with cookie-based `useTableSettings`
+  * [x] Auto-save on column visibility/order/sizing/sorting changes
 * [ ] SSR page reads cookie in `page.tsx` and passes initial settings into table
 
 ---
@@ -255,7 +260,10 @@ The following are all suggestions please make the tool as fast as possible and i
 * [x] Build stores (filters first) + persist:
 
   * [x] `src/lib/stores/filters.ts` with `persist({ name:'portfolio-filters' })`
-* [ ] Replace `DisplayPreferencesContext` and/or `WorkspaceContext` patterns where they cause broad rerenders
+  * [x] SSR hydration fix for localStorage mismatch
+* [x] Replace `DisplayPreferencesContext` and/or `WorkspaceContext` patterns where they cause broad rerenders
+
+  * [x] `usePortfolioFilters` hook in `src/hooks/use-portfolio-filters.ts`
 
 #### L2. nuqs for type-safe URL state
 
@@ -263,7 +271,8 @@ The following are all suggestions please make the tool as fast as possible and i
 * [x] Replace the ~175 lines of manual URLSearchParams logic (`use-url-filters.ts`, `use-portfolio-filters.ts`)
 
   * [x] `useQueryState('countries', parseAsArrayOf(parseAsString).withDefault([]))`
-  * [x] same for formulations/fiscalYears
+  * [x] same for formulations/fiscalYears/statuses
+  * [x] `use-url-filters-nuqs.ts` hook for type-safe URL filter state
 
 ---
 

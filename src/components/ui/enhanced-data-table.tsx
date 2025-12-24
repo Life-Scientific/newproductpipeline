@@ -89,6 +89,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TableUtils, type TableViewConfig } from "@/lib/utils/table-utils";
+import { useTableSettings } from "@/hooks/use-table-settings";
+import type { TableSettings } from "@/lib/actions/table-settings";
 
 /**
  * Filter configuration for a column
@@ -115,7 +117,8 @@ export interface EnhancedDataTableProps<TData, TValue> {
   showPageSizeSelector?: boolean;
   emptyMessage?: string;
   isLoading?: boolean;
-  tableId?: string;
+  /** Unique table identifier for cookie-based settings persistence */
+  tableId: string;
   enableColumnReordering?: boolean;
   enableViewManagement?: boolean;
   /** Enable URL-based pagination persistence (page number in URL params) */
@@ -124,8 +127,16 @@ export interface EnhancedDataTableProps<TData, TValue> {
   filterConfigs?: FilterConfig<TData>[];
   /** Show filter count badge */
   showFilterCount?: boolean;
-  /** Default column visibility state */
+  /** Default column visibility state (used for SSR skeleton) */
   defaultColumnVisibility?: Record<string, boolean>;
+  /** Default column order (used for SSR skeleton) */
+  defaultColumnOrder?: string[];
+  /** Default column sizing (used for SSR skeleton) */
+  defaultColumnSizing?: Record<string, number>;
+  /** Default sorting (used for SSR skeleton) */
+  defaultSorting?: Array<{ id: string; desc: boolean }>;
+  /** Initial settings loaded from server (for SSR hydration) */
+  initialSettings?: TableSettings | null;
   /** Custom row class name function */
   getRowClassName?: (row: TData, index: number) => string;
 }
@@ -188,7 +199,7 @@ const MemoizedTableCell = React.memo(
 /**
  * Debounce hook for view saves
  */
-import { useDebounce as useDebounceExternal } from "use-debounce";
+// useDebounce is now imported from use-debounce package at top of file
 
 export function EnhancedDataTable<TData, TValue>({
   columns,
@@ -206,10 +217,43 @@ export function EnhancedDataTable<TData, TValue>({
   filterConfigs = [],
   showFilterCount = true,
   defaultColumnVisibility = {},
+  defaultColumnOrder = [],
+  defaultColumnSizing = {},
+  defaultSorting = [],
+  initialSettings = null,
   getRowClassName,
 }: EnhancedDataTableProps<TData, TValue>) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // Use cookie-based table settings (Pontus pattern)
+  // If initialSettings is provided (from SSR), use it as default
+  const {
+    columnOrder,
+    columnVisibility,
+    columnSizing,
+    sorting,
+    isSaving: isSettingsSaving,
+    saveSettings,
+    resetSettings,
+  } = useTableSettings({
+    tableId: tableId || "default",
+    defaultSettings: {
+      columnOrder: defaultColumnOrder,
+      columnVisibility: defaultColumnVisibility,
+      columnSizing: defaultColumnSizing,
+      sorting: defaultSorting,
+    },
+  });
+
+  // Merge initialSettings from SSR (loaded on client) with defaults
+  React.useEffect(() => {
+    if (initialSettings) {
+      // Initial settings from server - they'll be loaded by useTableSettings
+      // This effect is just for tracking
+      console.log("[EnhancedDataTable] Loaded SSR settings:", initialSettings);
+    }
+  }, [initialSettings]);
 
   // Local state for filters (initialized empty, synced from URL after mount to avoid hydration mismatch)
   const [activeFilters, setActiveFilters] = React.useState<
@@ -370,18 +414,11 @@ export function EnhancedDataTable<TData, TValue>({
     );
   }, [activeFilters]);
 
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  // Use sorting from useTableSettings (cookie-based)
+  const [sorting, setSorting] = React.useState<SortingState>(defaultSorting);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>(defaultColumnVisibility);
-  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() =>
-    columns.map(
-      (col) => (col.id as string) || ((col as any).accessorKey as string),
-    ),
-  );
-  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
   // Pagination initialization - always start at page 0 to ensure server/client match
@@ -541,83 +578,51 @@ export function EnhancedDataTable<TData, TValue>({
   // Memoize columns to prevent unnecessary re-renders
   const memoizedColumns = React.useMemo(() => columns, [columns]);
 
-  // Load saved view on mount (only once)
-  const hasLoadedView = React.useRef(false);
-  React.useEffect(() => {
-    if (tableId && enableViewManagement && !hasLoadedView.current) {
-      hasLoadedView.current = true;
-      const savedView = TableUtils.loadTableView(tableId);
-      if (savedView) {
-        setColumnOrder(savedView.columnOrder);
-        setColumnVisibility(savedView.columnVisibility);
-        setColumnSizing(savedView.columnSizing);
-        setPagination((prev) => ({ ...prev, pageSize: savedView.pageSize }));
-        if (savedView.sortBy) {
-          setSorting([
-            {
-              id: savedView.sortBy.column,
-              desc: savedView.sortBy.direction === "desc",
-            },
-          ]);
-        }
-      }
-    }
-  }, [tableId, enableViewManagement]);
-
-  // Debounce view saves to reduce localStorage writes (only save when actually changed)
-  const prevViewConfigRef = React.useRef<string>("");
-  // Increase debounce delay to reduce writes
-  const debouncedColumnOrder = useDebounceExternal(columnOrder, 2000);
-  const debouncedColumnVisibility = useDebounceExternal(columnVisibility, 2000);
-  const debouncedColumnSizing = useDebounceExternal(columnSizing, 2000);
-  const debouncedPageSize = useDebounceExternal(pagination.pageSize, 2000);
-  const debouncedSorting = useDebounceExternal(sorting, 2000);
-
-  // Save view when changes occur (debounced and only if changed)
-  React.useEffect(() => {
-    if (tableId && enableViewManagement && hasLoadedView.current) {
-      const viewConfig: TableViewConfig = {
-        columnOrder: debouncedColumnOrder,
-        columnVisibility: debouncedColumnVisibility,
-        columnSizing: debouncedColumnSizing,
-        pageSize: debouncedPageSize,
-        sortBy: debouncedSorting[0]
-          ? {
-              column: debouncedSorting[0].id,
-              direction: debouncedSorting[0].desc ? "desc" : "asc",
-            }
-          : undefined,
-      };
-      const configString = JSON.stringify(viewConfig);
-      if (configString !== prevViewConfigRef.current) {
-        prevViewConfigRef.current = configString;
-        TableUtils.saveTableView(tableId, viewConfig);
-      }
-    }
-  }, [
-    tableId,
-    enableViewManagement,
-    debouncedColumnOrder,
-    debouncedColumnVisibility,
-    debouncedColumnSizing,
-    debouncedPageSize,
-    debouncedSorting,
-  ]);
+  // Cookie-based settings are now handled by useTableSettings hook
+  // Settings are automatically saved to cookies via the hook
+  // No localStorage code needed anymore (Pontus pattern)
 
   const table = useReactTable({
     data: filteredData,
     columns: memoizedColumns,
-    onSortingChange: setSorting,
+    onSortingChange: (updater) => {
+      setSorting(updater);
+      // Save sorting to cookie
+      const newSorting = typeof updater === "function" ? updater(sorting) : updater;
+      saveSettings({ sorting: newSorting });
+    },
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
+    onColumnVisibilityChange: (updater) => {
+      const newVisibility = typeof updater === "function" 
+        ? updater(columnVisibility) 
+        : updater;
+      saveSettings({ columnVisibility: newVisibility });
+    },
     onRowSelectionChange: setRowSelection,
-    onPaginationChange: setPagination,
-    onColumnOrderChange: setColumnOrder,
-    onColumnSizingChange: setColumnSizing,
+    onPaginationChange: (updater) => {
+      const newPagination = typeof updater === "function"
+        ? updater(pagination)
+        : updater;
+      setPagination(newPagination);
+      // Save pagination to cookie
+      saveSettings({ pagination: newPagination });
+    },
+    onColumnOrderChange: (updater) => {
+      const newOrder = typeof updater === "function"
+        ? updater(columnOrder)
+        : updater;
+      saveSettings({ columnOrder: newOrder });
+    },
+    onColumnSizingChange: (updater) => {
+      const newSizing = typeof updater === "function"
+        ? updater(columnSizing)
+        : updater;
+      saveSettings({ columnSizing: newSizing });
+    },
     state: {
       sorting,
       columnFilters,
@@ -791,18 +796,9 @@ export function EnhancedDataTable<TData, TValue>({
 
   const handleResetView = React.useCallback(() => {
     if (tableId) {
-      TableUtils.deleteTableView(tableId);
-      setColumnOrder(
-        columns.map(
-          (col) => (col.id as string) || ((col as any).accessorKey as string),
-        ),
-      );
-      setColumnVisibility({});
-      setColumnSizing({});
-      setPagination((prev) => ({ ...prev, pageSize: 25 }));
-      setSorting([]);
+      resetSettings();
     }
-  }, [tableId, columns]);
+  }, [tableId, resetSettings]);
 
   // All visible columns are reorderable unless explicitly disabled via meta.enableReordering = false
   const reorderableColumns = React.useMemo(

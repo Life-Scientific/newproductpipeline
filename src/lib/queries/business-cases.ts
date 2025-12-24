@@ -244,6 +244,25 @@ export function useDeleteBusinessCase() {
   });
 }
 
+// =============================================================================
+// Prefetch Helpers
+// =============================================================================
+
+/**
+ * Prefetch business case group data into the cache.
+ * Useful for hover intents or anticipating navigation.
+ */
+export async function prefetchBusinessCaseGroup(
+  queryClient: ReturnType<typeof useQueryClient>,
+  groupId: string,
+) {
+  await queryClient.prefetchQuery({
+    queryKey: businessCaseKeys.group(groupId),
+    queryFn: () => fetchBusinessCaseById(groupId),
+    staleTime: 60 * 1000, // 1 minute stale for prefetch
+  });
+}
+
 /**
  * Prefetch business cases for known heavy datasets.
  * Call this on hover/touch to speed up navigation.

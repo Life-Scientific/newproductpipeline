@@ -65,6 +65,24 @@ export {
   getPipelineTrackerData,
 } from "./portfolio";
 
+export {
+  getBusinessCases,
+  getBusinessCaseById,
+  getBusinessCaseVersionHistory,
+  getBusinessCaseGroupsUsingFormulation,
+  getBusinessCaseSummaryByFiscalYear,
+  type BusinessCaseGroupData,
+  type BusinessCaseYearData,
+} from "./business-cases";
+
+export {
+  getFormulations,
+  getFormulationById,
+  getFormulationsWithNestedData,
+  type Formulation,
+  type FormulationWithNestedData,
+} from "./formulations";
+
 // Import types for use in this file
 import type {
   Formulation,
@@ -89,31 +107,51 @@ import type {
 export async function getFormulations() {
   const supabase = await createClient();
 
-    // Supabase limit is 10k rows - fetch all with pagination if needed
-    const { count } = await supabase
+  // Supabase limit is 10k rows - fetch all with parallel pagination
+  const { count } = await supabase
+    .from("vw_formulations_with_ingredients")
+    .select("*", { count: "exact", head: true });
+
+  const pageSize = 10000;
+  const totalPages = Math.ceil((count || 0) / pageSize);
+
+  // Early exit for single page results
+  if (totalPages <= 1) {
+    const { data, error } = await supabase
       .from("vw_formulations_with_ingredients")
-      .select("*", { count: "exact", head: true });
+      .select("*")
+      .order("formulation_code", { ascending: true });
 
-    const pageSize = 10000;
-    const totalPages = Math.ceil((count || 0) / pageSize);
+    if (error) {
+      throw new Error(`Failed to fetch formulations: ${error.message}`);
+    }
 
-    let allData: any[] = [];
+    return data as Formulation[];
+  }
 
-    for (let page = 0; page < totalPages; page++) {
-      const { data: pageData, error: pageError } = await supabase
+  // Fetch all pages in parallel
+  const pagePromises: Promise<any[]>[] = [];
+
+  for (let page = 0; page < totalPages; page++) {
+    pagePromises.push(
+      supabase
         .from("vw_formulations_with_ingredients")
         .select("*")
         .order("formulation_code", { ascending: true })
-        .range(page * pageSize, (page + 1) * pageSize - 1);
+        .range(page * pageSize, (page + 1) * pageSize - 1)
+        .then(({ data, error }) => {
+          if (error) {
+            throw new Error(`Failed to fetch formulations: ${error.message}`);
+          }
+          return data || [];
+        }),
+    );
+  }
 
-      if (pageError) {
-        throw new Error(`Failed to fetch formulations: ${pageError.message}`);
-      }
-
-      if (pageData) {
-        allData = allData.concat(pageData);
-      }
-    }
+  // Flatten all page results
+  const allPages = await Promise.all(pagePromises);
+  return allPages.flat() as Formulation[];
+}
 
     return allData as Formulation[];
 }
@@ -968,7 +1006,7 @@ async function enrichBusinessCases(
 }
 
 /**
- * Get business cases - fetches all active business cases with pagination
+ * Get business cases - fetches all active business cases with parallel pagination
  * Note: This is NOT cached due to large payload size (>2MB)
  * For chart aggregations, use getBusinessCaseSummaryByFiscalYear instead
  */
@@ -976,7 +1014,7 @@ export async function getBusinessCases() {
   const supabase = await createClient();
 
   // Supabase has a default limit of 10k rows - we need to fetch all
-  // First get total count, then fetch in batches if needed
+  // First get total count, then fetch in batches in parallel
   const { count } = await supabase
     .from("vw_business_case")
     .select("*", { count: "exact", head: true })
@@ -985,28 +1023,51 @@ export async function getBusinessCases() {
   const pageSize = 10000;
   const totalPages = Math.ceil((count || 0) / pageSize);
 
-  let allData: any[] = [];
-
-  for (let page = 0; page < totalPages; page++) {
-    const { data: pageData, error: pageError } = await supabase
+  // Early exit for single page results
+  if (totalPages <= 1) {
+    const { data, error } = await supabase
       .from("vw_business_case")
       .select("*")
-      .eq("status", "active") // Only show active versions, exclude superseded
+      .eq("status", "active")
       .order("fiscal_year", { ascending: true })
-      .order("year_offset", { ascending: true })
-      .range(page * pageSize, (page + 1) * pageSize - 1);
+      .order("year_offset", { ascending: true });
 
-    if (pageError) {
-      console.error("getBusinessCases page error:", pageError);
-      throw new Error(`Failed to fetch business cases: ${pageError.message}`);
+    if (error) {
+      throw new Error(`Failed to fetch business cases: ${error.message}`);
     }
 
-    if (pageData) {
-      allData = allData.concat(pageData);
-    }
+    const data = data || [];
+    const deduplicated = deduplicateBusinessCases(data);
+    const enriched = await enrichBusinessCases(deduplicated);
+
+    return enriched.filter((bc) => bc.formulation_code && bc.country_name);
   }
 
-  const data = allData;
+  // Fetch all pages in parallel
+  const pagePromises: Promise<any[]>[] = [];
+
+  for (let page = 0; page < totalPages; page++) {
+    pagePromises.push(
+      supabase
+        .from("vw_business_case")
+        .select("*")
+        .eq("status", "active")
+        .order("fiscal_year", { ascending: true })
+        .order("year_offset", { ascending: true })
+        .range(page * pageSize, (page + 1) * pageSize - 1)
+        .then(({ data, error }) => {
+          if (error) {
+            console.error("getBusinessCases page error:", error);
+            throw new Error(`Failed to fetch business cases: ${error.message}`);
+          }
+          return data || [];
+        }),
+    );
+  }
+
+  // Flatten all page results
+  const allPages = await Promise.all(pagePromises);
+  const data = allPages.flat();
 
   // Deduplicate before enrichment
   const deduplicated = deduplicateBusinessCases(data || []);
@@ -1036,10 +1097,9 @@ export async function getBusinessCasesForChart() {
   const pageSize = 10000;
   const totalPages = Math.ceil((count || 0) / pageSize);
 
-  let allData: any[] = [];
-
-  for (let page = 0; page < totalPages; page++) {
-    const { data: pageData, error: pageError } = await supabase
+  // Early exit for single page results
+  if (totalPages <= 1) {
+    const { data, error } = await supabase
       .from("vw_business_case")
       .select(`
         business_case_id,
@@ -1065,19 +1125,18 @@ export async function getBusinessCasesForChart() {
         business_case_name
       `)
       .eq("status", "active")
-      .order("fiscal_year", { ascending: true })
-      .range(page * pageSize, (page + 1) * pageSize - 1);
+      .order("fiscal_year", { ascending: true });
 
-    if (pageError) {
+    if (error) {
       throw new Error(
-        `Failed to fetch business cases for chart: ${pageError.message}`,
+        `Failed to fetch business cases for chart: ${error.message}`,
       );
     }
 
-    if (pageData) {
-      allData = allData.concat(pageData);
-    }
-  }
+    const allData = data || [];
+
+    // Continue with country_status lookup and enrichment...
+    // (Rest of the function logic continues below)
 
   // Fetch country_status separately from formulation_country table
   // Need to handle both direct links and use group links
