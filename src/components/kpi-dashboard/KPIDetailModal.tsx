@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -91,7 +92,7 @@ export function KPIDetailModal({
           setAuditLog(log);
         })
         .catch((error: unknown) => {
-          console.error("Error fetching audit log:", error);
+          error("Error fetching audit log:", error);
         })
         .finally(() => {
           setIsLoadingAudit(false);
@@ -127,7 +128,7 @@ export function KPIDetailModal({
         onUpdate(localKeyResult);
         setHasChanges(false);
       } catch (error) {
-        console.error("Error saving key result:", error);
+        error("Error saving key result:", error);
         // Could show error toast here
       }
     }
@@ -145,7 +146,7 @@ export function KPIDetailModal({
       onUpdate(updated);
       setHasChanges(false);
     } catch (error) {
-      console.error("Error toggling lock:", error);
+      error("Error toggling lock:", error);
       // Could show error toast here
     }
   };

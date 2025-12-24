@@ -11,36 +11,93 @@ import { BusinessCasesPageClient } from "./BusinessCasesPageClient";
 // Use dynamic rendering to ensure fresh data after mutations
 export const dynamic = "force-dynamic";
 
-export default async function BusinessCasesPage() {
+interface PageProps {
+  searchParams: Promise<{
+    countries?: string;
+    formulations?: string;
+    useGroups?: string;
+    formulationStatuses?: string;
+    countryStatuses?: string;
+  }>;
+}
+
+/**
+ * Parse filter array from URL param (comma-separated codes)
+ */
+function parseFilterParam(param: string | undefined): string[] {
+  if (!param) return [];
+  return param.split(",").filter(Boolean);
+}
+
+export default async function BusinessCasesPage({ searchParams }: PageProps) {
+  const params = await searchParams;
   const supabase = await createClient();
-  
-  // OPTIMIZATION: Fetch all data in parallel, including formulation_country status lookup
-  // This eliminates the sequential loop that was causing slowness
+
+  // Parse filters from URL for server-side filtering
+  const countryCodes = parseFilterParam(params.countries);
+  const formulationCodes = parseFilterParam(params.formulations);
+  const useGroupNames = parseFilterParam(params.useGroups);
+  const formulationStatuses = parseFilterParam(params.formulationStatuses);
+  const countryStatuses = parseFilterParam(params.countryStatuses);
+
+  // Build filter object for server-side query
+  const filters = {
+    countries: countryCodes,
+    formulations: formulationCodes,
+    useGroups: useGroupNames,
+    formulationStatuses,
+    countryStatuses,
+  };
+
+  // OPTIMIZATION: Fetch formulation_country statuses in parallel with other queries
   const fetchFormulationCountryStatuses = async () => {
     let allStatuses: any[] = [];
-  let page = 0;
-  const pageSize = 10000;
-  let hasMore = true;
+    let page = 0;
+    const pageSize = 10000;
+    let hasMore = true;
 
-  while (hasMore) {
-    const { data: pageData } = await supabase
-      .from("formulation_country")
-      .select("formulation_id, country_id, country_status")
-      .eq("is_active", true)
-      .range(page * pageSize, (page + 1) * pageSize - 1);
+    while (hasMore) {
+      let query = supabase
+        .from("formulation_country")
+        .select("formulation_id, country_id, country_status")
+        .eq("is_active", true);
 
-    if (!pageData || pageData.length === 0) {
-      hasMore = false;
-    } else {
+      // Server-side filter by country codes if provided
+      if (countryCodes.length > 0) {
+        // First get formulation_country_ids for these countries
+        const { data: fcData } = await supabase
+          .from("formulation_country")
+          .select("formulation_country_id")
+          .eq("is_active", true)
+          .in("country_id", countryCodes);
+
+        if (fcData && fcData.length > 0) {
+          const fcIds = fcData.map((fc) => fc.formulation_country_id);
+          query = query.in("formulation_country_id", fcIds);
+        } else {
+          // No matching countries - return empty
+          return [];
+        }
+      }
+
+      const { data: pageData } = await query.range(
+        page * pageSize,
+        (page + 1) * pageSize - 1,
+      );
+
+      if (!pageData || pageData.length === 0) {
+        hasMore = false;
+      } else {
         allStatuses = [...allStatuses, ...pageData];
-      hasMore = pageData.length === pageSize;
-      page++;
+        hasMore = pageData.length === pageSize;
+        page++;
+      }
     }
-  }
     return allStatuses;
   };
 
   // OPTIMIZATION: Fetch initial batch (100 business case groups) for fast first load
+  // Now with server-side filtering based on URL params
   const INITIAL_LIMIT = 100;
   const [
     initialDataResult,
@@ -49,26 +106,26 @@ export default async function BusinessCasesPage() {
     formulationCountriesData,
     formulationCountriesRaw,
   ] = await Promise.all([
-    getBusinessCasesForProjectionTableProgressive(INITIAL_LIMIT),
+    getBusinessCasesForProjectionTableProgressive(INITIAL_LIMIT, filters),
     getFormulations(), // Reference data for filter lookups
     getCountries(), // Reference data for filter lookups
     getFormulationCountries(), // For accurate filter counts
-    fetchFormulationCountryStatuses(), // Country status lookup - now parallel!
+    fetchFormulationCountryStatuses(), // Country status lookup - now parallel and filtered!
   ]);
 
   // Build status lookup maps
-  const formulationStatuses = new Map<string, string>();
+  const formulationStatusMap = new Map<string, string>();
   formulations.forEach((f) => {
     if (f.formulation_id && f.status) {
-      formulationStatuses.set(f.formulation_id, f.status);
+      formulationStatusMap.set(f.formulation_id, f.status);
     }
   });
 
-  const countryStatuses = new Map<string, string>();
+  const countryStatusMap = new Map<string, string>();
   formulationCountriesRaw.forEach((fc: any) => {
     if (fc.formulation_id && fc.country_id && fc.country_status) {
       const key = `${fc.formulation_id}-${fc.country_id}`;
-      countryStatuses.set(key, fc.country_status);
+      countryStatusMap.set(key, fc.country_status);
     }
   });
 
@@ -92,8 +149,8 @@ export default async function BusinessCasesPage() {
             initialBusinessCases={initialDataResult.initialData}
             totalCount={initialDataResult.totalCount}
             hasMore={initialDataResult.hasMore}
-            formulationStatuses={formulationStatuses}
-            countryStatuses={countryStatuses}
+            formulationStatuses={formulationStatusMap}
+            countryStatuses={countryStatusMap}
             formulations={formulations}
             countries={countries}
             formulationCountries={formulationCountriesData}

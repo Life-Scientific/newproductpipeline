@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,7 +21,7 @@ export default function BusinessCasesError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Business cases error:", error);
+    error("Business cases error:", error);
   }, [error]);
 
   return (

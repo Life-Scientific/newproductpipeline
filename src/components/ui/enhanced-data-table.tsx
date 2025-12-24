@@ -415,8 +415,7 @@ export function EnhancedDataTable<TData, TValue>({
     );
   }, [activeFilters]);
 
-  // Use sorting from useTableSettings (cookie-based)
-  const [sorting, setSorting] = React.useState<SortingState>(defaultSorting);
+  // Use sorting from useTableSettings (cookie-based) - already destructured above
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
@@ -587,8 +586,7 @@ export function EnhancedDataTable<TData, TValue>({
     data: filteredData,
     columns: memoizedColumns,
     onSortingChange: (updater) => {
-      setSorting(updater);
-      // Save sorting to cookie
+      // Save sorting to cookie via useTableSettings
       const newSorting = typeof updater === "function" ? updater(sorting) : updater;
       saveSettings({ sorting: newSorting });
     },

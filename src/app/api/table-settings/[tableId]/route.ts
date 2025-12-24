@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTableSettings } from "@/lib/actions/table-settings";
+import { error } from "@/lib/logger";
 
 export async function GET(
   request: NextRequest,
@@ -20,7 +21,7 @@ export async function GET(
 
     return NextResponse.json(settings);
   } catch {
-    console.error(`Error fetching table settings for ${tableId}`);
+    error(`Error fetching table settings for ${tableId}`);
     return NextResponse.json(
       { error: "Failed to fetch settings" },
       { status: 500 },

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Loader2,
@@ -368,7 +369,7 @@ export function ChemicalEnrichment({
       } catch (err) {
         if (mountedRef.current) {
           setError(err instanceof Error ? err.message : "Failed to fetch");
-          console.error("PubChem error:", err);
+          error("PubChem error:", err);
         }
       } finally {
         if (mountedRef.current) setIsLoading(false);

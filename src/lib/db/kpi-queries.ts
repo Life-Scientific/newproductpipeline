@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { log, warn, error, table } from "@/lib/logger";
 import type {
   KPIDashboardViewRow,
   KPIData,
@@ -42,7 +43,7 @@ export async function getKPIDashboardData(): Promise<KPIData> {
     .order("kr_sort", { ascending: true });
 
   if (error) {
-    console.error("Error fetching KPI dashboard data:", error);
+    error("Error fetching KPI dashboard data:", error);
     throw error;
   }
 
@@ -125,7 +126,7 @@ export async function getCoreDrivers(): Promise<CoreDriverRow[]> {
     .order("sort_order", { ascending: true });
 
   if (error) {
-    console.error("Error fetching core drivers:", error);
+    error("Error fetching core drivers:", error);
     throw error;
   }
 
@@ -153,7 +154,7 @@ export async function getStrategicDrivers(
   const { data, error } = await query;
 
   if (error) {
-    console.error("Error fetching strategic drivers:", error);
+    error("Error fetching strategic drivers:", error);
     throw error;
   }
 
@@ -178,7 +179,7 @@ export async function getKeyResultById(id: string): Promise<KeyResultRow | null>
       // Not found
       return null;
     }
-    console.error("Error fetching key result:", error);
+    error("Error fetching key result:", error);
     throw error;
   }
 
@@ -204,7 +205,7 @@ export async function getAuditLog(
     .limit(100);
 
   if (error) {
-    console.error("Error fetching audit log:", error);
+    error("Error fetching audit log:", error);
     throw error;
   }
 

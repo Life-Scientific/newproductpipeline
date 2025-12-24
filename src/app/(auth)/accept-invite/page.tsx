@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -95,7 +96,7 @@ function AcceptInviteContent() {
     try {
       await markInvitationAsAccepted(userEmail, userId);
     } catch (err) {
-      console.error("Failed to mark invitation as accepted:", err);
+      error("Failed to mark invitation as accepted:", err);
       // Don't block the flow if this fails
     }
   };

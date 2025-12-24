@@ -1,4 +1,5 @@
 import { anthropic } from "@ai-sdk/anthropic";
+import { log, warn, error, table } from "@/lib/logger";
 import { streamText } from "ai";
 import { createClient } from "@supabase/supabase-js";
 
@@ -96,14 +97,14 @@ async function getPortfolioData() {
   ]);
 
   // Log any errors
-  if (summaryError) console.error("Dashboard summary error:", summaryError);
-  if (yearlyError) console.error("Yearly data error:", yearlyError);
-  if (statusError) console.error("Status counts error:", statusError);
-  if (categoryError) console.error("Category counts error:", categoryError);
-  if (ingredientError) console.error("Ingredients error:", ingredientError);
-  if (countryError) console.error("Countries error:", countryError);
-  if (bcError) console.error("Business cases error:", bcError);
-  if (formError) console.error("Formulations error:", formError);
+  if (summaryError) error("Dashboard summary error:", summaryError);
+  if (yearlyError) error("Yearly data error:", yearlyError);
+  if (statusError) error("Status counts error:", statusError);
+  if (categoryError) error("Category counts error:", categoryError);
+  if (ingredientError) error("Ingredients error:", ingredientError);
+  if (countryError) error("Countries error:", countryError);
+  if (bcError) error("Business cases error:", bcError);
+  if (formError) error("Formulations error:", formError);
 
   // Process status counts IN JAVASCRIPT from full dataset
   const statusMap: Record<string, number> = {};
@@ -270,7 +271,7 @@ export async function POST(request: Request) {
           }
           controller.close();
         } catch (error) {
-          console.error("Stream error:", error);
+          error("Stream error:", error);
           controller.error(error);
         }
       },
@@ -283,7 +284,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Chat API error:", error);
+    error("Chat API error:", error);
     return new Response(
       JSON.stringify({ error: "Failed to process request" }),
       {

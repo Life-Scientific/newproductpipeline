@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { log, warn, error, table } from "@/lib/logger";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
@@ -23,7 +24,7 @@ export async function setUserContext(
     });
   } catch (error) {
     // If setting context fails, log but don't throw (allows operations to continue)
-    console.error("Failed to set user context:", error);
+    error("Failed to set user context:", error);
   }
 }
 

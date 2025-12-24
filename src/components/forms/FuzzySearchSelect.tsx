@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { X, ChevronDown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -84,7 +85,7 @@ export function FuzzySearchSelect({
               setLoadedItems(newCache);
             }
           } catch (error) {
-            console.error("Error preloading items:", error);
+            error("Error preloading items:", error);
           } finally {
             setIsSearching(false);
           }
@@ -114,7 +115,7 @@ export function FuzzySearchSelect({
           setSearchResults([]);
         }
       } catch (error) {
-        console.error("Error searching:", error);
+        error("Error searching:", error);
         setSearchResults([]);
       } finally {
         setIsSearching(false);

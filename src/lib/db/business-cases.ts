@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { BusinessCase, BusinessCaseGroupData, BusinessCaseYearData } from "./types";
 import type { Database } from "@/lib/supabase/database.types";
+import { error } from "@/lib/logger";
 
 // =============================================================================
 // Helper Functions (kept here to avoid moving too much code at once)
@@ -333,7 +334,7 @@ export async function getBusinessCaseVersionHistory(
     .order("year_offset", { ascending: true });
 
   if (error) {
-    console.error("Error fetching version history:", error);
+    error("Error fetching version history:", error);
     return [];
   }
 
@@ -380,7 +381,7 @@ export async function getBusinessCaseGroupsUsingFormulation(
     .order("use_group_name", { ascending: true });
 
   if (bcError) {
-    console.error("Error fetching business case groups:", bcError);
+    error("Error fetching business case groups:", bcError);
     return [];
   }
 
@@ -434,7 +435,7 @@ export async function getBusinessCaseSummaryByFiscalYear() {
     .eq("status", "active");
 
   if (error) {
-    console.error("Error fetching chart summary:", error);
+    error("Error fetching chart summary:", error);
     return [];
   }
 

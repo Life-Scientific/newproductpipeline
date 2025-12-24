@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { error } from "@/lib/logger";
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
@@ -45,7 +46,7 @@ export async function getTableSettings(
     const settings = JSON.parse(cookieValue) as TableSettings;
     return settings;
   } catch {
-    console.error(`Failed to parse table settings for ${tableId}`);
+    error(`Failed to parse table settings for ${tableId}`);
     return null;
   }
 }

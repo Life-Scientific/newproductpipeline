@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { log, warn, error, table } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 
 export interface Workspace {
@@ -92,7 +93,7 @@ export async function getWorkspaceWithMenuBySlug(
     if (error.code === "PGRST116") {
       return null; // Not found
     }
-    console.warn("Failed to fetch workspace with menu:", error.message);
+    warn("Failed to fetch workspace with menu:", error.message);
     return null;
   }
 
@@ -121,7 +122,7 @@ export async function getWorkspaceWithMenuBySlug(
     if (permError) {
       // FALLBACK: If batch function doesn't exist or fails, use individual checks
       // This handles the case where migration hasn't been applied yet
-      console.warn("Batch permission check failed, falling back to individual checks:", permError);
+      warn("Batch permission check failed, falling back to individual checks:", permError);
       
       const individualChecks = await Promise.all(
         activeMenuItems.map(async (item) => {
@@ -179,7 +180,7 @@ export async function getWorkspaceWithMenuItems(
     .single();
 
   if (workspaceError || !workspace) {
-    console.warn("Failed to fetch workspace:", workspaceError?.message);
+    warn("Failed to fetch workspace:", workspaceError?.message);
     return null;
   }
 
@@ -193,7 +194,7 @@ export async function getWorkspaceWithMenuItems(
 
   if (menuError) {
     // Log error but don't throw - return workspace with empty menu items
-    console.warn("Failed to fetch menu items:", menuError.message);
+    warn("Failed to fetch menu items:", menuError.message);
     return {
       ...workspace,
       menu_items: [],

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import {
   Card,
   CardContent,
@@ -27,7 +28,7 @@ export function ProfileSettings() {
         } = await supabase.auth.getSession();
         setUser(session?.user ?? null);
       } catch (error) {
-        console.error("Failed to load user:", error);
+        error("Failed to load user:", error);
       } finally {
         setIsLoading(false);
       }

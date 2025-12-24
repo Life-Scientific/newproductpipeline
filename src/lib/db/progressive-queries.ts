@@ -8,6 +8,17 @@ import type { FormulationWithNestedData } from "./queries";
 import type { BusinessCaseGroupData } from "./queries";
 
 /**
+ * Portfolio filters interface for server-side filtering
+ */
+export interface PortfolioFilters {
+  countries: string[];
+  formulations: string[];
+  useGroups: string[];
+  formulationStatuses: string[];
+  countryStatuses: string[];
+}
+
+/**
  * Result structure for progressive queries
  */
 export interface ProgressiveQueryResult<T> {
@@ -26,18 +37,18 @@ export async function getFormulationsWithNestedDataProgressive(
   // Import here to avoid circular dependency
   const { getFormulationsWithNestedData } = await import("./queries");
   const { createClient } = await import("../supabase/server");
-  
+
   // Get total count first (fast query)
   const supabase = await createClient();
   const { count } = await supabase
     .from("vw_formulations_with_ingredients")
     .select("*", { count: "exact", head: true });
-  
+
   const totalCount = count || 0;
-  
+
   // Fetch initial batch with limit (optimized - only aggregates for initial batch)
   const initialData = await getFormulationsWithNestedData(limit);
-  
+
   return {
     initialData,
     totalCount,
@@ -59,28 +70,69 @@ export async function getFormulationsWithNestedDataRemaining(
 }
 
 /**
+ * Build Supabase query with server-side filters applied
+ */
+function buildFilteredBusinessCaseQuery(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  filters: PortfolioFilters,
+) {
+  let query = supabase
+    .from("vw_business_case")
+    .select("*")
+    .eq("status", "active");
+
+  // Filter by country codes
+  if (filters.countries.length > 0) {
+    query = query.in("country_code", filters.countries);
+  }
+
+  // Filter by formulation codes
+  if (filters.formulations.length > 0) {
+    query = query.in("formulation_code", filters.formulations);
+  }
+
+  // Filter by use group names
+  if (filters.useGroups.length > 0) {
+    query = query.in("use_group_name", filters.useGroups);
+  }
+
+  // Filter by formulation statuses (requires join - simplified here)
+  if (filters.formulationStatuses.length > 0) {
+    // This would need a join or separate lookup
+    // For now, we'll filter client-side for statuses
+  }
+
+  return query;
+}
+
+/**
  * Fetch initial batch of business cases for projection table
  * Returns first N business case groups for fast initial load
+ * Now supports server-side filtering based on portfolio filters
  */
 export async function getBusinessCasesForProjectionTableProgressive(
   limit: number = 100,
+  filters?: PortfolioFilters,
 ): Promise<ProgressiveQueryResult<BusinessCaseGroupData>> {
   // Import here to avoid circular dependency
   const { getBusinessCasesForProjectionTable } = await import("./queries");
-  const { createClient } = await import("../supabase/server");
-  
-  // Get total count first (fast query)
   const supabase = await createClient();
-  const { count } = await supabase
-    .from("vw_business_case")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "active");
-  
+
+  // Build filtered query
+  const baseQuery = filters
+    ? buildFilteredBusinessCaseQuery(supabase, filters)
+    : supabase
+        .from("vw_business_case")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+
+  // Get total count with filters applied
+  const { count } = await baseQuery;
   const totalCount = count || 0;
-  
+
   // Fetch initial batch with limit (optimized - only processes initial batch)
-  const initialData = await getBusinessCasesForProjectionTable(limit);
-  
+  const initialData = await getBusinessCasesForProjectionTable(limit, filters);
+
   return {
     initialData,
     totalCount,
@@ -98,4 +150,3 @@ export async function getBusinessCasesForProjectionTableRemaining(
   const allData = await getBusinessCasesForProjectionTable();
   return allData.slice(offset);
 }
-

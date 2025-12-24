@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { log, warn, error, table } from "@/lib/logger";
 
 /**
  * API route to fetch a daily-changing image from Unsplash
@@ -20,7 +21,7 @@ export async function GET() {
     // Return the image URL
     return NextResponse.json({ imageUrl });
   } catch (error) {
-    console.error("Error fetching Unsplash image:", error);
+    error("Error fetching Unsplash image:", error);
     // Return a fallback gradient color
     return NextResponse.json(
       { error: "Failed to fetch image", fallback: true },

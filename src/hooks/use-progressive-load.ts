@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 
 /**
  * Hook for managing progressive data loading
@@ -66,7 +67,7 @@ export function useProgressiveLoad<T>(
       }
       
       // Don't set error for background load failures - just log
-      console.error("Background load failed:", err);
+      error("Background load failed:", err);
       setIsBackgroundLoading(false);
     }
   }, [fetchRemaining, onProgress, initialTotalCount]);
@@ -90,7 +91,7 @@ export function useProgressiveLoad<T>(
     error,
     refresh: () => {
       // Refresh would need to be handled by parent component
-      console.warn("Refresh not implemented - reload page to refresh");
+      warn("Refresh not implemented - reload page to refresh");
     },
     loadRemaining: () => loadRemaining(data.length),
   };

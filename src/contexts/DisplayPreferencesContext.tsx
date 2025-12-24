@@ -9,6 +9,7 @@ import React, {
   useMemo,
 } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { log, warn, error, table } from "@/lib/logger";
 
 // ============================================================================
 // Types
@@ -156,7 +157,7 @@ export function DisplayPreferencesProvider({
         setPreferences({ ...DEFAULT_PREFERENCES, ...parsed });
       }
     } catch (e) {
-      console.warn("Failed to load display preferences:", e);
+      warn("Failed to load display preferences:", e);
     }
 
     // Only fetch exchange rates if not provided as prop (fallback for client-side updates)
@@ -170,7 +171,7 @@ export function DisplayPreferencesProvider({
             .eq("is_active", true);
 
           if (error) {
-            console.warn("Failed to fetch exchange rates:", error);
+            warn("Failed to fetch exchange rates:", error);
             return;
           }
 
@@ -190,7 +191,7 @@ export function DisplayPreferencesProvider({
             setExchangeRates(rates);
           }
         } catch (e) {
-          console.warn("Failed to fetch exchange rates:", e);
+          warn("Failed to fetch exchange rates:", e);
         }
       };
 
@@ -207,7 +208,7 @@ export function DisplayPreferencesProvider({
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
         } catch (e) {
-          console.warn("Failed to save display preferences:", e);
+          warn("Failed to save display preferences:", e);
         }
         return next;
       });
@@ -592,7 +593,7 @@ export function useDisplayPreferences(): DisplayPreferencesContextValue {
   if (!context) {
     // In development, log a warning but don't crash
     if (process.env.NODE_ENV === "development") {
-      console.warn(
+      warn(
         "useDisplayPreferences called outside of DisplayPreferencesProvider, using defaults",
       );
     }

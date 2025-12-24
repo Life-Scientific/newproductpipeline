@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useOptimistic } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, Network, Pencil, Shield } from "lucide-react";
 import type { UserManagementData } from "@/lib/actions/user-management";
@@ -84,7 +85,7 @@ export function KPIDashboard({ users, initialData }: KPIDashboardProps) {
         // Update local state with server response
         setKpiData(optimisticUpdate);
       } catch (error) {
-        console.error("Error updating key result:", error);
+        error("Error updating key result:", error);
         // Revert optimistic update on error
         setKpiData(kpiData);
         throw error;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/client";
 import {
   PERMISSIONS,
@@ -78,10 +79,10 @@ export function usePermissions(
           await supabase.rpc("get_user_roles");
 
         if (permError) {
-          console.error("Error fetching permissions:", permError);
+          error("Error fetching permissions:", permError);
         }
         if (rolesError) {
-          console.error("Error fetching roles:", rolesError);
+          error("Error fetching roles:", rolesError);
         }
 
         setPermissions(userPermissions || []);
@@ -105,7 +106,7 @@ export function usePermissions(
           }
         }
       } catch (error) {
-        console.error("Error in usePermissions:", error);
+        error("Error in usePermissions:", error);
         setPermissions([]);
         setRoles(["Viewer"]);
         setPrimaryRole("Viewer");

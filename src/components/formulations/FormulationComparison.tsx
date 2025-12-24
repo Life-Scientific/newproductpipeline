@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import {
   Card,
   CardContent,
@@ -173,7 +174,7 @@ export function FormulationComparison({
           });
         }
       } catch (error) {
-        console.error("Error fetching formulation data:", error);
+        error("Error fetching formulation data:", error);
       }
     },
     [formulations, selectedIds],

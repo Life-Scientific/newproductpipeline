@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -133,7 +134,7 @@ export function FormulationForm({
         setAvailableIngredients(data);
       }
     } catch (error) {
-      console.error("Failed to load ingredients:", error);
+      error("Failed to load ingredients:", error);
     }
   };
 
@@ -153,7 +154,7 @@ export function FormulationForm({
         .eq("formulation_id", formulation.formulation_id);
 
       if (error) {
-        console.error("Failed to load ingredients:", error);
+        error("Failed to load ingredients:", error);
         return;
       }
 
@@ -168,7 +169,7 @@ export function FormulationForm({
       }));
       setIngredients(ingredientInputs);
     } catch (error) {
-      console.error("Failed to load ingredients:", error);
+      error("Failed to load ingredients:", error);
     }
   };
 

@@ -11,6 +11,7 @@ import {
   type Role,
   type Permission,
 } from "@/lib/permissions";
+import { warn, error } from "@/lib/logger";
 
 // ============================================================================
 // Types
@@ -81,9 +82,9 @@ export async function hasPermission(
         return true; // Admin has all permissions
       }
     }
-  } catch (error) {
+  } catch (err) {
     // Fall through to permission check
-    console.warn("Error checking Admin role:", error);
+    warn("Error checking Admin role:", err);
   }
 
   // Try to get permissions from JWT first
@@ -106,7 +107,7 @@ export async function hasPermission(
   });
 
   if (error) {
-    console.error("Error checking permission:", error);
+    error("Error checking permission:", error);
     return false;
   }
 
@@ -145,7 +146,7 @@ export async function hasAnyPermission(
   });
 
   if (error) {
-    console.error("Error checking permissions:", error);
+    error("Error checking permissions:", error);
     return false;
   }
 
@@ -180,7 +181,7 @@ export async function getUserPermissions(): Promise<string[]> {
   const { data, error } = await supabase.rpc("get_user_permissions");
 
   if (error) {
-    console.error("Error getting permissions:", error);
+    error("Error getting permissions:", error);
     return [];
   }
 
@@ -215,7 +216,7 @@ export async function getUserRoles(): Promise<string[]> {
   const { data, error } = await supabase.rpc("get_user_roles");
 
   if (error) {
-    console.error("Error getting roles:", error);
+    error("Error getting roles:", error);
     return [];
   }
 
@@ -271,7 +272,7 @@ export async function getUserRoleFromSession(): Promise<string | null> {
   const { data, error } = await supabase.rpc("get_user_role");
 
   if (error) {
-    console.error("Error getting role:", error);
+    error("Error getting role:", error);
     return "Viewer";
   }
 
@@ -948,7 +949,7 @@ export async function inviteUserByEmail(
   });
 
   if (inviteError) {
-    console.error("Failed to create invitation record:", inviteError);
+    error("Failed to create invitation record:", inviteError);
   }
 
   revalidatePath("/settings");
@@ -1087,7 +1088,7 @@ export async function markInvitationAsAccepted(
     .single();
 
   if (fetchError || !invitation) {
-    console.error("Failed to find invitation:", fetchError);
+    error("Failed to find invitation:", fetchError);
     return;
   }
 

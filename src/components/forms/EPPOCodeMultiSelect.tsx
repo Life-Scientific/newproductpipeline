@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { X, ChevronDown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -125,7 +126,7 @@ export function EPPOCodeMultiSelect({
           setSearchResults([]);
         }
       } catch (error) {
-        console.error("Error searching EPPO codes:", error);
+        error("Error searching EPPO codes:", error);
         setSearchResults([]);
       } finally {
         setIsSearching(false);

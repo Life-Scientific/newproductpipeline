@@ -8,6 +8,7 @@ import {
   type TableSettings,
   type TableSettingsInput,
 } from "@/lib/actions/table-settings";
+import { warn } from "@/lib/logger";
 
 interface UseTableSettingsOptions {
   tableId: string;
@@ -88,7 +89,7 @@ export function useTableSettings({
         }
       } catch {
         // Silently fail - we'll use default settings
-        console.warn(`Could not load settings for table: ${tableId}`);
+        warn(`Could not load settings for table: ${tableId}`);
       } finally {
         setIsLoading(false);
       }
@@ -147,18 +148,4 @@ export function useTableSettings({
   };
 }
 
-/**
- * Hook for getting table settings in Server Components
- * This is used in page.tsx to pass initial settings to the client component
- */
-export async function getServerTableSettings(
-  tableId: string,
-): Promise<TableSettings | null> {
-  "use server";
-
-  const { getTableSettings } = await import(
-    "@/lib/actions/table-settings"
-  );
-  return getTableSettings(tableId);
-}
-
+export { getTableSettings } from "@/lib/actions/table-settings";

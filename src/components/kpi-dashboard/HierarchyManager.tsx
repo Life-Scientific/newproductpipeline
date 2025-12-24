@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -102,7 +103,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
       }
       setStrategicDrivers(strategicMap);
     } catch (error) {
-      console.error("Error loading hierarchy:", error);
+      error("Error loading hierarchy:", error);
       toast({
         title: "Error",
         description: "Failed to load hierarchy data",

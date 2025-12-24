@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster as SonnerToaster } from "sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { ThemeProviderWrapper } from "@/components/providers/ThemeProviderWrapper";
 import { DisplayPreferencesProvider } from "@/contexts/DisplayPreferencesContext";
 import { KonamiCode } from "@/components/easter-eggs/KonamiCode";
@@ -11,6 +10,7 @@ import { getExchangeRates } from "@/lib/db/countries";
 import { transformExchangeRatesForDisplay } from "@/lib/utils/exchange-rates";
 import type { CurrencyCode } from "@/contexts/DisplayPreferencesContext";
 import { Providers } from "./providers";
+import { warn } from "@/lib/logger";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -76,7 +76,7 @@ export default async function RootLayout({
     const exchangeRates = await getExchangeRates();
     initialExchangeRates = transformExchangeRatesForDisplay(exchangeRates);
   } catch (error) {
-    console.warn("Failed to fetch exchange rates in layout:", error);
+    warn("Failed to fetch exchange rates in layout:", error);
     // Will fall back to defaults in DisplayPreferencesProvider
   }
 
@@ -93,7 +93,6 @@ export default async function RootLayout({
           <ThemeProviderWrapper>
             <DisplayPreferencesProvider initialExchangeRates={initialExchangeRates}>
               {children}
-              <Toaster />
               <SonnerToaster position="bottom-right" richColors />
               <KonamiCode />
               <FeedbackButton />

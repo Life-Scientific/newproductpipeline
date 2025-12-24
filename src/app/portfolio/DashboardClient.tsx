@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useMemo, useState, useEffect, useRef } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { GlobalFilterBar } from "@/components/filters/GlobalFilterBar";
 import { TenYearProjectionChart } from "@/components/charts/TenYearProjectionChart";
 import { Card, CardContent } from "@/components/ui/card";
@@ -115,7 +116,7 @@ function DashboardContent({
           fetchInProgressRef.current = false;
         })
         .catch((error) => {
-          console.error("Failed to fetch business cases for chart:", error);
+          error("Failed to fetch business cases for chart:", error);
           setIsLoadingBusinessCases(false);
           fetchInProgressRef.current = false;
           // On error, keep cached data if available (already set above)

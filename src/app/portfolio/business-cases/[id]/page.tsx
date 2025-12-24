@@ -1,4 +1,5 @@
 import { getBusinessCaseById } from "@/lib/db/queries";
+import { log, warn, error, table } from "@/lib/logger";
 import {
   Card,
   CardContent,
@@ -48,7 +49,7 @@ export default async function BusinessCaseDetailPage({
   try {
     businessCase = await getBusinessCaseById(id);
   } catch (error) {
-    console.error("Error fetching business case:", error);
+    error("Error fetching business case:", error);
     notFound();
   }
 

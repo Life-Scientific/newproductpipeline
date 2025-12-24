@@ -4,6 +4,7 @@
  */
 
 import type { PortfolioFilters } from "@/hooks/use-portfolio-filters";
+import { error, warn } from "@/lib/logger";
 
 const CACHE_PREFIX = "chart-data-";
 const CACHE_VERSION = "1"; // Increment to invalidate old caches
@@ -76,8 +77,8 @@ export function getCachedChartData(
     }
 
     return parsed.data;
-  } catch (error) {
-    console.error("[ChartCache] Error reading cache:", error);
+  } catch (err) {
+    error("[ChartCache] Error reading cache:", err);
     return null;
   }
 }
@@ -103,10 +104,10 @@ export function setCachedChartData(
     };
 
     sessionStorage.setItem(cacheKey, JSON.stringify(cached));
-  } catch (error) {
+  } catch (err) {
     // Handle quota exceeded errors gracefully
-    if (error instanceof DOMException && error.name === "QuotaExceededError") {
-      console.warn(
+    if (err instanceof DOMException && err.name === "QuotaExceededError") {
+      warn(
         "[ChartCache] Storage quota exceeded - clearing old caches",
       );
       // Clear all chart caches and try again
@@ -120,11 +121,11 @@ export function setCachedChartData(
           version: CACHE_VERSION,
         };
         sessionStorage.setItem(cacheKey, JSON.stringify(cached));
-      } catch (retryError) {
-        console.error("[ChartCache] Failed to cache after clearing:", retryError);
+      } catch (retryErr) {
+        error("[ChartCache] Failed to cache after clearing:", retryErr);
       }
     } else {
-      console.error("[ChartCache] Error setting cache:", error);
+      error("[ChartCache] Error setting cache:", err);
     }
   }
 }
@@ -146,8 +147,8 @@ export function clearAllChartCaches(): void {
       }
     }
     keysToRemove.forEach((key) => sessionStorage.removeItem(key));
-  } catch (error) {
-    console.error("[ChartCache] Error clearing caches:", error);
+  } catch (err) {
+    error("[ChartCache] Error clearing caches:", err);
   }
 }
 
@@ -162,8 +163,8 @@ export function clearCachedChartData(filters: PortfolioFilters): void {
   try {
     const cacheKey = getCacheKey(filters);
     sessionStorage.removeItem(cacheKey);
-  } catch (error) {
-    console.error("[ChartCache] Error clearing cache:", error);
+  } catch (err) {
+    error("[ChartCache] Error clearing cache:", err);
   }
 }
 

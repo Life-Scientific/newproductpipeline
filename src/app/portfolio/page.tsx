@@ -1,4 +1,5 @@
 import { getDashboardData } from "@/lib/db/dashboard-data";
+import { log, warn, error, table } from "@/lib/logger";
 import { getCountries } from "@/lib/db/countries";
 import { FormulationsList } from "@/components/formulations/FormulationsList";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -31,7 +32,7 @@ export default async function Home() {
   try {
     dashboardData = await getDashboardData();
   } catch (error) {
-    console.error("Dashboard data fetch error:", error);
+    error("Dashboard data fetch error:", error);
     // Set defaults on error
     dashboardData = {
       formulations: [],

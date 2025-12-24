@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition, useMemo, useRef } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import {
   Dialog,
   DialogContent,
@@ -227,7 +228,7 @@ export function BusinessCaseModal({
               return;
             }
             if (!result.data || result.data.length === 0) {
-              console.error("Business case group returned no data:", groupId);
+              error("Business case group returned no data:", groupId);
               toastRef.current({
                 title: "Error",
                 description:
@@ -395,7 +396,7 @@ export function BusinessCaseModal({
         .eq("is_active", true)
         .then(({ data: fcData, error }) => {
           if (error) {
-            console.error("Failed to load formulation countries:", error);
+            error("Failed to load formulation countries:", error);
             setFormulations([]);
             return;
           }
@@ -441,7 +442,7 @@ export function BusinessCaseModal({
             .eq("is_active", true)) as any;
 
           if (error) {
-            console.error("Failed to load use groups:", error);
+            error("Failed to load use groups:", error);
             setUseGroupOptions([]);
             return;
           }
@@ -559,7 +560,7 @@ export function BusinessCaseModal({
       // Final fallback: use current fiscal year if neither field is available
       // This handles legacy data that predates the effective_start_fiscal_year column
       if (!match) {
-        console.warn(
+        warn(
           "Business case missing effective_start_fiscal_year and target_market_entry_fy, using current fiscal year as fallback",
         );
         return Array.from({ length: 10 }, (_, i) => ({
@@ -1055,7 +1056,7 @@ export function BusinessCaseModal({
   // Guard: If we're in edit mode but have no data, something went wrong
   // This can happen briefly during state transitions or if data failed to load
   if (isEditMode && step === "data" && yearDataArray.length === 0 && !loading) {
-    console.error(
+    error(
       "BusinessCaseModal: Edit mode with no data loaded. groupId:",
       groupId,
     );

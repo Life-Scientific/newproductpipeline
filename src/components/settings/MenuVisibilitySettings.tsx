@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import {
   Card,
   CardContent,
@@ -39,7 +40,7 @@ export function MenuVisibilitySettings() {
         );
         setMenuItems(items);
       } catch (error) {
-        console.error("Failed to load menu items:", error);
+        error("Failed to load menu items:", error);
         toast({
           title: "Error",
           description: "Failed to load menu items",
@@ -73,7 +74,7 @@ export function MenuVisibilitySettings() {
         description: "Menu visibility updated",
       });
     } catch (error) {
-      console.error("Failed to toggle menu item:", error);
+      error("Failed to toggle menu item:", error);
       toast({
         title: "Error",
         description:

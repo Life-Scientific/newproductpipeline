@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { log, warn, error, table } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -244,7 +245,7 @@ export async function fixDuplicateBusinessCases(): Promise<{
         .order("created_at", { ascending: false });
 
       if (groupError || !groupRecords || groupRecords.length === 0) {
-        console.error(`Failed to fetch records for group ${groupId}:`, groupError);
+        error(`Failed to fetch records for group ${groupId}:`, groupError);
         continue;
       }
 
@@ -331,7 +332,7 @@ export async function fixDuplicateBusinessCases(): Promise<{
           .in("business_case_id", idsToSupersede);
 
         if (updateError) {
-          console.error(
+          error(
             `Failed to supersede records for group ${groupId}:`,
             updateError,
           );
@@ -366,7 +367,7 @@ export async function fixDuplicateBusinessCases(): Promise<{
       duplicates: fixedDuplicates,
     };
   } catch (error) {
-    console.error("Error fixing duplicate business cases:", error);
+    error("Error fixing duplicate business cases:", error);
     return {
       success: false,
       message:

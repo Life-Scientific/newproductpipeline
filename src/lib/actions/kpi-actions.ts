@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { log, warn, error, table } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 import { PERMISSIONS } from "@/lib/permissions";
 import { hasPermission } from "./user-management";
@@ -88,7 +89,7 @@ export async function updateKeyResult(
     .single();
 
   if (fetchError) {
-    console.error("Error fetching old key result:", fetchError);
+    error("Error fetching old key result:", fetchError);
     // Continue anyway - audit log will be incomplete but update will proceed
   }
 
@@ -114,7 +115,7 @@ export async function updateKeyResult(
     .eq("id", id);
 
   if (error) {
-    console.error("Error updating key result:", error);
+    error("Error updating key result:", error);
     throw error;
   }
 
@@ -174,7 +175,7 @@ export async function createKeyResult(data: KeyResultInput) {
     .single();
 
   if (error) {
-    console.error("Error creating key result:", error);
+    error("Error creating key result:", error);
     throw error;
   }
 
@@ -213,7 +214,7 @@ export async function deleteKeyResult(id: string) {
     .eq("id", id);
 
   if (error) {
-    console.error("Error deleting key result:", error);
+    error("Error deleting key result:", error);
     throw error;
   }
 
@@ -269,7 +270,7 @@ export async function toggleLock(id: string) {
     .eq("id", id);
 
   if (error) {
-    console.error("Error toggling lock:", error);
+    error("Error toggling lock:", error);
     throw error;
   }
 
@@ -311,7 +312,7 @@ export async function createCoreDriver(data: CoreDriverInput) {
     .single();
 
   if (error) {
-    console.error("Error creating core driver:", error);
+    error("Error creating core driver:", error);
     throw error;
   }
 
@@ -350,7 +351,7 @@ export async function updateCoreDriver(id: string, data: Partial<CoreDriverInput
     .eq("id", id);
 
   if (error) {
-    console.error("Error updating core driver:", error);
+    error("Error updating core driver:", error);
     throw error;
   }
 
@@ -380,7 +381,7 @@ export async function deleteCoreDriver(id: string) {
     .eq("id", id);
 
   if (error) {
-    console.error("Error deleting core driver:", error);
+    error("Error deleting core driver:", error);
     throw error;
   }
 
@@ -415,7 +416,7 @@ export async function createStrategicDriver(data: StrategicDriverInput) {
     .single();
 
   if (error) {
-    console.error("Error creating strategic driver:", error);
+    error("Error creating strategic driver:", error);
     throw error;
   }
 
@@ -458,7 +459,7 @@ export async function updateStrategicDriver(
     .eq("id", id);
 
   if (error) {
-    console.error("Error updating strategic driver:", error);
+    error("Error updating strategic driver:", error);
     throw error;
   }
 
@@ -488,7 +489,7 @@ export async function deleteStrategicDriver(id: string) {
     .eq("id", id);
 
   if (error) {
-    console.error("Error deleting strategic driver:", error);
+    error("Error deleting strategic driver:", error);
     throw error;
   }
 
@@ -530,7 +531,7 @@ export async function reorderItems(
       .eq("id", item.id);
 
     if (error) {
-      console.error(`Error reordering ${type}:`, error);
+      error(`Error reordering ${type}:`, error);
       throw error;
     }
   }
@@ -564,7 +565,7 @@ export async function getAuditLogAction(
     .limit(100);
 
   if (error) {
-    console.error("Error fetching audit log:", error);
+    error("Error fetching audit log:", error);
     throw error;
   }
 
@@ -595,7 +596,7 @@ export async function getCoreDriversAction() {
     .order("sort_order", { ascending: true });
 
   if (error) {
-    console.error("Error fetching core drivers:", error);
+    error("Error fetching core drivers:", error);
     throw error;
   }
 
@@ -628,7 +629,7 @@ export async function getStrategicDriversAction(coreDriverId?: string) {
   const { data, error } = await query;
 
   if (error) {
-    console.error("Error fetching strategic drivers:", error);
+    error("Error fetching strategic drivers:", error);
     throw error;
   }
 

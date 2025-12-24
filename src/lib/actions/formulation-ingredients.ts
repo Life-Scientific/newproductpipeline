@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { log, warn, error, table } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 
 export interface IngredientInput {
@@ -47,7 +48,7 @@ export async function createFormulationIngredients(
   );
 
   if (sigError) {
-    console.error("Failed to calculate active signature:", sigError);
+    error("Failed to calculate active signature:", sigError);
     // Don't fail the whole operation, but log the error
   }
 
@@ -58,7 +59,7 @@ export async function createFormulationIngredients(
   );
 
   if (dupError) {
-    console.error("Failed to check for duplicates:", dupError);
+    error("Failed to check for duplicates:", dupError);
   }
 
   // If duplicate found, return error with existing formulation code

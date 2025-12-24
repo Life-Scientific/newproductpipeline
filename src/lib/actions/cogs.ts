@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { log, warn, error, table } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
@@ -416,7 +417,7 @@ export async function updateCOGSGroupAction(
   );
 
   if (cascadeResult.error) {
-    console.error("Cascade update failed:", cascadeResult.error);
+    error("Cascade update failed:", cascadeResult.error);
     // Don't fail the whole operation, just log it
   }
 
@@ -494,7 +495,7 @@ async function cascadeBusinessCaseUpdatesFromCOGS(
       .eq("business_case_group_id", groupId);
 
     if (inactiveError) {
-      console.error(
+      error(
         `Failed to deactivate business case group ${groupId}:`,
         inactiveError,
       );
@@ -542,7 +543,7 @@ async function cascadeBusinessCaseUpdatesFromCOGS(
       .insert(newBCInserts);
 
     if (insertError) {
-      console.error(`Failed to create new business case group:`, insertError);
+      error(`Failed to create new business case group:`, insertError);
       continue;
     }
 

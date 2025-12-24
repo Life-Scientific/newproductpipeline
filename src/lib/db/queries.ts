@@ -1590,39 +1590,87 @@ function getEffectiveStartYearFromStored(
 }
 
 /**
+ * Portfolio filters interface for server-side filtering
+ */
+export interface PortfolioFilters {
+  countries: string[];
+  formulations: string[];
+  useGroups: string[];
+  formulationStatuses: string[];
+  countryStatuses: string[];
+}
+
+/**
  * Get business cases grouped by business_case_group_id for projection table display
+ * Supports server-side filtering based on portfolio filters
  */
 export async function getBusinessCasesForProjectionTable(
   limit?: number,
+  filters?: PortfolioFilters,
 ): Promise<BusinessCaseGroupData[]> {
   const supabase = await createClient();
 
-    // Supabase has a default limit - we need to fetch all rows with pagination
-    // First get total count
-    const { count } = await supabase
+  // Build base query with filters
+  const buildBaseQuery = () => {
+    let query = supabase
       .from("vw_business_case")
       .select("*", { count: "exact", head: true })
       .eq("status", "active");
 
-    const pageSize = 10000;
-    const totalPages = limit
-      ? Math.ceil(Math.min(limit, count || 0) / pageSize) // Only fetch pages needed for limit
-      : Math.ceil((count || 0) / pageSize);
+    // Apply country filter
+    if (filters?.countries && filters.countries.length > 0) {
+      query = query.in("country_code", filters.countries);
+    }
 
-    // OPTIMIZATION: Fetch all pages in parallel instead of sequentially
-    const pagePromises = Array.from({ length: totalPages }, (_, page) =>
-      supabase
-        .from("vw_business_case")
-        .select("*")
-        .eq("status", "active")
-        .order("formulation_name", { ascending: true })
-        .order("country_name", { ascending: true })
-        .order("use_group_name", { ascending: true })
-        .order("year_offset", { ascending: true })
-        .range(page * pageSize, (page + 1) * pageSize - 1),
-    );
+    // Apply formulation filter
+    if (filters?.formulations && filters.formulations.length > 0) {
+      query = query.in("formulation_code", filters.formulations);
+    }
 
-    const pageResults = await Promise.all(pagePromises);
+    // Apply use group filter
+    if (filters?.useGroups && filters.useGroups.length > 0) {
+      query = query.in("use_group_name", filters.useGroups);
+    }
+
+    return query;
+  };
+
+  // First get total count with filters applied
+  const { count } = await buildBaseQuery();
+  const totalCount = count || 0;
+
+  const pageSize = 10000;
+  const totalPages = limit
+    ? Math.ceil(Math.min(limit, totalCount) / pageSize)
+    : Math.ceil(totalCount / pageSize);
+
+  // OPTIMIZATION: Fetch all pages in parallel with filters applied
+  const pagePromises = Array.from({ length: totalPages }, (_, page) => {
+    let query = supabase
+      .from("vw_business_case")
+      .select("*")
+      .eq("status", "active")
+      .order("formulation_name", { ascending: true })
+      .order("country_name", { ascending: true })
+      .order("use_group_name", { ascending: true })
+      .order("year_offset", { ascending: true })
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    // Apply filters to paginated queries
+    if (filters?.countries && filters.countries.length > 0) {
+      query = query.in("country_code", filters.countries);
+    }
+    if (filters?.formulations && filters.formulations.length > 0) {
+      query = query.in("formulation_code", filters.formulations);
+    }
+    if (filters?.useGroups && filters.useGroups.length > 0) {
+      query = query.in("use_group_name", filters.useGroups);
+    }
+
+    return query;
+  });
+
+  const pageResults = await Promise.all(pagePromises);
 
     // Check for errors and combine data
     const allData: any[] = [];

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import type { ThemeWithColors, Theme } from "@/lib/actions/themes";
 import {
   getUserTheme,
@@ -76,7 +77,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("ls-portfolio-theme-data", JSON.stringify(theme));
     } catch (e) {
       // localStorage might be unavailable (private browsing, etc.)
-      console.warn("Failed to persist theme to localStorage:", e);
+      warn("Failed to persist theme to localStorage:", e);
     }
   };
 
@@ -113,7 +114,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (error) {
-      console.error("Failed to load theme:", error);
+      error("Failed to load theme:", error);
       // If we have a cached theme, keep using it even if fetch fails
       if (!currentTheme) {
         setIsLoading(false);
@@ -137,7 +138,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         await loadTheme();
       }
     } catch (error) {
-      console.error("Failed to set theme:", error);
+      error("Failed to set theme:", error);
       throw error;
     }
   };
@@ -148,7 +149,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       await setUserThemeAction(themeId);
       await loadTheme();
     } catch (error) {
-      console.error("Failed to set user theme:", error);
+      error("Failed to set user theme:", error);
       throw error;
     }
   };

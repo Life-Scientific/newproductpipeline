@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { log, warn, error, table } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 import { hasPermission } from "./user-management";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -14,7 +15,7 @@ export async function getReferenceProducts() {
     .order("product_name");
 
   if (error) {
-    console.error("Failed to fetch reference products:", error);
+    error("Failed to fetch reference products:", error);
     return [];
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import Link from "next/link";
@@ -14,7 +15,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error("Global error:", error);
+    error("Global error:", error);
   }, [error]);
 
   return (

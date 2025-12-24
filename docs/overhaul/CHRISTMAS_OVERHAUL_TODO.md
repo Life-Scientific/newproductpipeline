@@ -17,7 +17,8 @@ The following are all suggestions please make the tool as fast as possible and i
 * [x] **Add dev-only logger**
 
   * [x] Create `src/lib/logger.ts` (dev-only `.log()`, always-on `.warn/.error()`)
-  * [x] Replace `console.log` usages with logger across 8 files
+  * [x] Replace `console.log` usages with logger across 48 files
+  * [x] Created `scripts/bulk-replace-console.js` for bulk replacement
 * [ ] **Establish baseline metrics** (before you change anything)
 
   * [ ] Initial dashboard load time (3–6s baseline)
@@ -140,12 +141,15 @@ The following are all suggestions please make the tool as fast as possible and i
 
 ### F. Server-side filtering (Week 1)
 
-* [ ] Update business case fetching to accept filters and push them into Supabase query:
+* [x] Update business case fetching to accept filters and push them into Supabase query:
 
-  * [ ] `country_id`
-  * [ ] `formulation_id`
-  * [ ] `fiscal_year`
-* [ ] Ensure UI stops doing: “fetch all 8k then filter client-side”
+  * [x] `country_id`
+  * [x] `formulation_id`
+  * [x] `use_group_name`
+* [x] Updated `src/app/portfolio/business-cases/page.tsx` to parse URL params
+* [x] Updated `src/lib/db/progressive-queries.ts` with `PortfolioFilters` type and `buildFilteredBusinessCaseQuery()`
+* [x] Updated `src/lib/db/queries.ts` `getBusinessCasesForProjectionTable()` to accept filters
+* [ ] Ensure UI stops doing: "fetch all 8k then filter client-side"
 * [ ] Confirm payload drops materially even before bundling
 
 ---
@@ -175,31 +179,36 @@ The following are all suggestions please make the tool as fast as possible and i
 
 #### H2. Sonner migration (already installed)
 
-* [ ] Replace Radix toast usage with:
-
-  * [ ] `toast.success(...)`
-  * [ ] `toast.error(...)`
-  * [ ] `toast.loading(...)`
-* [x] Confirm `<SonnerToaster position="bottom-right" richColors />` already exists in layout
+* [x] Sonner is already installed (^2.0.7 in package.json)
+* [x] Replace Radix toast usage with sonner via backward-compatible wrapper
+* [x] Updated `src/components/ui/use-toast.ts` to use sonner under the hood
+* [x] Updated `src/app/layout.tsx` - removed old Radix Toaster, kept SonnerToaster
+* [x] Components using `useToast()` now automatically use sonner
+* [ ] (Optional) Migrate individual components to use sonner directly: `import { toast } from "sonner"`
 
 #### H3. date-fns usage cleanup (already installed)
 
-* [ ] Replace manual relative time logic (e.g. `table-utils.tsx`) with `formatDistanceToNow(..., { addSuffix:true })`
+* [x] Replace manual relative time logic in `src/lib/utils/table-utils.tsx` with `formatDistanceToNow(..., { addSuffix:true })`
+* [x] Removed 25+ lines of manual date math (Today/Yesterday/7 days logic)
+* [x] Now uses proper locale-aware relative formatting (e.g., "about 2 hours ago", "3 days ago")
+* [x] Replaced `console.warn` calls with `warn()` from logger
 
 ---
 
-### I. Week 2: Table performance “Pontus setup”
+### I. Week 2: Table performance "Pontus setup"
 
 #### I1. Virtualization (`@tanstack/react-virtual`)
 
-* [ ] `bun add @tanstack/react-virtual`
-* [ ] Create `src/hooks/useVirtualTable.ts`
-
-  * [ ] `estimateSize: rowHeight (default 52)`
-  * [ ] `overscan: 10`
+* [x] `bun add @tanstack/react-virtual`
+* [x] Create `src/hooks/useVirtualTable.ts` with:
+  * [x] `useVirtualTable()` - main hook for virtualizing lists
+  * [x] `useVirtualList()` - alias for single dimension
+  * [x] `useVirtualGrid()` - for 2D grids (rows + columns)
+  * [x] `estimateSize: rowHeight (default 52)`
+  * [x] `overscan: 10`
 * [ ] Integrate into the biggest tables first:
 
-  * [ ] Business cases list (7,200+)
+  * [ ] Business cases list (7,200+ rows)
   * [ ] Any list where >100 rows are visible
 
 #### I2. Cookie-based table settings (SSR skeleton match)
@@ -344,7 +353,10 @@ The following are all suggestions please make the tool as fast as possible and i
   * [ ] Create `lib/cache-paths.ts` grouping invalidations
 * [ ] Centralize localStorage usage (35+ calls across 8 files)
 
-  * [ ] Create `src/lib/storage.ts` (`get/set/remove` with typed fallback)
+  * [x] Create `src/lib/storage.ts` with typed helpers (`getStorage`, `setStorage`, `removeStorage`, etc.)
+  * [x] SSR-safe wrappers with proper error handling
+  * [x] Typed getters for string, number, boolean, and JSON values
+  * [ ] Replace localStorage calls in contexts and components (ongoing)
 * [ ] Replace JSON.stringify comparisons with `lodash-es isEqual` or remeda
 * [ ] Consider `decimal.js` for financial calculations (avoid float drift)
 * [ ] Audit `dynamic='force-dynamic'` on 7 routes and replace with PPR/ISR approach

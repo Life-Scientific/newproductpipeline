@@ -5,6 +5,7 @@ import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { error } from "@/lib/logger";
 
 interface ErrorFallbackProps {
   error: Error;
@@ -69,14 +70,14 @@ export function ErrorBoundary({
   onError,
 }: ErrorBoundaryProps) {
   const handleError = useCallback(
-    (error: Error, info: { componentStack: string }) => {
+    (err: Error, info: { componentStack: string }) => {
       if (onError) {
-        onError(error, info);
+        onError(err, info);
       } else {
         // Default error handling - log to console in development
         if (process.env.NODE_ENV === "development") {
-          console.error("ErrorBoundary caught an error:", error);
-          console.error("Component stack:", info.componentStack);
+          error("ErrorBoundary caught an error:", err);
+          error("Component stack:", info.componentStack);
         }
       }
     },

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -33,7 +34,7 @@ export function WorkspaceSettings() {
         const data = await getWorkspaces();
         setWorkspaces(data);
       } catch (error) {
-        console.error("Failed to load workspaces:", error);
+        error("Failed to load workspaces:", error);
         toast({
           title: "Error",
           description: "Failed to load workspaces",
@@ -62,7 +63,7 @@ export function WorkspaceSettings() {
         description: "Default workspace updated",
       });
     } catch (error) {
-      console.error("Failed to set default workspace:", error);
+      error("Failed to set default workspace:", error);
       toast({
         title: "Error",
         description: "Failed to set default workspace",

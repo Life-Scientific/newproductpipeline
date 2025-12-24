@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { log, warn, error, table } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 import { getCurrentUserName } from "@/lib/utils/user-context";
 import {
@@ -416,7 +417,7 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     // If no records were updated, it might mean the old group was already superseded
     // or doesn't exist, which is fine - we'll still create the new version
     if (deactivatedData && deactivatedData.length === 0) {
-      console.warn(
+      warn(
         `No records found to supersede for group ${existingGroupId} - may already be superseded or not exist`,
       );
     }
@@ -784,7 +785,7 @@ export async function updateBusinessCaseGroupAction(
     // If no records were updated, it might mean the old group was already superseded
     // or doesn't exist, which is fine - we'll still create the new version
     if (deactivatedData && deactivatedData.length === 0) {
-      console.warn(
+      warn(
         `No records found to supersede for group ${oldGroupId} - may already be superseded or not exist`,
       );
     }
@@ -863,7 +864,7 @@ export async function getBusinessCaseGroupAction(groupId: string) {
     const data = await getBusinessCaseGroup(groupId);
     return { data, error: null };
   } catch (error) {
-    console.error("getBusinessCaseGroupAction error:", error);
+    error("getBusinessCaseGroupAction error:", error);
     return {
       data: null,
       error:

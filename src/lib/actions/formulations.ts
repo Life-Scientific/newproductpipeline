@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { log, warn, error, table } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 import {
   createFormulationIngredients,
@@ -137,7 +138,7 @@ export async function createFormulation(formData: FormData) {
 
       assignedCode = ingredientResult.formulationCode || null;
     } catch (parseError) {
-      console.error("Failed to parse ingredients:", parseError);
+      error("Failed to parse ingredients:", parseError);
       // Continue anyway - formulation is created
     }
   }
@@ -293,7 +294,7 @@ export async function updateFormulation(
       }
       assignedCode = ingredientResult.formulationCode || null;
     } catch (parseError) {
-      console.error("Failed to parse ingredients:", parseError);
+      error("Failed to parse ingredients:", parseError);
       // Continue anyway - formulation is updated
     }
   }

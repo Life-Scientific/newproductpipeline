@@ -24,6 +24,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { log, warn, error, table } from "@/lib/logger";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -87,7 +88,7 @@ export function WorkspaceSwitcher() {
         const data = await getWorkspaces();
         setWorkspaces(data);
       } catch (error) {
-        console.error("Failed to load workspaces:", error);
+        error("Failed to load workspaces:", error);
       } finally {
         setIsLoadingWorkspaces(false);
       }
@@ -196,7 +197,7 @@ export function WorkspaceSwitcher() {
                 // The workspace context update and route change will trigger necessary re-renders
               }
             } catch (error) {
-              console.error("Failed to switch workspace:", error);
+              error("Failed to switch workspace:", error);
             }
           };
 

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { log, warn, error, table } from "@/lib/logger";
 import type {
   Country,
   FormulationCountryDetail,
@@ -67,7 +68,7 @@ async function fetchAllPaginated<T>(
     );
 
     if (error) {
-      console.error(`Failed to fetch ${tableName}:`, error.message);
+      error(`Failed to fetch ${tableName}:`, error.message);
       break;
     }
 

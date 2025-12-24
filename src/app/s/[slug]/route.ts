@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { log, warn, error, table } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(
@@ -71,12 +72,12 @@ export async function GET(
           is_authenticated: !!user,
         });
       } catch (err) {
-        console.error("Failed to log click:", err);
+        error("Failed to log click:", err);
       }
     })();
   } catch (logError) {
     // Don't let logging errors prevent the redirect
-    console.error("Error preparing click log:", logError);
+    error("Error preparing click log:", logError);
   }
 
   // Redirect to destination

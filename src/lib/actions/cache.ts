@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { log, warn, error, table } from "@/lib/logger";
 
 /**
  * Revalidate routes to refresh server components.
@@ -24,7 +25,7 @@ export async function revalidateAllCaches(): Promise<{
       message: "Routes refreshed. Data will reload on next navigation.",
     };
   } catch (error) {
-    console.error("Failed to revalidate routes:", error);
+    error("Failed to revalidate routes:", error);
     return {
       success: false,
       message:

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,7 +22,7 @@ export default function PortfolioError({
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error("Portfolio error:", error);
+    error("Portfolio error:", error);
   }, [error]);
 
   // Determine if it's a data fetch error

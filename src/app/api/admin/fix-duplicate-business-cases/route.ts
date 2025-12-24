@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { log, warn, error, table } from "@/lib/logger";
 import {
   findDuplicateActiveBusinessCases,
   fixDuplicateActiveBusinessCases,
@@ -9,7 +10,7 @@ export async function GET() {
     const result = await findDuplicateActiveBusinessCases();
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error finding duplicates:", error);
+    error("Error finding duplicates:", error);
     return NextResponse.json(
       {
         error:
@@ -25,7 +26,7 @@ export async function POST() {
     const result = await fixDuplicateActiveBusinessCases();
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error fixing duplicates:", error);
+    error("Error fixing duplicates:", error);
     return NextResponse.json(
       {
         error:

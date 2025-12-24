@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { log, warn, error, table } from "@/lib/logger";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { KPIDashboard } from "@/components/kpi-dashboard/KPIDashboard";
 import { getAllUsers } from "@/lib/actions/user-management";
@@ -63,7 +64,7 @@ export default async function KPIDashboardPage() {
     users = await getAllUsers();
   } catch (error) {
     // Silently fail - demo will work without users, just can't assign owners
-    console.warn("Could not fetch users for KPI dashboard:", error);
+    warn("Could not fetch users for KPI dashboard:", error);
   }
 
   // Fetch KPI data from database
@@ -95,7 +96,7 @@ export default async function KPIDashboardPage() {
         </PageLayout>
       );
     }
-    console.error("Error fetching KPI dashboard data:", error);
+    error("Error fetching KPI dashboard data:", error);
     // For other errors, still show placeholder rather than crashing
     // This prevents redirect loops
     return (

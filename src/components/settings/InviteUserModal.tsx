@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import {
   Dialog,
   DialogContent,
@@ -56,7 +57,7 @@ export function InviteUserModal({
           setSelectedRole(rolesData[0].role_name);
         }
       } catch (error) {
-        console.error("Failed to load roles:", error);
+        error("Failed to load roles:", error);
       } finally {
         setLoadingRoles(false);
       }

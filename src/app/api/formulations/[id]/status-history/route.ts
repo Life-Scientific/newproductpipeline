@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { log, warn, error, table } from "@/lib/logger";
 import { getFormulationStatusHistory } from "@/lib/db/queries";
 
 export async function GET(
@@ -10,7 +11,7 @@ export async function GET(
     const statusHistory = await getFormulationStatusHistory(id);
     return NextResponse.json(statusHistory);
   } catch (error) {
-    console.error("Error fetching status history:", error);
+    error("Error fetching status history:", error);
     return NextResponse.json(
       { error: "Failed to fetch status history" },
       { status: 500 },

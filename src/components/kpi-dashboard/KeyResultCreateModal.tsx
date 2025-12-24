@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { log, warn, error, table } from "@/lib/logger";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -108,7 +109,7 @@ export function KeyResultCreateModal({
       onOpenChange(false);
       onSuccess();
     } catch (error) {
-      console.error("Error creating key result:", error);
+      error("Error creating key result:", error);
       toast({
         title: "Error",
         description:

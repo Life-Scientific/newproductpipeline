@@ -6,9 +6,11 @@
  */
 
 import { type ColumnDef } from "@tanstack/react-table";
+import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { getStatusVariant } from "@/lib/design-system";
+import { warn } from "@/lib/logger";
 
 // ============================================================================
 // Type Definitions
@@ -190,17 +192,15 @@ export function renderDate(
       </span>
     );
   } else {
-    // Relative time (e.g., "2 days ago")
-    const now = new Date();
-    const diffMs = now.getTime() - dateObj.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return <span className="text-sm">Today</span>;
-    if (diffDays === 1) return <span className="text-sm">Yesterday</span>;
-    if (diffDays < 7)
-      return <span className="text-sm">{diffDays} days ago</span>;
-
-    return <span className="text-sm">{dateObj.toLocaleDateString()}</span>;
+    // Relative time using date-fns (e.g., "2 days ago")
+    return (
+      <span
+        className="text-sm text-muted-foreground"
+        title={dateObj.toLocaleDateString()}
+      >
+        {formatDistanceToNow(dateObj, { addSuffix: true })}
+      </span>
+    );
   }
 }
 
@@ -443,7 +443,7 @@ export function saveTableView(tableId: string, config: TableViewConfig): void {
     const key = `table_view_${tableId}`;
     localStorage.setItem(key, JSON.stringify(config));
   } catch (error) {
-    console.warn("Failed to save table view:", error);
+    warn("Failed to save table view:", error);
   }
 }
 
@@ -459,7 +459,7 @@ export function loadTableView(tableId: string): TableViewConfig | null {
     if (!stored) return null;
     return JSON.parse(stored) as TableViewConfig;
   } catch (error) {
-    console.warn("Failed to load table view:", error);
+    warn("Failed to load table view:", error);
     return null;
   }
 }
@@ -474,7 +474,7 @@ export function deleteTableView(tableId: string): void {
     const key = `table_view_${tableId}`;
     localStorage.removeItem(key);
   } catch (error) {
-    console.warn("Failed to delete table view:", error);
+    warn("Failed to delete table view:", error);
   }
 }
 
@@ -494,7 +494,7 @@ export function listTableViews(): string[] {
     }
     return views;
   } catch (error) {
-    console.warn("Failed to list table views:", error);
+    warn("Failed to list table views:", error);
     return [];
   }
 }
