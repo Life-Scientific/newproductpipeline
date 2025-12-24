@@ -9,10 +9,10 @@ export async function GET(
     const { id } = await params;
     const cogs = await getFormulationCOGS(id);
     return NextResponse.json(cogs);
-  } catch (error) {
+  } catch (supabaseError) {
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to fetch COGS",
+        error: supabaseError instanceof Error ? supabaseError.message : "Failed to fetch COGS",
       },
       { status: 500 },
     );

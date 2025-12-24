@@ -67,8 +67,9 @@ export function BusinessCaseVersionHistory({
             setVersions(result.data);
           }
         })
-        .catch((err) => {
-          setError(err.message);
+        .catch((err: unknown) => {
+          const errorMessage = err instanceof Error ? err.message : "Failed to load version history";
+          setError(errorMessage);
         })
         .finally(() => {
           setLoading(false);

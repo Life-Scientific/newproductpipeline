@@ -121,12 +121,11 @@ export async function deleteIngredient(ingredientId: string) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("ingredients")
     .delete()
     .eq("ingredient_id", ingredientId);
-
-  if (supabaseError) {
+    if (supabaseError) {
     return { error: supabaseError.message };
   }
 

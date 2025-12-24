@@ -9,12 +9,12 @@ export async function GET(
     const { id } = await params;
     const businessCases = await getFormulationBusinessCases(id);
     return NextResponse.json(businessCases);
-  } catch (error) {
+  } catch (supabaseError) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
+          supabaseError instanceof Error
+            ? supabaseError.message
             : "Failed to fetch business cases",
       },
       { status: 500 },

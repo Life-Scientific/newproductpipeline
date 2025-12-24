@@ -106,7 +106,7 @@ export async function hasPermission(
     p_key: permission,
   });
 
-  if (error) {
+  if (supabaseError) {
     error("Error checking permission:", error);
     return false;
   }
@@ -145,7 +145,7 @@ export async function hasAnyPermission(
     p_keys: permissions,
   });
 
-  if (error) {
+  if (supabaseError) {
     error("Error checking permissions:", error);
     return false;
   }
@@ -180,7 +180,7 @@ export async function getUserPermissions(): Promise<string[]> {
 
   const { data, error: supabaseError } = await supabase.rpc("get_user_permissions");
 
-  if (error) {
+  if (supabaseError) {
     error("Error getting permissions:", error);
     return [];
   }
@@ -215,7 +215,7 @@ export async function getUserRoles(): Promise<string[]> {
 
   const { data, error: supabaseError } = await supabase.rpc("get_user_roles");
 
-  if (error) {
+  if (supabaseError) {
     error("Error getting roles:", error);
     return [];
   }
@@ -271,7 +271,7 @@ export async function getUserRoleFromSession(): Promise<string | null> {
 
   const { data, error: supabaseError } = await supabase.rpc("get_user_role");
 
-  if (error) {
+  if (supabaseError) {
     error("Error getting role:", error);
     return "Viewer";
   }
@@ -308,8 +308,8 @@ export async function getAllUsers(): Promise<UserManagementData[]> {
   // Call the database function
   const { data, error: supabaseError } = await supabase.rpc("get_all_users_with_roles");
 
-  if (error) {
-    throw new Error(`Failed to fetch users: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch users: ${supabaseError.message}`);
   }
 
   return (data || []).map((user: any) => ({
@@ -348,8 +348,8 @@ export async function getUserManagementData(): Promise<{
   const [usersResult, rolesResult, invitationsResult] = await Promise.all([
     // Users
     supabase.rpc("get_all_users_with_roles").then(({ data, error }) => {
-      if (error) {
-        throw new Error(`Failed to fetch users: ${error.message}`);
+      if (supabaseError) {
+        throw new Error(`Failed to fetch users: ${supabaseError.message}`);
       }
       return (data || []).map((user: any) => ({
         id: user.id,
@@ -364,8 +364,8 @@ export async function getUserManagementData(): Promise<{
     // Roles (only if user has permission)
     canViewRoles
       ? supabase.rpc("get_all_roles").then(({ data, error }) => {
-          if (error) {
-            throw new Error(`Failed to fetch roles: ${error.message}`);
+          if (supabaseError) {
+            throw new Error(`Failed to fetch roles: ${supabaseError.message}`);
           }
           return (data || []).map((role: any) => ({
             role_id: role.role_id,
@@ -379,8 +379,8 @@ export async function getUserManagementData(): Promise<{
       : Promise.resolve([]),
     // Invitations
     supabase.rpc("get_all_invitations").then(({ data, error }) => {
-      if (error) {
-        throw new Error(`Failed to fetch invitations: ${error.message}`);
+      if (supabaseError) {
+        throw new Error(`Failed to fetch invitations: ${supabaseError.message}`);
       }
       return (data || []).map((invitation: any) => ({
         id: invitation.id,
@@ -503,12 +503,12 @@ export async function addUserRole(
     assigned_by: currentUser?.id,
   });
 
-  if (error) {
-    if (error.code === "23505") {
+  if (supabaseError) {
+    if (supabaseError.code === "23505") {
       // Duplicate key - user already has this role
       return;
     }
-    throw new Error(`Failed to add role: ${error.message}`);
+    throw new Error(`Failed to add role: ${supabaseError.message}`);
   }
 
   revalidatePath("/settings");
@@ -571,8 +571,8 @@ export async function removeUserRole(
     .eq("user_id", userId)
     .eq("role_id", roleId);
 
-  if (error) {
-    throw new Error(`Failed to remove role: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to remove role: ${supabaseError.message}`);
   }
 
   revalidatePath("/settings");
@@ -596,8 +596,8 @@ export async function getAllRoles(): Promise<Role[]> {
 
   const { data, error: supabaseError } = await supabase.rpc("get_all_roles");
 
-  if (error) {
-    throw new Error(`Failed to fetch roles: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch roles: ${supabaseError.message}`);
   }
 
   return (data || []).map((role: any) => ({
@@ -618,8 +618,8 @@ export async function getAllPermissions(): Promise<Permission[]> {
 
   const { data, error: supabaseError } = await supabase.rpc("get_all_permissions");
 
-  if (error) {
-    throw new Error(`Failed to fetch permissions: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch permissions: ${supabaseError.message}`);
   }
 
   return data || [];
@@ -755,8 +755,8 @@ export async function updateRole(
       .update({ description })
       .eq("role_id", roleId);
 
-    if (error) {
-      throw new Error(`Failed to update role: ${error.message}`);
+    if (supabaseError) {
+      throw new Error(`Failed to update role: ${supabaseError.message}`);
     }
   } else {
     const { error: supabaseError } = await supabase
@@ -764,11 +764,11 @@ export async function updateRole(
       .update({ role_name: roleName, description })
       .eq("role_id", roleId);
 
-    if (error) {
+    if (supabaseError) {
       if (error.code === "23505") {
         throw new Error("A role with this name already exists");
       }
-      throw new Error(`Failed to update role: ${error.message}`);
+      throw new Error(`Failed to update role: ${supabaseError.message}`);
     }
   }
 
@@ -812,8 +812,8 @@ export async function deleteRole(roleId: string): Promise<void> {
 
   const { error: supabaseError } = await supabase.from("roles").delete().eq("role_id", roleId);
 
-  if (error) {
-    throw new Error(`Failed to delete role: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to delete role: ${supabaseError.message}`);
   }
 
   revalidatePath("/settings");
@@ -837,8 +837,8 @@ export async function getAllInvitations(): Promise<InvitationData[]> {
 
   const { data, error: supabaseError } = await supabase.rpc("get_all_invitations");
 
-  if (error) {
-    throw new Error(`Failed to fetch invitations: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch invitations: ${supabaseError.message}`);
   }
 
   return (data || []).map((invitation: any) => ({
@@ -1025,8 +1025,8 @@ export async function cancelInvitation(invitationId: string): Promise<void> {
     .delete()
     .eq("id", invitationId);
 
-  if (error) {
-    throw new Error(`Failed to cancel invitation: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to cancel invitation: ${supabaseError.message}`);
   }
 
   revalidatePath("/settings");

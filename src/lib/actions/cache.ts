@@ -29,7 +29,7 @@ export async function revalidateAllCaches(): Promise<{
     return {
       success: false,
       message:
-        error instanceof Error ? error.message : "Failed to revalidate routes",
+        error instanceof Error ? supabaseError.message : "Failed to revalidate routes",
     };
   }
 }

@@ -14,7 +14,7 @@ export async function getReferenceProducts() {
     .eq("is_active", true)
     .order("product_name");
 
-  if (error) {
+  if (supabaseError) {
     error("Failed to fetch reference products:", error);
     return [];
   }

@@ -411,7 +411,7 @@ export async function removeUseGroupCrop(
 ) {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("formulation_country_use_group_eppo_crops")
     .delete()
     .eq("formulation_country_use_group_id", useGroupId)
@@ -515,7 +515,7 @@ export async function removeUseGroupTarget(
 ) {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("formulation_country_use_group_eppo_targets")
     .delete()
     .eq("formulation_country_use_group_id", useGroupId)
@@ -610,7 +610,7 @@ export async function removeReferenceProductCrop(
 ) {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("reference_product_eppo_crops")
     .delete()
     .eq("reference_product_id", referenceProductId)
@@ -691,13 +691,12 @@ export async function removeReferenceProductTarget(
 ) {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("reference_product_eppo_targets")
     .delete()
     .eq("reference_product_id", referenceProductId)
     .eq("eppo_code_id", eppoCodeId);
-
-  if (supabaseError) {
+    if (supabaseError) {
     return { error: supabaseError.message };
   }
 

@@ -33,9 +33,9 @@ export function ShortUrlForm({ shortUrl, mode }: ShortUrlFormProps) {
           toast.success("Short URL updated!");
           router.push("/shorturl");
         }
-      } catch (error) {
+      } catch (supabaseError) {
         toast.error(
-          error instanceof Error ? error.message : "Something went wrong",
+          supabaseError instanceof Error ? supabaseError.message : "Something went wrong",
         );
       }
     });

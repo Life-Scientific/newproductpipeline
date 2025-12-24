@@ -170,7 +170,7 @@ export function DisplayPreferencesProvider({
             .select("currency_code, exchange_rate_to_eur")
             .eq("is_active", true);
 
-          if (error) {
+          if (supabaseError) {
             warn("Failed to fetch exchange rates:", error);
             return;
           }

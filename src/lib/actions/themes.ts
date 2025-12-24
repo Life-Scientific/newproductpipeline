@@ -32,8 +32,8 @@ export async function getThemes(): Promise<Theme[]> {
     .select("*")
     .order("name");
 
-  if (error) {
-    throw new Error(`Failed to fetch themes: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch themes: ${supabaseError.message}`);
   }
 
   return data || [];
@@ -48,8 +48,8 @@ export async function getPresetThemes(): Promise<Theme[]> {
     .eq("is_preset", true)
     .order("name");
 
-  if (error) {
-    throw new Error(`Failed to fetch preset themes: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch preset themes: ${supabaseError.message}`);
   }
 
   return data || [];
@@ -137,8 +137,8 @@ export async function setUserTheme(themeId: string): Promise<void> {
     theme_id: themeId,
   });
 
-  if (error) {
-    throw new Error(`Failed to set theme: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to set theme: ${supabaseError.message}`);
   }
 
   revalidatePath("/settings");

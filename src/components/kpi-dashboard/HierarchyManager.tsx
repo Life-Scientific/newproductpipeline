@@ -131,7 +131,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
     } catch (err) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create core driver",
+        description: err instanceof Error ? err.message : "Failed to create core driver",
         variant: "destructive",
       });
     }
@@ -156,7 +156,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
     } catch (err) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update core driver",
+        description: error instanceof Error ? supabaseError.message : "Failed to update core driver",
         variant: "destructive",
       });
     }
@@ -182,7 +182,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
     } catch (err) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete core driver",
+        description: error instanceof Error ? supabaseError.message : "Failed to delete core driver",
         variant: "destructive",
       });
     }
@@ -215,7 +215,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
     } catch (err) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create strategic driver",
+        description: error instanceof Error ? supabaseError.message : "Failed to create strategic driver",
         variant: "destructive",
       });
     }
@@ -241,7 +241,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
     } catch (err) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update strategic driver",
+        description: error instanceof Error ? supabaseError.message : "Failed to update strategic driver",
         variant: "destructive",
       });
     }
@@ -267,7 +267,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
     } catch (err) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete strategic driver",
+        description: error instanceof Error ? supabaseError.message : "Failed to delete strategic driver",
         variant: "destructive",
       });
     }

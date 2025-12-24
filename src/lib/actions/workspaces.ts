@@ -39,8 +39,8 @@ export async function getWorkspaces(): Promise<Workspace[]> {
     .eq("is_active", true)
     .order("name");
 
-  if (error) {
-    throw new Error(`Failed to fetch workspaces: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch workspaces: ${supabaseError.message}`);
   }
 
   return data || [];
@@ -58,11 +58,11 @@ export async function getWorkspaceBySlug(
     .eq("is_active", true)
     .single();
 
-  if (error) {
+  if (supabaseError) {
     if (error.code === "PGRST116") {
       return null; // Not found
     }
-    throw new Error(`Failed to fetch workspace: ${error.message}`);
+    throw new Error(`Failed to fetch workspace: ${supabaseError.message}`);
   }
 
   return data;
@@ -89,11 +89,11 @@ export async function getWorkspaceWithMenuBySlug(
     .eq("is_active", true)
     .single();
 
-  if (error) {
+  if (supabaseError) {
     if (error.code === "PGRST116") {
       return null; // Not found
     }
-    warn("Failed to fetch workspace with menu:", error.message);
+    warn("Failed to fetch workspace with menu:", supabaseError.message);
     return null;
   }
 
@@ -270,8 +270,8 @@ export async function setUserDefaultWorkspace(
     is_default: true,
   });
 
-  if (error) {
-    throw new Error(`Failed to set default workspace: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to set default workspace: ${supabaseError.message}`);
   }
 
   revalidatePath("/settings");
@@ -336,8 +336,8 @@ export async function toggleMenuItemVisibility(
     .update({ is_active: isActive, updated_at: new Date().toISOString() })
     .eq("menu_item_id", menuItemId);
 
-  if (error) {
-    throw new Error(`Failed to update menu item: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to update menu item: ${supabaseError.message}`);
   }
 
   revalidatePath("/settings");

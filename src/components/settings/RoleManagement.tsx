@@ -343,7 +343,7 @@ export function RoleManagement() {
     );
   }
 
-  if (error) {
+  if (supabaseError) {
     return (
       <Card>
         <CardContent className="pt-6">

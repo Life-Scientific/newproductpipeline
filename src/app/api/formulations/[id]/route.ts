@@ -14,8 +14,8 @@ export async function GET(
     .eq("formulation_id", id)
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 404 });
+  if (supabaseError) {
+    return NextResponse.json({ error: supabaseError.message }, { status: 404 });
   }
 
   return NextResponse.json(data);

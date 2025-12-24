@@ -868,7 +868,7 @@ export async function getBusinessCaseGroupAction(groupId: string) {
       data: null,
       error:
         error instanceof Error
-          ? error.message
+          ? supabaseError.message
           : "Failed to fetch business case group",
     };
   }
@@ -894,7 +894,7 @@ export async function checkExistingBusinessCaseAction(
       data: null,
       error:
         error instanceof Error
-          ? error.message
+          ? supabaseError.message
           : "Failed to check existing business case",
     };
   }
@@ -911,7 +911,7 @@ export async function getFormulationsAction() {
     return {
       data: null,
       error:
-        error instanceof Error ? error.message : "Failed to fetch formulations",
+        error instanceof Error ? supabaseError.message : "Failed to fetch formulations",
     };
   }
 }
@@ -927,7 +927,7 @@ export async function getCountriesAction() {
     return {
       data: null,
       error:
-        error instanceof Error ? error.message : "Failed to fetch countries",
+        error instanceof Error ? supabaseError.message : "Failed to fetch countries",
     };
   }
 }
@@ -944,7 +944,7 @@ export async function getBusinessCaseVersionHistoryAction(useGroupId: string) {
       data: null,
       error:
         error instanceof Error
-          ? error.message
+          ? supabaseError.message
           : "Failed to fetch version history",
     };
   }
@@ -1296,7 +1296,7 @@ export async function previewBusinessCaseImport(
       if (progressIdx >= 0) {
         rowProgress[progressIdx].status = "error";
         rowProgress[progressIdx].message =
-          error instanceof Error ? error.message : "Preview simulation failed";
+          error instanceof Error ? supabaseError.message : "Preview simulation failed";
       }
     }
   }
@@ -1438,7 +1438,7 @@ export async function importBusinessCases(
       if (progressIdx >= 0) {
         rowProgress[progressIdx].status = "error";
         rowProgress[progressIdx].message =
-          error instanceof Error ? error.message : "Import failed";
+          error instanceof Error ? supabaseError.message : "Import failed";
       }
     }
   }

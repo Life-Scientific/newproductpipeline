@@ -319,12 +319,12 @@ function BusinessCasesContent({
         title: "Export successful",
         description: `Exported ${filteredBusinessCases.length} business case${filteredBusinessCases.length !== 1 ? "s" : ""} to CSV`,
       });
-    } catch (error) {
+    } catch (supabaseError) {
       toast({
         title: "Export failed",
         description:
-          error instanceof Error
-            ? error.message
+          supabaseError instanceof Error
+            ? supabaseError.message
             : "Failed to export business cases",
         variant: "destructive",
       });
@@ -350,12 +350,12 @@ function BusinessCasesContent({
         description:
           "Template includes examples showing the same formulation across multiple countries",
       });
-    } catch (error) {
+    } catch (supabaseError) {
       toast({
         title: "Download failed",
         description:
-          error instanceof Error
-            ? error.message
+          supabaseError instanceof Error
+            ? supabaseError.message
             : "Failed to download template",
         variant: "destructive",
       });

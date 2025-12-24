@@ -214,7 +214,7 @@ export async function deleteKeyResult(id: string) {
     .eq("id", id);
 
   if (supabaseError) {
-    supabaseError("Error deleting key result:", supabaseError);
+    error("Error deleting key result:", supabaseError);
     throw supabaseError;
   }
 
@@ -270,7 +270,7 @@ export async function toggleLock(id: string) {
     .eq("id", id);
 
   if (supabaseError) {
-    supabaseError("Error toggling lock:", supabaseError);
+    error("Error toggling lock:", supabaseError);
     throw supabaseError;
   }
 
@@ -312,7 +312,7 @@ export async function createCoreDriver(data: CoreDriverInput) {
     .single();
 
   if (supabaseError) {
-    supabaseError("Error creating core driver:", supabaseError);
+    error("Error creating core driver:", supabaseError);
     throw supabaseError;
   }
 
@@ -351,7 +351,7 @@ export async function updateCoreDriver(id: string, data: Partial<CoreDriverInput
     .eq("id", id);
 
   if (supabaseError) {
-    supabaseError("Error updating core driver:", supabaseError);
+    error("Error updating core driver:", supabaseError);
     throw supabaseError;
   }
 
@@ -381,7 +381,7 @@ export async function deleteCoreDriver(id: string) {
     .eq("id", id);
 
   if (supabaseError) {
-    supabaseError("Error deleting core driver:", supabaseError);
+    error("Error deleting core driver:", supabaseError);
     throw supabaseError;
   }
 
@@ -416,7 +416,7 @@ export async function createStrategicDriver(data: StrategicDriverInput) {
     .single();
 
   if (supabaseError) {
-    supabaseError("Error creating strategic driver:", supabaseError);
+    error("Error creating strategic driver:", supabaseError);
     throw supabaseError;
   }
 
@@ -459,7 +459,7 @@ export async function updateStrategicDriver(
     .eq("id", id);
 
   if (supabaseError) {
-    supabaseError("Error updating strategic driver:", supabaseError);
+    error("Error updating strategic driver:", supabaseError);
     throw supabaseError;
   }
 
@@ -489,7 +489,7 @@ export async function deleteStrategicDriver(id: string) {
     .eq("id", id);
 
   if (supabaseError) {
-    supabaseError("Error deleting strategic driver:", supabaseError);
+    error("Error deleting strategic driver:", supabaseError);
     throw supabaseError;
   }
 
@@ -531,7 +531,7 @@ export async function reorderItems(
       .eq("id", item.id);
 
     if (supabaseError) {
-      supabaseError(`Error reordering ${type}:`, supabaseError);
+      error(`Error reordering ${type}:`, supabaseError);
       throw supabaseError;
     }
   }
@@ -565,7 +565,7 @@ export async function getAuditLogAction(
     .limit(100);
 
   if (supabaseError) {
-    supabaseError("Error fetching audit log:", supabaseError);
+    error("Error fetching audit log:", supabaseError);
     throw supabaseError;
   }
 
@@ -596,7 +596,7 @@ export async function getCoreDriversAction() {
     .order("sort_order", { ascending: true });
 
   if (supabaseError) {
-    supabaseError("Error fetching core drivers:", supabaseError);
+    error("Error fetching core drivers:", supabaseError);
     throw supabaseError;
   }
 
@@ -626,10 +626,10 @@ export async function getStrategicDriversAction(coreDriverId?: string) {
     query = query.eq("core_driver_id", coreDriverId);
   }
 
-  const { data, error } = await query;
+  const { data, error: supabaseError } = await query;
 
   if (supabaseError) {
-    supabaseError("Error fetching strategic drivers:", supabaseError);
+    error("Error fetching strategic drivers:", supabaseError);
     throw supabaseError;
   }
 

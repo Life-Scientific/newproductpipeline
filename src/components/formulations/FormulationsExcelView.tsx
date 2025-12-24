@@ -794,7 +794,7 @@ export function FormulationsExcelView({
           setEditingCell(null);
           // No router.refresh() - revalidatePath in server action handles cache invalidation
         }
-      } catch (error) {
+      } catch (supabaseError) {
         toast({
           title: "Error",
           description: "An unexpected error occurred",

@@ -61,13 +61,13 @@ function LoginContent() {
     setError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error: supabaseError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      setError(error.message);
+    if (supabaseError) {
+      setError(supabaseError.message);
       setLoading(false);
     } else {
       // Use window.location for full page reload to ensure cookies are set
@@ -99,8 +99,8 @@ function LoginContent() {
       },
     });
 
-    if (error) {
-      setError(error.message);
+    if (supabaseError) {
+      setError(supabaseError.message);
       setSsoLoading(false);
     }
     // If successful, the user will be redirected to Azure

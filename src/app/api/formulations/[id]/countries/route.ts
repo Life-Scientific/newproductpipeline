@@ -9,11 +9,11 @@ export async function GET(
     const { id } = await params;
     const countries = await getFormulationCountryDetails(id);
     return NextResponse.json(countries);
-  } catch (error) {
+  } catch (supabaseError) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Failed to fetch countries",
+          supabaseError instanceof Error ? supabaseError.message : "Failed to fetch countries",
       },
       { status: 500 },
     );

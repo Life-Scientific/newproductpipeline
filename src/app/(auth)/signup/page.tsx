@@ -44,13 +44,13 @@ export default function SignupPage() {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { error: supabaseError } = await supabase.auth.signUp({
       email,
       password,
     });
 
-    if (error) {
-      setError(error.message);
+    if (supabaseError) {
+      setError(supabaseError.message);
       setLoading(false);
     } else {
       // Use window.location for full page reload to ensure cookies are set

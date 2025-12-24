@@ -79,7 +79,7 @@ export function MenuVisibilitySettings() {
         title: "Error",
         description:
           error instanceof Error
-            ? error.message
+            ? supabaseError.message
             : "Failed to update menu visibility",
         variant: "destructive",
       });

@@ -188,12 +188,11 @@ export async function deleteFormulationCountry(formulationCountryId: string) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("formulation_country")
     .delete()
     .eq("formulation_country_id", formulationCountryId);
-
-  if (supabaseError) {
+    if (supabaseError) {
     return { error: supabaseError.message };
   }
 

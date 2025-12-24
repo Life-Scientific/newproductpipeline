@@ -95,7 +95,7 @@ export function InviteUserModal({
       }
     } catch (err) {
       const message =
-        error instanceof Error ? error.message : "Failed to send invitation";
+        error instanceof Error ? supabaseError.message : "Failed to send invitation";
       toast({
         title: "Error",
         description: message,

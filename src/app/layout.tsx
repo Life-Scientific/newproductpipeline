@@ -75,8 +75,8 @@ export default async function RootLayout({
   try {
     const exchangeRates = await getExchangeRates();
     initialExchangeRates = transformExchangeRatesForDisplay(exchangeRates);
-  } catch (error) {
-    warn("Failed to fetch exchange rates in layout:", error);
+  } catch (supabaseError) {
+    warn("Failed to fetch exchange rates in layout:", supabaseError);
     // Will fall back to defaults in DisplayPreferencesProvider
   }
 

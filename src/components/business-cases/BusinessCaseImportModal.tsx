@@ -362,11 +362,11 @@ export function BusinessCaseImportModal({
             description: `${result.validRows.length} valid, ${result.skippedRows.length} skipped due to parsing errors. Review skipped rows before proceeding.`,
           });
         }
-      } catch (error) {
+      } catch (supabaseError) {
         toast({
           title: "Error parsing CSV",
           description:
-            error instanceof Error ? error.message : "Failed to parse CSV file",
+            supabaseError instanceof Error ? supabaseError.message : "Failed to parse CSV file",
           variant: "destructive",
         });
       }
@@ -428,11 +428,11 @@ export function BusinessCaseImportModal({
           description: `All ${validCount} rows passed validation. Ready to import.`,
         });
       }
-    } catch (error) {
+    } catch (supabaseError) {
       toast({
         title: "Validation failed",
         description:
-          error instanceof Error ? error.message : "Failed to validate rows",
+          supabaseError instanceof Error ? supabaseError.message : "Failed to validate rows",
         variant: "destructive",
       });
       setIsValidating(false);
@@ -473,12 +473,12 @@ export function BusinessCaseImportModal({
         title: "Preview complete",
         description: `Would create: ${result.created}, Would update: ${result.updated}, Would error: ${result.errors}`,
       });
-    } catch (error) {
+    } catch (supabaseError) {
       toast({
         title: "Preview failed",
         description:
-          error instanceof Error
-            ? error.message
+          supabaseError instanceof Error
+            ? supabaseError.message
             : "Failed to preview import",
         variant: "destructive",
       });
@@ -542,12 +542,12 @@ export function BusinessCaseImportModal({
           onSuccess();
         }
       }
-    } catch (error) {
+    } catch (supabaseError) {
       toast({
         title: "Import failed",
         description:
-          error instanceof Error
-            ? error.message
+          supabaseError instanceof Error
+            ? supabaseError.message
             : "Failed to import business cases",
         variant: "destructive",
       });
@@ -576,12 +576,12 @@ export function BusinessCaseImportModal({
         description:
           "Template includes examples showing the same formulation across multiple countries",
       });
-    } catch (error) {
+    } catch (supabaseError) {
       toast({
         title: "Download failed",
         description:
-          error instanceof Error
-            ? error.message
+          supabaseError instanceof Error
+            ? supabaseError.message
             : "Failed to download template",
         variant: "destructive",
       });

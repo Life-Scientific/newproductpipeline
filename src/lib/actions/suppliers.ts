@@ -95,12 +95,11 @@ export async function deleteSupplier(supplierId: string) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("suppliers")
     .delete()
     .eq("supplier_id", supplierId);
-
-  if (supabaseError) {
+    if (supabaseError) {
     return { error: supabaseError.message };
   }
 

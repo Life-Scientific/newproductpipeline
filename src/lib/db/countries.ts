@@ -15,8 +15,8 @@ export async function getCountries() {
     .eq("is_active", true)
     .order("country_name", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch countries: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch countries: ${supabaseError.message}`);
   }
 
   return data as Country[];
@@ -33,8 +33,8 @@ export async function getCountryById(countryId: string) {
     .eq("country_id", countryId)
     .single();
 
-  if (error) {
-    throw new Error(`Failed to fetch country: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch country: ${supabaseError.message}`);
   }
 
   return data as Country;
@@ -67,8 +67,8 @@ async function fetchAllPaginated<T>(
       (page + 1) * pageSize - 1,
     );
 
-    if (error) {
-      error(`Failed to fetch ${tableName}:`, error.message);
+    if (supabaseError) {
+      error(`Failed to fetch ${tableName}:`, supabaseError.message);
       break;
     }
 
@@ -289,8 +289,8 @@ export async function getExchangeRates() {
     .order("effective_date", { ascending: false })
     .order("country_id", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch exchange rates: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch exchange rates: ${supabaseError.message}`);
   }
 
   return data || [];

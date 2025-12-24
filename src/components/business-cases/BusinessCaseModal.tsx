@@ -71,6 +71,8 @@ type Formulation =
   | Database["public"]["Tables"]["formulations"]["Row"]
   | Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];
+type FormulationCountryRow = Database["public"]["Tables"]["formulation_country"]["Row"];
+type FormulationCountryUseGroupRow = Database["public"]["Tables"]["formulation_country_use_group"]["Row"];
 
 // Use group with extended info for display
 interface UseGroupOption {
@@ -292,12 +294,13 @@ export function BusinessCaseModal({
               }
             }
           })
-          .catch((error) => {
+          .catch((supabaseError: unknown) => {
             if (aborted) return; // Don't update state if effect was cleaned up
 
+            const errorMessage = supabaseError instanceof Error ? supabaseError.message : "Failed to load business case";
             toastRef.current({
               title: "Error",
-              description: `Failed to load business case: ${error.message}`,
+              description: `Failed to load business case: ${errorMessage}`,
               variant: "destructive",
             });
             onOpenChangeRef.current(false);
@@ -353,12 +356,13 @@ export function BusinessCaseModal({
             }
             if (countryResult.data) setCountries(countryResult.data);
           })
-          .catch((error) => {
+          .catch((supabaseError: unknown) => {
             if (aborted) return; // Don't update state if effect was cleaned up
 
+            const errorMessage = supabaseError instanceof Error ? supabaseError.message : "Failed to load data";
             toastRef.current({
               title: "Error",
-              description: `Failed to load data: ${error.message}`,
+              description: `Failed to load data: ${errorMessage}`,
               variant: "destructive",
             });
           });
@@ -402,7 +406,7 @@ export function BusinessCaseModal({
           }
           if (fcData && fcData.length > 0) {
             const formulationIds = fcData
-              .map((fc: any) => fc.formulation_id)
+              .map((fc) => fc.formulation_id)
               .filter(Boolean) as string[];
             const filteredFormulations = allFormulations.filter(
               (f) =>
@@ -427,28 +431,28 @@ export function BusinessCaseModal({
         .eq("formulation_id", formData.formulation_id)
         .eq("country_id", formData.country_id)
         .single()
-        .then(async ({ data: fcData, error: fcError }: any) => {
+        .then(async ({ data: fcData, error: fcError }) => {
           if (fcError || !fcData?.formulation_country_id) {
             setUseGroupOptions([]);
             return;
           }
 
-          const { data: useGroups, error } = (await supabase
+          const { data: useGroupsData, error: useGroupsError } = await supabase
             .from("formulation_country_use_group")
             .select(
               "formulation_country_use_group_id, use_group_name, use_group_variant, target_market_entry_fy",
             )
             .eq("formulation_country_id", fcData.formulation_country_id)
-            .eq("is_active", true)) as any;
+            .eq("is_active", true);
 
-          if (error) {
-            error("Failed to load use groups:", error);
+          if (useGroupsError) {
+            error("Failed to load use groups:", useGroupsError);
             setUseGroupOptions([]);
             return;
           }
 
-          if (useGroups) {
-            const options: UseGroupOption[] = useGroups.map((ug: any) => ({
+          if (useGroupsData) {
+            const options: UseGroupOption[] = useGroupsData.map((ug) => ({
               id: ug.formulation_country_use_group_id,
               variant: ug.use_group_variant || "A",
               name: ug.use_group_name || null,
@@ -493,8 +497,8 @@ export function BusinessCaseModal({
           return;
         }
 
-        const targetEntries = (useGroups as any[])
-          .map((ug: any) => ug.target_market_entry_fy)
+        const targetEntries = useGroups
+          .map((ug) => ug.target_market_entry_fy)
           .filter(
             (entry): entry is string => entry !== null && entry !== undefined,
           );

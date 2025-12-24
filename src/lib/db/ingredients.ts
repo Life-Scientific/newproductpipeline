@@ -8,8 +8,8 @@ export async function getIngredientUsage() {
     .select("*")
     .order("ingredient_name", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch ingredient usage: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch ingredient usage: ${supabaseError.message}`);
   }
 
   return data as IngredientUsage[];
@@ -23,8 +23,8 @@ export async function getIngredientById(ingredientId: string) {
     .eq("ingredient_id", ingredientId)
     .single();
 
-  if (error) {
-    throw new Error(`Failed to fetch ingredient: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch ingredient: ${supabaseError.message}`);
   }
 
   return data as Ingredient | null;
@@ -48,9 +48,9 @@ export async function getIngredientFormulations(ingredientId: string) {
     .eq("ingredient_id", ingredientId)
     .eq("formulations.is_active", true);
 
-  if (error) {
+  if (supabaseError) {
     throw new Error(
-      `Failed to fetch ingredient formulations: ${error.message}`,
+      `Failed to fetch ingredient formulations: ${supabaseError.message}`,
     );
   }
 
@@ -66,8 +66,8 @@ export async function getIngredientSuppliers(ingredientId: string) {
     .eq("ingredient_id", ingredientId)
     .eq("suppliers.is_active", true);
 
-  if (error) {
-    throw new Error(`Failed to fetch ingredient suppliers: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch ingredient suppliers: ${supabaseError.message}`);
   }
 
   return data || [];

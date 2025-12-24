@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { data, error: supabaseError } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error && data.user) {
+    if (!supabaseError && data.user) {
       // Verify the user's email domain is allowed
       const userEmail = data.user.email?.toLowerCase() || "";
       const emailDomain = userEmail.split("@")[1];

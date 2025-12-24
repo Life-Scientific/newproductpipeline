@@ -14,8 +14,8 @@ export async function getActivePortfolio() {
     .select("*")
     .order("formulation_code", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch active portfolio: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch active portfolio: ${supabaseError.message}`);
   }
 
   return data as ActivePortfolio[];
@@ -59,22 +59,22 @@ export async function getPipelineTrackerData() {
 
   if (formulationsResult.error) {
     throw new Error(
-      `Failed to fetch formulations: ${formulationsResult.error.message}`,
+      `Failed to fetch formulations: ${formulationsResult.supabaseError.message}`,
     );
   }
   if (countriesResult.error) {
     throw new Error(
-      `Failed to fetch countries: ${countriesResult.error.message}`,
+      `Failed to fetch countries: ${countriesResult.supabaseError.message}`,
     );
   }
   if (useGroupsResult.error) {
     throw new Error(
-      `Failed to fetch use groups: ${useGroupsResult.error.message}`,
+      `Failed to fetch use groups: ${useGroupsResult.supabaseError.message}`,
     );
   }
   if (businessCasesResult.error) {
     throw new Error(
-      `Failed to fetch business cases: ${businessCasesResult.error.message}`,
+      `Failed to fetch business cases: ${businessCasesResult.supabaseError.message}`,
     );
   }
 

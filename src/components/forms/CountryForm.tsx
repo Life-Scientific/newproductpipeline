@@ -91,7 +91,7 @@ export function CountryForm({
           if (onSuccess) onSuccess();
           // Server action already calls revalidatePath() - no need for router.refresh()
         }
-      } catch (error) {
+      } catch (supabaseError) {
         toast({
           title: "Error",
           description: "An unexpected error occurred",

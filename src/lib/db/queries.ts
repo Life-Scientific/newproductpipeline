@@ -116,8 +116,8 @@ export async function getFormulations() {
       .select("*")
       .order("formulation_code", { ascending: true });
 
-    if (error) {
-      throw new Error(`Failed to fetch formulations: ${error.message}`);
+    if (supabaseError) {
+      throw new Error(`Failed to fetch formulations: ${supabaseError.message}`);
     }
 
     return data as Formulation[];
@@ -134,8 +134,8 @@ export async function getFormulations() {
         .order("formulation_code", { ascending: true })
         .range(page * pageSize, (page + 1) * pageSize - 1)
         .then(({ data, error }) => {
-          if (error) {
-            throw new Error(`Failed to fetch formulations: ${error.message}`);
+          if (supabaseError) {
+            throw new Error(`Failed to fetch formulations: ${supabaseError.message}`);
           }
           return data || [];
         }),
@@ -180,8 +180,8 @@ export async function getDashboardSummary(): Promise<DashboardSummary | null> {
       .select("*")
       .single();
 
-    if (error) {
-      error("Failed to fetch dashboard summary:", error.message);
+    if (supabaseError) {
+      error("Failed to fetch dashboard summary:", supabaseError.message);
       return null;
     }
 
@@ -216,8 +216,8 @@ export async function getChartDataByYear(): Promise<ChartDataByYear[]> {
       .select("*")
       .order("fiscal_year", { ascending: true });
 
-    if (error) {
-      error("Failed to fetch chart data by year:", error.message);
+    if (supabaseError) {
+      error("Failed to fetch chart data by year:", supabaseError.message);
       return [];
     }
 
@@ -246,8 +246,8 @@ export async function getChartYearlyTotals(): Promise<ChartYearlyTotals[]> {
       .select("*")
       .order("fiscal_year", { ascending: true });
 
-    if (error) {
-      error("Failed to fetch chart yearly totals:", error.message);
+    if (supabaseError) {
+      error("Failed to fetch chart yearly totals:", supabaseError.message);
       return [];
     }
 
@@ -267,9 +267,9 @@ export async function getBlacklistedFormulations() {
     .eq("created_by", "Blacklist Import Script")
     .order("formulation_code", { ascending: true });
 
-  if (error) {
+  if (supabaseError) {
     throw new Error(
-      `Failed to fetch blacklisted formulations: ${error.message}`,
+      `Failed to fetch blacklisted formulations: ${supabaseError.message}`,
     );
   }
 
@@ -299,8 +299,8 @@ async function fetchAllPaginatedFromView<T>(
       .select(selectQuery)
       .order(orderBy?.column ?? "id", { ascending: orderBy?.ascending ?? true });
 
-    if (error) {
-      throw new Error(`Failed to fetch ${viewName}: ${error.message}`);
+    if (supabaseError) {
+      throw new Error(`Failed to fetch ${viewName}: ${supabaseError.message}`);
     }
 
     return (data as T[]) || [];
@@ -318,8 +318,8 @@ async function fetchAllPaginatedFromView<T>(
 
     pagePromises.push(
       query.range(page * pageSize, (page + 1) * pageSize - 1).then(({ data, error }) => {
-        if (error) {
-          throw new Error(`Failed to fetch ${viewName}: ${error.message}`);
+        if (supabaseError) {
+          throw new Error(`Failed to fetch ${viewName}: ${supabaseError.message}`);
         }
         return (data as T[]) || [];
       }),
@@ -717,8 +717,8 @@ export async function getFormulationById(id: string) {
     .limit(1)
     .maybeSingle();
 
-  if (error) {
-    throw new Error(`Failed to fetch formulation: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch formulation: ${supabaseError.message}`);
   }
 
   return data as Formulation | null;
@@ -737,8 +737,8 @@ export async function getFormulationCountryDetails(formulationId: string) {
     .eq("formulation_code", formulation.formulation_code)
     .order("country_name", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch country details: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch country details: ${supabaseError.message}`);
   }
 
   return data as FormulationCountryDetail[];
@@ -1023,8 +1023,8 @@ export async function getBusinessCases() {
       .order("fiscal_year", { ascending: true })
       .order("year_offset", { ascending: true });
 
-    if (error) {
-      throw new Error(`Failed to fetch business cases: ${error.message}`);
+    if (supabaseError) {
+      throw new Error(`Failed to fetch business cases: ${supabaseError.message}`);
     }
 
     const allData = data || [];
@@ -1047,9 +1047,9 @@ export async function getBusinessCases() {
         .order("year_offset", { ascending: true })
         .range(page * pageSize, (page + 1) * pageSize - 1)
         .then(({ data, error }) => {
-          if (error) {
+          if (supabaseError) {
             error("getBusinessCases page error:", error);
-            throw new Error(`Failed to fetch business cases: ${error.message}`);
+            throw new Error(`Failed to fetch business cases: ${supabaseError.message}`);
           }
           return data || [];
         }),
@@ -1118,9 +1118,9 @@ export async function getBusinessCasesForChart() {
       .eq("status", "active")
       .order("fiscal_year", { ascending: true });
 
-    if (error) {
+    if (supabaseError) {
       throw new Error(
-        `Failed to fetch business cases for chart: ${error.message}`,
+        `Failed to fetch business cases for chart: ${supabaseError.message}`,
       );
     }
 
@@ -1365,7 +1365,7 @@ export async function getBusinessCaseById(id: string) {
       error = groupResult.error;
     }
 
-    if (error) {
+    if (supabaseError) {
       error("Error fetching business case:", error);
       return null;
     }
@@ -1402,9 +1402,9 @@ export async function getFormulationIngredients(formulationId: string) {
     .eq("formulation_id", formulationId)
     .order("ingredient_role", { ascending: true });
 
-  if (error) {
+  if (supabaseError) {
     throw new Error(
-      `Failed to fetch formulation ingredients: ${error.message}`,
+      `Failed to fetch formulation ingredients: ${supabaseError.message}`,
     );
   }
 
@@ -1430,8 +1430,8 @@ export async function getFormulationBusinessCases(formulationId: string) {
     .order("year_offset", { ascending: true })
     .order("fiscal_year", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch business cases: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch business cases: ${supabaseError.message}`);
   }
 
   // Deduplicate before enrichment (handles edge cases where multiple active versions exist)
@@ -1457,8 +1457,8 @@ export async function getFormulationBusinessCasesForTree(
     .order("year_offset", { ascending: true })
     .order("fiscal_year", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch business cases: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch business cases: ${supabaseError.message}`);
   }
 
   // Deduplicate before enrichment (handles edge cases where multiple active versions exist)
@@ -1474,8 +1474,8 @@ export async function getFormulationStatusHistory(formulationId: string) {
     .eq("formulation_id", formulationId)
     .order("changed_at", { ascending: false });
 
-  if (error) {
-    throw new Error(`Failed to fetch status history: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch status history: ${supabaseError.message}`);
   }
 
   return data as StatusHistory[];
@@ -1493,8 +1493,8 @@ export async function getFormulationProtectionStatus(formulationId: string) {
     .select("*")
     .eq("formulation_code", formulation.formulation_code);
 
-  if (error) {
-    throw new Error(`Failed to fetch protection status: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch protection status: ${supabaseError.message}`);
   }
 
   return data as ProtectionStatus[];
@@ -1506,8 +1506,8 @@ export async function getAllProtectionStatus() {
     .from("vw_patent_protection_status")
     .select("*");
 
-  if (error) {
-    throw new Error(`Failed to fetch protection status: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch protection status: ${supabaseError.message}`);
   }
 
   return data as ProtectionStatus[];
@@ -1527,8 +1527,8 @@ export async function getFormulationUseGroups(formulationId: string) {
     .order("country_name", { ascending: true })
     .order("use_group_name", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch use groups: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch use groups: ${supabaseError.message}`);
   }
 
   return data as FormulationCountryUseGroup[];
@@ -1667,7 +1667,7 @@ export async function getBusinessCasesForProjectionTable(
     const allData: any[] = [];
     for (const result of pageResults) {
       if (result.error) {
-        throw new Error(`Failed to fetch business cases: ${result.error.message}`);
+        throw new Error(`Failed to fetch business cases: ${result.supabaseError.message}`);
       }
       if (result.data) {
         allData.push(...result.data);
@@ -1914,8 +1914,8 @@ export async function getBusinessCaseGroup(
     .order("created_at", { ascending: false }) // Most recent first
     .order("year_offset", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch business case group: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch business case group: ${supabaseError.message}`);
   }
 
   if (!allData || allData.length === 0) {
@@ -2134,8 +2134,8 @@ export async function getRevenueProjections() {
     .order("fiscal_year", { ascending: false })
     .order("year_offset", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch revenue projections: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch revenue projections: ${supabaseError.message}`);
   }
 
   // Deduplicate before enrichment (handles edge cases where multiple active versions exist)
@@ -2152,8 +2152,8 @@ export async function getFormulationCountryById(formulationCountryId: string) {
     .eq("formulation_country_id", formulationCountryId)
     .single();
 
-  if (error) {
-    throw new Error(`Failed to fetch formulation country: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch formulation country: ${supabaseError.message}`);
   }
 
   // Get formulation_id from formulation_country table
@@ -2187,8 +2187,8 @@ export async function getFormulationCropsLegacy(formulationId: string) {
     .select("crop_id, notes")
     .eq("formulation_id", formulationId);
 
-  if (error) {
-    throw new Error(`Failed to fetch formulation crops: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch formulation crops: ${supabaseError.message}`);
   }
 
   // Get crop details
@@ -2220,8 +2220,8 @@ export async function getFormulationTargetsLegacy(formulationId: string) {
     .select("target_id, notes")
     .eq("formulation_id", formulationId);
 
-  if (error) {
-    throw new Error(`Failed to fetch formulation targets: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch formulation targets: ${supabaseError.message}`);
   }
 
   // Get target details
@@ -2539,8 +2539,8 @@ export async function getBusinessCaseGroupsUsingFormulation(
     .eq("country_code", country.country_code)
     .eq("status", "active");
 
-  if (error) {
-    throw new Error(`Failed to fetch business case groups: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch business case groups: ${supabaseError.message}`);
   }
 
   // Get unique group IDs
@@ -2577,8 +2577,8 @@ export async function getFormulationCountries() {
     .order("formulation_code", { ascending: true })
     .order("country_name", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch formulation countries: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch formulation countries: ${supabaseError.message}`);
   }
 
   return data as FormulationCountryDetail[];

@@ -19,8 +19,8 @@ export async function getAllUseGroups() {
       .order("use_group_name", { ascending: true })
       .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    if (error) {
-      throw new Error(`Failed to fetch use groups: ${error.message}`);
+    if (supabaseError) {
+      throw new Error(`Failed to fetch use groups: ${supabaseError.message}`);
     }
 
     if (!useGroups || useGroups.length === 0) {
@@ -86,8 +86,8 @@ export async function getUseGroupById(useGroupId: string) {
     .eq("formulation_country_use_group_id", useGroupId)
     .single();
 
-  if (error) {
-    throw new Error(`Failed to fetch use group: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch use group: ${supabaseError.message}`);
   }
 
   // Get formulation_id through formulation_country
@@ -130,8 +130,8 @@ export async function getUseGroupCrops(useGroupId: string) {
     .eq("formulation_country_use_group_id", useGroupId)
     .eq("is_excluded", false);
 
-  if (error) {
-    throw new Error(`Failed to fetch use group crops: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch use group crops: ${supabaseError.message}`);
   }
 
   if (!data || data.length === 0) {
@@ -171,8 +171,8 @@ export async function getUseGroupTargets(useGroupId: string) {
     .eq("formulation_country_use_group_id", useGroupId)
     .eq("is_excluded", false);
 
-  if (error) {
-    throw new Error(`Failed to fetch use group targets: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch use group targets: ${supabaseError.message}`);
   }
 
   if (!data || data.length === 0) {
@@ -213,11 +213,11 @@ export async function validateUseGroupTargetEntryConsistency(
     .select("formulation_country_use_group_id, target_market_entry_fy")
     .in("formulation_country_use_group_id", useGroupIds);
 
-  if (error) {
+  if (supabaseError) {
     return {
       isValid: false,
       targetEntry: null,
-      error: `Failed to fetch use groups: ${error.message}`,
+      error: `Failed to fetch use groups: ${supabaseError.message}`,
     };
   }
 

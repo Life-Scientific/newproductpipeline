@@ -248,14 +248,14 @@ export async function fixDuplicateActiveBusinessCases(): Promise<{
             fixed: fixedCount,
           });
         }
-      } catch (error) {
+      } catch (supabaseError) {
         totalErrors++;
         details.push({
           groupId: duplicate.business_case_group_id,
           yearOffset: duplicate.year_offset,
           fixed: 0,
           error:
-            error instanceof Error ? error.message : "Unknown error occurred",
+            supabaseError instanceof Error ? supabaseError.message : "Unknown error occurred",
         });
       }
     }

@@ -442,7 +442,7 @@ export function saveTableView(tableId: string, config: TableViewConfig): void {
   try {
     const key = `table_view_${tableId}`;
     localStorage.setItem(key, JSON.stringify(config));
-  } catch (error) {
+  } catch (supabaseError) {
     warn("Failed to save table view:", error);
   }
 }
@@ -458,7 +458,7 @@ export function loadTableView(tableId: string): TableViewConfig | null {
     const stored = localStorage.getItem(key);
     if (!stored) return null;
     return JSON.parse(stored) as TableViewConfig;
-  } catch (error) {
+  } catch (supabaseError) {
     warn("Failed to load table view:", error);
     return null;
   }
@@ -473,7 +473,7 @@ export function deleteTableView(tableId: string): void {
   try {
     const key = `table_view_${tableId}`;
     localStorage.removeItem(key);
-  } catch (error) {
+  } catch (supabaseError) {
     warn("Failed to delete table view:", error);
   }
 }
@@ -493,7 +493,7 @@ export function listTableViews(): string[] {
       }
     }
     return views;
-  } catch (error) {
+  } catch (supabaseError) {
     warn("Failed to list table views:", error);
     return [];
   }

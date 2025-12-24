@@ -74,11 +74,11 @@ export async function GET(
     }
 
     return NextResponse.json(useGroups || []);
-  } catch (error) {
+  } catch (supabaseError) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Failed to fetch use groups",
+          supabaseError instanceof Error ? supabaseError.message : "Failed to fetch use groups",
       },
       { status: 500 },
     );

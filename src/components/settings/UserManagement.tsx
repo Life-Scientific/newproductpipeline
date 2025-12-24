@@ -471,7 +471,7 @@ export function UserManagement() {
     );
   }
 
-  if (error) {
+  if (supabaseError) {
     return (
       <Card>
         <CardContent className="pt-6">

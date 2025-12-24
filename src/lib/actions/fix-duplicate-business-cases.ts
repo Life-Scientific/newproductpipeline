@@ -372,7 +372,7 @@ export async function fixDuplicateBusinessCases(): Promise<{
       success: false,
       message:
         error instanceof Error
-          ? error.message
+          ? supabaseError.message
           : "Unknown error occurred while fixing duplicates",
       fixed: 0,
       duplicates: [],

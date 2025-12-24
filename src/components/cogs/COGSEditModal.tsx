@@ -32,6 +32,14 @@ interface COGSYearData {
   country_name?: string;
 }
 
+interface COGSValueSnapshot {
+  total: number | null;
+  raw: number | null;
+  mfg: number | null;
+  pkg: number | null;
+  other: number | null;
+}
+
 interface COGSEditModalProps {
   groupId?: string; // If provided, edit mode; otherwise create mode
   formulationId?: string;
@@ -56,7 +64,7 @@ export function COGSEditModal({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [yearData, setYearData] = useState<COGSYearData[]>([]);
-  const [originalValues, setOriginalValues] = useState<Record<string, any>>({});
+  const [originalValues, setOriginalValues] = useState<Record<string, COGSValueSnapshot>>({});
   const [changedCells, setChangedCells] = useState<Set<string>>(new Set());
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
@@ -89,8 +97,8 @@ export function COGSEditModal({
           if (result.data) {
             setYearData(result.data as COGSYearData[]);
             // Store original values for change tracking
-            const originals: Record<string, any> = {};
-            result.data.forEach((year: any) => {
+            const originals: Record<string, COGSValueSnapshot> = {};
+            result.data.forEach((year: COGSYearData) => {
               originals[year.fiscal_year] = {
                 total: year.cogs_value,
                 raw: year.raw_material_cost,
@@ -103,10 +111,10 @@ export function COGSEditModal({
             setChangedCells(new Set());
           }
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
           toast({
             title: "Error",
-            description: `Failed to load COGS: ${error.message}`,
+            description: `Failed to load COGS: ${error instanceof Error ? error.message : "Unknown error"}`,
             variant: "destructive",
           });
           onOpenChange(false);
@@ -335,8 +343,8 @@ export function COGSEditModal({
         }
       });
 
-      const result = isEditMode
-        ? await updateCOGSGroupAction(groupId!, formData)
+      const result = isEditMode && groupId
+        ? await updateCOGSGroupAction(groupId, formData)
         : await createCOGSGroupAction(formData);
 
       if (result.error) {

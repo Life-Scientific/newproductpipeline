@@ -59,9 +59,9 @@ export function ShortUrlTable({ urls }: ShortUrlTableProps) {
         await deleteShortUrl(deleteId);
         toast.success("Short URL deleted");
         setDeleteId(null);
-      } catch (error) {
+      } catch (supabaseError) {
         toast.error(
-          error instanceof Error ? error.message : "Failed to delete",
+          supabaseError instanceof Error ? supabaseError.message : "Failed to delete",
         );
       }
     });

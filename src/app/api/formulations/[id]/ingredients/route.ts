@@ -9,12 +9,12 @@ export async function GET(
     const { id } = await params;
     const ingredients = await getFormulationIngredients(id);
     return NextResponse.json(ingredients);
-  } catch (error) {
+  } catch (supabaseError) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
+          supabaseError instanceof Error
+            ? supabaseError.message
             : "Failed to fetch ingredients",
       },
       { status: 500 },

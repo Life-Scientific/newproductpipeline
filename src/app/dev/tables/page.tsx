@@ -624,3 +624,4 @@ export default async function TablesPage() {
     </div>
   );
 }
+

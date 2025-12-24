@@ -66,8 +66,8 @@ export async function getShortUrls(): Promise<ShortUrlWithStats[]> {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (error) {
-    throw new Error(`Failed to fetch short URLs: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch short URLs: ${supabaseError.message}`);
   }
 
   if (!shortUrls || shortUrls.length === 0) {
@@ -209,8 +209,8 @@ export async function createShortUrl(formData: FormData): Promise<ShortUrl> {
     .select()
     .single();
 
-  if (error) {
-    throw new Error(`Failed to create short URL: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to create short URL: ${supabaseError.message}`);
   }
 
   revalidatePath("/shorturl");
@@ -257,12 +257,12 @@ export async function updateShortUrl(
     .select()
     .single();
 
-  if (error) {
+  if (supabaseError) {
     // Check if it's a permission error from RLS
-    if (error.code === "42501" || error.message.includes("policy")) {
+    if (error.code === "42501" || supabaseError.message.includes("policy")) {
       throw new Error("Only Admin or Editor roles can edit short URLs");
     }
-    throw new Error(`Failed to update short URL: ${error.message}`);
+    throw new Error(`Failed to update short URL: ${supabaseError.message}`);
   }
 
   revalidatePath("/shorturl");
@@ -287,12 +287,12 @@ export async function deleteShortUrl(id: string): Promise<void> {
   // RLS restricts DELETE to Admin/Editor roles
   const { error: supabaseError } = await supabase.from("short_urls").delete().eq("id", id);
 
-  if (error) {
+  if (supabaseError) {
     // Check if it's a permission error from RLS
-    if (error.code === "42501" || error.message.includes("policy")) {
+    if (supabaseError.code === "42501" || supabaseError.message.includes("policy")) {
       throw new Error("Only Admin or Editor roles can delete short URLs");
     }
-    throw new Error(`Failed to delete short URL: ${error.message}`);
+    throw new Error(`Failed to delete short URL: ${supabaseError.message}`);
   }
 
   revalidatePath("/shorturl");

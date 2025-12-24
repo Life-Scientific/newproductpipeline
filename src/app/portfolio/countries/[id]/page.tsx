@@ -24,7 +24,7 @@ export default async function CountryDetailPage({
   let countryData;
   try {
     countryData = await getCountryDetails(id);
-  } catch (error) {
+  } catch (supabaseError) {
     notFound();
   }
 

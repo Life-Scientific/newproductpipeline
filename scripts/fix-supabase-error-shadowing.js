@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Aggressive fix - replace all `const { data, error }` with `const { data, error: supabaseError }`
+ * Fix all remaining patterns where catch uses supabaseError but body has error
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
@@ -29,31 +29,19 @@ function fixFile(filePath) {
   let content = readFileSync(filePath, 'utf8');
   let originalContent = content;
 
-  // Pattern 1: Replace `const { data, error } = await supabase` with `const { data, error: supabaseError } = await supabase`
-  const count1 = (content.match(/const\s*\{\s*data\s*,\s*error\s*\}\s*=\s*await\s+supabase/g) || []).length;
-  content = content.replace(
-    /const\s*\{\s*data\s*,\s*error\s*\}\s*=\s*await\s+supabase/g,
-    'const { data, error: supabaseError } = await supabase'
-  );
+  // Replace `error instanceof Error` with `supabaseError instanceof Error`
+  // but only when `supabaseError` is defined in the catch block
+  if (content.includes('catch (supabaseError)')) {
+    content = content.replace(/error instanceof Error/g, 'supabaseError instanceof Error');
+    content = content.replace(/catch\s*\(\s*error\s*\)\s*\{[^}]*catch\s*\(supabaseError\)/g, (match) => {
+      // Already handled
+      return match;
+    });
+  }
 
-  // Pattern 2: Replace `const { error } = await supabase` with `const { error: supabaseError } = await supabase`
-  const count2 = (content.match(/const\s*\{\s*error\s*\}\s*=\s*await\s+supabase\.(from|rpc)/g) || []).length;
-  content = content.replace(
-    /const\s*\{\s*error\s*\}\s*=\s*await\s+supabase\.(from|rpc)/g,
-    'const { error: supabaseError } = await supabase.$1'
-  );
-
-  // Pattern 3: Replace `return { supabaseError: supabaseError.message }` with `return { error: supabaseError.message }`
-  content = content.replace(
-    /return\s*\{\s*supabaseError:\s*supabaseError\.message\s*\};/g,
-    'return { error: supabaseError.message };'
-  );
-
-  const changes = count1 + count2;
-
-  if (changes > 0) {
+  if (content !== originalContent) {
     writeFileSync(filePath, content, 'utf8');
-    console.log(`✅ Fixed ${changes} instance(s): ${filePath.replace(rootDir, '')}`);
+    console.log(`✅ Fixed: ${filePath.replace(rootDir, '')}`);
     return true;
   }
   
@@ -61,7 +49,7 @@ function fixFile(filePath) {
 }
 
 function main() {
-  console.log('🔍 Running aggressive Supabase error shadowing fix...\n');
+  console.log('🔍 Scanning for remaining error/supabaseError mismatches...\n');
   
   const allTsFiles = getAllFiles(rootDir).filter(file =>
     (file.endsWith('.ts') || file.endsWith('.tsx')) &&

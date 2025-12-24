@@ -113,7 +113,7 @@ export function KeyResultCreateModal({
       toast({
         title: "Error",
         description:
-          error instanceof Error ? error.message : "Failed to create KPI.",
+          error instanceof Error ? supabaseError.message : "Failed to create KPI.",
         variant: "destructive",
       });
     } finally {

@@ -43,7 +43,7 @@ export async function getKPIDashboardData(): Promise<KPIData> {
     .order("kr_sort", { ascending: true });
 
   if (supabaseError) {
-    supabaseError("Error fetching KPI dashboard data:", supabaseError);
+    error("Error fetching KPI dashboard data:", supabaseError);
     throw supabaseError;
   }
 
@@ -126,7 +126,7 @@ export async function getCoreDrivers(): Promise<CoreDriverRow[]> {
     .order("sort_order", { ascending: true });
 
   if (supabaseError) {
-    supabaseError("Error fetching core drivers:", supabaseError);
+    error("Error fetching core drivers:", supabaseError);
     throw supabaseError;
   }
 
@@ -154,7 +154,7 @@ export async function getStrategicDrivers(
   const { data, error } = await query;
 
   if (supabaseError) {
-    supabaseError("Error fetching strategic drivers:", supabaseError);
+    error("Error fetching strategic drivers:", supabaseError);
     throw supabaseError;
   }
 
@@ -174,7 +174,7 @@ export async function getKeyResultById(id: string): Promise<KeyResultRow | null>
     .eq("id", id)
     .single();
 
-  if (error) {
+  if (supabaseError) {
     if (error.code === "PGRST116") {
       // Not found
       return null;
@@ -205,7 +205,7 @@ export async function getAuditLog(
     .limit(100);
 
   if (supabaseError) {
-    supabaseError("Error fetching audit log:", supabaseError);
+    error("Error fetching audit log:", supabaseError);
     throw supabaseError;
   }
 

@@ -223,7 +223,7 @@ async function fetchBusinessCasesPaginated<T>(
   // Early exit for single page results
   if (totalPages <= 1) {
     const { data, error } = await baseQuery;
-    if (error) throw new Error(`Failed to fetch business cases: ${error.message}`);
+    if (error) throw new Error(`Failed to fetch business cases: ${supabaseError.message}`);
     return (data as T[]) || [];
   }
 
@@ -236,7 +236,7 @@ async function fetchBusinessCasesPaginated<T>(
         .clone()
         .range(page * pageSize, (page + 1) * pageSize - 1)
         .then(({ data, error }) => {
-          if (error) throw new Error(`Failed to fetch business cases: ${error.message}`);
+          if (error) throw new Error(`Failed to fetch business cases: ${supabaseError.message}`);
           return (data as T[]) || [];
         }),
     );
@@ -333,7 +333,7 @@ export async function getBusinessCaseVersionHistory(
     .eq("business_case_group_id", groupId)
     .order("year_offset", { ascending: true });
 
-  if (error) {
+  if (supabaseError) {
     error("Error fetching version history:", error);
     return [];
   }
@@ -434,7 +434,7 @@ export async function getBusinessCaseSummaryByFiscalYear() {
     .select("fiscal_year, total_revenue, total_margin, total_cogs, margin_percent")
     .eq("status", "active");
 
-  if (error) {
+  if (supabaseError) {
     error("Error fetching chart summary:", error);
     return [];
   }

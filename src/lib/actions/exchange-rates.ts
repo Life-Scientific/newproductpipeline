@@ -51,14 +51,14 @@ export async function createExchangeRate(formData: FormData) {
     .select()
     .single();
 
-  if (error) {
-    if (error.code === "23505") {
+  if (supabaseError) {
+    if (supabaseError.code === "23505") {
       return {
         error:
           "An exchange rate already exists for this country and effective date",
       };
     }
-    return { error: `Failed to create exchange rate: ${error.message}` };
+    return { error: `Failed to create exchange rate: ${supabaseError.message}` };
   }
 
   revalidatePath("/reference");
@@ -109,14 +109,14 @@ export async function updateExchangeRate(
     .select()
     .single();
 
-  if (error) {
-    if (error.code === "23505") {
+  if (supabaseError) {
+    if (supabaseError.code === "23505") {
       return {
         error:
           "An exchange rate already exists for this country and effective date",
       };
     }
-    return { error: `Failed to update exchange rate: ${error.message}` };
+    return { error: `Failed to update exchange rate: ${supabaseError.message}` };
   }
 
   revalidatePath("/reference");
@@ -139,8 +139,8 @@ export async function deleteExchangeRate(exchangeRateId: string) {
     .delete()
     .eq("exchange_rate_id", exchangeRateId);
 
-  if (error) {
-    return { error: `Failed to delete exchange rate: ${error.message}` };
+  if (supabaseError) {
+    return { error: `Failed to delete exchange rate: ${supabaseError.message}` };
   }
 
   revalidatePath("/reference");

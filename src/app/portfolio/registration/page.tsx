@@ -16,14 +16,14 @@ type RegistrationPipeline =
 
 export default async function RegistrationPipelinePage() {
   const supabase = await createClient();
-  const { data: pipeline, error } = await supabase
+  const { data: pipeline, error: supabaseError } = await supabase
     .from("vw_registration_pipeline")
     .select("*", { count: "exact" })
     .order("earliest_planned_submission_date", { ascending: false })
     .limit(10000); // Fetch up to 10k rows
 
-  if (error) {
-    throw new Error(`Failed to fetch registration pipeline: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch registration pipeline: ${supabaseError.message}`);
   }
 
   return (

@@ -11,8 +11,8 @@ export async function getCOGSList() {
     .order("formulation_code", { ascending: true })
     .order("fiscal_year", { ascending: false });
 
-  if (error) {
-    throw new Error(`Failed to fetch COGS: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch COGS: ${supabaseError.message}`);
   }
 
   return data as COGS[];
@@ -31,8 +31,8 @@ export async function getFormulationCOGS(formulationId: string) {
     .eq("formulation_code", formulation.formulation_code)
     .order("fiscal_year", { ascending: false });
 
-  if (error) {
-    throw new Error(`Failed to fetch COGS: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch COGS: ${supabaseError.message}`);
   }
 
   return data as COGS[];
@@ -47,8 +47,8 @@ export async function getCOGSGroup(groupId: string) {
     .eq("cogs_group_id", groupId)
     .order("fiscal_year", { ascending: true });
 
-  if (error) {
-    throw new Error(`Failed to fetch COGS group: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch COGS group: ${supabaseError.message}`);
   }
 
   return data as COGS[];
@@ -78,8 +78,8 @@ export async function getFormulationCOGSHistory(
 
   const { data, error } = await query;
 
-  if (error) {
-    throw new Error(`Failed to fetch COGS history: ${error.message}`);
+  if (supabaseError) {
+    throw new Error(`Failed to fetch COGS history: ${supabaseError.message}`);
   }
 
   return data as COGS[];

@@ -371,12 +371,11 @@ export async function deleteFormulationCountryUseGroup(
 
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("formulation_country_use_group")
     .delete()
     .eq("formulation_country_use_group_id", formulationCountryUseGroupId);
-
-  if (supabaseError) {
+    if (supabaseError) {
     return { error: supabaseError.message };
   }
 
