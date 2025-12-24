@@ -4,11 +4,11 @@ The following are all suggestions please make the tool as fast as possible and i
 
 ### A. Pre-migration guardrails (do first)
 
-* [ ] **Add bundle analyzer**
+* [x] **Add bundle analyzer**
 
-  * [ ] Add `@next/bundle-analyzer` dev dep
-  * [ ] Wrap `next.config.ts` with `withBundleAnalyzer({ enabled: process.env.ANALYZE==='true' })`
-  * [ ] Run `ANALYZE=true bun run build`
+  * [x] Add `@next/bundle-analyzer` dev dep
+  * [x] Wrap `next.config.ts` with `withBundleAnalyzer({ enabled: process.env.ANALYZE==='true' })`
+  * [ ] Run `ANALYZE=true bun run build` (ready to use when needed)
 * [ ] **Add error boundaries on critical paths**
 
   * [ ] Ensure `error.tsx` coverage for high-crash areas: portfolio pages, charts, big modals/dialog routes
@@ -29,29 +29,29 @@ The following are all suggestions please make the tool as fast as possible and i
 
 ### B. Bun adoption (Week 0)
 
-* [ ] **Install + smoke test Bun**
+* [x] **Install + smoke test Bun**
 
-  * [ ] `bun install`
-  * [ ] `bun --bun run dev`
-  * [ ] `bun run build`
-  * [ ] Compatibility checklist:
+  * [x] `bun install`
+  * [x] `bun --bun run dev`
+  * [x] `bun run build`
+  * [x] Compatibility checklist:
 
-    * [ ] Supabase client works
-    * [ ] Radix UI renders
-    * [ ] Recharts renders
+    * [x] Supabase client works
+    * [x] Radix UI renders
+    * [x] Recharts renders
     * [ ] Three.js decision made (lazy-load/replace)
-    * [ ] No critical console/runtime errors
+    * [x] No critical console/runtime errors
 
 ---
 
 ### C. Three.js isolation (Week 0)
 
-* [ ] **Lazy-load `AuthParticles`**
+* [x] **Lazy-load `AuthParticles`**
 
-  * [ ] In `src/app/(auth)/layout.tsx`:
+  * [x] In `src/components/auth/AuthLayout.tsx`:
 
-    * [ ] `dynamic(() => import('@/components/gl/AuthParticles'), { ssr:false, loading: ... })`
-  * [ ] Confirm Three.js no longer lands in dashboard bundle
+    * [x] `dynamic(() => import('@/components/gl/AuthGL'), { ssr:false, loading: ... })`
+  * [x] Confirm Three.js no longer lands in dashboard bundle (already lazy-loaded)
   * [ ] Optional: remove/replace if it still causes trouble under Bun
 
 ---
@@ -82,12 +82,15 @@ The following are all suggestions please make the tool as fast as possible and i
 
 #### D3. Split monolith `queries.ts` (2,478 lines / 79KB) **High**
 
-* [ ] Create domain modules (you already started w/ `countries.ts`, `cogs.ts`)
+* [~] Create domain modules (you already started w/ `countries.ts`, `cogs.ts`)
 
   * [ ] `src/lib/db/business-cases.ts`
   * [ ] `src/lib/db/formulations.ts`
-  * [ ] `src/lib/db/use-groups.ts`
-  * [ ] `src/lib/db/dashboard.ts`
+  * [x] `src/lib/db/use-groups.ts`
+  * [x] `src/lib/db/countries.ts`
+  * [x] `src/lib/db/cogs.ts`
+  * [x] `src/lib/db/ingredients.ts`
+  * [x] `src/lib/db/dashboard-data.ts` (partially done)
 * [ ] Benefits you called out: HMR speed, fewer merge conflicts, clearer caching boundaries
 
 ---
@@ -159,7 +162,7 @@ The following are all suggestions please make the tool as fast as possible and i
 
 #### H1. use-debounce (remove duplicated custom debounces)
 
-* [ ] `bun add use-debounce`
+* [x] `bun add use-debounce`
 * [ ] Replace custom debounce patterns in:
 
   * [ ] `FuzzySearchSelect.tsx`
@@ -175,7 +178,7 @@ The following are all suggestions please make the tool as fast as possible and i
   * [ ] `toast.success(...)`
   * [ ] `toast.error(...)`
   * [ ] `toast.loading(...)`
-* [ ] Confirm `<SonnerToaster position="bottom-right" richColors />` already exists in layout
+* [x] Confirm `<SonnerToaster position="bottom-right" richColors />` already exists in layout
 
 #### H3. date-fns usage cleanup (already installed)
 
@@ -371,7 +374,8 @@ The following are all suggestions please make the tool as fast as possible and i
 
 **Already installed (use them)**
 
-* `zod`, `sonner`, `date-fns`, `cmdk`, `framer-motion`, `@tanstack/react-table`
+* `zod` ✓, `sonner` ✓, `date-fns` ✓, `cmdk` ✓, `framer-motion` ✓, `@tanstack/react-table` ✓
+* `@supabase/ssr` ✓
 
 ---
 
