@@ -14,7 +14,7 @@ export async function createTarget(formData: FormData) {
     return { error: "Target name and type are required" };
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("targets")
     .insert({
       target_name: targetName,
@@ -25,7 +25,7 @@ export async function createTarget(formData: FormData) {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -47,7 +47,7 @@ export async function updateTarget(targetId: string, formData: FormData) {
   if (targetCategory !== null) updateData.target_category = targetCategory;
   updateData.is_active = isActive;
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("targets")
     .update(updateData)
     .eq("target_id", targetId)
@@ -55,7 +55,7 @@ export async function updateTarget(targetId: string, formData: FormData) {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -65,13 +65,13 @@ export async function updateTarget(targetId: string, formData: FormData) {
 export async function deleteTarget(targetId: string) {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("targets")
     .delete()
     .eq("target_id", targetId);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");

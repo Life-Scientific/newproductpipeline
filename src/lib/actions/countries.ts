@@ -25,7 +25,7 @@ export async function createCountry(formData: FormData) {
     return { error: "Country code, name, and currency code are required" };
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("countries")
     .insert({
       country_code: countryCode,
@@ -37,7 +37,7 @@ export async function createCountry(formData: FormData) {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -71,7 +71,7 @@ export async function updateCountry(countryId: string, formData: FormData) {
   updateData.has_tariffs = hasTariffs;
   updateData.is_active = isActive;
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("countries")
     .update(updateData)
     .eq("country_id", countryId)
@@ -79,7 +79,7 @@ export async function updateCountry(countryId: string, formData: FormData) {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -97,13 +97,13 @@ export async function deleteCountry(countryId: string) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("countries")
     .delete()
     .eq("country_id", countryId);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");

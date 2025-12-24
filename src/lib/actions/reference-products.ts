@@ -63,10 +63,9 @@ export async function createReferenceProduct(formData: FormData) {
     })
     .select()
     .single();
-
-  if (supabaseError) {
-    return { supabaseError: supabaseError.message };
-  }
+    if (supabaseError) {
+      return { error: supabaseError.message };
+    }
 
   revalidatePath("/reference");
   return { data, success: true };
@@ -121,10 +120,9 @@ export async function updateReferenceProduct(
     .eq("reference_product_id", referenceProductId)
     .select()
     .single();
-
-  if (supabaseError) {
-    return { supabaseError: supabaseError.message };
-  }
+    if (supabaseError) {
+      return { error: supabaseError.message };
+    }
 
   revalidatePath("/reference");
   return { data, success: true };
@@ -146,10 +144,9 @@ export async function deleteReferenceProduct(referenceProductId: string) {
     .from("reference_products")
     .delete()
     .eq("reference_product_id", referenceProductId);
-
-  if (supabaseError) {
-    return { supabaseError: supabaseError.message };
-  }
+    if (supabaseError) {
+      return { error: supabaseError.message };
+    }
 
   revalidatePath("/reference");
   return { success: true };

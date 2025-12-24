@@ -80,7 +80,7 @@ export async function getAllUseGroups() {
 export async function getUseGroupById(useGroupId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_formulation_country_use_group")
     .select("*")
     .eq("formulation_country_use_group_id", useGroupId)
@@ -114,7 +114,7 @@ export async function getUseGroupById(useGroupId: string) {
 export async function getUseGroupCrops(useGroupId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_country_use_group_eppo_crops")
     .select(`
       eppo_code_id,
@@ -155,7 +155,7 @@ export async function getUseGroupCrops(useGroupId: string) {
 export async function getUseGroupTargets(useGroupId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_country_use_group_eppo_targets")
     .select(`
       eppo_code_id,

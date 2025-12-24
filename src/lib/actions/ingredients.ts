@@ -31,7 +31,7 @@ export async function createIngredient(formData: FormData) {
     return { error: "Ingredient name and type are required" };
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("ingredients")
     .insert({
       ingredient_name: ingredientName,
@@ -47,7 +47,7 @@ export async function createIngredient(formData: FormData) {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -94,7 +94,7 @@ export async function updateIngredient(
   updateData.is_eu_approved = isEuApproved;
   if (regulatoryNotes !== null) updateData.regulatory_notes = regulatoryNotes;
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("ingredients")
     .update(updateData)
     .eq("ingredient_id", ingredientId)
@@ -102,7 +102,7 @@ export async function updateIngredient(
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -127,7 +127,7 @@ export async function deleteIngredient(ingredientId: string) {
     .eq("ingredient_id", ingredientId);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");

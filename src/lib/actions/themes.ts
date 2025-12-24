@@ -27,7 +27,7 @@ export interface ThemeWithColors extends Theme {
 export async function getThemes(): Promise<Theme[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("themes")
     .select("*")
     .order("name");
@@ -42,7 +42,7 @@ export async function getThemes(): Promise<Theme[]> {
 export async function getPresetThemes(): Promise<Theme[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("themes")
     .select("*")
     .eq("is_preset", true)
@@ -132,7 +132,7 @@ export async function setUserTheme(themeId: string): Promise<void> {
     throw new Error("User not authenticated");
   }
 
-  const { error } = await supabase.from("user_preferences").upsert({
+  const { error: supabaseError } = await supabase.from("user_preferences").upsert({
     user_id: user.id,
     theme_id: themeId,
   });

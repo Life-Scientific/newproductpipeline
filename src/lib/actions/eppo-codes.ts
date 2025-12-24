@@ -69,10 +69,10 @@ export async function searchEPPOCodes(params: {
     query = query.limit(100);
   }
 
-  const { data, error } = await query;
+  const { data, error: supabaseError } = await query;
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   // Sort results by relevance (exact matches first, then partial matches)
@@ -110,14 +110,14 @@ export async function searchEPPOCodes(params: {
 export async function getEPPOCodeById(eppoCodeId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("eppo_codes")
     .select("*")
     .eq("eppo_code_id", eppoCodeId)
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   return { data, success: true };
@@ -126,7 +126,7 @@ export async function getEPPOCodeById(eppoCodeId: string) {
 export async function getEPPOCodeChildren(eppoCode: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("eppo_codes")
     .select("*")
     .eq("parent_eppo_code", eppoCode)
@@ -134,7 +134,7 @@ export async function getEPPOCodeChildren(eppoCode: string) {
     .order("display_name", { ascending: true });
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   return { data, success: true };
@@ -152,7 +152,7 @@ export async function addFormulationCrop(params: {
 }) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_eppo_crops")
     .insert({
       formulation_id: params.formulationId,
@@ -165,7 +165,7 @@ export async function addFormulationCrop(params: {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -189,7 +189,7 @@ export async function updateFormulationCrop(params: {
   if (params.notes !== undefined) updateData.notes = params.notes;
   updateData.updated_at = new Date().toISOString();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_eppo_crops")
     .update(updateData)
     .eq("formulation_id", params.formulationId)
@@ -198,7 +198,7 @@ export async function updateFormulationCrop(params: {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -211,14 +211,14 @@ export async function removeFormulationCrop(
 ) {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("formulation_eppo_crops")
     .delete()
     .eq("formulation_id", formulationId)
     .eq("eppo_code_id", eppoCodeId);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -229,12 +229,12 @@ export async function getFormulationCrops(formulationId: string) {
   const supabase = await createClient();
 
   // Get expanded crop list using helper function
-  const { data, error } = await supabase.rpc("get_formulation_crops", {
+  const { data, error: supabaseError } = await supabase.rpc("get_formulation_crops", {
     f_id: formulationId,
   });
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   return { data, success: true };
@@ -252,7 +252,7 @@ export async function addFormulationTarget(params: {
 }) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_eppo_targets")
     .insert({
       formulation_id: params.formulationId,
@@ -265,7 +265,7 @@ export async function addFormulationTarget(params: {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -289,7 +289,7 @@ export async function updateFormulationTarget(params: {
   if (params.notes !== undefined) updateData.notes = params.notes;
   updateData.updated_at = new Date().toISOString();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_eppo_targets")
     .update(updateData)
     .eq("formulation_id", params.formulationId)
@@ -298,7 +298,7 @@ export async function updateFormulationTarget(params: {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -311,14 +311,14 @@ export async function removeFormulationTarget(
 ) {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("formulation_eppo_targets")
     .delete()
     .eq("formulation_id", formulationId)
     .eq("eppo_code_id", eppoCodeId);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -328,12 +328,12 @@ export async function removeFormulationTarget(
 export async function getFormulationTargets(formulationId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("get_formulation_targets", {
+  const { data, error: supabaseError } = await supabase.rpc("get_formulation_targets", {
     f_id: formulationId,
   });
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   return { data, success: true };
@@ -351,7 +351,7 @@ export async function addUseGroupCrop(params: {
 }) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_country_use_group_eppo_crops")
     .insert({
       formulation_country_use_group_id: params.useGroupId,
@@ -364,7 +364,7 @@ export async function addUseGroupCrop(params: {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -389,7 +389,7 @@ export async function updateUseGroupCrop(params: {
     updateData.is_critical = params.isCritical;
   updateData.updated_at = new Date().toISOString();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_country_use_group_eppo_crops")
     .update(updateData)
     .eq("formulation_country_use_group_id", params.useGroupId)
@@ -398,7 +398,7 @@ export async function updateUseGroupCrop(params: {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -418,7 +418,7 @@ export async function removeUseGroupCrop(
     .eq("eppo_code_id", eppoCodeId);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -428,12 +428,12 @@ export async function removeUseGroupCrop(
 export async function getUseGroupCrops(useGroupId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("get_use_group_crops", {
+  const { data, error: supabaseError } = await supabase.rpc("get_use_group_crops", {
     ug_id: useGroupId,
   });
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   return { data, success: true };
@@ -452,7 +452,7 @@ export async function addUseGroupTarget(params: {
 }) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_country_use_group_eppo_targets")
     .insert({
       formulation_country_use_group_id: params.useGroupId,
@@ -466,7 +466,7 @@ export async function addUseGroupTarget(params: {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -493,7 +493,7 @@ export async function updateUseGroupTarget(params: {
   if (params.notes !== undefined) updateData.notes = params.notes;
   updateData.updated_at = new Date().toISOString();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_country_use_group_eppo_targets")
     .update(updateData)
     .eq("formulation_country_use_group_id", params.useGroupId)
@@ -502,7 +502,7 @@ export async function updateUseGroupTarget(params: {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -522,7 +522,7 @@ export async function removeUseGroupTarget(
     .eq("eppo_code_id", eppoCodeId);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -532,12 +532,12 @@ export async function removeUseGroupTarget(
 export async function getUseGroupTargets(useGroupId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("get_use_group_targets", {
+  const { data, error: supabaseError } = await supabase.rpc("get_use_group_targets", {
     ug_id: useGroupId,
   });
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   return { data, success: true };
@@ -554,7 +554,7 @@ export async function addReferenceProductCrop(params: {
 }) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("reference_product_eppo_crops")
     .insert({
       reference_product_id: params.referenceProductId,
@@ -566,7 +566,7 @@ export async function addReferenceProductCrop(params: {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -588,7 +588,7 @@ export async function updateReferenceProductCrop(params: {
     updateData.is_excluded = params.isExcluded;
   updateData.updated_at = new Date().toISOString();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("reference_product_eppo_crops")
     .update(updateData)
     .eq("reference_product_id", params.referenceProductId)
@@ -597,7 +597,7 @@ export async function updateReferenceProductCrop(params: {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -617,7 +617,7 @@ export async function removeReferenceProductCrop(
     .eq("eppo_code_id", eppoCodeId);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -635,7 +635,7 @@ export async function addReferenceProductTarget(params: {
 }) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("reference_product_eppo_targets")
     .insert({
       reference_product_id: params.referenceProductId,
@@ -647,7 +647,7 @@ export async function addReferenceProductTarget(params: {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -669,7 +669,7 @@ export async function updateReferenceProductTarget(params: {
     updateData.is_excluded = params.isExcluded;
   updateData.updated_at = new Date().toISOString();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("reference_product_eppo_targets")
     .update(updateData)
     .eq("reference_product_id", params.referenceProductId)
@@ -678,7 +678,7 @@ export async function updateReferenceProductTarget(params: {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -698,7 +698,7 @@ export async function removeReferenceProductTarget(
     .eq("eppo_code_id", eppoCodeId);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -712,12 +712,12 @@ export async function removeReferenceProductTarget(
 export async function getFormulationCountryCrops(formulationCountryId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("get_formulation_country_crops", {
+  const { data, error: supabaseError } = await supabase.rpc("get_formulation_country_crops", {
     fc_id: formulationCountryId,
   });
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   return { data, success: true };
@@ -728,13 +728,13 @@ export async function getFormulationCountryTargets(
 ) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc(
+  const { data, error: supabaseError } = await supabase.rpc(
     "get_formulation_country_targets",
     { fc_id: formulationCountryId },
   );
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   return { data, success: true };
@@ -750,7 +750,7 @@ export async function getFormulationCropsAudit(
 ) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_eppo_crops_audit")
     .select("*, eppo_codes(display_name)")
     .eq("formulation_id", formulationId)
@@ -758,7 +758,7 @@ export async function getFormulationCropsAudit(
     .limit(limit);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   return { data, success: true };
@@ -770,7 +770,7 @@ export async function getFormulationTargetsAudit(
 ) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_eppo_targets_audit")
     .select("*, eppo_codes(display_name)")
     .eq("formulation_id", formulationId)
@@ -778,7 +778,7 @@ export async function getFormulationTargetsAudit(
     .limit(limit);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   return { data, success: true };

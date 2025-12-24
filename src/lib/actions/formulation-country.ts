@@ -60,7 +60,7 @@ export async function createFormulationCountry(formData: FormData) {
     return { error: "This formulation is already registered in this country" };
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_country")
     .insert({
       formulation_id: formulationId,
@@ -80,7 +80,7 @@ export async function createFormulationCountry(formData: FormData) {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   // Revalidate paths for fresh data
@@ -155,7 +155,7 @@ export async function updateFormulationCountry(
   if (formData.has("include_in_financial_plan"))
     updateData.include_in_financial_plan = includeInFinancialPlan;
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_country")
     .update(updateData)
     .eq("formulation_country_id", formulationCountryId)
@@ -163,7 +163,7 @@ export async function updateFormulationCountry(
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   // Revalidate paths for fresh data
@@ -194,7 +194,7 @@ export async function deleteFormulationCountry(formulationCountryId: string) {
     .eq("formulation_country_id", formulationCountryId);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   // Revalidate paths for fresh data

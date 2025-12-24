@@ -25,7 +25,7 @@ export async function createSupplier(formData: FormData) {
     return { error: "Supplier name is required" };
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("suppliers")
     .insert({
       supplier_name: supplierName,
@@ -37,7 +37,7 @@ export async function createSupplier(formData: FormData) {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -69,7 +69,7 @@ export async function updateSupplier(supplierId: string, formData: FormData) {
   if (countryId !== null) updateData.country_id = countryId || null;
   updateData.is_active = isActive;
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("suppliers")
     .update(updateData)
     .eq("supplier_id", supplierId)
@@ -77,7 +77,7 @@ export async function updateSupplier(supplierId: string, formData: FormData) {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -101,7 +101,7 @@ export async function deleteSupplier(supplierId: string) {
     .eq("supplier_id", supplierId);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");

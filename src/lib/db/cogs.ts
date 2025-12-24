@@ -4,7 +4,7 @@ import { getFormulationById } from "./queries";
 
 export async function getCOGSList() {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_cogs")
     .select("*")
     .eq("status", "active")
@@ -25,7 +25,7 @@ export async function getFormulationCOGS(formulationId: string) {
     return [];
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_cogs")
     .select("*")
     .eq("formulation_code", formulation.formulation_code)
@@ -41,7 +41,7 @@ export async function getFormulationCOGS(formulationId: string) {
 export async function getCOGSGroup(groupId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_cogs")
     .select("*")
     .eq("cogs_group_id", groupId)

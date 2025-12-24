@@ -594,8 +594,8 @@ export async function getCOGSGroupAction(groupId: string) {
     .eq("cogs_group_id", groupId)
     .order("fiscal_year");
 
-  if (error) {
-    return { data: null, error: error.message };
+  if (supabaseError) {
+    return { data: null, error: supabaseError.message };
   }
 
   return { data, error: null };

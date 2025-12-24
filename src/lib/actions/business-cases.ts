@@ -282,10 +282,9 @@ export async function deleteBusinessCase(businessCaseId: string) {
     .from("business_case")
     .delete()
     .eq("business_case_id", businessCaseId);
-
-  if (supabaseError) {
-    return { supabaseError: supabaseError.message };
-  }
+    if (supabaseError) {
+      return { error: supabaseError.message };
+    }
 
   // Revalidate paths for fresh data
   revalidatePath("/portfolio/business-cases");

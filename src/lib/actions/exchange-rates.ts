@@ -37,7 +37,7 @@ export async function createExchangeRate(formData: FormData) {
     return { error: "Exchange rate must be a positive number" };
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("exchange_rates")
     .insert({
       country_id: countryId,
@@ -96,7 +96,7 @@ export async function updateExchangeRate(
     return { error: "Exchange rate must be a positive number" };
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("exchange_rates")
     .update({
       currency_code: currencyCode.toUpperCase(),

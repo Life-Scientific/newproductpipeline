@@ -3,7 +3,7 @@ import type { Ingredient, IngredientUsage } from "./types";
 
 export async function getIngredientUsage() {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_ingredient_usage")
     .select("*")
     .order("ingredient_name", { ascending: true });
@@ -17,7 +17,7 @@ export async function getIngredientUsage() {
 
 export async function getIngredientById(ingredientId: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("ingredients")
     .select("*")
     .eq("ingredient_id", ingredientId)
@@ -32,7 +32,7 @@ export async function getIngredientById(ingredientId: string) {
 
 export async function getIngredientFormulations(ingredientId: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_ingredients")
     .select(`
       *,
@@ -60,7 +60,7 @@ export async function getIngredientFormulations(ingredientId: string) {
 
 export async function getIngredientSuppliers(ingredientId: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("ingredient_suppliers")
     .select("*, suppliers(*)")
     .eq("ingredient_id", ingredientId)

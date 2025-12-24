@@ -9,7 +9,7 @@ import type {
 
 export async function getActivePortfolio() {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_active_portfolio")
     .select("*")
     .order("formulation_code", { ascending: true });

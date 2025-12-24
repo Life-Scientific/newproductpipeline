@@ -8,7 +8,7 @@ export async function GET(
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulations")
     .select("*")
     .eq("formulation_id", id)

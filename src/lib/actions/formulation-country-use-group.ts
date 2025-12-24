@@ -126,7 +126,7 @@ export async function createFormulationCountryUseGroup(formData: FormData) {
     return { error: "At least one target must be selected" };
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_country_use_group")
     .insert({
       formulation_country_id: formulationCountryId,
@@ -144,7 +144,7 @@ export async function createFormulationCountryUseGroup(formData: FormData) {
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   // Add EPPO crops with critical flags
@@ -267,7 +267,7 @@ export async function updateFormulationCountryUseGroup(
   if (actualApprovalDate !== null)
     updateData.earliest_actual_approval_date = actualApprovalDate || null;
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_country_use_group")
     .update(updateData)
     .eq("formulation_country_use_group_id", formulationCountryUseGroupId)
@@ -275,7 +275,7 @@ export async function updateFormulationCountryUseGroup(
     .single();
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   // Update EPPO crops - delete all and reinsert
@@ -377,7 +377,7 @@ export async function deleteFormulationCountryUseGroup(
     .eq("formulation_country_use_group_id", formulationCountryUseGroupId);
 
   if (supabaseError) {
-    return { supabaseError: supabaseError.message };
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/registration");

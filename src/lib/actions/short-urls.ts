@@ -285,7 +285,7 @@ export async function deleteShortUrl(id: string): Promise<void> {
   }
 
   // RLS restricts DELETE to Admin/Editor roles
-  const { error } = await supabase.from("short_urls").delete().eq("id", id);
+  const { error: supabaseError } = await supabase.from("short_urls").delete().eq("id", id);
 
   if (error) {
     // Check if it's a permission error from RLS

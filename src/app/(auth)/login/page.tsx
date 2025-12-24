@@ -91,7 +91,7 @@ function LoginContent() {
       ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`
       : `${window.location.origin}/auth/callback`;
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { data, error: supabaseError } = await supabase.auth.signInWithOAuth({
       provider: "azure",
       options: {
         scopes: "email openid profile",
