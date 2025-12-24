@@ -22,7 +22,7 @@ export function useProgressiveLoad<T>(
   const [isLoading] = useState(false); // Initial data is already loaded
   const [isBackgroundLoading, setIsBackgroundLoading] = useState(false);
   const [totalCount] = useState(initialTotalCount);
-  const [error, setError] = useState<Error | null>(null);
+  const [loadError, setLoadError] = useState<Error | null>(null);
   
   const abortControllerRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
@@ -88,7 +88,7 @@ export function useProgressiveLoad<T>(
     isLoading,
     isBackgroundLoading,
     totalCount,
-    error,
+    loadError,
     refresh: () => {
       // Refresh would need to be handled by parent component
       warn("Refresh not implemented - reload page to refresh");

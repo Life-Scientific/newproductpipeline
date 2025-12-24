@@ -176,15 +176,15 @@ export async function updateBusinessCase(
     if (cogsPerUnit !== null) updateData.cogs_per_unit = cogsPerUnit;
     if (assumptions !== null) updateData.assumptions = assumptions;
 
-    const { data, error } = await supabase
+    const { data, error: supabaseError } = await supabase
       .from("business_case")
       .update(updateData)
       .eq("business_case_id", businessCaseId)
       .select()
       .single();
 
-    if (error) {
-      return { error: error.message };
+    if (supabaseError) {
+      return { error: supabaseError.message };
     }
 
     return { data };
@@ -278,13 +278,13 @@ export async function deleteBusinessCase(businessCaseId: string) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("business_case")
     .delete()
     .eq("business_case_id", businessCaseId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   // Revalidate paths for fresh data
@@ -863,7 +863,7 @@ export async function getBusinessCaseGroupAction(groupId: string) {
   try {
     const data = await getBusinessCaseGroup(groupId);
     return { data, error: null };
-  } catch (error) {
+  } catch (err) {
     error("getBusinessCaseGroupAction error:", error);
     return {
       data: null,
@@ -890,7 +890,7 @@ export async function checkExistingBusinessCaseAction(
       useGroupId,
     );
     return { data: groupId, error: null };
-  } catch (error) {
+  } catch (err) {
     return {
       data: null,
       error:
@@ -908,7 +908,7 @@ export async function getFormulationsAction() {
   try {
     const data = await getFormulations();
     return { data, error: null };
-  } catch (error) {
+  } catch (err) {
     return {
       data: null,
       error:
@@ -924,7 +924,7 @@ export async function getCountriesAction() {
   try {
     const data = await getCountries();
     return { data, error: null };
-  } catch (error) {
+  } catch (err) {
     return {
       data: null,
       error:
@@ -940,7 +940,7 @@ export async function getBusinessCaseVersionHistoryAction(useGroupId: string) {
   try {
     const data = await getBusinessCaseVersionHistory(useGroupId);
     return { data, error: null };
-  } catch (error) {
+  } catch (err) {
     return {
       data: null,
       error:
@@ -1292,7 +1292,7 @@ export async function previewBusinessCaseImport(
           }
         }
       }
-    } catch (error) {
+    } catch (err) {
       wouldError++;
       if (progressIdx >= 0) {
         rowProgress[progressIdx].status = "error";
@@ -1434,7 +1434,7 @@ export async function importBusinessCases(
       }
       rowProgress[progressIdx].businessCaseGroupId =
         result.data?.business_case_group_id;
-    } catch (error) {
+    } catch (err) {
       importErrors++;
       if (progressIdx >= 0) {
         rowProgress[progressIdx].status = "error";

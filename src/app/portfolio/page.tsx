@@ -31,7 +31,7 @@ export default async function Home() {
   let dashboardData;
   try {
     dashboardData = await getDashboardData();
-  } catch (error) {
+  } catch (err) {
     error("Dashboard data fetch error:", error);
     // Set defaults on error
     dashboardData = {

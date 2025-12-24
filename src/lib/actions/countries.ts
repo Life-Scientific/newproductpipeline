@@ -36,8 +36,8 @@ export async function createCountry(formData: FormData) {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -78,8 +78,8 @@ export async function updateCountry(countryId: string, formData: FormData) {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -102,8 +102,8 @@ export async function deleteCountry(countryId: string) {
     .delete()
     .eq("country_id", countryId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");

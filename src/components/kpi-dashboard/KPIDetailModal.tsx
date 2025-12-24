@@ -91,8 +91,8 @@ export function KPIDetailModal({
         .then((log: AuditLogEntry[]) => {
           setAuditLog(log);
         })
-        .catch((error: unknown) => {
-          error("Error fetching audit log:", error);
+        .catch((err: unknown) => {
+          error("Error fetching audit log:", err);
         })
         .finally(() => {
           setIsLoadingAudit(false);
@@ -127,7 +127,7 @@ export function KPIDetailModal({
         });
         onUpdate(localKeyResult);
         setHasChanges(false);
-      } catch (error) {
+      } catch (err) {
         error("Error saving key result:", error);
         // Could show error toast here
       }
@@ -145,7 +145,7 @@ export function KPIDetailModal({
       setLocalKeyResult(updated);
       onUpdate(updated);
       setHasChanges(false);
-    } catch (error) {
+    } catch (err) {
       error("Error toggling lock:", error);
       // Could show error toast here
     }

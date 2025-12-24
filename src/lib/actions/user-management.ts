@@ -102,7 +102,7 @@ export async function hasPermission(
   }
 
   // Fallback: use database function (which also checks for Admin)
-  const { data, error } = await supabase.rpc("has_permission", {
+  const { data, error: supabaseError } = await supabase.rpc("has_permission", {
     p_key: permission,
   });
 
@@ -141,7 +141,7 @@ export async function hasAnyPermission(
     // Fall back to database
   }
 
-  const { data, error } = await supabase.rpc("has_any_permission", {
+  const { data, error: supabaseError } = await supabase.rpc("has_any_permission", {
     p_keys: permissions,
   });
 
@@ -178,7 +178,7 @@ export async function getUserPermissions(): Promise<string[]> {
     // Fall back to database
   }
 
-  const { data, error } = await supabase.rpc("get_user_permissions");
+  const { data, error: supabaseError } = await supabase.rpc("get_user_permissions");
 
   if (error) {
     error("Error getting permissions:", error);
@@ -213,7 +213,7 @@ export async function getUserRoles(): Promise<string[]> {
     // Fall back to database
   }
 
-  const { data, error } = await supabase.rpc("get_user_roles");
+  const { data, error: supabaseError } = await supabase.rpc("get_user_roles");
 
   if (error) {
     error("Error getting roles:", error);
@@ -269,7 +269,7 @@ export async function getUserRoleFromSession(): Promise<string | null> {
     // Fall back to database
   }
 
-  const { data, error } = await supabase.rpc("get_user_role");
+  const { data, error: supabaseError } = await supabase.rpc("get_user_role");
 
   if (error) {
     error("Error getting role:", error);
@@ -306,7 +306,7 @@ export async function getAllUsers(): Promise<UserManagementData[]> {
   }
 
   // Call the database function
-  const { data, error } = await supabase.rpc("get_all_users_with_roles");
+  const { data, error: supabaseError } = await supabase.rpc("get_all_users_with_roles");
 
   if (error) {
     throw new Error(`Failed to fetch users: ${error.message}`);
@@ -497,7 +497,7 @@ export async function addUserRole(
     data: { user: currentUser },
   } = await supabase.auth.getUser();
 
-  const { error } = await supabase.from("user_roles").insert({
+  const { error: supabaseError } = await supabase.from("user_roles").insert({
     user_id: userId,
     role_id: roleId,
     assigned_by: currentUser?.id,
@@ -565,7 +565,7 @@ export async function removeUserRole(
     throw new Error("Cannot remove the last role from a user");
   }
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("user_roles")
     .delete()
     .eq("user_id", userId)
@@ -594,7 +594,7 @@ export async function getAllRoles(): Promise<Role[]> {
     throw new Error("Unauthorized: role.view permission required");
   }
 
-  const { data, error } = await supabase.rpc("get_all_roles");
+  const { data, error: supabaseError } = await supabase.rpc("get_all_roles");
 
   if (error) {
     throw new Error(`Failed to fetch roles: ${error.message}`);
@@ -616,7 +616,7 @@ export async function getAllRoles(): Promise<Role[]> {
 export async function getAllPermissions(): Promise<Permission[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("get_all_permissions");
+  const { data, error: supabaseError } = await supabase.rpc("get_all_permissions");
 
   if (error) {
     throw new Error(`Failed to fetch permissions: ${error.message}`);
@@ -750,7 +750,7 @@ export async function updateRole(
 
   if (role?.is_system_role) {
     // System roles can only have their description updated, not name
-    const { error } = await supabase
+    const { error: supabaseError } = await supabase
       .from("roles")
       .update({ description })
       .eq("role_id", roleId);
@@ -759,7 +759,7 @@ export async function updateRole(
       throw new Error(`Failed to update role: ${error.message}`);
     }
   } else {
-    const { error } = await supabase
+    const { error: supabaseError } = await supabase
       .from("roles")
       .update({ role_name: roleName, description })
       .eq("role_id", roleId);
@@ -810,7 +810,7 @@ export async function deleteRole(roleId: string): Promise<void> {
     );
   }
 
-  const { error } = await supabase.from("roles").delete().eq("role_id", roleId);
+  const { error: supabaseError } = await supabase.from("roles").delete().eq("role_id", roleId);
 
   if (error) {
     throw new Error(`Failed to delete role: ${error.message}`);
@@ -835,7 +835,7 @@ export async function getAllInvitations(): Promise<InvitationData[]> {
     throw new Error("Unauthorized: user.view permission required");
   }
 
-  const { data, error } = await supabase.rpc("get_all_invitations");
+  const { data, error: supabaseError } = await supabase.rpc("get_all_invitations");
 
   if (error) {
     throw new Error(`Failed to fetch invitations: ${error.message}`);
@@ -1020,7 +1020,7 @@ export async function cancelInvitation(invitationId: string): Promise<void> {
     throw new Error("Unauthorized: user.invite permission required");
   }
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("invitations")
     .delete()
     .eq("id", invitationId);
@@ -1040,7 +1040,7 @@ export async function getInvitationByToken(
 ): Promise<InvitationData | null> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("invitations")
     .select("id, email, role, expires_at, accepted_at, created_at")
     .eq("token_hash", tokenHash)

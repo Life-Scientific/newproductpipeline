@@ -366,7 +366,7 @@ export async function fixDuplicateBusinessCases(): Promise<{
       fixed: totalFixed,
       duplicates: fixedDuplicates,
     };
-  } catch (error) {
+  } catch (err) {
     error("Error fixing duplicate business cases:", error);
     return {
       success: false,

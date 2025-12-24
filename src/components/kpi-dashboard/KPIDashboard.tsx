@@ -84,7 +84,7 @@ export function KPIDashboard({ users, initialData }: KPIDashboardProps) {
 
         // Update local state with server response
         setKpiData(optimisticUpdate);
-      } catch (error) {
+      } catch (err) {
         error("Error updating key result:", error);
         // Revert optimistic update on error
         setKpiData(kpiData);

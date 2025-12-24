@@ -143,8 +143,8 @@ export async function createFormulationCountryUseGroup(formData: FormData) {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   // Add EPPO crops with critical flags
@@ -274,8 +274,8 @@ export async function updateFormulationCountryUseGroup(
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   // Update EPPO crops - delete all and reinsert
@@ -376,8 +376,8 @@ export async function deleteFormulationCountryUseGroup(
     .delete()
     .eq("formulation_country_use_group_id", formulationCountryUseGroupId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/registration");

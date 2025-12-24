@@ -27,7 +27,7 @@ function AcceptInviteContent() {
   const supabase = createClient();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<
     "verifying" | "success" | "error" | "needs-password"
@@ -40,7 +40,7 @@ function AcceptInviteContent() {
     const type = searchParams.get("type");
 
     if (!tokenHash || type !== "invite") {
-      setError("Invalid invitation link");
+      setFormError("Invalid invitation link");
       setStatus("error");
       return;
     }
@@ -54,7 +54,7 @@ function AcceptInviteContent() {
         });
 
         if (verifyError) {
-          setError(verifyError.message || "Invalid or expired invitation link");
+          setFormError(verifyError.message || "Invalid or expired invitation link");
           setStatus("error");
           return;
         }
@@ -79,7 +79,7 @@ function AcceptInviteContent() {
           }
         }
       } catch (err) {
-        setError(
+        setFormError(
           err instanceof Error ? err.message : "Failed to verify invitation",
         );
         setStatus("error");
@@ -103,15 +103,15 @@ function AcceptInviteContent() {
 
   const handleSetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setFormError(null);
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setFormError("Passwords do not match");
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setFormError("Password must be at least 6 characters");
       return;
     }
 
@@ -119,7 +119,7 @@ function AcceptInviteContent() {
 
     const tokenHash = searchParams.get("token_hash");
     if (!tokenHash) {
-      setError("Invalid invitation link");
+      setFormError("Invalid invitation link");
       setLoading(false);
       return;
     }
@@ -133,7 +133,7 @@ function AcceptInviteContent() {
         });
 
       if (verifyError || !verifyData?.user) {
-        setError(verifyError?.message || "Failed to verify invitation");
+        setFormError(verifyError?.message || "Failed to verify invitation");
         setLoading(false);
         return;
       }
@@ -144,7 +144,7 @@ function AcceptInviteContent() {
       });
 
       if (updateError) {
-        setError(updateError.message);
+        setFormError(updateError.message);
         setLoading(false);
         return;
       }
@@ -162,7 +162,7 @@ function AcceptInviteContent() {
         window.location.href = "/";
       }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to set password");
+      setFormError(err instanceof Error ? err.message : "Failed to set password");
       setLoading(false);
     }
   };
@@ -207,16 +207,16 @@ function AcceptInviteContent() {
             {status === "error" && (
               <Alert variant="destructive">
                 <AlertDescription>
-                  {error || "Invalid or expired invitation link"}
+                  {formError || "Invalid or expired invitation link"}
                 </AlertDescription>
               </Alert>
             )}
 
             {status === "needs-password" && (
               <form onSubmit={handleSetPassword} className="space-y-4">
-                {error && (
+                {formError && (
                   <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription>formError</AlertDescription>
                   </Alert>
                 )}
                 {email && (

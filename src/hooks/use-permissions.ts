@@ -105,7 +105,7 @@ export function usePermissions(
             break;
           }
         }
-      } catch (error) {
+      } catch (err) {
         error("Error in usePermissions:", error);
         setPermissions([]);
         setRoles(["Viewer"]);

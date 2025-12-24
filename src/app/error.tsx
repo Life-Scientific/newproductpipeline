@@ -7,7 +7,7 @@ import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import Link from "next/link";
 
 export default function GlobalError({
-  error,
+  error: err,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -15,8 +15,8 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    error("Global error:", error);
-  }, [error]);
+    error("Global error:", err);
+  }, [err]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -37,11 +37,11 @@ export default function GlobalError({
         {process.env.NODE_ENV === "development" && (
           <div className="p-4 bg-muted rounded-lg text-left">
             <p className="text-sm font-mono text-destructive break-all">
-              {error.message}
+              {err.message}
             </p>
-            {error.digest && (
+            {err.digest && (
               <p className="text-xs text-muted-foreground mt-2">
-                Error ID: {error.digest}
+                Error ID: {err.digest}
               </p>
             )}
           </div>

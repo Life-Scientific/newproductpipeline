@@ -87,7 +87,7 @@ export function WorkspaceSwitcher() {
       try {
         const data = await getWorkspaces();
         setWorkspaces(data);
-      } catch (error) {
+      } catch (err) {
         error("Failed to load workspaces:", error);
       } finally {
         setIsLoadingWorkspaces(false);
@@ -196,7 +196,7 @@ export function WorkspaceSwitcher() {
                 // REMOVED: router.refresh() - let Next.js handle client-side navigation
                 // The workspace context update and route change will trigger necessary re-renders
               }
-            } catch (error) {
+            } catch (err) {
               error("Failed to switch workspace:", error);
             }
           };

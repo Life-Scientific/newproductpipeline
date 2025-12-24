@@ -304,7 +304,7 @@ export async function getBusinessCaseVersionHistory(
 ): Promise<BusinessCaseYearData[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_business_case")
     .select(
       `
@@ -429,7 +429,7 @@ export async function getBusinessCaseGroupsUsingFormulation(
 export async function getBusinessCaseSummaryByFiscalYear() {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_business_case")
     .select("fiscal_year, total_revenue, total_margin, total_cogs, margin_percent")
     .eq("status", "active");

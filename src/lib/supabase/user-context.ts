@@ -22,7 +22,7 @@ export async function setUserContext(
     await (supabase as SupabaseClient).rpc("set_current_user", {
       user_name: userName,
     });
-  } catch (error) {
+  } catch (err) {
     // If setting context fails, log but don't throw (allows operations to continue)
     error("Failed to set user context:", error);
   }

@@ -110,7 +110,11 @@ export function UseGroupEditModal({
 
   useEffect(() => {
     if (open) {
-      getReferenceProducts().then(setReferenceProducts);
+      getReferenceProducts().then((products) => {
+        if (products) {
+          setReferenceProducts(products);
+        }
+      });
     }
   }, [open]);
 

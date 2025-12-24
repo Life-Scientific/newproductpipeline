@@ -36,8 +36,8 @@ export async function createSupplier(formData: FormData) {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -76,8 +76,8 @@ export async function updateSupplier(supplierId: string, formData: FormData) {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -100,8 +100,8 @@ export async function deleteSupplier(supplierId: string) {
     .delete()
     .eq("supplier_id", supplierId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");

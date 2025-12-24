@@ -9,7 +9,7 @@ import type {
 
 export async function getCountries() {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("countries")
     .select("*")
     .eq("is_active", true)
@@ -27,7 +27,7 @@ export async function getCountries() {
  */
 export async function getCountryById(countryId: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("countries")
     .select("*")
     .eq("country_id", countryId)
@@ -275,7 +275,7 @@ export async function getCountryDetails(countryId: string) {
 
 export async function getExchangeRates() {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("exchange_rates")
     .select(
       `
@@ -303,7 +303,7 @@ export async function getLatestExchangeRate(
   const supabase = await createClient();
   const dateStr = date.toISOString().split("T")[0];
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("exchange_rates")
     .select("exchange_rate_to_eur")
     .eq("country_id", countryId)

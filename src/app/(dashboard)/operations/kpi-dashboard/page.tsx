@@ -62,7 +62,7 @@ export default async function KPIDashboardPage() {
   let users: UserManagementData[] = [];
   try {
     users = await getAllUsers();
-  } catch (error) {
+  } catch (err) {
     // Silently fail - demo will work without users, just can't assign owners
     warn("Could not fetch users for KPI dashboard:", error);
   }
@@ -73,9 +73,9 @@ export default async function KPIDashboardPage() {
   let kpiData: KPIData = { coreDrivers: [] };
   try {
     kpiData = await getKPIDashboardData();
-  } catch (error) {
+  } catch (err) {
     // If permission error, show placeholder instead of redirecting (avoid loops)
-    if (error instanceof Error && error.message.includes("Unauthorized")) {
+    if (err instanceof Error && err.message.includes("Unauthorized")) {
       return (
         <PageLayout
           title="KPI Dashboard"
@@ -96,7 +96,7 @@ export default async function KPIDashboardPage() {
         </PageLayout>
       );
     }
-    error("Error fetching KPI dashboard data:", error);
+    error("Error fetching KPI dashboard data:", err);
     // For other errors, still show placeholder rather than crashing
     // This prevents redirect loops
     return (

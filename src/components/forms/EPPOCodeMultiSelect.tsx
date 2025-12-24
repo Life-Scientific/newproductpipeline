@@ -125,7 +125,7 @@ export function EPPOCodeMultiSelect({
         } else {
           setSearchResults([]);
         }
-      } catch (error) {
+      } catch (err) {
         error("Error searching EPPO codes:", error);
         setSearchResults([]);
       } finally {
@@ -148,10 +148,10 @@ export function EPPOCodeMultiSelect({
         classification,
         limit: 1000,
       }).then((result) => {
-        if (result.data) {
+        if (result?.data) {
           setAllLoadedCodes((prev) => {
             const newCache = new Map(prev);
-            result.data.forEach((code) => {
+            result.data?.forEach((code) => {
               if (missingIds.includes(code.eppo_code_id)) {
                 newCache.set(code.eppo_code_id, code);
               }

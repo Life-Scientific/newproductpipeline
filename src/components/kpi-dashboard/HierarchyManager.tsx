@@ -102,7 +102,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
         strategicMap.set(core.id, strategic);
       }
       setStrategicDrivers(strategicMap);
-    } catch (error) {
+    } catch (err) {
       error("Error loading hierarchy:", error);
       toast({
         title: "Error",
@@ -128,7 +128,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
       setCoreDriverForm({ label: "", target: "" });
       await loadData();
       onUpdate?.();
-    } catch (error) {
+    } catch (err) {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to create core driver",
@@ -153,7 +153,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
       setCoreDriverForm({ label: "", target: "" });
       await loadData();
       onUpdate?.();
-    } catch (error) {
+    } catch (err) {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update core driver",
@@ -179,7 +179,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
       });
       await loadData();
       onUpdate?.();
-    } catch (error) {
+    } catch (err) {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to delete core driver",
@@ -212,7 +212,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
       setSelectedCoreDriverId("");
       await loadData();
       onUpdate?.();
-    } catch (error) {
+    } catch (err) {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to create strategic driver",
@@ -238,7 +238,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
       setSelectedCoreDriverId("");
       await loadData();
       onUpdate?.();
-    } catch (error) {
+    } catch (err) {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update strategic driver",
@@ -264,7 +264,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
       });
       await loadData();
       onUpdate?.();
-    } catch (error) {
+    } catch (err) {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to delete strategic driver",

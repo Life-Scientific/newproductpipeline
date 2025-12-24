@@ -72,17 +72,10 @@ export {
   getBusinessCaseVersionHistory,
   getBusinessCaseGroupsUsingFormulation,
   getBusinessCaseSummaryByFiscalYear,
-  type BusinessCaseGroupData,
-  type BusinessCaseYearData,
 } from "./business-cases";
 
-export {
-  getFormulations,
-  getFormulationById,
-  getFormulationsWithNestedData,
-  type Formulation,
-  type FormulationWithNestedData,
-} from "./formulations";
+// Note: getFormulations, getFormulationById, getFormulationsWithNestedData
+// are defined directly in this file, not in a separate module
 
 // Import types for use in this file
 import type {
@@ -118,7 +111,7 @@ export async function getFormulations() {
 
   // Early exit for single page results
   if (totalPages <= 1) {
-    const { data, error } = await supabase
+    const { data, error: supabaseError } = await supabase
       .from("vw_formulations_with_ingredients")
       .select("*")
       .order("formulation_code", { ascending: true });
@@ -154,9 +147,6 @@ export async function getFormulations() {
   return allPages.flat() as Formulation[];
 }
 
-    return allData as Formulation[];
-}
-
 // =============================================================================
 // Dashboard Optimization Queries
 // These use pre-aggregated views to minimize data transfer
@@ -185,7 +175,7 @@ export interface DashboardSummary {
 export async function getDashboardSummary(): Promise<DashboardSummary | null> {
   const supabase = await createClient();
 
-    const { data, error } = await supabase
+    const { data, error: supabaseError } = await supabase
       .from("vw_dashboard_summary")
       .select("*")
       .single();
@@ -221,7 +211,7 @@ export interface ChartDataByYear {
 export async function getChartDataByYear(): Promise<ChartDataByYear[]> {
   const supabase = await createClient();
 
-    const { data, error } = await supabase
+    const { data, error: supabaseError } = await supabase
       .from("vw_chart_data_by_year")
       .select("*")
       .order("fiscal_year", { ascending: true });
@@ -251,7 +241,7 @@ export interface ChartYearlyTotals {
 export async function getChartYearlyTotals(): Promise<ChartYearlyTotals[]> {
   const supabase = await createClient();
 
-    const { data, error } = await supabase
+    const { data, error: supabaseError } = await supabase
       .from("vw_chart_data_totals_by_year")
       .select("*")
       .order("fiscal_year", { ascending: true });
@@ -270,7 +260,7 @@ export async function getChartYearlyTotals(): Promise<ChartYearlyTotals[]> {
 
 export async function getBlacklistedFormulations() {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulations")
     .select("*")
     .eq("is_active", false)
@@ -304,7 +294,7 @@ async function fetchAllPaginatedFromView<T>(
 
   // Early exit for single page results
   if (totalPages <= 1) {
-    const { data, error } = await supabase
+    const { data, error: supabaseError } = await supabase
       .from(viewName)
       .select(selectQuery)
       .order(orderBy?.column ?? "id", { ascending: orderBy?.ascending ?? true });
@@ -720,7 +710,7 @@ export async function getFormulationById(id: string) {
 
   // Fallback to view if not found in table (only active formulations)
   // Use limit(1) to ensure we only get one row, then maybeSingle() to handle 0 or 1 row
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_formulations_with_ingredients")
     .select("*")
     .eq("formulation_id", id)
@@ -741,7 +731,7 @@ export async function getFormulationCountryDetails(formulationId: string) {
     return [];
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_formulation_country_detail")
     .select("*")
     .eq("formulation_code", formulation.formulation_code)
@@ -1026,7 +1016,7 @@ export async function getBusinessCases() {
 
   // Early exit for single page results
   if (totalPages <= 1) {
-    const { data, error } = await supabase
+    const { data, error: supabaseError } = await supabase
       .from("vw_business_case")
       .select("*")
       .eq("status", "active")
@@ -1037,8 +1027,8 @@ export async function getBusinessCases() {
       throw new Error(`Failed to fetch business cases: ${error.message}`);
     }
 
-    const data = data || [];
-    const deduplicated = deduplicateBusinessCases(data);
+    const allData = data || [];
+    const deduplicated = deduplicateBusinessCases(allData);
     const enriched = await enrichBusinessCases(deduplicated);
 
     return enriched.filter((bc) => bc.formulation_code && bc.country_name);
@@ -1100,7 +1090,7 @@ export async function getBusinessCasesForChart() {
 
   // Early exit for single page results
   if (totalPages <= 1) {
-    const { data, error } = await supabase
+    const { data, error: supabaseError } = await supabase
       .from("vw_business_case")
       .select(`
         business_case_id,
@@ -1135,8 +1125,9 @@ export async function getBusinessCasesForChart() {
     }
 
     const allData = data || [];
+  }
 
-    // Continue with country_status lookup and enrichment...
+  // Continue with country_status lookup and enrichment...
     // (Rest of the function logic continues below)
 
   // Fetch country_status separately from formulation_country table
@@ -1395,7 +1386,7 @@ export async function getBusinessCaseById(id: string) {
 
 export async function getFormulationIngredients(formulationId: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_ingredients")
     .select(`
       *,
@@ -1431,7 +1422,7 @@ export async function getFormulationBusinessCases(formulationId: string) {
     return [];
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_business_case")
     .select("*")
     .eq("formulation_code", formulation.formulation_code)
@@ -1458,7 +1449,7 @@ export async function getFormulationBusinessCasesForTree(
   }
 
   // Get all business cases for this formulation, including their country/label relationships
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_business_case")
     .select("*")
     .eq("formulation_code", formulation.formulation_code)
@@ -1477,7 +1468,7 @@ export async function getFormulationBusinessCasesForTree(
 
 export async function getFormulationStatusHistory(formulationId: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_status_history")
     .select("*")
     .eq("formulation_id", formulationId)
@@ -1497,7 +1488,7 @@ export async function getFormulationProtectionStatus(formulationId: string) {
     return [];
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_patent_protection_status")
     .select("*")
     .eq("formulation_code", formulation.formulation_code);
@@ -1511,7 +1502,7 @@ export async function getFormulationProtectionStatus(formulationId: string) {
 
 export async function getAllProtectionStatus() {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_patent_protection_status")
     .select("*");
 
@@ -1529,7 +1520,7 @@ export async function getFormulationUseGroups(formulationId: string) {
     return [];
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_formulation_country_use_group")
     .select("*")
     .eq("formulation_code", formulation.formulation_code)
@@ -1915,7 +1906,7 @@ export async function getBusinessCaseGroup(
   const supabase = await createClient();
 
   // Get ALL records in the group (including duplicates) to handle edge cases
-  const { data: allData, error } = await supabase
+  const { data: allData, error: supabaseError } = await supabase
     .from("vw_business_case")
     .select("*")
     .eq("business_case_group_id", groupId)
@@ -2136,7 +2127,7 @@ export async function getBusinessCaseVersionHistory(
 
 export async function getRevenueProjections() {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_business_case")
     .select("*")
     .eq("status", "active") // Only show active versions, exclude superseded
@@ -2155,7 +2146,7 @@ export async function getRevenueProjections() {
 export async function getFormulationCountryById(formulationCountryId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_formulation_country_detail")
     .select("*")
     .eq("formulation_country_id", formulationCountryId)
@@ -2191,7 +2182,7 @@ export async function getFormulationCountryById(formulationCountryId: string) {
 export async function getFormulationCropsLegacy(formulationId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_crops")
     .select("crop_id, notes")
     .eq("formulation_id", formulationId);
@@ -2224,7 +2215,7 @@ export async function getFormulationCropsLegacy(formulationId: string) {
 export async function getFormulationTargetsLegacy(formulationId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("formulation_targets")
     .select("target_id, notes")
     .eq("formulation_id", formulationId);
@@ -2541,7 +2532,7 @@ export async function getBusinessCaseGroupsUsingFormulation(
   }
 
   // Get business cases for this formulation + country
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_business_case")
     .select("business_case_group_id, formulation_id, country_id")
     .eq("formulation_code", formulation.formulation_code)
@@ -2580,7 +2571,7 @@ export async function getBusinessCaseGroupsUsingFormulation(
 export async function getFormulationCountries() {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_formulation_country_detail")
     .select("*")
     .order("formulation_code", { ascending: true })

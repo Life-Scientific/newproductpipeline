@@ -33,7 +33,7 @@ export interface WorkspaceWithMenuItems extends Workspace {
 export async function getWorkspaces(): Promise<Workspace[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("workspaces")
     .select("*")
     .eq("is_active", true)
@@ -51,7 +51,7 @@ export async function getWorkspaceBySlug(
 ): Promise<Workspace | null> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("workspaces")
     .select("*")
     .eq("slug", slug)
@@ -79,7 +79,7 @@ export async function getWorkspaceWithMenuBySlug(
   const supabase = await createClient();
 
   // Single query with nested select for menu items
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("workspaces")
     .select(`
       *,
@@ -218,7 +218,7 @@ export async function getUserDefaultWorkspace(): Promise<Workspace | null> {
     return null;
   }
 
-  const { data: preference, error } = await supabase
+  const { data: preference, error: supabaseError } = await supabase
     .from("user_workspace_preferences")
     .select("workspace_id")
     .eq("user_id", user.id)
@@ -264,7 +264,7 @@ export async function setUserDefaultWorkspace(
     .eq("user_id", user.id);
 
   // Then set the new default (upsert)
-  const { error } = await supabase.from("user_workspace_preferences").upsert({
+  const { error: supabaseError } = await supabase.from("user_workspace_preferences").upsert({
     user_id: user.id,
     workspace_id: workspaceId,
     is_default: true,
@@ -331,7 +331,7 @@ export async function toggleMenuItemVisibility(
     throw new Error("Unauthorized: Admin or Editor access required");
   }
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("workspace_menu_items")
     .update({ is_active: isActive, updated_at: new Date().toISOString() })
     .eq("menu_item_id", menuItemId);

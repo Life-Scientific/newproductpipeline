@@ -21,15 +21,15 @@ export async function GET(
     }
 
     // Get use groups with crops
-    const { data: useGroups, error } = await supabase
+    const { data: useGroups, error: supabaseError } = await supabase
       .from("vw_formulation_country_use_group")
       .select("*")
       .eq("formulation_code", formulation.formulation_code)
       .order("country_name", { ascending: true })
       .order("use_group_name", { ascending: true });
 
-    if (error) {
-      throw error;
+    if (supabaseError) {
+      throw supabaseError;
     }
 
     // Fetch crops for each use group using EPPO codes

@@ -394,9 +394,9 @@ export function BusinessCaseModal({
         .select("formulation_id")
         .eq("country_id", formData.country_id)
         .eq("is_active", true)
-        .then(({ data: fcData, error }) => {
-          if (error) {
-            error("Failed to load formulation countries:", error);
+        .then(({ data: fcData, error: supabaseError }) => {
+          if (supabaseError) {
+            error("Failed to load formulation countries:", supabaseError);
             setFormulations([]);
             return;
           }

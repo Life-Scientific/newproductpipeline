@@ -40,7 +40,7 @@ export async function createFormulation(formData: FormData) {
     };
   }
 
-  const { data, error } = await supabase
+  const { data, error: insertError } = await supabase
     .from("formulations")
     .insert({
       formulation_name: formulationName,
@@ -55,8 +55,8 @@ export async function createFormulation(formData: FormData) {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (insertError) {
+    return { error: insertError.message };
   }
 
   // Handle ingredients - REQUIRED
@@ -225,15 +225,15 @@ export async function updateFormulation(
       // The trigger will log this with the correct user context
     }
 
-    const { data, error } = await supabase
+    const { data, error: updateError } = await supabase
       .from("formulations")
       .update(updateData)
       .eq("formulation_id", formulationId)
       .select()
       .single();
 
-    if (error) {
-      return { error: error.message };
+    if (updateError) {
+      return { error: updateError.message };
     }
 
     return { data };
@@ -347,13 +347,13 @@ export async function deleteFormulation(formulationId: string) {
     };
   }
 
-  const { error } = await supabase
+  const { error: deleteError } = await supabase
     .from("formulations")
     .delete()
     .eq("formulation_id", formulationId);
 
-  if (error) {
-    return { error: error.message };
+  if (deleteError) {
+    return { error: deleteError.message };
   }
 
   // Revalidate paths for fresh data
@@ -384,14 +384,14 @@ export async function addFormulationCrop(
 
   const supabase = await createClient();
 
-  const { error } = await supabase.from("formulation_eppo_crops").insert({
+  const { error: insertError } = await supabase.from("formulation_eppo_crops").insert({
     formulation_id: formulationId,
     eppo_code_id: cropId,
     notes: notes || null,
   });
 
-  if (error) {
-    return { error: error.message };
+  if (insertError) {
+    return { error: insertError.message };
   }
 
   revalidatePath(`/formulations/${formulationId}`);
@@ -426,14 +426,14 @@ export async function removeFormulationCrop(
 
   if (!fcRecords || fcRecords.length === 0) {
     // No formulation countries, safe to delete
-    const { error } = await supabase
+    const { error: deleteError } = await supabase
       .from("formulation_eppo_crops")
       .delete()
       .eq("formulation_id", formulationId)
       .eq("eppo_code_id", cropId);
 
-    if (error) {
-      return { error: error.message };
+    if (deleteError) {
+      return { error: deleteError.message };
     }
 
     revalidatePath(`/formulations/${formulationId}`);
@@ -465,14 +465,14 @@ export async function removeFormulationCrop(
     }
   }
 
-  const { error } = await supabase
+  const { error: deleteError } = await supabase
     .from("formulation_eppo_crops")
     .delete()
     .eq("formulation_id", formulationId)
     .eq("eppo_code_id", cropId);
 
-  if (error) {
-    return { error: error.message };
+  if (deleteError) {
+    return { error: deleteError.message };
   }
 
   revalidatePath(`/formulations/${formulationId}`);
@@ -500,14 +500,14 @@ export async function addFormulationTarget(
 
   const supabase = await createClient();
 
-  const { error } = await supabase.from("formulation_eppo_targets").insert({
+  const { error: insertError } = await supabase.from("formulation_eppo_targets").insert({
     formulation_id: formulationId,
     eppo_code_id: targetId,
     notes: notes || null,
   });
 
-  if (error) {
-    return { error: error.message };
+  if (insertError) {
+    return { error: insertError.message };
   }
 
   revalidatePath(`/formulations/${formulationId}`);
@@ -542,14 +542,14 @@ export async function removeFormulationTarget(
 
   if (!fcRecords || fcRecords.length === 0) {
     // No formulation countries, safe to delete
-    const { error } = await supabase
+    const { error: deleteError } = await supabase
       .from("formulation_eppo_targets")
       .delete()
       .eq("formulation_id", formulationId)
       .eq("eppo_code_id", targetId);
 
-    if (error) {
-      return { error: error.message };
+    if (deleteError) {
+      return { error: deleteError.message };
     }
 
     revalidatePath(`/formulations/${formulationId}`);
@@ -581,14 +581,14 @@ export async function removeFormulationTarget(
     }
   }
 
-  const { error } = await supabase
+  const { error: deleteError } = await supabase
     .from("formulation_eppo_targets")
     .delete()
     .eq("formulation_id", formulationId)
     .eq("eppo_code_id", targetId);
 
-  if (error) {
-    return { error: error.message };
+  if (deleteError) {
+    return { error: deleteError.message };
   }
 
   revalidatePath(`/formulations/${formulationId}`);

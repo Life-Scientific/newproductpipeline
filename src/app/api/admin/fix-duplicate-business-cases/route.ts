@@ -9,12 +9,12 @@ export async function GET() {
   try {
     const result = await findDuplicateActiveBusinessCases();
     return NextResponse.json(result);
-  } catch (error) {
-    error("Error finding duplicates:", error);
+  } catch (err) {
+    error("Error finding duplicates:", err);
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Failed to find duplicates",
+          err instanceof Error ? err.message : "Failed to find duplicates",
       },
       { status: 500 },
     );
@@ -25,12 +25,12 @@ export async function POST() {
   try {
     const result = await fixDuplicateActiveBusinessCases();
     return NextResponse.json(result);
-  } catch (error) {
-    error("Error fixing duplicates:", error);
+  } catch (err) {
+    error("Error fixing duplicates:", err);
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Failed to fix duplicates",
+          err instanceof Error ? err.message : "Failed to fix duplicates",
       },
       { status: 500 },
     );

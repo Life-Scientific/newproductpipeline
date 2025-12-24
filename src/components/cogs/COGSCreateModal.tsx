@@ -135,7 +135,7 @@ export function COGSCreateModal({
           title: "Existing COGS Found",
           description:
             "Opening existing COGS in edit mode. Updates will create a new version.",
-          duration: 5000,
+          variant: "success",
         });
       } else {
         // No existing COGS - create mode

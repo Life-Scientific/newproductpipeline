@@ -215,7 +215,7 @@ export function ChemicalEnrichment({
 }: ChemicalEnrichmentProps) {
   const [data, setData] = useState<PubChemEnrichmentData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -228,7 +228,7 @@ export function ChemicalEnrichment({
     async function fetchEnrichmentData() {
       if (!mountedRef.current) return;
       setIsLoading(true);
-      setError(null);
+      setFetchError(null);
 
       try {
         const casQuery = casNumber.replace(/-/g, "");
@@ -368,7 +368,7 @@ export function ChemicalEnrichment({
         if (mountedRef.current) setData(enrichmentData);
       } catch (err) {
         if (mountedRef.current) {
-          setError(err instanceof Error ? err.message : "Failed to fetch");
+          setFetchError(err instanceof Error ? err.message : "Failed to fetch");
           error("PubChem error:", err);
         }
       } finally {
@@ -405,7 +405,7 @@ export function ChemicalEnrichment({
     );
   }
 
-  if (!data && error) {
+  if (!data && fetchError) {
     return (
       <Card>
         <CardContent className="pt-6">

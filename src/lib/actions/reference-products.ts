@@ -8,7 +8,7 @@ import { PERMISSIONS } from "@/lib/permissions";
 
 export async function getReferenceProducts() {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("reference_products")
     .select("*")
     .eq("is_active", true)
@@ -50,7 +50,7 @@ export async function createReferenceProduct(formData: FormData) {
     return { error: "Product name is required" };
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("reference_products")
     .insert({
       product_name: productName,
@@ -64,8 +64,8 @@ export async function createReferenceProduct(formData: FormData) {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -115,15 +115,15 @@ export async function updateReferenceProduct(
   if (notes !== null) updateData.notes = notes;
   updateData.is_active = isActive;
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("reference_products")
     .update(updateData)
     .eq("reference_product_id", referenceProductId)
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -142,13 +142,13 @@ export async function deleteReferenceProduct(referenceProductId: string) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .from("reference_products")
     .delete()
     .eq("reference_product_id", referenceProductId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");

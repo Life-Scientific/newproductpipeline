@@ -133,7 +133,7 @@ export function FormulationForm({
       if (data) {
         setAvailableIngredients(data);
       }
-    } catch (error) {
+    } catch (err) {
       error("Failed to load ingredients:", error);
     }
   };
@@ -141,7 +141,7 @@ export function FormulationForm({
   const loadExistingIngredients = async () => {
     if (!formulation) return;
     try {
-      const { data: existingIngredients, error } = await supabase
+      const { data: existingIngredients, error: supabaseError } = await supabase
         .from("formulation_ingredients")
         .select(`
           *,
@@ -153,8 +153,8 @@ export function FormulationForm({
         `)
         .eq("formulation_id", formulation.formulation_id);
 
-      if (error) {
-        error("Failed to load ingredients:", error);
+      if (supabaseError) {
+        error("Failed to load ingredients:", supabaseError);
         return;
       }
 
@@ -168,7 +168,7 @@ export function FormulationForm({
         notes: ing.notes || "",
       }));
       setIngredients(ingredientInputs);
-    } catch (error) {
+    } catch (err) {
       error("Failed to load ingredients:", error);
     }
   };
@@ -308,7 +308,6 @@ export function FormulationForm({
               title: "Duplicate Product Detected",
               description: action.error,
               variant: "destructive",
-              duration: 10000,
             });
           } else {
             toast({
@@ -335,7 +334,7 @@ export function FormulationForm({
           if (onSuccess) onSuccess();
           // No router.refresh() - revalidatePath in server action handles cache invalidation
         }
-      } catch (error) {
+      } catch (err) {
         toast({
           title: "Error",
           description: "An unexpected error occurred",

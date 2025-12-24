@@ -82,7 +82,7 @@ export function FuzzySearchMultiSelect({
               });
               setLoadedItems(newCache);
             }
-          } catch (error) {
+          } catch (err) {
             error("Error preloading items:", error);
           } finally {
             setIsSearching(false);
@@ -112,7 +112,7 @@ export function FuzzySearchMultiSelect({
         } else {
           setSearchResults([]);
         }
-      } catch (error) {
+      } catch (err) {
         error("Error searching:", error);
         setSearchResults([]);
       } finally {

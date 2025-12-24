@@ -20,7 +20,7 @@ export async function GET() {
 
     // Return the image URL
     return NextResponse.json({ imageUrl });
-  } catch (error) {
+  } catch (err) {
     error("Error fetching Unsplash image:", error);
     // Return a fallback gradient color
     return NextResponse.json(

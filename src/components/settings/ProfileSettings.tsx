@@ -27,7 +27,7 @@ export function ProfileSettings() {
           data: { session },
         } = await supabase.auth.getSession();
         setUser(session?.user ?? null);
-      } catch (error) {
+      } catch (err) {
         error("Failed to load user:", error);
       } finally {
         setIsLoading(false);

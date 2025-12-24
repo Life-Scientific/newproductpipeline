@@ -39,7 +39,7 @@ export function MenuVisibilitySettings() {
           currentWorkspace.workspace_id,
         );
         setMenuItems(items);
-      } catch (error) {
+      } catch (err) {
         error("Failed to load menu items:", error);
         toast({
           title: "Error",
@@ -73,7 +73,7 @@ export function MenuVisibilitySettings() {
         title: "Success",
         description: "Menu visibility updated",
       });
-    } catch (error) {
+    } catch (err) {
       error("Failed to toggle menu item:", error);
       toast({
         title: "Error",

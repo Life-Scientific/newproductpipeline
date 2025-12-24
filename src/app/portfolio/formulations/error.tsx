@@ -14,15 +14,15 @@ import { AlertTriangle, RefreshCw, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function FormulationsError({
-  error,
+  error: err,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
   useEffect(() => {
-    error("Formulations error:", error);
-  }, [error]);
+    error("Formulations error:", err);
+  }, [err]);
 
   return (
     <div className="flex items-center justify-center min-h-[60vh] p-4">
@@ -42,7 +42,7 @@ export default function FormulationsError({
           {process.env.NODE_ENV === "development" && (
             <div className="p-3 bg-muted rounded-md">
               <p className="text-sm font-mono text-destructive break-all">
-                {error.message}
+                {err.message}
               </p>
             </div>
           )}

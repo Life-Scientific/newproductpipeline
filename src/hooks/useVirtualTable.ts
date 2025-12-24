@@ -72,7 +72,6 @@ export function useVirtualTable<T>({
     getScrollElement: () => parentRef.current,
     estimateSize: () => estimateSize,
     overscan: overscan,
-    initialScrollOffset: 0,
   });
 
   const virtualItems = virtualizer.getVirtualItems();
@@ -97,8 +96,8 @@ export function useVirtualTable<T>({
       virtualizer.scrollToIndex(index, { align }),
     /** Scroll to a specific offset */
     scrollToOffset: (offset: number) => virtualizer.scrollToOffset(offset),
-    /** Measure a specific item's size */
-    measureElement: (index: number) => virtualizer.measureElement(index),
+    /** Measure a specific item's size - pass the DOM element */
+    measureElement: (element: Element) => virtualizer.measureElement(element),
     /** Check if an index is currently visible */
     isIndexVisible: (index: number) => {
       const firstVisible = virtualItems[0]?.index ?? -1;

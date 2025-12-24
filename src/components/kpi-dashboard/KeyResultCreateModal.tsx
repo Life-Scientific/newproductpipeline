@@ -108,7 +108,7 @@ export function KeyResultCreateModal({
 
       onOpenChange(false);
       onSuccess();
-    } catch (error) {
+    } catch (err) {
       error("Error creating key result:", error);
       toast({
         title: "Error",

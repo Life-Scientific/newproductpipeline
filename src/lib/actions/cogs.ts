@@ -588,7 +588,7 @@ async function cascadeBusinessCaseUpdatesFromCOGS(
 export async function getCOGSGroupAction(groupId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("vw_cogs")
     .select("*")
     .eq("cogs_group_id", groupId)

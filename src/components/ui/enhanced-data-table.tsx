@@ -648,9 +648,10 @@ export function EnhancedDataTable<TData, TValue>({
   );
 
   // Handle column reordering - passed to DndTable component
+  // Directly call saveSettings like the table's onColumnOrderChange does
   const handleColumnOrderChange = React.useCallback((newOrder: string[]) => {
-    setColumnOrder(newOrder);
-  }, []);
+    saveSettings({ columnOrder: newOrder });
+  }, [saveSettings]);
 
   // Memoize sticky column calculations - only calculate if sticky columns exist
   // Cache column widths to avoid recalculating

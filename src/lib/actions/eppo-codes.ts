@@ -71,8 +71,8 @@ export async function searchEPPOCodes(params: {
 
   const { data, error } = await query;
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   // Sort results by relevance (exact matches first, then partial matches)
@@ -116,8 +116,8 @@ export async function getEPPOCodeById(eppoCodeId: string) {
     .eq("eppo_code_id", eppoCodeId)
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   return { data, success: true };
@@ -133,8 +133,8 @@ export async function getEPPOCodeChildren(eppoCode: string) {
     .eq("is_active", true)
     .order("display_name", { ascending: true });
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   return { data, success: true };
@@ -164,8 +164,8 @@ export async function addFormulationCrop(params: {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -197,8 +197,8 @@ export async function updateFormulationCrop(params: {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -217,8 +217,8 @@ export async function removeFormulationCrop(
     .eq("formulation_id", formulationId)
     .eq("eppo_code_id", eppoCodeId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -233,8 +233,8 @@ export async function getFormulationCrops(formulationId: string) {
     f_id: formulationId,
   });
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   return { data, success: true };
@@ -264,8 +264,8 @@ export async function addFormulationTarget(params: {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -297,8 +297,8 @@ export async function updateFormulationTarget(params: {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -317,8 +317,8 @@ export async function removeFormulationTarget(
     .eq("formulation_id", formulationId)
     .eq("eppo_code_id", eppoCodeId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -332,8 +332,8 @@ export async function getFormulationTargets(formulationId: string) {
     f_id: formulationId,
   });
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   return { data, success: true };
@@ -363,8 +363,8 @@ export async function addUseGroupCrop(params: {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -397,8 +397,8 @@ export async function updateUseGroupCrop(params: {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -417,8 +417,8 @@ export async function removeUseGroupCrop(
     .eq("formulation_country_use_group_id", useGroupId)
     .eq("eppo_code_id", eppoCodeId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -432,8 +432,8 @@ export async function getUseGroupCrops(useGroupId: string) {
     ug_id: useGroupId,
   });
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   return { data, success: true };
@@ -465,8 +465,8 @@ export async function addUseGroupTarget(params: {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -501,8 +501,8 @@ export async function updateUseGroupTarget(params: {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -521,8 +521,8 @@ export async function removeUseGroupTarget(
     .eq("formulation_country_use_group_id", useGroupId)
     .eq("eppo_code_id", eppoCodeId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/formulations");
@@ -536,8 +536,8 @@ export async function getUseGroupTargets(useGroupId: string) {
     ug_id: useGroupId,
   });
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   return { data, success: true };
@@ -565,8 +565,8 @@ export async function addReferenceProductCrop(params: {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -596,8 +596,8 @@ export async function updateReferenceProductCrop(params: {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -616,8 +616,8 @@ export async function removeReferenceProductCrop(
     .eq("reference_product_id", referenceProductId)
     .eq("eppo_code_id", eppoCodeId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -646,8 +646,8 @@ export async function addReferenceProductTarget(params: {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -677,8 +677,8 @@ export async function updateReferenceProductTarget(params: {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -697,8 +697,8 @@ export async function removeReferenceProductTarget(
     .eq("reference_product_id", referenceProductId)
     .eq("eppo_code_id", eppoCodeId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -716,8 +716,8 @@ export async function getFormulationCountryCrops(formulationCountryId: string) {
     fc_id: formulationCountryId,
   });
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   return { data, success: true };
@@ -733,8 +733,8 @@ export async function getFormulationCountryTargets(
     { fc_id: formulationCountryId },
   );
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   return { data, success: true };
@@ -757,8 +757,8 @@ export async function getFormulationCropsAudit(
     .order("changed_at", { ascending: false })
     .limit(limit);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   return { data, success: true };
@@ -777,8 +777,8 @@ export async function getFormulationTargetsAudit(
     .order("changed_at", { ascending: false })
     .limit(limit);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   return { data, success: true };

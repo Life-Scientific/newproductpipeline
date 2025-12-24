@@ -14,7 +14,7 @@ import { AlertTriangle, RefreshCw, ArrowLeft, Bug } from "lucide-react";
 import Link from "next/link";
 
 export default function PortfolioError({
-  error,
+  error: err,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -22,14 +22,14 @@ export default function PortfolioError({
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    error("Portfolio error:", error);
-  }, [error]);
+    error("Portfolio error:", err);
+  }, [err]);
 
   // Determine if it's a data fetch error
   const isDataError =
-    error.message.toLowerCase().includes("fetch") ||
-    error.message.toLowerCase().includes("network") ||
-    error.message.toLowerCase().includes("supabase");
+    err.message.toLowerCase().includes("fetch") ||
+    err.message.toLowerCase().includes("network") ||
+    err.message.toLowerCase().includes("supabase");
 
   return (
     <div className="flex items-center justify-center min-h-[60vh] p-4">
@@ -56,11 +56,11 @@ export default function PortfolioError({
                 <span>Development Error Details</span>
               </div>
               <p className="text-sm font-mono text-destructive break-all">
-                {error.message}
+                {err.message}
               </p>
-              {error.digest && (
+              {err.digest && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  Digest: {error.digest}
+                  Digest: {err.digest}
                 </p>
               )}
             </div>

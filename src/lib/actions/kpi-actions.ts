@@ -108,15 +108,15 @@ export async function updateKeyResult(
     updateData.justification = data.justification;
   if (data.notes !== undefined) updateData.notes = data.notes;
 
-  const { error } = await supabase
+  const { error: updateError } = await supabase
     .schema("operations")
     .from("kpi_key_results")
     .update(updateData)
     .eq("id", id);
 
-  if (error) {
-    error("Error updating key result:", error);
-    throw error;
+  if (updateError) {
+    error("Error updating key result:", updateError);
+    throw updateError;
   }
 
   // Log audit entries for changed fields
@@ -167,16 +167,16 @@ export async function createKeyResult(data: KeyResultInput) {
     notes: data.notes || null,
   };
 
-  const { data: result, error } = await supabase
+  const { data: result, error: insertError } = await supabase
     .schema("operations")
     .from("kpi_key_results")
     .insert(insertData)
     .select()
     .single();
 
-  if (error) {
-    error("Error creating key result:", error);
-    throw error;
+  if (insertError) {
+    error("Error creating key result:", insertError);
+    throw insertError;
   }
 
   // Create default data source
@@ -207,15 +207,15 @@ export async function deleteKeyResult(id: string) {
     throw new Error("You do not have permission to delete KPIs");
   }
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_key_results")
     .delete()
     .eq("id", id);
 
-  if (error) {
-    error("Error deleting key result:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error deleting key result:", supabaseError);
+    throw supabaseError;
   }
 
   await logAudit("key_result", id, "delete");
@@ -259,7 +259,7 @@ export async function toggleLock(id: string) {
 
   const newLockStatus = !current.is_locked;
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_key_results")
     .update({
@@ -269,9 +269,9 @@ export async function toggleLock(id: string) {
     })
     .eq("id", id);
 
-  if (error) {
-    error("Error toggling lock:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error toggling lock:", supabaseError);
+    throw supabaseError;
   }
 
   await logAudit(
@@ -300,7 +300,7 @@ export async function createCoreDriver(data: CoreDriverInput) {
     throw new Error("You do not have permission to manage hierarchy");
   }
 
-  const { data: result, error } = await supabase
+  const { data: result, error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_core_drivers")
     .insert({
@@ -311,9 +311,9 @@ export async function createCoreDriver(data: CoreDriverInput) {
     .select()
     .single();
 
-  if (error) {
-    error("Error creating core driver:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error creating core driver:", supabaseError);
+    throw supabaseError;
   }
 
   await logAudit("core_driver", result.id, "create");
@@ -344,15 +344,15 @@ export async function updateCoreDriver(id: string, data: Partial<CoreDriverInput
   if (data.target !== undefined) updateData.target = data.target;
   if (data.sort_order !== undefined) updateData.sort_order = data.sort_order;
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_core_drivers")
     .update(updateData)
     .eq("id", id);
 
-  if (error) {
-    error("Error updating core driver:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error updating core driver:", supabaseError);
+    throw supabaseError;
   }
 
   await logAudit("core_driver", id, "update");
@@ -374,15 +374,15 @@ export async function deleteCoreDriver(id: string) {
     throw new Error("You do not have permission to manage hierarchy");
   }
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_core_drivers")
     .delete()
     .eq("id", id);
 
-  if (error) {
-    error("Error deleting core driver:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error deleting core driver:", supabaseError);
+    throw supabaseError;
   }
 
   await logAudit("core_driver", id, "delete");
@@ -404,7 +404,7 @@ export async function createStrategicDriver(data: StrategicDriverInput) {
     throw new Error("You do not have permission to manage hierarchy");
   }
 
-  const { data: result, error } = await supabase
+  const { data: result, error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_strategic_drivers")
     .insert({
@@ -415,9 +415,9 @@ export async function createStrategicDriver(data: StrategicDriverInput) {
     .select()
     .single();
 
-  if (error) {
-    error("Error creating strategic driver:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error creating strategic driver:", supabaseError);
+    throw supabaseError;
   }
 
   await logAudit("strategic_driver", result.id, "create");
@@ -452,15 +452,15 @@ export async function updateStrategicDriver(
     updateData.core_driver_id = data.core_driver_id;
   if (data.sort_order !== undefined) updateData.sort_order = data.sort_order;
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_strategic_drivers")
     .update(updateData)
     .eq("id", id);
 
-  if (error) {
-    error("Error updating strategic driver:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error updating strategic driver:", supabaseError);
+    throw supabaseError;
   }
 
   await logAudit("strategic_driver", id, "update");
@@ -482,15 +482,15 @@ export async function deleteStrategicDriver(id: string) {
     throw new Error("You do not have permission to manage hierarchy");
   }
 
-  const { error } = await supabase
+  const { error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_strategic_drivers")
     .delete()
     .eq("id", id);
 
-  if (error) {
-    error("Error deleting strategic driver:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error deleting strategic driver:", supabaseError);
+    throw supabaseError;
   }
 
   await logAudit("strategic_driver", id, "delete");
@@ -524,15 +524,15 @@ export async function reorderItems(
 
   // Update each item's sort_order
   for (const item of items) {
-    const { error } = await supabase
+    const { error: supabaseError } = await supabase
       .schema("operations")
       .from(tableName)
       .update({ sort_order: item.sort_order })
       .eq("id", item.id);
 
-    if (error) {
-      error(`Error reordering ${type}:`, error);
-      throw error;
+    if (supabaseError) {
+      supabaseError(`Error reordering ${type}:`, supabaseError);
+      throw supabaseError;
     }
   }
 
@@ -555,7 +555,7 @@ export async function getAuditLogAction(
     throw new Error("You do not have permission to view audit logs");
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_audit_log")
     .select("*")
@@ -564,9 +564,9 @@ export async function getAuditLogAction(
     .order("created_at", { ascending: false })
     .limit(100);
 
-  if (error) {
-    error("Error fetching audit log:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error fetching audit log:", supabaseError);
+    throw supabaseError;
   }
 
   return (data || []).map((row) => ({
@@ -589,15 +589,15 @@ export async function getAuditLogAction(
 export async function getCoreDriversAction() {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_core_drivers")
     .select("*")
     .order("sort_order", { ascending: true });
 
-  if (error) {
-    error("Error fetching core drivers:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error fetching core drivers:", supabaseError);
+    throw supabaseError;
   }
 
   return (data || []) as Array<{
@@ -628,9 +628,9 @@ export async function getStrategicDriversAction(coreDriverId?: string) {
 
   const { data, error } = await query;
 
-  if (error) {
-    error("Error fetching strategic drivers:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error fetching strategic drivers:", supabaseError);
+    throw supabaseError;
   }
 
   return (data || []) as Array<{

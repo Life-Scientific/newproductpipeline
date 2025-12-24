@@ -56,7 +56,7 @@ export function InviteUserModal({
         } else if (rolesData.length > 0) {
           setSelectedRole(rolesData[0].role_name);
         }
-      } catch (error) {
+      } catch (err) {
         error("Failed to load roles:", error);
       } finally {
         setLoadingRoles(false);
@@ -93,7 +93,7 @@ export function InviteUserModal({
         onOpenChange(false);
         onSuccess?.();
       }
-    } catch (error) {
+    } catch (err) {
       const message =
         error instanceof Error ? error.message : "Failed to send invitation";
       toast({

@@ -2,7 +2,7 @@
 
 import { toast } from "sonner";
 
-type ToastVariant = "default" | "destructive" | "success";
+type ToastVariant = "default" | "destructive" | "success" | "error";
 
 interface ToastOptions {
   title?: string;

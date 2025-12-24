@@ -24,7 +24,7 @@ export async function revalidateAllCaches(): Promise<{
       success: true,
       message: "Routes refreshed. Data will reload on next navigation.",
     };
-  } catch (error) {
+  } catch (err) {
     error("Failed to revalidate routes:", error);
     return {
       success: false,

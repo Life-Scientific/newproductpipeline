@@ -14,15 +14,15 @@ import { AlertTriangle, RefreshCw, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function BusinessCasesError({
-  error,
+  error: err,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
   useEffect(() => {
-    error("Business cases error:", error);
-  }, [error]);
+    error("Business cases error:", err);
+  }, [err]);
 
   return (
     <div className="flex items-center justify-center min-h-[60vh] p-4">
@@ -44,7 +44,7 @@ export default function BusinessCasesError({
           {process.env.NODE_ENV === "development" && (
             <div className="p-3 bg-muted rounded-md">
               <p className="text-sm font-mono text-destructive break-all">
-                {error.message}
+                {err.message}
               </p>
             </div>
           )}

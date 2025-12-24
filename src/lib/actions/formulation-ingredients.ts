@@ -31,12 +31,12 @@ export async function createFormulationIngredients(
     notes: ing.notes || null,
   }));
 
-  const { error } = await supabase
+  const { error: insertError } = await supabase
     .from("formulation_ingredients")
     .insert(ingredientInserts);
 
-  if (error) {
-    return { error: error.message };
+  if (insertError) {
+    return { error: insertError.message };
   }
 
   // Trigger code generation by calling the database function
@@ -154,13 +154,13 @@ export async function updateFormulationIngredients(
 export async function deleteFormulationIngredient(ingredientId: string) {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { error: deleteError } = await supabase
     .from("formulation_ingredients")
     .delete()
     .eq("formulation_ingredient_id", ingredientId);
 
-  if (error) {
-    return { error: error.message };
+  if (deleteError) {
+    return { error: deleteError.message };
   }
 
   // Revalidate paths for fresh data

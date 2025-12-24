@@ -10,13 +10,13 @@ export async function GET(
   const supabase = await createClient();
 
   // Look up the short URL
-  const { data: shortUrl, error } = await supabase
+  const { data: shortUrl, error: supabaseError } = await supabase
     .from("short_urls")
     .select("id, destination_url, is_public, created_by")
     .eq("slug", slug)
     .single();
 
-  if (error || !shortUrl) {
+  if (supabaseError || !shortUrl) {
     return new NextResponse("Short URL not found", { status: 404 });
   }
 

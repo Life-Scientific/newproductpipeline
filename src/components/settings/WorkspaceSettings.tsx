@@ -33,7 +33,7 @@ export function WorkspaceSettings() {
       try {
         const data = await getWorkspaces();
         setWorkspaces(data);
-      } catch (error) {
+      } catch (err) {
         error("Failed to load workspaces:", error);
         toast({
           title: "Error",
@@ -62,7 +62,7 @@ export function WorkspaceSettings() {
         title: "Success",
         description: "Default workspace updated",
       });
-    } catch (error) {
+    } catch (err) {
       error("Failed to set default workspace:", error);
       toast({
         title: "Error",

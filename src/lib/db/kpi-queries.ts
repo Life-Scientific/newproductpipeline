@@ -34,7 +34,7 @@ export async function getKPIDashboardData(): Promise<KPIData> {
     throw new Error("Unauthorized: kpi.view permission required");
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .schema("operations")
     .from("vw_kpi_dashboard")
     .select("*")
@@ -42,9 +42,9 @@ export async function getKPIDashboardData(): Promise<KPIData> {
     .order("sd_sort", { ascending: true })
     .order("kr_sort", { ascending: true });
 
-  if (error) {
-    error("Error fetching KPI dashboard data:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error fetching KPI dashboard data:", supabaseError);
+    throw supabaseError;
   }
 
   const rows = (data || []) as KPIDashboardViewRow[];
@@ -119,15 +119,15 @@ export async function getKPIDashboardData(): Promise<KPIData> {
 export async function getCoreDrivers(): Promise<CoreDriverRow[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_core_drivers")
     .select("*")
     .order("sort_order", { ascending: true });
 
-  if (error) {
-    error("Error fetching core drivers:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error fetching core drivers:", supabaseError);
+    throw supabaseError;
   }
 
   return (data || []) as CoreDriverRow[];
@@ -153,9 +153,9 @@ export async function getStrategicDrivers(
 
   const { data, error } = await query;
 
-  if (error) {
-    error("Error fetching strategic drivers:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error fetching strategic drivers:", supabaseError);
+    throw supabaseError;
   }
 
   return (data || []) as StrategicDriverRow[];
@@ -167,7 +167,7 @@ export async function getStrategicDrivers(
 export async function getKeyResultById(id: string): Promise<KeyResultRow | null> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_key_results")
     .select("*")
@@ -195,7 +195,7 @@ export async function getAuditLog(
 ): Promise<AuditLogEntry[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .schema("operations")
     .from("kpi_audit_log")
     .select("*")
@@ -204,9 +204,9 @@ export async function getAuditLog(
     .order("created_at", { ascending: false })
     .limit(100);
 
-  if (error) {
-    error("Error fetching audit log:", error);
-    throw error;
+  if (supabaseError) {
+    supabaseError("Error fetching audit log:", supabaseError);
+    throw supabaseError;
   }
 
   const rows = (data || []) as AuditLogRow[];

@@ -33,10 +33,10 @@ export async function searchFormulations(params: {
     query = query.limit(100);
   }
 
-  const { data, error } = await query;
+  const { data, error: supabaseError } = await query;
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { error: supabaseError.message };
   }
 
   // Sort by relevance if search term provided
@@ -101,10 +101,10 @@ export async function searchCountries(params: {
     query = query.limit(200);
   }
 
-  const { data, error } = await query;
+  const { data, error: supabaseError } = await query;
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { error: supabaseError.message };
   }
 
   // Sort by relevance if search term provided
@@ -195,10 +195,10 @@ export async function searchUseGroups(params: {
     query = query.limit(200);
   }
 
-  const { data, error } = await query;
+  const { data, error: supabaseError } = await query;
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { error: supabaseError.message };
   }
 
   // Sort by relevance if search term provided
@@ -286,10 +286,10 @@ export async function searchFormulationCountries(params: {
     query = query.limit(200);
   }
 
-  const { data, error } = await query;
+  const { data, error: supabaseError } = await query;
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { error: supabaseError.message };
   }
 
   // Sort by relevance if search term provided
@@ -350,10 +350,10 @@ export async function searchIngredients(params: {
     query = query.limit(200);
   }
 
-  const { data, error } = await query;
+  const { data, error: supabaseError } = await query;
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { error: supabaseError.message };
   }
 
   // Sort by relevance if search term provided

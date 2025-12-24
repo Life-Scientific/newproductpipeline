@@ -10,7 +10,7 @@ export async function GET(
     const { id } = await params;
     const statusHistory = await getFormulationStatusHistory(id);
     return NextResponse.json(statusHistory);
-  } catch (error) {
+  } catch (err) {
     error("Error fetching status history:", error);
     return NextResponse.json(
       { error: "Failed to fetch status history" },

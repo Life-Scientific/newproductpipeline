@@ -173,7 +173,7 @@ export function FormulationComparison({
             return next;
           });
         }
-      } catch (error) {
+      } catch (err) {
         error("Error fetching formulation data:", error);
       }
     },

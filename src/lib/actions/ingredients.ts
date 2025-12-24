@@ -46,8 +46,8 @@ export async function createIngredient(formData: FormData) {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -101,8 +101,8 @@ export async function updateIngredient(
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -126,8 +126,8 @@ export async function deleteIngredient(ingredientId: string) {
     .delete()
     .eq("ingredient_id", ingredientId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   revalidatePath("/reference");

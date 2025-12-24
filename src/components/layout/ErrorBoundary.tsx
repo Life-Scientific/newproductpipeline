@@ -47,10 +47,8 @@ function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
-  /** Optional: Fallback component to render on error */
-  fallback?: React.ReactNode;
   /** Optional: Callback when an error is caught */
-  onError?: (error: Error, info: { componentStack: string }) => void;
+  onError?: (error: Error, info: { componentStack?: string | null }) => void;
 }
 
 /**
@@ -66,11 +64,10 @@ interface ErrorBoundaryProps {
  */
 export function ErrorBoundary({
   children,
-  fallback,
   onError,
 }: ErrorBoundaryProps) {
   const handleError = useCallback(
-    (err: Error, info: { componentStack: string }) => {
+    (err: Error, info: { componentStack?: string | null }) => {
       if (onError) {
         onError(err, info);
       } else {
@@ -86,11 +83,8 @@ export function ErrorBoundary({
 
   return (
     <ReactErrorBoundary
-      FallbackComponent={fallback || ErrorFallback}
+      FallbackComponent={ErrorFallback}
       onError={handleError}
-      onReset={() => {
-        // Reset state here if needed
-      }}
     >
       {children}
     </ReactErrorBoundary>
@@ -109,36 +103,30 @@ export function PageErrorBoundary({
   title?: string;
 }) {
   return (
-    <ErrorBoundary
-      fallback={(props) => (
-        <div className="container mx-auto p-4">
-          <Card className="border-destructive/50 bg-destructive/5">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-destructive">
-                <AlertCircle className="h-5 w-5" />
-                {title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                This page encountered an error. Please try again or refresh the
-                page.
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => window.location.reload()}
-                className="gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Refresh page
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    >
-      {children}
+    <ErrorBoundary>
+      <div className="container mx-auto p-4">
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              {title}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This page encountered an error. Please try again or refresh the
+              page.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => window.location.reload()}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh page
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </ErrorBoundary>
   );
 }
-

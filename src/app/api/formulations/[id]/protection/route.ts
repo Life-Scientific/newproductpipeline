@@ -11,8 +11,8 @@ export async function GET(
     const { id } = await params;
     const protectionStatus = await getFormulationProtectionStatus(id);
     return NextResponse.json(protectionStatus);
-  } catch (error) {
-    error("Error fetching protection status:", error);
+  } catch (err) {
+    error("Error fetching protection status:", err);
     return NextResponse.json(
       { error: "Failed to fetch protection status" },
       { status: 500 },

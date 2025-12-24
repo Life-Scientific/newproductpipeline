@@ -48,7 +48,7 @@ export default async function BusinessCaseDetailPage({
   let businessCase;
   try {
     businessCase = await getBusinessCaseById(id);
-  } catch (error) {
+  } catch (err) {
     error("Error fetching business case:", error);
     notFound();
   }

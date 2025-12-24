@@ -270,9 +270,9 @@ export async function POST(request: Request) {
             controller.enqueue(encoder.encode(chunk));
           }
           controller.close();
-        } catch (error) {
-          error("Stream error:", error);
-          controller.error(error);
+        } catch (err) {
+          error("Stream error:", err);
+          controller.error(err);
         }
       },
     });
@@ -283,8 +283,8 @@ export async function POST(request: Request) {
         "Cache-Control": "no-cache",
       },
     });
-  } catch (error) {
-    error("Chat API error:", error);
+  } catch (err) {
+    error("Chat API error:", err);
     return new Response(
       JSON.stringify({ error: "Failed to process request" }),
       {

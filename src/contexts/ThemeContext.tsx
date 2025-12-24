@@ -113,7 +113,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           applyThemeToDOM(theme);
         }
       }
-    } catch (error) {
+    } catch (err) {
       error("Failed to load theme:", error);
       // If we have a cached theme, keep using it even if fetch fails
       if (!currentTheme) {
@@ -137,7 +137,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         await setUserThemeAction(theme.theme_id);
         await loadTheme();
       }
-    } catch (error) {
+    } catch (err) {
       error("Failed to set theme:", error);
       throw error;
     }
@@ -148,7 +148,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try {
       await setUserThemeAction(themeId);
       await loadTheme();
-    } catch (error) {
+    } catch (err) {
       error("Failed to set user theme:", error);
       throw error;
     }

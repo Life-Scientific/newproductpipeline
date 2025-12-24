@@ -13,7 +13,7 @@ export async function createCrop(formData: FormData) {
     return { error: "Crop name is required" };
   }
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("crops")
     .insert({
       crop_name: cropName,
@@ -22,8 +22,8 @@ export async function createCrop(formData: FormData) {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -43,15 +43,15 @@ export async function updateCrop(cropId: string, formData: FormData) {
   if (cropCategory !== null) updateData.crop_category = cropCategory;
   updateData.is_active = isActive;
 
-  const { data, error } = await supabase
+  const { data, error: supabaseError } = await supabase
     .from("crops")
     .update(updateData)
     .eq("crop_id", cropId)
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");
@@ -61,10 +61,10 @@ export async function updateCrop(cropId: string, formData: FormData) {
 export async function deleteCrop(cropId: string) {
   const supabase = await createClient();
 
-  const { error } = await supabase.from("crops").delete().eq("crop_id", cropId);
+  const { error: supabaseError } = await supabase.from("crops").delete().eq("crop_id", cropId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { error: supabaseError.message };
   }
 
   revalidatePath("/reference");

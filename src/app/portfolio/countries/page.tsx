@@ -26,14 +26,14 @@ export default async function CountriesPage() {
 
   // Build formulation status lookup map (using formulation_code for reliable lookup)
   const formulationStatusMap = new Map<string, string>();
-  formulations.forEach((f) => {
+  (formulations as Array<{ formulation_code: string | null; status: string | null }>).forEach((f) => {
     if (f.formulation_code && f.status) {
       formulationStatusMap.set(f.formulation_code, f.status);
     }
   });
 
   // Enrich business cases with formulation_status
-  const enrichedBusinessCases = businessCases.map((bc) => ({
+  const enrichedBusinessCases = businessCases.map((bc: any) => ({
     ...bc,
     formulation_status: bc.formulation_code
       ? formulationStatusMap.get(bc.formulation_code) || null

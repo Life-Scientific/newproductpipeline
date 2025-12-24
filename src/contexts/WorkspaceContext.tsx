@@ -7,7 +7,7 @@ import type {
   WorkspaceWithMenuItems,
 } from "@/lib/actions/workspaces";
 import { getWorkspaceWithMenuBySlug } from "@/lib/actions/workspaces";
-import { log, error } from "@/lib/logger";
+import { log, warn, error } from "@/lib/logger";
 
 interface WorkspaceContextType {
   currentWorkspace: Workspace | null;

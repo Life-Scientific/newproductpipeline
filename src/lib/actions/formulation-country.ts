@@ -79,8 +79,8 @@ export async function createFormulationCountry(formData: FormData) {
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   // Revalidate paths for fresh data
@@ -162,8 +162,8 @@ export async function updateFormulationCountry(
     .select()
     .single();
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   // Revalidate paths for fresh data
@@ -193,8 +193,8 @@ export async function deleteFormulationCountry(formulationCountryId: string) {
     .delete()
     .eq("formulation_country_id", formulationCountryId);
 
-  if (error) {
-    return { error: error.message };
+  if (supabaseError) {
+    return { supabaseError: supabaseError.message };
   }
 
   // Revalidate paths for fresh data

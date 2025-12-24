@@ -165,7 +165,7 @@ export function DisplayPreferencesProvider({
       const fetchRates = async () => {
         try {
           const supabase = createClient();
-          const { data, error } = await supabase
+          const { data, error: supabaseError } = await supabase
             .from("exchange_rates")
             .select("currency_code, exchange_rate_to_eur")
             .eq("is_active", true);
