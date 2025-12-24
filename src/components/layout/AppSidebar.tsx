@@ -87,6 +87,7 @@ import { revalidateAllCaches } from "@/lib/actions/cache";
 import { routes, WORKSPACE_BASE } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
+import { log, error } from "@/lib/logger";
 
 // Icon map for dynamic icon lookup - only includes icons actually used in menus
 const iconMap: Record<string, LucideIcon> = {
@@ -247,8 +248,8 @@ export function AppSidebar() {
         // This allows the UI to remain responsive
         router.refresh();
       }
-    } catch (error) {
-      console.error("Failed to refresh data:", error);
+    } catch (err) {
+      error("Failed to refresh data:", err);
     } finally {
       setIsRefreshing(false);
     }
@@ -266,9 +267,9 @@ export function AppSidebar() {
     async function checkAuth() {
       try {
         setIsCheckingAuth(true);
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error("[AppSidebar] getSession error:", error);
+        const { data: { session }, error: authError } = await supabase.auth.getSession();
+        if (authError) {
+          error("[AppSidebar] getSession error:", authError);
         }
         if (mounted) {
       setUser(session?.user ?? null);
@@ -277,15 +278,15 @@ export function AppSidebar() {
             // This might happen if cookies aren't being read correctly
             const { data: { user }, error: userError } = await supabase.auth.getUser();
             if (userError) {
-              console.error("[AppSidebar] getUser error:", userError);
+              error("[AppSidebar] getUser error:", userError);
             } else if (user && mounted) {
-              console.log("[AppSidebar] Found user via getUser() fallback");
+              log("[AppSidebar] Found user via getUser() fallback");
               setUser(user);
             }
           }
         }
       } catch (err) {
-        console.error("[AppSidebar] Auth check failed:", err);
+        error("[AppSidebar] Auth check failed:", err);
       } finally {
         if (mounted) {
           setIsCheckingAuth(false);
@@ -299,7 +300,7 @@ export function AppSidebar() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("[AppSidebar] Auth state changed:", _event, session?.user?.email || "no user");
+      log("[AppSidebar] Auth state changed:", _event, session?.user?.email || "no user");
       if (mounted) {
       setUser(session?.user ?? null);
         setIsCheckingAuth(false);

@@ -50,6 +50,7 @@ import { fetchBusinessCasesRemaining } from "@/lib/actions/progressive-actions";
 import type { Country } from "@/lib/db/types";
 import type { Formulation } from "@/lib/db/types";
 import type { FormulationCountryDetail } from "@/lib/db/types";
+import { log } from "@/lib/logger";
 
 // Extended type for business cases with formulation/country status
 interface BusinessCaseWithStatus extends BusinessCaseGroupData {
@@ -90,7 +91,7 @@ function BusinessCasesContent({
     fetchBusinessCasesRemaining,
     {
       onProgress: (loaded, total) => {
-        console.log(`[Business Cases] Loaded ${loaded} of ${total}`);
+        log(`[Business Cases] Loaded ${loaded} of ${total}`);
       },
     },
   );

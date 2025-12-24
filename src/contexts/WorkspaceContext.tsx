@@ -7,6 +7,7 @@ import type {
   WorkspaceWithMenuItems,
 } from "@/lib/actions/workspaces";
 import { getWorkspaceWithMenuBySlug } from "@/lib/actions/workspaces";
+import { log, error } from "@/lib/logger";
 
 interface WorkspaceContextType {
   currentWorkspace: Workspace | null;
@@ -120,7 +121,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const loadWorkspace = useCallback(async (workspaceSlug?: string, skipPathnameCheck = false) => {
     // Prevent concurrent loads
     if (loadingRef.current) {
-      console.log("[WorkspaceContext] Skipping load - already loading");
+      log("[WorkspaceContext] Skipping load - already loading");
       return;
     }
     
@@ -164,7 +165,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       
       if (cached && (now - cached.timestamp) < WORKSPACE_CACHE_TTL) {
         // Cache hit - use cached data (instant, no API call)
-        console.log(`[WorkspaceContext] Cache hit for "${slugToTry}"`);
+        log(`[WorkspaceContext] Cache hit for "${slugToTry}"`);
         setCurrentWorkspace(cached.data);
         setWorkspaceWithMenu(cached.data);
         if (typeof window !== "undefined") {
@@ -176,7 +177,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Cache miss or expired - fetch from server
-      console.log(`[WorkspaceContext] Cache miss for "${slugToTry}" - fetching`);
+      log(`[WorkspaceContext] Cache miss for "${slugToTry}" - fetching`);
       let workspaceData = await getWorkspaceWithMenuBySlug(slugToTry);
       
       // Cache the result (even if null, to prevent repeated failed lookups)
@@ -201,7 +202,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         if (slugToTry !== "portfolio") {
           // If we're trying to load a specific workspace (from pathname) and it doesn't exist,
           // don't fallback - let the page handle the error (e.g., 404 or permission check)
-          console.warn(`Workspace "${slugToTry}" not found`);
+          warn(`Workspace "${slugToTry}" not found`);
           // Only fallback if we're not on a workspace-specific route
           const currentPath = pathnameRef.current || "";
           const isOnWorkspaceRoute = knownWorkspaces.some(ws => currentPath.startsWith(`/${ws}/`));
@@ -227,10 +228,10 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         // Navigation should only happen when explicitly switching workspaces via WorkspaceSwitcher
         // This prevents redirect loops when users are on valid pages (like /operations placeholder)
       } else {
-        console.error("Could not load any workspace - all fallbacks failed");
+        error("Could not load any workspace - all fallbacks failed");
       }
-    } catch (error) {
-      console.error("Failed to load workspace:", error);
+    } catch (err) {
+      error("Failed to load workspace:", err);
       // Only fallback to portfolio if we're not on a workspace-specific route
       // This prevents redirecting away from valid pages
       const currentPath = pathnameRef.current || "";
@@ -245,11 +246,11 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
             setWorkspaceWithMenu(fallback);
           }
         } catch (e) {
-          console.error("Absolute fallback also failed:", e);
+          error("Absolute fallback also failed:", e);
         }
       } else {
         // We're on a workspace route but failed to load - don't redirect, just log
-        console.warn("Failed to load workspace but staying on current route:", currentPath);
+        warn("Failed to load workspace but staying on current route:", currentPath);
       }
     } finally {
       setIsLoading(false);
@@ -273,11 +274,11 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       
       if (cached && (now - cached.timestamp) < WORKSPACE_CACHE_TTL) {
         // Cache hit - use cached data
-        console.log(`[WorkspaceContext] Cache hit for switch to "${slug}"`);
+        log(`[WorkspaceContext] Cache hit for switch to "${slug}"`);
         workspaceData = cached.data;
       } else {
         // Cache miss - fetch from server
-        console.log(`[WorkspaceContext] Cache miss for switch to "${slug}" - fetching`);
+        log(`[WorkspaceContext] Cache miss for switch to "${slug}" - fetching`);
         workspaceData = await getWorkspaceWithMenuBySlug(slug);
         
         // Cache the result
@@ -308,8 +309,8 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       }
       // Fallback if workspace not found
       return `/${slug}`;
-    } catch (error) {
-      console.error("Failed to switch workspace:", error);
+    } catch (err) {
+      error("Failed to switch workspace:", err);
       return `/${slug}`;
     } finally {
       setIsLoading(false);
@@ -357,8 +358,8 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     if (pathSlug && currentWorkspaceRef.current?.slug !== pathSlug) {
       // Load the workspace but don't navigate - the user is already on the correct page
       // Use skipPathnameCheck=true to prevent any navigation logic
-      loadWorkspace(pathSlug, true).catch((error) => {
-        console.error("Failed to sync workspace from pathname:", error);
+      loadWorkspace(pathSlug, true).catch((err) => {
+        error("Failed to sync workspace from pathname:", err);
         // Don't fallback or redirect - let the current page handle it
       });
     }

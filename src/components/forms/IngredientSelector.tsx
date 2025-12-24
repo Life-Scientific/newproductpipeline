@@ -26,6 +26,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { FuzzySearchSelect } from "./FuzzySearchSelect";
 import { searchIngredients } from "@/lib/actions/search";
+import { log } from "@/lib/logger";
 
 type Ingredient = Database["public"]["Tables"]["ingredients"]["Row"];
 
@@ -137,7 +138,7 @@ export function IngredientSelector({
       !ingredientToAdd.quantity_unit ||
       !ingredientToAdd.ingredient_role
     ) {
-      console.log("Validation failed:", {
+      log("Validation failed:", {
         ingredient_id: ingredientToAdd.ingredient_id,
         quantity: ingredientToAdd.quantity,
         quantity_unit: ingredientToAdd.quantity_unit,
@@ -340,7 +341,7 @@ export function IngredientSelector({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("Add button clicked", newIngredient);
+                log("Add button clicked", newIngredient);
                 handleAddIngredient(e);
               }}
               className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 bg-primary text-primary-foreground shadow hover:bg-primary/90"

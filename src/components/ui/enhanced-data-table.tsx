@@ -91,6 +91,7 @@ import {
 import { TableUtils, type TableViewConfig } from "@/lib/utils/table-utils";
 import { useTableSettings } from "@/hooks/use-table-settings";
 import type { TableSettings } from "@/lib/actions/table-settings";
+import { log } from "@/lib/logger";
 
 /**
  * Filter configuration for a column
@@ -251,7 +252,7 @@ export function EnhancedDataTable<TData, TValue>({
     if (initialSettings) {
       // Initial settings from server - they'll be loaded by useTableSettings
       // This effect is just for tracking
-      console.log("[EnhancedDataTable] Loaded SSR settings:", initialSettings);
+      log("[EnhancedDataTable] Loaded SSR settings:", initialSettings);
     }
   }, [initialSettings]);
 
@@ -302,7 +303,7 @@ export function EnhancedDataTable<TData, TValue>({
   // Update filter values (updates local state and URL)
   const updateFilter = React.useCallback(
     (paramKey: string, values: string[]) => {
-      console.log("[EnhancedDataTable] updateFilter called:", {
+      log("[EnhancedDataTable] updateFilter called:", {
         paramKey,
         values,
       });
@@ -310,7 +311,7 @@ export function EnhancedDataTable<TData, TValue>({
       // Update local state
       setActiveFilters((prev) => {
         const next = { ...prev, [paramKey]: values };
-        console.log("[EnhancedDataTable] activeFilters updating:", {
+        log("[EnhancedDataTable] activeFilters updating:", {
           prev,
           next,
         });
@@ -333,7 +334,7 @@ export function EnhancedDataTable<TData, TValue>({
         const newUrl = params.toString()
           ? `${pathname}?${params.toString()}`
           : pathname;
-        console.log("[EnhancedDataTable] Updating URL to:", newUrl);
+        log("[EnhancedDataTable] Updating URL to:", newUrl);
         // Use pushState instead of replaceState to ensure browser history is updated
         window.history.pushState(null, "", newUrl);
       }
@@ -371,7 +372,7 @@ export function EnhancedDataTable<TData, TValue>({
 
   // Filter data based on active filters
   const filteredData = React.useMemo(() => {
-    console.log(
+    log(
       "[EnhancedDataTable] filteredData memo recalculating, activeFilters:",
       activeFilters,
     );
@@ -394,7 +395,7 @@ export function EnhancedDataTable<TData, TValue>({
       });
     });
 
-    console.log("[EnhancedDataTable] filteredData result:", {
+    log("[EnhancedDataTable] filteredData result:", {
       originalCount: data.length,
       filteredCount: result.length,
     });
@@ -542,7 +543,7 @@ export function EnhancedDataTable<TData, TValue>({
     if (typeof window === "undefined") return;
 
     const handlePopState = () => {
-      console.log("[EnhancedDataTable] popstate event triggered");
+      log("[EnhancedDataTable] popstate event triggered");
       const params = new URLSearchParams(window.location.search);
 
       // Sync pagination
@@ -563,7 +564,7 @@ export function EnhancedDataTable<TData, TValue>({
           const value = params.get(paramKey);
           newFilters[paramKey] = value ? value.split(",").filter(Boolean) : [];
         });
-        console.log(
+        log(
           "[EnhancedDataTable] popstate setting filters:",
           newFilters,
         );

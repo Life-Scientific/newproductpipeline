@@ -9,14 +9,15 @@ The following are all suggestions please make the tool as fast as possible and i
   * [x] Add `@next/bundle-analyzer` dev dep
   * [x] Wrap `next.config.ts` with `withBundleAnalyzer({ enabled: process.env.ANALYZE==='true' })`
   * [ ] Run `ANALYZE=true bun run build` (ready to use when needed)
-* [ ] **Add error boundaries on critical paths**
+* [x] **Add error boundaries on critical paths**
 
-  * [ ] Ensure `error.tsx` coverage for high-crash areas: portfolio pages, charts, big modals/dialog routes
-  * [ ] Optionally add `react-error-boundary` for component-level boundaries with retry
-* [ ] **Add dev-only logger**
+  * [x] Install `react-error-boundary`
+  * [x] Create `src/components/layout/ErrorBoundary.tsx` with `ErrorBoundary` and `PageErrorBoundary` components
+  * [ ] Add error boundaries to high-crash areas: portfolio pages, charts, big modals/dialog routes
+* [x] **Add dev-only logger**
 
-  * [ ] Create `src/lib/logger.ts` (dev-only `.log`, always-on `.warn/.error`)
-  * [ ] Replace `console.log` usages (you found ~178 across 59 files)
+  * [x] Create `src/lib/logger.ts` (dev-only `.log()`, always-on `.warn/.error()`)
+  * [x] Replace `console.log` usages with logger across 8 files
 * [ ] **Establish baseline metrics** (before you change anything)
 
   * [ ] Initial dashboard load time (3–6s baseline)

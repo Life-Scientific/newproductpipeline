@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
+import { log, error, warn } from "@/lib/logger";
 
 // Re-export types from types.ts
 export type {
@@ -190,7 +191,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary | null> {
       .single();
 
     if (error) {
-      console.error("Failed to fetch dashboard summary:", error.message);
+      error("Failed to fetch dashboard summary:", error.message);
       return null;
     }
 
@@ -226,7 +227,7 @@ export async function getChartDataByYear(): Promise<ChartDataByYear[]> {
       .order("fiscal_year", { ascending: true });
 
     if (error) {
-      console.error("Failed to fetch chart data by year:", error.message);
+      error("Failed to fetch chart data by year:", error.message);
       return [];
     }
 
@@ -256,7 +257,7 @@ export async function getChartYearlyTotals(): Promise<ChartYearlyTotals[]> {
       .order("fiscal_year", { ascending: true });
 
     if (error) {
-      console.error("Failed to fetch chart yearly totals:", error.message);
+      error("Failed to fetch chart yearly totals:", error.message);
       return [];
     }
 
@@ -1057,7 +1058,7 @@ export async function getBusinessCases() {
         .range(page * pageSize, (page + 1) * pageSize - 1)
         .then(({ data, error }) => {
           if (error) {
-            console.error("getBusinessCases page error:", error);
+            error("getBusinessCases page error:", error);
             throw new Error(`Failed to fetch business cases: ${error.message}`);
           }
           return data || [];
@@ -1160,10 +1161,10 @@ export async function getBusinessCasesForChart() {
   console.log(
     `[getBusinessCasesForChart] Total business cases: ${allData.length}`,
   );
-  console.log(
+  log(
     `[getBusinessCasesForChart] Direct formulation_country_ids: ${formulationCountryIds.length}`,
   );
-  console.log(
+  log(
     `[getBusinessCasesForChart] Use group IDs to resolve: ${useGroupIds.length}`,
   );
 
@@ -1248,7 +1249,7 @@ export async function getBusinessCasesForChart() {
       // Process all results
       for (const { data: fcData, error: fcError } of pageResults) {
         if (fcError) {
-          console.error(
+          error(
             `[getBusinessCasesForChart] Failed to fetch country_status from view:`,
             fcError.message,
             fcError.code,
@@ -1274,11 +1275,11 @@ export async function getBusinessCasesForChart() {
         }
       }
 
-      console.log(
+      log(
         `[getBusinessCasesForChart] Fetched ${countryStatusMap.size} country_status records (from ${totalPages} pages)`,
       );
     } catch (err) {
-      console.error(
+      error(
         `[getBusinessCasesForChart] Exception fetching country_status:`,
         err,
       );
@@ -1287,11 +1288,11 @@ export async function getBusinessCasesForChart() {
   }
 
   if (countryStatusFetchFailed) {
-    console.warn(
+    warn(
       `[getBusinessCasesForChart] Country status fetch failed - continuing with null country_status values`,
     );
   } else {
-    console.log(
+    log(
       `[getBusinessCasesForChart] Successfully loaded ${countryStatusMap.size} country_status mappings`,
     );
   }
@@ -1336,11 +1337,11 @@ export async function getBusinessCasesForChart() {
     const status = bc.country_status || "null/undefined";
     statusCounts.set(status, (statusCounts.get(status) || 0) + 1);
   });
-  console.log(
+  log(
     "Country status enrichment stats:",
     Object.fromEntries(statusCounts),
   );
-  console.log(
+  log(
     `Total enriched: ${enrichedData.length}, Map size: ${countryStatusMap.size}, Unique FC IDs: ${allFormulationCountryIds.length}`,
   );
 
@@ -1374,7 +1375,7 @@ export async function getBusinessCaseById(id: string) {
     }
 
     if (error) {
-      console.error("Error fetching business case:", error);
+      error("Error fetching business case:", error);
       return null;
     }
 
@@ -1384,8 +1385,8 @@ export async function getBusinessCaseById(id: string) {
 
     const enriched = await enrichBusinessCases([data]);
     return enriched[0] || null;
-  } catch (error) {
-    console.error("Error in getBusinessCaseById:", error);
+  } catch (err) {
+    error("Error in getBusinessCaseById:", err);
     return null;
   }
 }

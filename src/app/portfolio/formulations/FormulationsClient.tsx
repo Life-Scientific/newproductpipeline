@@ -19,6 +19,7 @@ import type { FormulationWithNestedData } from "@/lib/db/queries";
 import type { Formulation } from "@/lib/db/types";
 import type { Country } from "@/lib/db/types";
 import type { FormulationCountryDetail } from "@/lib/db/types";
+import { log } from "@/lib/logger";
 
 interface FormulationsClientProps {
   initialFormulations: FormulationWithNestedData[];
@@ -50,7 +51,7 @@ function FormulationsContent({
     {
       onProgress: (loaded, total) => {
         // Optional: Could show progress indicator
-        console.log(`[Formulations] Loaded ${loaded} of ${total}`);
+        log(`[Formulations] Loaded ${loaded} of ${total}`);
       },
     },
   );
