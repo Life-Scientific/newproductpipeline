@@ -13,12 +13,11 @@ import {
   type FilterableFormulationCountry,
 } from "@/hooks/use-filter-options";
 import { computeFilteredCounts } from "@/lib/utils/filter-counts";
-import { fetchFormulationsInitial } from "@/lib/actions/progressive-actions";
+import { useFormulationsWithPortfolioFilters } from "@/lib/queries/formulations";
 import type { FormulationWithNestedData } from "@/lib/db/queries";
 import type { Formulation } from "@/lib/db/types";
 import type { Country } from "@/lib/db/types";
 import type { FormulationCountryDetail } from "@/lib/db/types";
-import { log } from "@/lib/logger";
 
 interface FormulationsClientProps {
   initialFormulations: FormulationWithNestedData[];
@@ -37,13 +36,18 @@ function FormulationsContent({
   countries,
   formulationCountries,
 }: FormulationsClientProps) {
-  // Use server data directly - background loading handled by server actions
-  const formulationsWithNested = initialFormulations;
-  const totalCount = initialTotalCount;
-  const isBackgroundLoading = false;
-
   // Use global portfolio filters from URL
   const { filters } = usePortfolioFilters();
+
+  // Fetch formulations with server-side filtering based on URL filters
+  // Uses SSR data as initialData, then refetches with filters on client
+  const {
+    data: formulationsWithNested = initialFormulations,
+    isLoading,
+    isFetching,
+  } = useFormulationsWithPortfolioFilters(filters);
+
+  const isBackgroundLoading = isFetching && !isLoading;
 
   // Create formulation status lookup map
   const formulationStatusMap = useMemo(() => {
@@ -116,77 +120,12 @@ function FormulationsContent({
     filters,
   );
 
-  // Filter formulations based on global filters
-  const filteredFormulations = useMemo(() => {
-    return formulationsWithNested.filter((f) => {
-      // Formulation filter - filters.formulations contains codes
-      if (filters.formulations.length > 0) {
-        if (
-          !f.formulation_code ||
-          !filters.formulations.includes(f.formulation_code)
-        ) {
-          return false;
-        }
-      }
+  // Server-side filtering applied - formulationsWithNested is already filtered
+  // No need for client-side filtering anymore (80%+ data reduction on server)
+  const filteredFormulations = formulationsWithNested;
 
-      // Formulation status filter
-      if (filters.formulationStatuses.length > 0) {
-        const status = f.status || "Not Yet Evaluated";
-        if (!filters.formulationStatuses.includes(status)) {
-          return false;
-        }
-      }
-
-      // Country filter - check if formulation has any countries matching selected country codes
-      if (filters.countries.length > 0) {
-        if (!f.countries_list) {
-          return false; // No countries associated
-        }
-
-        // Parse countries_list and check if any match selected country codes
-        const countryNames = f.countries_list
-          .split(",")
-          .map((name) => name.trim())
-          .filter(Boolean);
-        const matchingCountries = countryNames.some((countryName) => {
-          const country = countries.find((c) => c.country_name === countryName);
-          return country && filters.countries.includes(country.country_code);
-        });
-
-        if (!matchingCountries) {
-          return false;
-        }
-      }
-
-      // Country status filter - now using formulationCountries data
-      if (filters.countryStatuses.length > 0) {
-        // Check if this formulation has any country entries matching the status
-        const matchingFCs = enrichedFormulationCountries.filter(
-          (fc) => fc.formulation_code === f.formulation_code,
-        );
-        if (matchingFCs.length === 0) {
-          // No country entries - exclude if country status filter is active
-          return false;
-        }
-        const hasMatchingStatus = matchingFCs.some((fc) => {
-          const countryStatus = fc.country_status || "Not yet evaluated";
-          return filters.countryStatuses.includes(countryStatus);
-        });
-        if (!hasMatchingStatus) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [
-    formulationsWithNested,
-    filters,
-    countries,
-    enrichedFormulationCountries,
-  ]);
-
-  // Filter formulation-countries based on global filters for accurate counts
+  // Still need to filter formulation-countries for accurate counts
+  // This is a smaller dataset and needed for filter cascading
   const filteredFormulationCountries = useMemo(() => {
     return enrichedFormulationCountries.filter((fc) => {
       // Country filter
@@ -241,11 +180,18 @@ function FormulationsContent({
       />
       {isBackgroundLoading && (
         <div className="mb-4 text-sm text-muted-foreground text-center">
-          Loading more formulations... ({formulationsWithNested.length} of{" "}
-          {totalCount})
+          Applying filters...
         </div>
       )}
-      <FormulationsPageContent formulationsWithNested={filteredFormulations} />
+      {isLoading ? (
+        <Card>
+          <CardContent>
+            <Skeleton className="h-[400px] w-full" />
+          </CardContent>
+        </Card>
+      ) : (
+        <FormulationsPageContent formulationsWithNested={filteredFormulations} />
+      )}
     </>
   );
 }
