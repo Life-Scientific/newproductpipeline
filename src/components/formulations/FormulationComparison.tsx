@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import { error } from "@/lib/logger";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import {
   Select,
@@ -17,6 +16,7 @@ import { ComparisonChart } from "./ComparisonChart";
 import { ComparisonFilters } from "./ComparisonFilters";
 import { ComparisonDataTable } from "./ComparisonDataTable";
 import { ComparisonSummary } from "./ComparisonSummary";
+import { useFormulationCompleteData } from "@/lib/queries/formulations";
 
 interface FormulationComparisonProps {
   formulations: Formulation[];
@@ -41,7 +41,7 @@ export function FormulationComparison({
   );
 
   const handleAddFormulation = useCallback(
-    async (formulationId: string) => {
+    (formulationId: string) => {
       if (
         selectedIds.includes(formulationId) ||
         selectedIds.length >= MAX_COMPARISONS
@@ -50,80 +50,41 @@ export function FormulationComparison({
       }
 
       setSelectedIds((prev) => [...prev, formulationId]);
+    },
+    [selectedIds],
+  );
 
-      try {
-        const [
-          businessCasesRes,
-          ingredientsRes,
-          countriesRes,
-          useGroupsRes,
-          cogsRes,
-          protectionRes,
-          statusHistoryRes,
-        ] = await Promise.all([
-          fetch(`/api/formulations/${formulationId}/business-cases`).catch(
-            () => null,
-          ),
-          fetch(`/api/formulations/${formulationId}/ingredients`).catch(
-            () => null,
-          ),
-          fetch(`/api/formulations/${formulationId}/countries`).catch(
-            () => null,
-          ),
-          fetch(`/api/formulations/${formulationId}/use-groups`).catch(
-            () => null,
-          ),
-          fetch(`/api/formulations/${formulationId}/cogs`).catch(() => null),
-          fetch(`/api/formulations/${formulationId}/protection`).catch(
-            () => null,
-          ),
-          fetch(`/api/formulations/${formulationId}/status-history`).catch(
-            () => null,
-          ),
-        ]);
+  // Use React Query to fetch data for each selected formulation
+  // This provides automatic caching, deduplication, and loading states
+  const formulationQueries = selectedIds.map((id) => ({
+    id,
+    data: useFormulationCompleteData(id),
+  }));
 
-        const businessCases = businessCasesRes?.ok
-          ? await businessCasesRes.json()
-          : [];
-        const ingredients = ingredientsRes?.ok
-          ? await ingredientsRes.json()
-          : [];
-        const countries = countriesRes?.ok ? await countriesRes.json() : [];
-        const useGroups = useGroupsRes?.ok ? await useGroupsRes.json() : [];
-        const cogs = cogsRes?.ok ? await cogsRes.json() : [];
-        const protectionStatus = protectionRes?.ok
-          ? await protectionRes.json()
-          : [];
-        const statusHistory = statusHistoryRes?.ok
-          ? await statusHistoryRes.json()
-          : [];
-
-        const formulation = formulations.find(
-          (f) => f.formulation_id === formulationId,
-        );
-
+  // Update comparison data when query data changes
+  useEffect(() => {
+    formulationQueries.forEach(({ id, data }) => {
+      if (!data.isLoading && !data.isError) {
+        const formulation = formulations.find((f) => f.formulation_id === id);
         if (formulation) {
           setComparisonData((prev) => {
             const next = new Map(prev);
-            next.set(formulationId, {
+            next.set(id, {
               formulation,
-              businessCases,
-              ingredients,
-              countries,
-              useGroups,
-              cogs,
-              protectionStatus,
-              statusHistory,
+              businessCases: data.businessCases,
+              ingredients: data.ingredients,
+              countries: data.countries,
+              useGroups: data.useGroups,
+              cogs: data.cogs,
+              protectionStatus: data.protection,
+              statusHistory: data.statusHistory,
             });
             return next;
           });
         }
-      } catch (err) {
-        error("Error fetching formulation data:", err);
       }
-    },
-    [formulations, selectedIds],
-  );
+    });
+  }, [formulationQueries.map(q => q.data.isLoading).join(','), formulations]);
 
   const handleRemoveFormulation = useCallback(
     (formulationId: string) => {

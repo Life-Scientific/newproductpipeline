@@ -274,5 +274,162 @@ export async function prefetchFormulation(
   });
 }
 
+// =============================================================================
+// Formulation Nested Data Hooks (for comparison feature)
+// =============================================================================
+
+/**
+ * Hook to fetch formulation business cases
+ */
+export function useFormulationBusinessCases(formulationId: string | null) {
+  return useQuery({
+    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "business-cases"] : ["formulations", "business-cases", null],
+    queryFn: async () => {
+      if (!formulationId) throw new Error("Formulation ID is required");
+      const response = await fetch(`/api/formulations/${formulationId}/business-cases`);
+      if (!response.ok) throw new Error("Failed to fetch business cases");
+      return response.json();
+    },
+    enabled: Boolean(formulationId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook to fetch formulation ingredients
+ */
+export function useFormulationIngredients(formulationId: string | null) {
+  return useQuery({
+    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "ingredients"] : ["formulations", "ingredients", null],
+    queryFn: async () => {
+      if (!formulationId) throw new Error("Formulation ID is required");
+      const response = await fetch(`/api/formulations/${formulationId}/ingredients`);
+      if (!response.ok) throw new Error("Failed to fetch ingredients");
+      return response.json();
+    },
+    enabled: Boolean(formulationId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook to fetch formulation countries
+ */
+export function useFormulationCountries(formulationId: string | null) {
+  return useQuery({
+    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "countries"] : ["formulations", "countries", null],
+    queryFn: async () => {
+      if (!formulationId) throw new Error("Formulation ID is required");
+      const response = await fetch(`/api/formulations/${formulationId}/countries`);
+      if (!response.ok) throw new Error("Failed to fetch countries");
+      return response.json();
+    },
+    enabled: Boolean(formulationId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook to fetch formulation use groups
+ */
+export function useFormulationUseGroups(formulationId: string | null) {
+  return useQuery({
+    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "use-groups"] : ["formulations", "use-groups", null],
+    queryFn: async () => {
+      if (!formulationId) throw new Error("Formulation ID is required");
+      const response = await fetch(`/api/formulations/${formulationId}/use-groups`);
+      if (!response.ok) throw new Error("Failed to fetch use groups");
+      return response.json();
+    },
+    enabled: Boolean(formulationId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook to fetch formulation COGS
+ */
+export function useFormulationCogs(formulationId: string | null) {
+  return useQuery({
+    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "cogs"] : ["formulations", "cogs", null],
+    queryFn: async () => {
+      if (!formulationId) throw new Error("Formulation ID is required");
+      const response = await fetch(`/api/formulations/${formulationId}/cogs`);
+      if (!response.ok) throw new Error("Failed to fetch COGS");
+      return response.json();
+    },
+    enabled: Boolean(formulationId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook to fetch formulation protection status
+ */
+export function useFormulationProtection(formulationId: string | null) {
+  return useQuery({
+    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "protection"] : ["formulations", "protection", null],
+    queryFn: async () => {
+      if (!formulationId) throw new Error("Formulation ID is required");
+      const response = await fetch(`/api/formulations/${formulationId}/protection`);
+      if (!response.ok) throw new Error("Failed to fetch protection status");
+      return response.json();
+    },
+    enabled: Boolean(formulationId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook to fetch formulation status history
+ */
+export function useFormulationStatusHistory(formulationId: string | null) {
+  return useQuery({
+    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "status-history"] : ["formulations", "status-history", null],
+    queryFn: async () => {
+      if (!formulationId) throw new Error("Formulation ID is required");
+      const response = await fetch(`/api/formulations/${formulationId}/status-history`);
+      if (!response.ok) throw new Error("Failed to fetch status history");
+      return response.json();
+    },
+    enabled: Boolean(formulationId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook to fetch all formulation nested data at once
+ * Used in FormulationComparison component for efficient parallel loading with caching
+ */
+export function useFormulationCompleteData(formulationId: string | null) {
+  const businessCases = useFormulationBusinessCases(formulationId);
+  const ingredients = useFormulationIngredients(formulationId);
+  const countries = useFormulationCountries(formulationId);
+  const useGroups = useFormulationUseGroups(formulationId);
+  const cogs = useFormulationCogs(formulationId);
+  const protection = useFormulationProtection(formulationId);
+  const statusHistory = useFormulationStatusHistory(formulationId);
+
+  return {
+    businessCases: businessCases.data || [],
+    ingredients: ingredients.data || [],
+    countries: countries.data || [],
+    useGroups: useGroups.data || [],
+    cogs: cogs.data || [],
+    protection: protection.data || [],
+    statusHistory: statusHistory.data || [],
+    isLoading: businessCases.isLoading || ingredients.isLoading || countries.isLoading ||
+               useGroups.isLoading || cogs.isLoading || protection.isLoading || statusHistory.isLoading,
+    isError: businessCases.isError || ingredients.isError || countries.isError ||
+             useGroups.isError || cogs.isError || protection.isError || statusHistory.isError,
+  };
+}
 
 
