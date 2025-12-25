@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useId, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import {
@@ -92,7 +92,6 @@ export function TenYearProjectionChart({
   noCard = false,
 }: TenYearProjectionChartProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const { currentTheme } = useTheme();
   const {
     currencySymbol,
@@ -105,19 +104,11 @@ export function TenYearProjectionChart({
   const [chartType, setChartType] = useState<"line" | "bar">("line");
   const chartId = useId().replace(/:/g, "-");
 
-  // Track navigation to force chart remount and animation
-  const [mountKey, setMountKey] = useState(0);
-
-  // Force remount when pathname changes (even if data is the same)
-  useEffect(() => {
-    setMountKey((prev) => prev + 1);
-  }, [pathname]);
-
-  // Create a key based on pathname, filters, and mount counter to ensure chart remounts and animates
+  // Create a stable key based only on filters - preserves chart state during navigation
+  // Only remounts when filters actually change, not on pathname changes
   const chartKey = useMemo(() => {
-    const filterKey = JSON.stringify(filters);
-    return `${pathname}-${filterKey}-${mountKey}`;
-  }, [pathname, filters, mountKey]);
+    return JSON.stringify(filters);
+  }, [filters]);
 
   // Year range selection state
   const [startYear, setStartYear] = useState<number | null>(null);

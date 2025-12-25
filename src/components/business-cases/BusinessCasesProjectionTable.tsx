@@ -37,7 +37,7 @@ const LOAD_MORE_INCREMENT = 25;
 // Default year range is 10 years from current fiscal year
 const DEFAULT_YEAR_RANGE = 10;
 
-export function BusinessCasesProjectionTable({
+function BusinessCasesProjectionTableComponent({
   businessCases,
   canEdit = false,
 }: BusinessCasesProjectionTableProps) {
@@ -657,5 +657,6 @@ export function BusinessCasesProjectionTable({
   );
 }
 
-const MemoizedBusinessCasesProjectionTable = memo(BusinessCasesProjectionTable);
-export default MemoizedBusinessCasesProjectionTable;
+// Export memoized version to prevent unnecessary re-renders on parent state changes
+export const BusinessCasesProjectionTable = memo(BusinessCasesProjectionTableComponent);
+export default BusinessCasesProjectionTable;
