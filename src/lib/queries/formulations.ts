@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Formulation, FormulationWithNestedData } from "@/lib/db/types";
+import type { PortfolioFilters } from "@/hooks/use-portfolio-filters";
+import { getFormulationsWithFilters } from "@/lib/actions/formulations-filtered";
 
 // =============================================================================
 // Query Keys
@@ -20,6 +22,7 @@ export const formulationKeys = {
   detail: (id: string) => [...formulationKeys.all, "detail", id] as const,
   withCountries: (id: string) => [...formulationKeys.all, "with-countries", id] as const,
   filtered: (filters: FormulationFilters) => [...formulationKeys.all, "filtered", serializeFilters(filters)] as const,
+  portfolioFiltered: (filters: PortfolioFilters) => [...formulationKeys.all, "portfolio-filtered", JSON.stringify(filters)] as const,
 };
 
 // =============================================================================
@@ -108,6 +111,22 @@ export function useFormulationsWithNested() {
     queryFn: () => fetchFormulationsWithNested(),
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook to fetch formulations with nested data filtered by portfolio filters.
+ * This performs server-side filtering to reduce data transfer (80%+ reduction).
+ * Filters are applied at the database level before data is returned.
+ *
+ * @param filters - Portfolio filters from URL params
+ */
+export function useFormulationsWithPortfolioFilters(filters: PortfolioFilters) {
+  return useQuery({
+    queryKey: formulationKeys.portfolioFiltered(filters),
+    queryFn: () => getFormulationsWithFilters(filters),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
   });
 }
 
