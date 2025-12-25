@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,17 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  Upload,
-  Download,
-  FileText,
-  CheckCircle2,
-  XCircle,
-  AlertCircle,
-  Loader2,
-  Eye,
-  Play,
-} from "lucide-react";
+import { Upload, Download, Loader2, Eye, Play } from "lucide-react";
 import {
   validateBusinessCaseImport,
   importBusinessCases,
@@ -33,8 +23,12 @@ import type {
   BusinessCaseImportRowValidation,
   BusinessCaseImportResult,
 } from "@/lib/db/types";
-import { BusinessCaseImportPreview } from "./BusinessCaseImportPreview";
-import { cn } from "@/lib/utils";
+import { parseBusinessCaseCSV, type SkippedRow, type ParseResult } from "@/lib/utils/csv-parser";
+import { ImportUploadStep } from "./import/ImportUploadStep";
+import { ImportValidateStep } from "./import/ImportValidateStep";
+import { ImportPreviewStep } from "./import/ImportPreviewStep";
+import { ImportLoadingStep } from "./import/ImportLoadingStep";
+import { ImportResultsStep } from "./import/ImportResultsStep";
 
 interface BusinessCaseImportModalProps {
   open: boolean;
@@ -44,26 +38,13 @@ interface BusinessCaseImportModalProps {
 
 type ImportStep = "upload" | "validate" | "preview" | "import" | "results";
 
-interface SkippedRow {
-  lineNumber: number;
-  reason: string;
-  rawData: string;
-}
-
-interface ParseResult {
-  validRows: BusinessCaseImportRow[];
-  skippedRows: SkippedRow[];
-  totalLines: number;
-}
-
 export function BusinessCaseImportModal({
   open,
   onOpenChange,
   onSuccess,
 }: BusinessCaseImportModalProps) {
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [step, setStep] = useState<ImportStep>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [parsedRows, setParsedRows] = useState<BusinessCaseImportRow[]>([]);
@@ -98,219 +79,12 @@ export function BusinessCaseImportModal({
     setValidations([]);
     setPreviewResult(null);
     setImportResult(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
     onOpenChange(false);
   }, [isValidating, isPreviewing, isImporting, onOpenChange, toast]);
 
   // Parse CSV file - returns valid rows AND skipped rows with reasons
   const parseCSV = useCallback((csvText: string): ParseResult => {
-    const allLines = csvText.split("\n");
-
-    // Filter out comment lines but track original line numbers
-    const dataLines: { line: string; originalLineNumber: number }[] = [];
-    for (let i = 0; i < allLines.length; i++) {
-      const trimmed = allLines[i].trim();
-      if (trimmed && !trimmed.startsWith("#")) {
-        dataLines.push({ line: trimmed, originalLineNumber: i + 1 });
-      }
-    }
-    
-    if (dataLines.length < 2) {
-      throw new Error(
-        "The CSV file appears to be empty or incomplete. It must have at least a header row (with column names) and one data row. Please check your file and try again.",
-      );
-    }
-
-    const headers = dataLines[0].line.split(",").map((h) => h.trim());
-    
-    // Only check required headers
-    const requiredHeaders = [
-      "formulation_code",
-      "country_code",
-      "use_group_variant",
-      ...Array.from({ length: 10 }, (_, i) => [
-        `year_${i + 1}_volume`,
-        `year_${i + 1}_nsp`,
-      ]).flat(),
-    ];
-    
-    const missingRequired = requiredHeaders.filter(
-      (h) =>
-        !headers.some((header) => header.toLowerCase() === h.toLowerCase()),
-    );
-
-    if (missingRequired.length > 0) {
-      const headerNames: Record<string, string> = {
-        formulation_code: "Formulation Code",
-        country_code: "Country Code",
-        use_group_variant: "Use Group Variant",
-      };
-      const friendlyNames = missingRequired.map(
-        (h) =>
-          headerNames[h] ||
-          h
-            .replace(/_/g, " ")
-            .replace(/\b\w/g, (l) => l.toUpperCase())
-            .replace(/Year (\d+) Volume/g, "Year $1 Volume")
-            .replace(/Year (\d+) Nsp/g, "Year $1 NSP (Net Selling Price)"),
-      );
-      throw new Error(
-        `The CSV file is missing required column headers: ${friendlyNames.join(", ")}. Please download the template and ensure all required columns are present.`,
-      );
-    }
-
-    const validRows: BusinessCaseImportRow[] = [];
-    const skippedRows: SkippedRow[] = [];
-    
-    for (let i = 1; i < dataLines.length; i++) {
-      const { line, originalLineNumber } = dataLines[i];
-      if (!line) continue;
-
-      // Handle CSV with quoted fields
-      const values: string[] = [];
-      let current = "";
-      let inQuotes = false;
-      
-      for (let j = 0; j < line.length; j++) {
-        const char = line[j];
-        if (char === '"') {
-          inQuotes = !inQuotes;
-        } else if (char === "," && !inQuotes) {
-          values.push(current.trim());
-          current = "";
-        } else {
-          current += char;
-        }
-      }
-      values.push(current.trim());
-
-      const row: Partial<BusinessCaseImportRow> = {};
-      const parseErrors: string[] = [];
-      
-      headers.forEach((header, idx) => {
-        const value = values[idx]?.trim() || "";
-        const headerLower = header.toLowerCase();
-        
-        if (headerLower === "formulation_code") {
-          row.formulation_code = value;
-        } else if (headerLower === "country_code") {
-          row.country_code = value;
-        } else if (headerLower === "use_group_variant") {
-          row.use_group_variant = value;
-        } else if (headerLower === "effective_start_fiscal_year") {
-          if (value) row.effective_start_fiscal_year = value;
-        } else if (headerLower === "business_case_name") {
-          if (value) row.business_case_name = value;
-        } else if (headerLower === "change_reason") {
-          if (value) row.change_reason = value;
-        } else {
-          // Year data fields
-          const yearMatch = headerLower.match(/year_(\d+)_(volume|nsp|cogs)/);
-          if (yearMatch) {
-            const yearNum = parseInt(yearMatch[1], 10);
-            const field = yearMatch[2];
-            const key =
-              `year_${yearNum}_${field}` as keyof BusinessCaseImportRow;
-            if (field === "volume" || field === "nsp") {
-              if (!value || value === "") {
-                // Empty cell - leave field undefined (will be caught by validation)
-                // Don't add parse error here, let validation handle it
-              } else {
-                const numValue = parseFloat(value);
-                if (isNaN(numValue)) {
-                  const fieldName =
-                    field === "volume"
-                      ? "Volume"
-                      : "NSP (Net Selling Price)";
-                  parseErrors.push(
-                    `Year ${yearNum} ${fieldName} contains invalid text: "${value}". Please enter a number only (no letters or special characters).`,
-                  );
-                } else if (numValue < 0) {
-                  const fieldName =
-                    field === "volume"
-                      ? "Volume"
-                      : "NSP (Net Selling Price)";
-                  parseErrors.push(
-                    `Year ${yearNum} ${fieldName} cannot be negative. You entered "${value}". Please enter a number that is 0 or greater.`,
-                  );
-                } else {
-                  // Set the field if it's 0 or greater (0 is now allowed)
-                  (row as any)[key] = numValue;
-                }
-              }
-            } else if (field === "cogs" && value) {
-              const numValue = parseFloat(value);
-              if (!isNaN(numValue) && numValue > 0) {
-                (row as any)[key] = numValue;
-              }
-            }
-          }
-        }
-      });
-
-      // Check required identifiers
-      if (!row.formulation_code) {
-        parseErrors.push(
-          "Formulation Code is missing. Please enter the product formulation code in the formulation_code column (e.g., 001-01, 302-01).",
-        );
-      }
-      if (!row.country_code) {
-        parseErrors.push(
-          "Country Code is missing. Please enter the 2-letter country code in the country_code column (e.g., FR for France, IT for Italy, CA for Canada).",
-        );
-      }
-      if (!row.use_group_variant) {
-        parseErrors.push(
-          'Use Group Variant is missing. Please enter the use group variant code in the use_group_variant column. The format must be "001" (3 digits, e.g., 001, 002).',
-        );
-      }
-
-      // Check all 10 years have volume and nsp
-        for (let year = 1; year <= 10; year++) {
-          const volumeKey = `year_${year}_volume` as keyof BusinessCaseImportRow;
-          const nspKey = `year_${year}_nsp` as keyof BusinessCaseImportRow;
-          if (
-          row[volumeKey] === undefined &&
-          !parseErrors.some((e) => e.includes(`Year ${year} Volume`))
-        ) {
-          parseErrors.push(
-            `Year ${year} Volume is missing. Please enter a number (0 or greater) in the year_${year}_volume column (in Litres).`,
-          );
-        }
-        if (
-          row[nspKey] === undefined &&
-          !parseErrors.some((e) => e.includes(`Year ${year} NSP`))
-        ) {
-          parseErrors.push(
-            `Year ${year} NSP (Net Selling Price) is missing. Please enter a number (0 or greater) in the year_${year}_nsp column (in Euros per Litre).`,
-          );
-        }
-      }
-
-      if (parseErrors.length > 0) {
-        // Get a preview of the row data
-        const preview = `${row.formulation_code || "?"} / ${row.country_code || "?"} / ${row.use_group_variant || "?"}`;
-        skippedRows.push({
-          lineNumber: originalLineNumber,
-          reason:
-            parseErrors.slice(0, 3).join("; ") +
-            (parseErrors.length > 3
-              ? ` (+${parseErrors.length - 3} more)`
-              : ""),
-          rawData: preview,
-        });
-      } else {
-        validRows.push(row as BusinessCaseImportRow);
-      }
-    }
-
-    return {
-      validRows,
-      skippedRows,
-      totalLines: dataLines.length - 1, // Exclude header
-    };
+    return parseBusinessCaseCSV(csvText);
   }, []);
 
   // Handle file selection
@@ -372,18 +146,6 @@ export function BusinessCaseImportModal({
       }
     },
     [parseCSV, toast],
-  );
-
-  // Handle file drop
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile) {
-        handleFileSelect(droppedFile);
-      }
-    },
-    [handleFileSelect],
   );
 
   // Validate rows
@@ -703,446 +465,46 @@ export function BusinessCaseImportModal({
         </DialogHeader>
 
         {step === "upload" && (
-          <div className="space-y-4">
-            {/* Download template button */}
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                onClick={handleDownloadTemplate}
-                size="sm"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Download Template
-              </Button>
-            </div>
-
-            {/* File upload area */}
-            <div
-              onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
-              className={cn(
-                "border-2 border-dashed rounded-lg p-12 text-center transition-colors",
-                "hover:border-primary/50 cursor-pointer",
-                file && "border-primary bg-primary/5",
-              )}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv"
-                className="hidden"
-                onChange={(e) => {
-                  const selectedFile = e.target.files?.[0];
-                  if (selectedFile) {
-                    handleFileSelect(selectedFile);
-                  }
-                }}
-              />
-              
-              {file ? (
-                <div className="space-y-2">
-                  <FileText className="h-12 w-12 mx-auto text-primary" />
-                  <div>
-                    <p className="font-medium">{file.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {parsedRows.length} row
-                      {parsedRows.length !== 1 ? "s" : ""} parsed
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">
-                      Drop CSV file here or click to browse
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      CSV file with business case data
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <ImportUploadStep
+            file={file}
+            parsedRows={parsedRows}
+            onFileSelect={handleFileSelect}
+            onDownloadTemplate={handleDownloadTemplate}
+          />
         )}
 
         {step === "validate" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">
-                  {parsedRows.length} of {totalCsvLines} row
-                  {totalCsvLines !== 1 ? "s" : ""} ready to validate
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {skippedRows.length > 0
-                    ? `${skippedRows.length} row${skippedRows.length !== 1 ? "s" : ""} skipped due to parsing errors`
-                    : "Click Validate to check all rows before importing"}
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setStep("upload");
-                  setValidations([]);
-                  setSkippedRows([]);
-                }}
-              >
-                Change File
-              </Button>
-            </div>
-
-            {/* Skipped Rows Section - Show parsing errors */}
-            {skippedRows.length > 0 && (
-              <div className="border border-amber-300 dark:border-amber-700 rounded-lg bg-amber-50 dark:bg-amber-950/20">
-                <div className="p-3 border-b border-amber-300 dark:border-amber-700">
-                  <p className="font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" />
-                    {skippedRows.length} Row
-                    {skippedRows.length !== 1 ? "s" : ""} Skipped (Parsing
-                    Errors)
-                  </p>
-                  <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
-                    These rows could not be parsed. Fix these issues in your CSV
-                    and re-upload.
-                  </p>
-                </div>
-                <div className="max-h-48 overflow-y-auto p-2">
-                  {skippedRows.map((skipped) => (
-                    <div
-                      key={skipped.lineNumber}
-                      className="text-sm p-2 border-b border-amber-200 dark:border-amber-800 last:border-0"
-                    >
-                      <div className="flex items-start gap-2">
-                        <span className="font-mono text-xs bg-amber-200 dark:bg-amber-800 px-1.5 py-0.5 rounded shrink-0">
-                          Line {skipped.lineNumber}
-                        </span>
-                        <span className="text-amber-800 dark:text-amber-300 font-medium">
-                          {skipped.rawData}
-                        </span>
-                      </div>
-                      <p className="text-xs text-amber-600 dark:text-amber-500 mt-1 ml-14">
-                        {skipped.reason}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {validations.length > 0 ? (
-              <BusinessCaseImportPreview validations={validations} />
-            ) : parsedRows.length > 0 ? (
-              <div className="border rounded-lg p-8 text-center text-muted-foreground">
-                <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-                <p>
-                  No validation results yet. Click Validate to check the data.
-                </p>
-              </div>
-            ) : (
-              <div className="border rounded-lg p-8 text-center text-muted-foreground">
-                <XCircle className="h-8 w-8 mx-auto mb-2 text-destructive" />
-                <p>
-                  No valid rows to validate. Fix the parsing errors above and
-                  re-upload.
-                </p>
-              </div>
-            )}
-
-            {validations.length > 0 && (
-              <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  <span className="font-medium">{validCount} valid</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <XCircle className="h-5 w-5 text-red-600" />
-                  <span className="font-medium">{invalidCount} invalid</span>
-                </div>
-              </div>
-            )}
-          </div>
+          <ImportValidateStep
+            parsedRows={parsedRows}
+            totalCsvLines={totalCsvLines}
+            skippedRows={skippedRows}
+            validations={validations}
+            validCount={validCount}
+            invalidCount={invalidCount}
+            onChangeFile={() => {
+              setStep("upload");
+              setValidations([]);
+              setSkippedRows([]);
+            }}
+          />
         )}
 
         {step === "preview" && previewResult && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-300 dark:border-blue-700 rounded-lg">
-                <Eye className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <div>
-                  <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100">
-                    Import Preview (Dry Run)
-                  </h3>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    This is a preview - no data has been saved. Review the results below, then click "Proceed with Import" to actually save the data.
-                  </p>
-                </div>
-              </div>
-
-              {/* Complete Breakdown */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                <div className="p-3 border rounded-lg">
-                  <p className="text-xs text-muted-foreground">Total CSV Lines</p>
-                  <p className="text-xl font-bold">{totalCsvLines}</p>
-                </div>
-                {skippedRows.length > 0 && (
-                  <div className="p-3 border rounded-lg bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700">
-                    <p className="text-xs text-muted-foreground">Skipped (Parse)</p>
-                    <p className="text-xl font-bold text-amber-600">
-                      {skippedRows.length}
-                    </p>
-                  </div>
-                )}
-                <div className="p-3 border rounded-lg">
-                  <p className="text-xs text-muted-foreground">Validated</p>
-                  <p className="text-xl font-bold">{previewResult.validRows}</p>
-                </div>
-                {previewResult.invalidRows > 0 && (
-                  <div className="p-3 border rounded-lg bg-orange-50 dark:bg-orange-950/20 border-orange-300 dark:border-orange-700">
-                    <p className="text-xs text-muted-foreground">Invalid</p>
-                    <p className="text-xl font-bold text-orange-600">
-                      {previewResult.invalidRows}
-                    </p>
-                  </div>
-                )}
-                <div className="p-3 border rounded-lg bg-green-50 dark:bg-green-950/20">
-                  <p className="text-xs text-muted-foreground">Would Create</p>
-                  <p className="text-xl font-bold text-green-600">
-                    {previewResult.created}
-                  </p>
-                </div>
-                <div className="p-3 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                  <p className="text-xs text-muted-foreground">Would Update</p>
-                  <p className="text-xl font-bold text-blue-600">
-                    {previewResult.updated}
-                  </p>
-                </div>
-                {previewResult.errors > 0 && (
-                  <div className="p-3 border rounded-lg bg-red-50 dark:bg-red-950/20">
-                    <p className="text-xs text-muted-foreground">Would Error</p>
-                    <p className="text-xl font-bold text-red-600">
-                      {previewResult.errors}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Summary */}
-              <div className="p-3 bg-muted rounded-lg text-sm">
-                <p className="font-medium mb-1">Preview Summary:</p>
-                <p>
-                  {totalCsvLines} total CSV lines → {skippedRows.length} skipped during parsing → {previewResult.totalRows} validated → {previewResult.created + previewResult.updated} would be imported ({previewResult.created} would be created, {previewResult.updated} would update existing)
-                  {previewResult.errors > 0 && ` → ${previewResult.errors} would fail during import`}
-                </p>
-              </div>
-            </div>
-
-            {/* Preview Errors */}
-            {previewResult.rowProgress.some((p) => p.status === "error") && (
-              <div className="space-y-2">
-                <h4 className="font-medium text-destructive flex items-center gap-2">
-                  <XCircle className="h-4 w-4" />
-                  {previewResult.errors} Row{previewResult.errors !== 1 ? "s" : ""} Would Fail During Import
-                </h4>
-                <div className="border border-red-300 dark:border-red-700 rounded-lg bg-red-50 dark:bg-red-950/20 p-4 max-h-64 overflow-y-auto space-y-2">
-                  {previewResult.rowProgress
-                    .filter((p) => p.status === "error")
-                    .map((p) => {
-                      const validation = previewResult.rowValidations.find(
-                        (v) => v.rowIndex === p.rowIndex
-                      );
-                      return (
-                        <div key={p.rowIndex} className="text-sm border-b border-red-200 dark:border-red-800 last:border-0 pb-2 last:pb-0">
-                          <div className="flex items-start gap-2">
-                            <span className="font-mono text-xs bg-red-200 dark:bg-red-800 px-1.5 py-0.5 rounded shrink-0">
-                              Row {p.rowIndex + 1}
-                            </span>
-                            {validation && (
-                              <span className="text-red-800 dark:text-red-300 font-medium">
-                                {validation.row.formulation_code} / {validation.row.country_code} / {validation.row.use_group_variant}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-red-600 dark:text-red-500 mt-1 ml-14">
-                            {p.message || "Would fail during import"}
-                          </p>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            )}
-
-            {/* Full Validation Preview */}
-            <BusinessCaseImportPreview
-              validations={previewResult.rowValidations}
-            />
-          </div>
+          <ImportPreviewStep
+            previewResult={previewResult}
+            totalCsvLines={totalCsvLines}
+            skippedRows={skippedRows}
+          />
         )}
 
-        {step === "import" && (
-          <div className="space-y-4">
-            <div className="text-center py-8">
-              <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-primary" />
-              <p className="font-medium">Importing business cases...</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                This may take a few moments
-              </p>
-            </div>
-          </div>
-        )}
+        {step === "import" && <ImportLoadingStep />}
 
         {step === "results" && importResult && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <h3 className="font-semibold text-lg">Import Results</h3>
-              
-              {/* Complete Breakdown */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                <div className="p-3 border rounded-lg">
-                  <p className="text-xs text-muted-foreground">Total CSV Lines</p>
-                  <p className="text-xl font-bold">{totalCsvLines}</p>
-                </div>
-                {skippedRows.length > 0 && (
-                  <div className="p-3 border rounded-lg bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700">
-                    <p className="text-xs text-muted-foreground">Skipped (Parse)</p>
-                    <p className="text-xl font-bold text-amber-600">
-                      {skippedRows.length}
-                    </p>
-                </div>
-                )}
-                <div className="p-3 border rounded-lg">
-                  <p className="text-xs text-muted-foreground">Validated</p>
-                  <p className="text-xl font-bold">{importResult.validRows}</p>
-                </div>
-                {importResult.invalidRows > 0 && (
-                  <div className="p-3 border rounded-lg bg-orange-50 dark:bg-orange-950/20 border-orange-300 dark:border-orange-700">
-                    <p className="text-xs text-muted-foreground">Invalid</p>
-                    <p className="text-xl font-bold text-orange-600">
-                      {importResult.invalidRows}
-                    </p>
-                </div>
-                )}
-                <div className="p-3 border rounded-lg bg-green-50 dark:bg-green-950/20">
-                  <p className="text-xs text-muted-foreground">Created</p>
-                  <p className="text-xl font-bold text-green-600">
-                    {importResult.created}
-                  </p>
-              </div>
-                <div className="p-3 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                  <p className="text-xs text-muted-foreground">Updated</p>
-                  <p className="text-xl font-bold text-blue-600">
-                    {importResult.updated}
-                  </p>
-                </div>
-                {importResult.errors > 0 && (
-                  <div className="p-3 border rounded-lg bg-red-50 dark:bg-red-950/20">
-                    <p className="text-xs text-muted-foreground">Import Errors</p>
-                    <p className="text-xl font-bold text-red-600">
-                      {importResult.errors}
-                    </p>
-                  </div>
-                )}
-            </div>
-
-              {/* Summary */}
-              <div className="p-3 bg-muted rounded-lg text-sm">
-                <p className="font-medium mb-1">Summary:</p>
-                <p>
-                  {totalCsvLines} total CSV lines → {skippedRows.length} skipped during parsing → {importResult.totalRows} validated → {importResult.created + importResult.updated} successfully imported ({importResult.created} created, {importResult.updated} updated)
-                  {importResult.errors > 0 && ` → ${importResult.errors} failed during import`}
-                </p>
-              </div>
-            </div>
-
-            {/* Skipped Rows (Parse Errors) */}
-            {skippedRows.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
-                  {skippedRows.length} Row{skippedRows.length !== 1 ? "s" : ""} Skipped During Parsing
-                </h4>
-                <div className="border border-amber-300 dark:border-amber-700 rounded-lg bg-amber-50 dark:bg-amber-950/20 max-h-64 overflow-y-auto">
-                  <div className="p-2 space-y-1">
-                    {skippedRows.map((skipped) => (
-                      <div
-                        key={skipped.lineNumber}
-                        className="text-sm p-2 border-b border-amber-200 dark:border-amber-800 last:border-0"
-                      >
-                        <div className="flex items-start gap-2">
-                          <span className="font-mono text-xs bg-amber-200 dark:bg-amber-800 px-1.5 py-0.5 rounded shrink-0">
-                            Line {skipped.lineNumber}
-                          </span>
-                          <span className="text-amber-800 dark:text-amber-300 font-medium">
-                            {skipped.rawData}
-                          </span>
-                        </div>
-                        <p className="text-xs text-amber-600 dark:text-amber-500 mt-1 ml-14">
-                          {skipped.reason}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Import Errors */}
-            {importResult.rowProgress.some((p) => p.status === "error") && (
-              <div className="space-y-2">
-                <h4 className="font-medium text-destructive flex items-center gap-2">
-                  <XCircle className="h-4 w-4" />
-                  {importResult.errors} Row{importResult.errors !== 1 ? "s" : ""} Failed During Import
-                </h4>
-                <div className="border border-red-300 dark:border-red-700 rounded-lg bg-red-50 dark:bg-red-950/20 p-4 max-h-64 overflow-y-auto space-y-2">
-                  {importResult.rowProgress
-                    .filter((p) => p.status === "error")
-                    .map((p) => {
-                      const validation = importResult.rowValidations.find(
-                        (v) => v.rowIndex === p.rowIndex
-                      );
-                      return (
-                        <div key={p.rowIndex} className="text-sm border-b border-red-200 dark:border-red-800 last:border-0 pb-2 last:pb-0">
-                          <div className="flex items-start gap-2">
-                            <span className="font-mono text-xs bg-red-200 dark:bg-red-800 px-1.5 py-0.5 rounded shrink-0">
-                              Row {p.rowIndex + 1}
-                            </span>
-                            {validation && (
-                              <span className="text-red-800 dark:text-red-300 font-medium">
-                                {validation.row.formulation_code} / {validation.row.country_code} / {validation.row.use_group_variant}
-                              </span>
-                            )}
-                      </div>
-                          <p className="text-xs text-red-600 dark:text-red-500 mt-1 ml-14">
-                            {p.message || "Import failed"}
-                          </p>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            )}
-
-            {/* Invalid Rows (Validation Failed) */}
-            {importResult.invalidRows > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-medium text-orange-700 dark:text-orange-400 flex items-center gap-2">
-                  <XCircle className="h-4 w-4" />
-                  {importResult.invalidRows} Row{importResult.invalidRows !== 1 ? "s" : ""} Failed Validation
-                </h4>
-                <p className="text-sm text-muted-foreground">
-                  These rows passed parsing but failed validation. See details below.
-                </p>
-              </div>
-            )}
-
-            {/* Full Validation Preview */}
-            <BusinessCaseImportPreview
-              validations={importResult.rowValidations}
-            />
-          </div>
+          <ImportResultsStep
+            importResult={importResult}
+            totalCsvLines={totalCsvLines}
+            skippedRows={skippedRows}
+          />
         )}
 
         <DialogFooter>
