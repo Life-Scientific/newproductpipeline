@@ -26,6 +26,7 @@ export type {
 export type {
   BusinessCaseGroupData,
   BusinessCaseYearData,
+  BusinessCaseVersionHistoryEntry,
 } from "./types";
 
 // Re-export functions from domain modules
@@ -96,6 +97,7 @@ import type {
   FormulationWithNestedData,
   BusinessCaseGroupData,
   BusinessCaseYearData,
+  BusinessCaseVersionHistoryEntry,
 } from "./types";
 
 export async function getFormulations() {
@@ -124,7 +126,7 @@ export async function getFormulations() {
   }
 
   // Fetch all pages in parallel
-  const pagePromises: Promise<any[]>[] = [];
+  const pagePromises: Promise<any>[] = [];
 
   for (let page = 0; page < totalPages; page++) {
     pagePromises.push(
@@ -134,11 +136,11 @@ export async function getFormulations() {
         .order("formulation_code", { ascending: true })
         .range(page * pageSize, (page + 1) * pageSize - 1)
         .then(({ data, error }) => {
-          if (supabaseError) {
-            throw new Error(`Failed to fetch formulations: ${supabaseError.message}`);
+          if (error) {
+            throw new Error(`Failed to fetch formulations: ${error.message}`);
           }
           return data || [];
-        }),
+        }) as Promise<any>,
     );
   }
 
@@ -317,12 +319,14 @@ async function fetchAllPaginatedFromView<T>(
     }
 
     pagePromises.push(
-      query.range(page * pageSize, (page + 1) * pageSize - 1).then(({ data, error }) => {
-        if (supabaseError) {
-          throw new Error(`Failed to fetch ${viewName}: ${supabaseError.message}`);
-        }
-        return (data as T[]) || [];
-      }),
+      Promise.resolve().then(() =>
+        query.range(page * pageSize, (page + 1) * pageSize - 1).then(({ data, error }) => {
+          if (error) {
+            throw new Error(`Failed to fetch ${viewName}: ${error.message}`);
+          }
+          return (data as T[]) || [];
+        }),
+      ),
     );
   }
 
@@ -997,83 +1001,6 @@ async function enrichBusinessCases(
 }
 
 /**
- * Get business cases - fetches all active business cases with parallel pagination
- * Note: This is NOT cached due to large payload size (>2MB)
- * For chart aggregations, use getBusinessCaseSummaryByFiscalYear instead
- */
-export async function getBusinessCases() {
-  const supabase = await createClient();
-
-  // Supabase has a default limit of 10k rows - we need to fetch all
-  // First get total count, then fetch in batches in parallel
-  const { count } = await supabase
-    .from("vw_business_case")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "active"); // Only count active business cases
-
-  const pageSize = 10000;
-  const totalPages = Math.ceil((count || 0) / pageSize);
-
-  // Early exit for single page results
-  if (totalPages <= 1) {
-    const { data, error: supabaseError } = await supabase
-      .from("vw_business_case")
-      .select("*")
-      .eq("status", "active")
-      .order("fiscal_year", { ascending: true })
-      .order("year_offset", { ascending: true });
-
-    if (supabaseError) {
-      throw new Error(`Failed to fetch business cases: ${supabaseError.message}`);
-    }
-
-    const allData = data || [];
-    const deduplicated = deduplicateBusinessCases(allData);
-    const enriched = await enrichBusinessCases(deduplicated);
-
-    return enriched.filter((bc) => bc.formulation_code && bc.country_name);
-  }
-
-  // Fetch all pages in parallel
-  const pagePromises: Promise<any[]>[] = [];
-
-  for (let page = 0; page < totalPages; page++) {
-    pagePromises.push(
-      supabase
-        .from("vw_business_case")
-        .select("*")
-        .eq("status", "active")
-        .order("fiscal_year", { ascending: true })
-        .order("year_offset", { ascending: true })
-        .range(page * pageSize, (page + 1) * pageSize - 1)
-        .then(({ data, error }) => {
-          if (supabaseError) {
-            error("getBusinessCases page error:", error);
-            throw new Error(`Failed to fetch business cases: ${supabaseError.message}`);
-          }
-          return data || [];
-        }),
-    );
-  }
-
-  // Flatten all page results
-  const allPages = await Promise.all(pagePromises);
-  const data = allPages.flat();
-
-  // Deduplicate before enrichment
-  const deduplicated = deduplicateBusinessCases(data || []);
-  const enriched = await enrichBusinessCases(deduplicated);
-
-  // Filter out orphaned business cases (those without formulation_code or country_name)
-  // These are invalid business cases that shouldn't be returned
-  const validBusinessCases = enriched.filter(
-    (bc) => bc.formulation_code && bc.country_name,
-  );
-
-  return validBusinessCases;
-}
-
-/**
  * Lightweight business case data for the 10-year projection chart
  * Only fetches columns needed for chart aggregation
  * NOT cached - data is too large (>2MB) for Next.js cache limits
@@ -1089,6 +1016,7 @@ export async function getBusinessCasesForChart() {
   const totalPages = Math.ceil((count || 0) / pageSize);
 
   // Early exit for single page results
+  let allData: any[] = [];
   if (totalPages <= 1) {
     const { data, error: supabaseError } = await supabase
       .from("vw_business_case")
@@ -1124,7 +1052,53 @@ export async function getBusinessCasesForChart() {
       );
     }
 
-    const allData = data || [];
+    allData = data || [];
+  } else {
+    // Fetch all pages in parallel for multi-page results
+    const pagePromises = Array.from({ length: totalPages }, (_, page) =>
+      supabase
+        .from("vw_business_case")
+        .select(`
+          business_case_id,
+          business_case_group_id,
+          fiscal_year,
+          year_offset,
+          effective_start_fiscal_year,
+          total_revenue,
+          total_margin,
+          total_cogs,
+          margin_percent,
+          country_name,
+          country_code,
+          country_id,
+          formulation_country_id,
+          formulation_country_use_group_id,
+          formulation_id,
+          formulation_code,
+          formulation_name,
+          use_group_name,
+          use_group_variant,
+          display_name,
+          business_case_name
+        `)
+        .eq("status", "active")
+        .order("fiscal_year", { ascending: true })
+        .range(page * pageSize, (page + 1) * pageSize - 1),
+    );
+
+    const pageResults = await Promise.all(pagePromises);
+
+    // Check for errors and collect all data
+    for (const result of pageResults) {
+      if (result.error) {
+        throw new Error(
+          `Failed to fetch business cases for chart: ${result.error.message}`,
+        );
+      }
+      if (result.data) {
+        allData = allData.concat(result.data);
+      }
+    }
   }
 
   // Continue with country_status lookup and enrichment...
@@ -1338,48 +1312,6 @@ export async function getBusinessCasesForChart() {
 
   // Filter orphans only
   return enrichedData.filter((bc) => bc.formulation_code && bc.country_name);
-}
-
-export async function getBusinessCaseById(id: string) {
-  try {
-    const supabase = await createClient();
-
-    // First try to find by business_case_id
-    let { data, error } = await supabase
-      .from("vw_business_case")
-      .select("*")
-      .eq("business_case_id", id)
-      .single();
-
-    // If not found, try by business_case_group_id (get the first year's record)
-    if (error?.code === "PGRST116" || !data) {
-      const groupResult = await supabase
-        .from("vw_business_case")
-        .select("*")
-        .eq("business_case_group_id", id)
-        .order("year_offset", { ascending: true })
-        .limit(1)
-        .single();
-
-      data = groupResult.data;
-      error = groupResult.error;
-    }
-
-    if (supabaseError) {
-      error("Error fetching business case:", error);
-      return null;
-    }
-
-    if (!data) {
-      return null;
-    }
-
-    const enriched = await enrichBusinessCases([data]);
-    return enriched[0] || null;
-  } catch (err) {
-    error("Error in getBusinessCaseById:", err);
-    return null;
-  }
 }
 
 // Countries functions moved to ./countries.ts
@@ -1667,7 +1599,7 @@ export async function getBusinessCasesForProjectionTable(
     const allData: any[] = [];
     for (const result of pageResults) {
       if (result.error) {
-        throw new Error(`Failed to fetch business cases: ${result.supabaseError.message}`);
+        throw new Error(`Failed to fetch business cases: ${result.error.message}`);
       }
       if (result.data) {
         allData.push(...result.data);
@@ -2014,110 +1946,13 @@ export async function checkExistingBusinessCase(
 /**
  * Business case version history entry
  */
-export interface BusinessCaseVersionHistoryEntry {
-  business_case_group_id: string;
-  status: string;
-  created_at: string | null;
-  created_by: string | null;
-  updated_at: string | null;
-  version_number: number;
-  year_1_summary: {
-    volume: number | null;
-    nsp: number | null;
-    total_revenue: number | null;
-  };
-  // Audit fields
-  change_reason: string | null;
-  change_summary: string | null;
-  previous_group_id: string | null;
-}
+// BusinessCaseVersionHistoryEntry moved to ./types.ts
 
 /**
  * Get version history for a use group's business cases
  * Returns all versions (active and inactive) sorted by creation date
  */
-export async function getBusinessCaseVersionHistory(
-  useGroupId: string,
-): Promise<BusinessCaseVersionHistoryEntry[]> {
-  const supabase = await createClient();
-
-  // Get all business case IDs linked to this use group
-  const { data: junctionData, error: junctionError } = await supabase
-    .from("business_case_use_groups")
-    .select("business_case_id")
-    .eq("formulation_country_use_group_id", useGroupId);
-
-  if (junctionError || !junctionData || junctionData.length === 0) {
-    return [];
-  }
-
-  const businessCaseIds = junctionData.map((j) => j.business_case_id);
-
-  // Get all business cases (both active and inactive)
-  const { data: businessCases, error: bcError } = await supabase
-    .from("business_case")
-    .select(
-      "business_case_group_id, status, created_at, created_by, updated_at, year_offset, volume, nsp, total_revenue, change_reason, change_summary, previous_group_id",
-    )
-    .in("business_case_id", businessCaseIds)
-    .order("created_at", { ascending: false });
-
-  if (bcError || !businessCases) {
-    return [];
-  }
-
-  // Group by business_case_group_id and get summary from year 1
-  const groupMap = new Map<string, BusinessCaseVersionHistoryEntry>();
-
-  businessCases.forEach((bc) => {
-    if (!bc.business_case_group_id) return;
-
-    if (!groupMap.has(bc.business_case_group_id)) {
-      groupMap.set(bc.business_case_group_id, {
-        business_case_group_id: bc.business_case_group_id,
-        status: bc.status || "active",
-        created_at: bc.created_at,
-        created_by: bc.created_by,
-        updated_at: bc.updated_at,
-        version_number: 0, // Will be calculated after
-        year_1_summary: {
-          volume: null,
-          nsp: null,
-          total_revenue: null,
-        },
-        // Audit fields (use year 1 data since these are same across all years in a group)
-        change_reason: (bc as any).change_reason || null,
-        change_summary: (bc as any).change_summary || null,
-        previous_group_id: (bc as any).previous_group_id || null,
-      });
-    }
-
-    // Use year 1 data for summary
-    if (bc.year_offset === 1) {
-      const entry = groupMap.get(bc.business_case_group_id)!;
-      entry.year_1_summary = {
-        volume: bc.volume,
-        nsp: bc.nsp,
-        total_revenue: bc.total_revenue,
-      };
-    }
-  });
-
-  // Convert to array and sort by created_at descending
-  const versions = Array.from(groupMap.values()).sort((a, b) => {
-    const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
-    const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
-    return bTime - aTime;
-  });
-
-  // Assign version numbers (newest = highest number)
-  const totalVersions = versions.length;
-  versions.forEach((v, index) => {
-    v.version_number = totalVersions - index;
-  });
-
-  return versions;
-}
+// getBusinessCaseVersionHistory moved to ./business-cases.ts
 
 /**
  * Validate that all selected use groups have the same target_market_entry_fy
@@ -2503,66 +2338,7 @@ export async function checkFormulationTargetInUse(
  * Get all active business case groups for a formulation + country
  * Used by cascade update logic
  */
-export async function getBusinessCaseGroupsUsingFormulation(
-  formulationId: string,
-  countryId: string,
-) {
-  const supabase = await createClient();
-
-  // Get formulation code first
-  const { data: formulation } = await supabase
-    .from("formulations")
-    .select("formulation_code")
-    .eq("formulation_id", formulationId)
-    .single();
-
-  if (!formulation) {
-    return [];
-  }
-
-  // Get country code
-  const { data: country } = await supabase
-    .from("countries")
-    .select("country_code")
-    .eq("country_id", countryId)
-    .single();
-
-  if (!country) {
-    return [];
-  }
-
-  // Get business cases for this formulation + country
-  const { data, error: supabaseError } = await supabase
-    .from("vw_business_case")
-    .select("business_case_group_id, formulation_id, country_id")
-    .eq("formulation_code", formulation.formulation_code)
-    .eq("country_code", country.country_code)
-    .eq("status", "active");
-
-  if (supabaseError) {
-    throw new Error(`Failed to fetch business case groups: ${supabaseError.message}`);
-  }
-
-  // Get unique group IDs
-  const uniqueGroups = new Map<
-    string,
-    { formulation_id: string; country_id: string }
-  >();
-  data?.forEach((bc) => {
-    if (bc.business_case_group_id && bc.formulation_id && bc.country_id) {
-      uniqueGroups.set(bc.business_case_group_id, {
-        formulation_id: bc.formulation_id,
-        country_id: bc.country_id,
-      });
-    }
-  });
-
-  return Array.from(uniqueGroups.entries()).map(([groupId, ids]) => ({
-    business_case_group_id: groupId,
-    formulation_id: ids.formulation_id,
-    country_id: ids.country_id,
-  }));
-}
+// getBusinessCaseGroupsUsingFormulation moved to ./business-cases.ts
 
 /**
  * Get all formulation-country combinations

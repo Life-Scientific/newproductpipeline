@@ -25,11 +25,11 @@ export async function revalidateAllCaches(): Promise<{
       message: "Routes refreshed. Data will reload on next navigation.",
     };
   } catch (err) {
-    error("Failed to revalidate routes:", error);
+    error("Failed to revalidate routes:", err);
     return {
       success: false,
       message:
-        error instanceof Error ? supabaseError.message : "Failed to revalidate routes",
+        err instanceof Error ? err.message : "Failed to revalidate routes",
     };
   }
 }

@@ -74,12 +74,12 @@ export function MenuVisibilitySettings() {
         description: "Menu visibility updated",
       });
     } catch (err) {
-      error("Failed to toggle menu item:", error);
+      error("Failed to toggle menu item:", err);
       toast({
         title: "Error",
         description:
-          error instanceof Error
-            ? supabaseError.message
+          err instanceof Error
+            ? err.message
             : "Failed to update menu visibility",
         variant: "destructive",
       });

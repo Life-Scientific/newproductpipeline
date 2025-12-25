@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { getBusinessCaseVersionHistoryAction } from "@/lib/actions/business-cases";
-import type { BusinessCaseVersionHistoryEntry } from "@/lib/db/queries";
+import type { BusinessCaseVersionHistoryEntry } from "@/lib/db/types";
 import { hasChanges } from "@/lib/utils/business-case-diff";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 

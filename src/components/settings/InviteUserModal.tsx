@@ -57,7 +57,7 @@ export function InviteUserModal({
           setSelectedRole(rolesData[0].role_name);
         }
       } catch (err) {
-        error("Failed to load roles:", error);
+        error("Failed to load roles:", err);
       } finally {
         setLoadingRoles(false);
       }
@@ -95,7 +95,7 @@ export function InviteUserModal({
       }
     } catch (err) {
       const message =
-        error instanceof Error ? supabaseError.message : "Failed to send invitation";
+        err instanceof Error ? err.message : "Failed to send invitation";
       toast({
         title: "Error",
         description: message,

@@ -128,7 +128,7 @@ export function KPIDetailModal({
         onUpdate(localKeyResult);
         setHasChanges(false);
       } catch (err) {
-        error("Error saving key result:", error);
+        error("Error saving key result:", err);
         // Could show error toast here
       }
     }
@@ -146,7 +146,7 @@ export function KPIDetailModal({
       onUpdate(updated);
       setHasChanges(false);
     } catch (err) {
-      error("Error toggling lock:", error);
+      error("Error toggling lock:", err);
       // Could show error toast here
     }
   };

@@ -59,7 +59,7 @@ export async function getWorkspaceBySlug(
     .single();
 
   if (supabaseError) {
-    if (error.code === "PGRST116") {
+    if (supabaseError.code === "PGRST116") {
       return null; // Not found
     }
     throw new Error(`Failed to fetch workspace: ${supabaseError.message}`);
@@ -90,7 +90,7 @@ export async function getWorkspaceWithMenuBySlug(
     .single();
 
   if (supabaseError) {
-    if (error.code === "PGRST116") {
+    if (supabaseError.code === "PGRST116") {
       return null; // Not found
     }
     warn("Failed to fetch workspace with menu:", supabaseError.message);
@@ -225,7 +225,7 @@ export async function getUserDefaultWorkspace(): Promise<Workspace | null> {
     .eq("is_default", true)
     .single();
 
-  if (error || !preference) {
+  if (supabaseError || !preference) {
     // If no default, return the first workspace (Portfolio)
     return getWorkspaceBySlug("portfolio");
   }

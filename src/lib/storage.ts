@@ -38,7 +38,7 @@ export function getStorage(
     }
     return options?.parser ? options.parser(stored) : JSON.parse(stored);
   } catch (supabaseError) {
-    warn(`Failed to get storage key "${key}":`, error);
+    warn(`Failed to get storage key "${key}":`, supabaseError);
     return options?.defaultValue;
   }
 }
@@ -54,7 +54,7 @@ export function getString(key: string, defaultValue = ""): string {
   try {
     return localStorage.getItem(key) ?? defaultValue;
   } catch (supabaseError) {
-    warn(`Failed to get storage key "${key}":`, error);
+    warn(`Failed to get storage key "${key}":`, supabaseError);
     return defaultValue;
   }
 }
@@ -73,7 +73,7 @@ export function getNumber(key: string, defaultValue = 0): number {
     const parsed = Number(stored);
     return Number.isNaN(parsed) ? defaultValue : parsed;
   } catch (supabaseError) {
-    warn(`Failed to get storage key "${key}":`, error);
+    warn(`Failed to get storage key "${key}":`, supabaseError);
     return defaultValue;
   }
 }
@@ -91,7 +91,7 @@ export function getBoolean(key: string, defaultValue = false): boolean {
     if (stored === null) return defaultValue;
     return stored === "true";
   } catch (supabaseError) {
-    warn(`Failed to get storage key "${key}":`, error);
+    warn(`Failed to get storage key "${key}":`, supabaseError);
     return defaultValue;
   }
 }
@@ -114,7 +114,7 @@ export function getJson<T extends JsonValue>(
     }
     return JSON.parse(stored) as T;
   } catch (supabaseError) {
-    warn(`Failed to get storage key "${key}":`, error);
+    warn(`Failed to get storage key "${key}":`, supabaseError);
     return defaultValue;
   }
 }
@@ -130,7 +130,7 @@ export function setStorage(key: string, value: JsonValue): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (supabaseError) {
-    warn(`Failed to set storage key "${key}":`, error);
+    warn(`Failed to set storage key "${key}":`, supabaseError);
   }
 }
 
@@ -145,7 +145,7 @@ export function setString(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
   } catch (supabaseError) {
-    warn(`Failed to set storage key "${key}":`, error);
+    warn(`Failed to set storage key "${key}":`, supabaseError);
   }
 }
 
@@ -160,7 +160,7 @@ export function setNumber(key: string, value: number): void {
   try {
     localStorage.setItem(key, String(value));
   } catch (supabaseError) {
-    warn(`Failed to set storage key "${key}":`, error);
+    warn(`Failed to set storage key "${key}":`, supabaseError);
   }
 }
 
@@ -175,7 +175,7 @@ export function setBoolean(key: string, value: boolean): void {
   try {
     localStorage.setItem(key, String(value));
   } catch (supabaseError) {
-    warn(`Failed to set storage key "${key}":`, error);
+    warn(`Failed to set storage key "${key}":`, supabaseError);
   }
 }
 
@@ -190,7 +190,7 @@ export function removeStorage(key: string): void {
   try {
     localStorage.removeItem(key);
   } catch (supabaseError) {
-    warn(`Failed to remove storage key "${key}":`, error);
+    warn(`Failed to remove storage key "${key}":`, supabaseError);
   }
 }
 
@@ -225,9 +225,9 @@ export function clearStoragePrefix(prefix: string): void {
         keysToRemove.push(key);
       }
     }
-    keysToRemove.forEach((key) => localStorage.removeItem(key));
+    keysToRemove.forEach((key) => void localStorage.removeItem(key));
   } catch (supabaseError) {
-    warn(`Failed to clear storage with prefix "${prefix}":`, error);
+    warn(`Failed to clear storage with prefix "${prefix}":`, supabaseError);
   }
 }
 
@@ -256,4 +256,3 @@ export function listStorageKeys(prefix: string): string[] {
 
 // Import warn for error logging
 import { warn } from "@/lib/logger";
-

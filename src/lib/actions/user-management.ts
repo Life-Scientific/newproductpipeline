@@ -348,8 +348,8 @@ export async function getUserManagementData(): Promise<{
   const [usersResult, rolesResult, invitationsResult] = await Promise.all([
     // Users
     supabase.rpc("get_all_users_with_roles").then(({ data, error }) => {
-      if (supabaseError) {
-        throw new Error(`Failed to fetch users: ${supabaseError.message}`);
+      if (error) {
+        throw new Error(`Failed to fetch users: ${error.message}`);
       }
       return (data || []).map((user: any) => ({
         id: user.id,
@@ -364,8 +364,8 @@ export async function getUserManagementData(): Promise<{
     // Roles (only if user has permission)
     canViewRoles
       ? supabase.rpc("get_all_roles").then(({ data, error }) => {
-          if (supabaseError) {
-            throw new Error(`Failed to fetch roles: ${supabaseError.message}`);
+          if (error) {
+            throw new Error(`Failed to fetch roles: ${error.message}`);
           }
           return (data || []).map((role: any) => ({
             role_id: role.role_id,
@@ -379,8 +379,8 @@ export async function getUserManagementData(): Promise<{
       : Promise.resolve([]),
     // Invitations
     supabase.rpc("get_all_invitations").then(({ data, error }) => {
-      if (supabaseError) {
-        throw new Error(`Failed to fetch invitations: ${supabaseError.message}`);
+      if (error) {
+        throw new Error(`Failed to fetch invitations: ${error.message}`);
       }
       return (data || []).map((invitation: any) => ({
         id: invitation.id,
@@ -765,7 +765,7 @@ export async function updateRole(
       .eq("role_id", roleId);
 
     if (supabaseError) {
-      if (error.code === "23505") {
+      if (supabaseError.code === "23505") {
         throw new Error("A role with this name already exists");
       }
       throw new Error(`Failed to update role: ${supabaseError.message}`);
@@ -1046,7 +1046,7 @@ export async function getInvitationByToken(
     .eq("token_hash", tokenHash)
     .single();
 
-  if (error || !data) {
+  if (supabaseError || !data) {
     return null;
   }
 

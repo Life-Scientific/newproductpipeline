@@ -67,8 +67,8 @@ async function fetchAllPaginated<T>(
       (page + 1) * pageSize - 1,
     );
 
-    if (supabaseError) {
-      error(`Failed to fetch ${tableName}:`, supabaseError.message);
+    if (error) {
+      error(`Failed to fetch ${tableName}:`, error.message);
       break;
     }
 
@@ -313,7 +313,7 @@ export async function getLatestExchangeRate(
     .limit(1)
     .single();
 
-  if (error || !data) {
+  if (supabaseError || !data) {
     return null;
   }
 

@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import type { BusinessCase, BusinessCaseGroupData, BusinessCaseYearData } from "./types";
+import type {
+  BusinessCase,
+  BusinessCaseGroupData,
+  BusinessCaseYearData,
+  BusinessCaseVersionHistoryEntry,
+} from "./types";
 import type { Database } from "@/lib/supabase/database.types";
 import { error } from "@/lib/logger";
 
@@ -12,11 +17,11 @@ import { error } from "@/lib/logger";
  * Returns only the latest version (highest year_offset) for each group
  */
 function deduplicateBusinessCases(
-  businessCases: Array<BusinessCase & { year_offset?: number }>,
-): Array<BusinessCase & { year_offset?: number }> {
+  businessCases: Array<BusinessCase & { year_offset: number | null }>,
+): Array<BusinessCase & { year_offset: number | null }> {
   const latestByGroup = new Map<
     string,
-    BusinessCase & { year_offset?: number }
+    BusinessCase & { year_offset: number | null }
   >();
 
   for (const bc of businessCases) {
@@ -87,7 +92,7 @@ async function enrichBusinessCases(
   const { data: junctionData } = useGroupIds.length > 0
     ? await supabase
         .from("formulation_country_use_group")
-        .select("formulation_country_use_group_id, formulation_country_id")
+        .select("business_case_id, formulation_country_use_group_id, formulation_country_id")
         .in("formulation_country_use_group_id", useGroupIds)
     : { data: null };
 
@@ -215,7 +220,7 @@ async function fetchBusinessCasesPaginated<T>(
   }
 
   // Get count
-  const { count } = await baseQuery.clone().select("*", { count: "exact", head: true });
+  const { count } = await (baseQuery as any).clone().select("*", { count: "exact", head: true });
 
   const pageSize = 10000;
   const totalPages = Math.ceil((count || 0) / pageSize);
@@ -223,7 +228,7 @@ async function fetchBusinessCasesPaginated<T>(
   // Early exit for single page results
   if (totalPages <= 1) {
     const { data, error } = await baseQuery;
-    if (error) throw new Error(`Failed to fetch business cases: ${supabaseError.message}`);
+    if (error) throw new Error(`Failed to fetch business cases: ${error.message}`);
     return (data as T[]) || [];
   }
 
@@ -232,11 +237,11 @@ async function fetchBusinessCasesPaginated<T>(
 
   for (let page = 0; page < totalPages; page++) {
     pagePromises.push(
-      baseQuery
+      (baseQuery as any)
         .clone()
         .range(page * pageSize, (page + 1) * pageSize - 1)
-        .then(({ data, error }) => {
-          if (error) throw new Error(`Failed to fetch business cases: ${supabaseError.message}`);
+        .then(({ data, error }: { data: T[] | null; error: Error | null }) => {
+          if (error) throw new Error(`Failed to fetch business cases: ${error.message}`);
           return (data as T[]) || [];
         }),
     );
@@ -297,48 +302,93 @@ export async function getBusinessCaseById(id: string) {
 }
 
 /**
- * Get business case version history
+ * Get business case version history for a use group
+ * Returns all versions (active and inactive) grouped by business_case_group_id
  */
 export async function getBusinessCaseVersionHistory(
-  groupId: string,
-): Promise<BusinessCaseYearData[]> {
+  useGroupId: string,
+): Promise<BusinessCaseVersionHistoryEntry[]> {
   const supabase = await createClient();
 
-  const { data, error: supabaseError } = await supabase
-    .from("vw_business_case")
-    .select(
-      `
-      business_case_id,
-      business_case_group_id,
-      year_offset,
-      fiscal_year,
-      target_market_entry_fy,
-      effective_start_fiscal_year,
-      volume,
-      nsp,
-      cogs_per_unit,
-      total_revenue,
-      total_cogs,
-      total_margin,
-      margin_percent,
-      formulation_name,
-      uom,
-      country_name,
-      currency_code,
-      use_group_name,
-      use_group_variant,
-      formulation_country_use_group_id
-    `,
-    )
-    .eq("business_case_group_id", groupId)
-    .order("year_offset", { ascending: true });
+  // Get all business case IDs linked to this use group
+  const { data: junctionData, error: junctionError } = await supabase
+    .from("business_case_use_groups")
+    .select("business_case_id")
+    .eq("formulation_country_use_group_id", useGroupId);
 
-  if (supabaseError) {
-    error("Error fetching version history:", error);
+  if (junctionError || !junctionData || junctionData.length === 0) {
     return [];
   }
 
-  return (data as BusinessCaseYearData[]) || [];
+  const businessCaseIds = junctionData.map((j) => j.business_case_id);
+
+  // Get all business cases (both active and inactive) with their details
+  const { data: businessCases, error: bcError } = await supabase
+    .from("business_case")
+    .select(
+      "business_case_group_id, status, created_at, created_by, updated_at, year_offset, volume, nsp, total_revenue, change_reason, change_summary, previous_group_id",
+    )
+    .in("business_case_id", businessCaseIds)
+    .order("created_at", { ascending: false });
+
+  if (bcError || !businessCases) {
+    error("Error fetching business cases for version history:", bcError);
+    return [];
+  }
+
+  // Group by business_case_group_id and get summary from year 1
+  const groupMap = new Map<string, BusinessCaseVersionHistoryEntry>();
+
+  businessCases.forEach((bc) => {
+    if (!bc.business_case_group_id) return;
+
+    if (!groupMap.has(bc.business_case_group_id)) {
+      groupMap.set(bc.business_case_group_id, {
+        business_case_group_id: bc.business_case_group_id,
+        status: bc.status || "active",
+        created_at: bc.created_at,
+        created_by: bc.created_by,
+        updated_at: bc.updated_at,
+        version_number: 0, // Will be calculated after
+        year_1_summary: {
+          volume: null,
+          nsp: null,
+          total_revenue: null,
+        },
+        // Audit fields
+        change_reason: bc.change_reason || null,
+        change_summary: bc.change_summary || null,
+        previous_group_id: bc.previous_group_id || null,
+      });
+    }
+
+    // Use year 1 data for summary
+    if (bc.year_offset === 1) {
+      const entry = groupMap.get(bc.business_case_group_id);
+      if (entry) {
+        entry.year_1_summary = {
+          volume: bc.volume,
+          nsp: bc.nsp,
+          total_revenue: bc.total_revenue,
+        };
+      }
+    }
+  });
+
+  // Convert to array and sort by created_at descending
+  const versions = Array.from(groupMap.values()).sort((a, b) => {
+    const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return bTime - aTime;
+  });
+
+  // Assign version numbers (newest = highest number)
+  const totalVersions = versions.length;
+  versions.forEach((v, index) => {
+    v.version_number = totalVersions - index;
+  });
+
+  return versions;
 }
 
 /**

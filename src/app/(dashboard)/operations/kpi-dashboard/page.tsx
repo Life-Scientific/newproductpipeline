@@ -64,7 +64,7 @@ export default async function KPIDashboardPage() {
     users = await getAllUsers();
   } catch (err) {
     // Silently fail - demo will work without users, just can't assign owners
-    warn("Could not fetch users for KPI dashboard:", error);
+    warn("Could not fetch users for KPI dashboard:", err);
   }
 
   // Fetch KPI data from database

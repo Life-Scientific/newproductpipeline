@@ -863,12 +863,12 @@ export async function getBusinessCaseGroupAction(groupId: string) {
     const data = await getBusinessCaseGroup(groupId);
     return { data, error: null };
   } catch (err) {
-    error("getBusinessCaseGroupAction error:", error);
+    error("getBusinessCaseGroupAction error:", err);
     return {
       data: null,
       error:
-        error instanceof Error
-          ? supabaseError.message
+        err instanceof Error
+          ? err.message
           : "Failed to fetch business case group",
     };
   }
@@ -893,8 +893,8 @@ export async function checkExistingBusinessCaseAction(
     return {
       data: null,
       error:
-        error instanceof Error
-          ? supabaseError.message
+        err instanceof Error
+          ? err.message
           : "Failed to check existing business case",
     };
   }
@@ -911,7 +911,7 @@ export async function getFormulationsAction() {
     return {
       data: null,
       error:
-        error instanceof Error ? supabaseError.message : "Failed to fetch formulations",
+        err instanceof Error ? err.message : "Failed to fetch formulations",
     };
   }
 }
@@ -927,7 +927,7 @@ export async function getCountriesAction() {
     return {
       data: null,
       error:
-        error instanceof Error ? supabaseError.message : "Failed to fetch countries",
+        err instanceof Error ? err.message : "Failed to fetch countries",
     };
   }
 }
@@ -943,8 +943,8 @@ export async function getBusinessCaseVersionHistoryAction(useGroupId: string) {
     return {
       data: null,
       error:
-        error instanceof Error
-          ? supabaseError.message
+        err instanceof Error
+          ? err.message
           : "Failed to fetch version history",
     };
   }
@@ -1296,7 +1296,7 @@ export async function previewBusinessCaseImport(
       if (progressIdx >= 0) {
         rowProgress[progressIdx].status = "error";
         rowProgress[progressIdx].message =
-          error instanceof Error ? supabaseError.message : "Preview simulation failed";
+          err instanceof Error ? err.message : "Preview simulation failed";
       }
     }
   }
@@ -1438,7 +1438,7 @@ export async function importBusinessCases(
       if (progressIdx >= 0) {
         rowProgress[progressIdx].status = "error";
         rowProgress[progressIdx].message =
-          error instanceof Error ? supabaseError.message : "Import failed";
+          err instanceof Error ? err.message : "Import failed";
       }
     }
   }

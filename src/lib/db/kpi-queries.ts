@@ -151,7 +151,7 @@ export async function getStrategicDrivers(
     query = query.eq("core_driver_id", coreDriverId);
   }
 
-  const { data, error } = await query;
+  const { data, error: supabaseError } = await query;
 
   if (supabaseError) {
     error("Error fetching strategic drivers:", supabaseError);
@@ -175,12 +175,12 @@ export async function getKeyResultById(id: string): Promise<KeyResultRow | null>
     .single();
 
   if (supabaseError) {
-    if (error.code === "PGRST116") {
+    if (supabaseError.code === "PGRST116") {
       // Not found
       return null;
     }
-    error("Error fetching key result:", error);
-    throw error;
+    error("Error fetching key result:", supabaseError);
+    throw supabaseError;
   }
 
   return data as KeyResultRow;

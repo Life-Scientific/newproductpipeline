@@ -59,22 +59,22 @@ export async function getPipelineTrackerData() {
 
   if (formulationsResult.error) {
     throw new Error(
-      `Failed to fetch formulations: ${formulationsResult.supabaseError.message}`,
+      `Failed to fetch formulations: ${formulationsResult.error.message}`,
     );
   }
   if (countriesResult.error) {
     throw new Error(
-      `Failed to fetch countries: ${countriesResult.supabaseError.message}`,
+      `Failed to fetch countries: ${countriesResult.error.message}`,
     );
   }
   if (useGroupsResult.error) {
     throw new Error(
-      `Failed to fetch use groups: ${useGroupsResult.supabaseError.message}`,
+      `Failed to fetch use groups: ${useGroupsResult.error.message}`,
     );
   }
   if (businessCasesResult.error) {
     throw new Error(
-      `Failed to fetch business cases: ${businessCasesResult.supabaseError.message}`,
+      `Failed to fetch business cases: ${businessCasesResult.error.message}`,
     );
   }
 

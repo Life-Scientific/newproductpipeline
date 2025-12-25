@@ -66,8 +66,8 @@ export async function getShortUrls(): Promise<ShortUrlWithStats[]> {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (supabaseError) {
-    throw new Error(`Failed to fetch short URLs: ${supabaseError.message}`);
+  if (error) {
+    throw new Error(`Failed to fetch short URLs: ${error.message}`);
   }
 
   if (!shortUrls || shortUrls.length === 0) {
@@ -209,8 +209,8 @@ export async function createShortUrl(formData: FormData): Promise<ShortUrl> {
     .select()
     .single();
 
-  if (supabaseError) {
-    throw new Error(`Failed to create short URL: ${supabaseError.message}`);
+  if (error) {
+    throw new Error(`Failed to create short URL: ${error.message}`);
   }
 
   revalidatePath("/shorturl");
@@ -257,12 +257,12 @@ export async function updateShortUrl(
     .select()
     .single();
 
-  if (supabaseError) {
+  if (error) {
     // Check if it's a permission error from RLS
-    if (error.code === "42501" || supabaseError.message.includes("policy")) {
+    if (error.code === "42501" || error.message.includes("policy")) {
       throw new Error("Only Admin or Editor roles can edit short URLs");
     }
-    throw new Error(`Failed to update short URL: ${supabaseError.message}`);
+    throw new Error(`Failed to update short URL: ${error.message}`);
   }
 
   revalidatePath("/shorturl");

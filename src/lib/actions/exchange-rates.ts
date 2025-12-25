@@ -139,8 +139,8 @@ export async function deleteExchangeRate(exchangeRateId: string) {
     .delete()
     .eq("exchange_rate_id", exchangeRateId);
 
-  if (supabaseError) {
-    return { error: `Failed to delete exchange rate: ${supabaseError.message}` };
+  if (error) {
+    return { error: `Failed to delete exchange rate: ${error.message}` };
   }
 
   revalidatePath("/reference");

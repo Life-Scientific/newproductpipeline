@@ -109,11 +109,11 @@ export function KeyResultCreateModal({
       onOpenChange(false);
       onSuccess();
     } catch (err) {
-      error("Error creating key result:", error);
+      error("Error creating key result:", err);
       toast({
         title: "Error",
         description:
-          error instanceof Error ? supabaseError.message : "Failed to create KPI.",
+          err instanceof Error ? err.message : "Failed to create KPI.",
         variant: "destructive",
       });
     } finally {

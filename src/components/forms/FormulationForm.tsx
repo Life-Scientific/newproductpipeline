@@ -134,7 +134,7 @@ export function FormulationForm({
         setAvailableIngredients(data);
       }
     } catch (err) {
-      error("Failed to load ingredients:", error);
+      error("Failed to load ingredients:", err);
     }
   };
 

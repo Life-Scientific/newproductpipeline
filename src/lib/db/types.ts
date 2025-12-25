@@ -107,6 +107,27 @@ export interface BusinessCaseYearData {
   formulation_country_use_group_id: string | null; // For version history lookup
 }
 
+/**
+ * Business case version history entry
+ */
+export interface BusinessCaseVersionHistoryEntry {
+  business_case_group_id: string;
+  status: string;
+  created_at: string | null;
+  created_by: string | null;
+  updated_at: string | null;
+  version_number: number;
+  year_1_summary: {
+    volume: number | null;
+    nsp: number | null;
+    total_revenue: number | null;
+  };
+  // Audit fields
+  change_reason: string | null;
+  change_summary: string | null;
+  previous_group_id: string | null;
+}
+
 // ============================================================================
 // Business Case Import Types
 // ============================================================================

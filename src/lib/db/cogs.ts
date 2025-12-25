@@ -78,8 +78,8 @@ export async function getFormulationCOGSHistory(
 
   const { data, error } = await query;
 
-  if (supabaseError) {
-    throw new Error(`Failed to fetch COGS history: ${supabaseError.message}`);
+  if (error) {
+    throw new Error(`Failed to fetch COGS history: ${error.message}`);
   }
 
   return data as COGS[];

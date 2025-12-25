@@ -19,8 +19,8 @@ export async function getAllUseGroups() {
       .order("use_group_name", { ascending: true })
       .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    if (supabaseError) {
-      throw new Error(`Failed to fetch use groups: ${supabaseError.message}`);
+    if (error) {
+      throw new Error(`Failed to fetch use groups: ${error.message}`);
     }
 
     if (!useGroups || useGroups.length === 0) {
@@ -213,11 +213,11 @@ export async function validateUseGroupTargetEntryConsistency(
     .select("formulation_country_use_group_id, target_market_entry_fy")
     .in("formulation_country_use_group_id", useGroupIds);
 
-  if (supabaseError) {
+  if (error) {
     return {
       isValid: false,
       targetEntry: null,
-      error: `Failed to fetch use groups: ${supabaseError.message}`,
+      error: `Failed to fetch use groups: ${error.message}`,
     };
   }
 

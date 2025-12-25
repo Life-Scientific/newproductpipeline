@@ -126,7 +126,7 @@ export function EPPOCodeMultiSelect({
           setSearchResults([]);
         }
       } catch (err) {
-        error("Error searching EPPO codes:", error);
+        error("Error searching EPPO codes:", err);
         setSearchResults([]);
       } finally {
         setIsSearching(false);

@@ -25,10 +25,10 @@ function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
         <p className="text-sm text-muted-foreground">
           An error occurred while rendering this component.
         </p>
-        {supabaseError.message && (
+        {error.message && (
           <div className="rounded-md bg-muted p-3">
             <p className="text-sm font-mono text-foreground break-all">
-              {supabaseError.message}
+              {error.message}
             </p>
           </div>
         )}

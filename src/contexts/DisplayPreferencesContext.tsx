@@ -171,7 +171,7 @@ export function DisplayPreferencesProvider({
             .eq("is_active", true);
 
           if (supabaseError) {
-            warn("Failed to fetch exchange rates:", error);
+            warn("Failed to fetch exchange rates:", supabaseError);
             return;
           }
 

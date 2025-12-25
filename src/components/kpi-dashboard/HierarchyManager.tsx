@@ -103,7 +103,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
       }
       setStrategicDrivers(strategicMap);
     } catch (err) {
-      error("Error loading hierarchy:", error);
+      error("Error loading hierarchy:", err);
       toast({
         title: "Error",
         description: "Failed to load hierarchy data",
@@ -156,7 +156,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
     } catch (err) {
       toast({
         title: "Error",
-        description: error instanceof Error ? supabaseError.message : "Failed to update core driver",
+        description: err instanceof Error ? err.message : "Failed to update core driver",
         variant: "destructive",
       });
     }
@@ -182,7 +182,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
     } catch (err) {
       toast({
         title: "Error",
-        description: error instanceof Error ? supabaseError.message : "Failed to delete core driver",
+        description: err instanceof Error ? err.message : "Failed to delete core driver",
         variant: "destructive",
       });
     }
@@ -215,7 +215,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
     } catch (err) {
       toast({
         title: "Error",
-        description: error instanceof Error ? supabaseError.message : "Failed to create strategic driver",
+        description: err instanceof Error ? err.message : "Failed to create strategic driver",
         variant: "destructive",
       });
     }
@@ -241,7 +241,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
     } catch (err) {
       toast({
         title: "Error",
-        description: error instanceof Error ? supabaseError.message : "Failed to update strategic driver",
+        description: err instanceof Error ? err.message : "Failed to update strategic driver",
         variant: "destructive",
       });
     }
@@ -267,7 +267,7 @@ export function HierarchyManager({ onUpdate }: HierarchyManagerProps) {
     } catch (err) {
       toast({
         title: "Error",
-        description: error instanceof Error ? supabaseError.message : "Failed to delete strategic driver",
+        description: err instanceof Error ? err.message : "Failed to delete strategic driver",
         variant: "destructive",
       });
     }

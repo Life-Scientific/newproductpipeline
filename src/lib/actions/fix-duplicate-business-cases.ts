@@ -367,12 +367,12 @@ export async function fixDuplicateBusinessCases(): Promise<{
       duplicates: fixedDuplicates,
     };
   } catch (err) {
-    error("Error fixing duplicate business cases:", error);
+    error("Error fixing duplicate business cases:", err);
     return {
       success: false,
       message:
-        error instanceof Error
-          ? supabaseError.message
+        err instanceof Error
+          ? err.message
           : "Unknown error occurred while fixing duplicates",
       fixed: 0,
       duplicates: [],
