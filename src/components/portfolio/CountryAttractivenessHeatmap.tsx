@@ -4,10 +4,10 @@ import {
   HeatmapGrid,
   type HeatmapDataPoint,
 } from "@/components/charts/HeatmapGrid";
-import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface CountryAttractivenessHeatmapProps {
   businessCases: BusinessCase[];

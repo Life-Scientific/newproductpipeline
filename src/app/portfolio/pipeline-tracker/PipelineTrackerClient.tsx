@@ -15,6 +15,7 @@ import type {
   FilterableBusinessCase,
   FilterableFormulationCountry,
 } from "@/hooks/use-filter-options";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 
 type Formulation =
   Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
@@ -22,9 +23,8 @@ type FormulationCountryDetail =
   Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 type FormulationCountryUseGroup =
   Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
-type BusinessCaseBase = Database["public"]["Views"]["vw_business_case"]["Row"];
 // Extended type for enriched business cases
-type BusinessCase = BusinessCaseBase & {
+type BusinessCase = EnrichedBusinessCase & {
   country_status?: string | null;
   formulation_status?: string | null;
 };
@@ -90,8 +90,8 @@ export function PipelineTrackerClient({
       formulation_id: bc.formulation_id || null,
       formulation_code: bc.formulation_code || null,
       formulation_name: bc.formulation_name || null,
-      formulation_country_id: bc.formulation_country_id || null,
-      use_group_name: bc.use_group_name || null,
+      formulation_country_id: null, // Removed in JSONB migration
+      use_group_name: null, // Not available in enriched business cases
     }));
   }, [businessCases]);
 
@@ -259,15 +259,9 @@ export function PipelineTrackerClient({
           return false;
         }
       }
-      // Use group filter
-      if (filters.useGroups.length > 0) {
-        if (
-          !bc.use_group_name ||
-          !filters.useGroups.includes(bc.use_group_name)
-        ) {
-          return false;
-        }
-      }
+      // Use group filter - disabled (business cases can now link to multiple use groups via junction table)
+      // TODO: Implement junction table-based filtering if needed
+      // if (filters.useGroups.length > 0) { ... }
       // Formulation status filter
       if (filters.formulationStatuses.length > 0) {
         const status = bc.formulation_status || "Not Yet Evaluated";

@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { getStatusVariant } from "@/lib/design-system";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
@@ -40,7 +41,7 @@ type FormulationCountryDetail =
   Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 type FormulationCountryUseGroup =
   Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface PipelineNetworkGraphProps {
   formulations: Formulation[];
@@ -403,20 +404,14 @@ export function PipelineNetworkGraph({
       let fRevenue = 0;
 
       // Calculate revenue
-      fCountries.forEach((c) => {
-        const cUseGroups = useGroups.filter(
-          (ug) => ug.formulation_country_id === c.formulation_country_id,
-        );
-        cUseGroups.forEach((ug) => {
-          const bcs = businessCases.filter(
-            (bc) =>
-              bc.formulation_country_use_group_id ===
-              ug.formulation_country_use_group_id,
-          );
-          bcs.forEach((bc) => {
-            fRevenue += bc.total_revenue || 0;
-          });
-        });
+      // Note: Business cases can now link to multiple use groups via junction table
+      // For now, we'll match by formulation_id to get approximate revenue
+      // TODO: Implement proper junction table-based filtering
+      const fBusinessCases = businessCases.filter(
+        (bc) => bc.formulation_id === f.formulation_id,
+      );
+      fBusinessCases.forEach((bc) => {
+        fRevenue += bc.total_revenue || 0;
       });
 
       totalRevenue += fRevenue;
@@ -451,16 +446,16 @@ export function PipelineNetworkGraph({
         );
 
         // Calculate country revenue
+        // Note: Matching by formulation_id and country since formulation_country_use_group_id no longer exists
+        // TODO: Implement proper junction table-based filtering
         let cRevenue = 0;
-        cUseGroups.forEach((ug) => {
-          const bcs = businessCases.filter(
-            (bc) =>
-              bc.formulation_country_use_group_id ===
-              ug.formulation_country_use_group_id,
-          );
-          bcs.forEach((bc) => {
-            cRevenue += bc.total_revenue || 0;
-          });
+        const countryBusinessCases = businessCases.filter(
+          (bc) =>
+            bc.formulation_id === f.formulation_id &&
+            bc.country_name === c.country_name,
+        );
+        countryBusinessCases.forEach((bc) => {
+          cRevenue += bc.total_revenue || 0;
         });
 
         // Add Country Node
@@ -493,11 +488,9 @@ export function PipelineNetworkGraph({
 
         cUseGroups.forEach((ug) => {
           const ugId = `ug-${ug.formulation_country_use_group_id}`;
-          const ugBusinessCases = businessCases.filter(
-            (bc) =>
-              bc.formulation_country_use_group_id ===
-              ug.formulation_country_use_group_id,
-          );
+          // Note: Using countryBusinessCases as approximation since we can't filter by use group anymore
+          // TODO: Implement proper junction table-based filtering
+          const ugBusinessCases = countryBusinessCases;
           const hasBC = ugBusinessCases.length > 0;
 
           // Add Use Group Node

@@ -19,6 +19,7 @@ import {
 } from "recharts";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import {
   chartTheme,
   chartColors,
@@ -29,7 +30,7 @@ import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
 type Formulation =
   Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface StatusRevenueChartProps {
   formulations: Formulation[];

@@ -61,7 +61,6 @@ export default async function BusinessCaseDetailPage({
     { label: "Business Cases", href: "/business-cases" },
     {
       label:
-        businessCase.display_name ||
         businessCase.business_case_name ||
         "Business Case",
     },
@@ -75,8 +74,7 @@ export default async function BusinessCaseDetailPage({
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold">
-              {businessCase.display_name ||
-                businessCase.business_case_name ||
+              {businessCase.business_case_name ||
                 "Business Case"}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
@@ -136,7 +134,7 @@ export default async function BusinessCaseDetailPage({
                 {formatNumber(businessCase.volume)}
               </div>
               <p className="text-xs text-muted-foreground">
-                {businessCase.uom || "units"}
+                units
               </p>
             </CardContent>
           </Card>
@@ -241,49 +239,24 @@ export default async function BusinessCaseDetailPage({
                   </div>
                 ) : null}
 
-                {businessCase.country_name &&
-                  businessCase.formulation_country_id && (
+                {businessCase.country_name && (
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground">
                         Country
                       </p>
-                      <Button variant="link" className="h-auto p-0" asChild>
-                        <Link
-                          href={`/formulation-countries/${businessCase.formulation_country_id}`}
-                        >
-                          <Globe className="mr-2 h-4 w-4" />
-                          {businessCase.country_name}
-                          {businessCase.country_code && (
-                            <Badge variant="outline" className="ml-2 text-xs">
-                              {businessCase.country_code}
-                            </Badge>
-                          )}
-                        </Link>
-                      </Button>
+                      <div className="flex items-center text-sm">
+                        <Globe className="mr-2 h-4 w-4" />
+                        {businessCase.country_name}
+                        {businessCase.country_code && (
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            {businessCase.country_code}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   )}
 
-                {businessCase.use_group_name &&
-                  businessCase.formulation_country_use_group_id && (
-                    <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground">
-                        Use Group
-                      </p>
-                      <Button variant="link" className="h-auto p-0" asChild>
-                        <Link
-                          href={`/portfolio/use-groups/${businessCase.formulation_country_use_group_id}`}
-                        >
-                          <FileText className="mr-2 h-4 w-4" />
-                          {businessCase.use_group_name}
-                          {businessCase.use_group_variant && (
-                            <Badge variant="secondary" className="ml-2 text-xs">
-                              {businessCase.use_group_variant}
-                            </Badge>
-                          )}
-                        </Link>
-                      </Button>
-                    </div>
-                  )}
+{/* Use group info removed - business cases can now link to multiple use groups via junction table */}
               </div>
             </CardContent>
           </Card>
@@ -309,7 +282,7 @@ export default async function BusinessCaseDetailPage({
                       <span>Volume:</span>
                       <span className="font-medium">
                         {formatNumber(businessCase.volume)}{" "}
-                        {businessCase.uom || "units"}
+                        units
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -340,7 +313,7 @@ export default async function BusinessCaseDetailPage({
                       <span>Volume:</span>
                       <span className="font-medium">
                         {formatNumber(businessCase.volume)}{" "}
-                        {businessCase.uom || "units"}
+                        units
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">

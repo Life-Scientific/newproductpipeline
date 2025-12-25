@@ -22,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import { getStatusVariant } from "@/lib/design-system";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
@@ -31,7 +32,7 @@ type FormulationCountryDetail =
   Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 type FormulationCountryUseGroup =
   Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface PipelineTrackerTreeViewProps {
   formulations: Formulation[];
@@ -132,20 +133,10 @@ export function PipelineTrackerTreeView({
     {} as Record<string, FormulationCountryUseGroup[]>,
   );
 
-  // Group business cases by use group ID
-  const businessCasesByUseGroup = businessCases.reduce(
-    (acc, bc) => {
-      if (bc.formulation_country_use_group_id) {
-        const useGroupId = bc.formulation_country_use_group_id;
-        if (!acc[useGroupId]) {
-          acc[useGroupId] = [];
-        }
-        acc[useGroupId].push(bc);
-      }
-      return acc;
-    },
-    {} as Record<string, BusinessCase[]>,
-  );
+  // Note: Business cases can now link to multiple use groups via junction table
+  // Cannot group by use group ID without querying the junction table
+  // TODO: Implement proper junction table-based grouping
+  const businessCasesByUseGroup: Record<string, BusinessCase[]> = {};
 
   // Use hook's formatCurrency
   const formatCurrency = formatCurrencyCompact;

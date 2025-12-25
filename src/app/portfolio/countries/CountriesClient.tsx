@@ -15,12 +15,9 @@ import {
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { computeFilteredCounts } from "@/lib/utils/filter-counts";
 import type { CountryWithStats } from "@/lib/db/countries";
-import type { Database } from "@/lib/supabase/database.types";
-import type { Formulation } from "@/lib/db/types";
-import type { Country } from "@/lib/db/types";
-import type { FormulationCountryDetail } from "@/lib/db/types";
+import type { Formulation, Country, FormulationCountryDetail, EnrichedBusinessCase } from "@/lib/db/types";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"] & {
+type BusinessCase = EnrichedBusinessCase & {
   formulation_status?: string | null;
   country_status?: string | null;
 };
@@ -107,8 +104,8 @@ function CountriesContent({
       formulation_id: bc.formulation_id || null,
       formulation_code: bc.formulation_code || null,
       formulation_name: bc.formulation_name || null,
-      formulation_country_id: bc.formulation_country_id || null,
-      use_group_name: bc.use_group_name || null,
+      formulation_country_id: null, // Removed in JSONB migration
+      use_group_name: null, // Not available in enriched business cases
     }));
   }, [businessCases]);
 
@@ -144,15 +141,9 @@ function CountriesContent({
         }
       }
 
-      // Use group filter (by name)
-      if (safeFilters.useGroups.length > 0) {
-        if (
-          !bc.use_group_name ||
-          !safeFilters.useGroups.includes(bc.use_group_name)
-        ) {
-          return false;
-        }
-      }
+      // Use group filter - disabled (business cases can now link to multiple use groups via junction table)
+      // TODO: Implement junction table-based filtering if needed
+      // if (safeFilters.useGroups.length > 0) { ... }
 
       // Formulation status filter
       if (safeFilters.formulationStatuses.length > 0) {

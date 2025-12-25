@@ -122,6 +122,25 @@ const DEFAULT_EXCHANGE_RATES: Record<CurrencyCode, number> = {
   CAD: 0.61,
 };
 
+// Pre-computed options (avoid recreating on every render)
+const CURRENCY_OPTIONS = Object.entries(CURRENCY_SYMBOLS).map(
+  ([code, symbol]) => ({
+    code: code as CurrencyCode,
+    symbol,
+    name: CURRENCY_NAMES[code as CurrencyCode],
+  }),
+);
+
+const VOLUME_OPTIONS = [
+  { code: "L" as VolumeUnit, name: "Liters (L)" },
+  { code: "GAL" as VolumeUnit, name: "US Gallons (GAL)" },
+];
+
+const WEIGHT_OPTIONS = [
+  { code: "KG" as WeightUnit, name: "Kilograms (KG)" },
+  { code: "LB" as WeightUnit, name: "Pounds (LB)" },
+];
+
 // ============================================================================
 // Context
 // ============================================================================
@@ -486,21 +505,9 @@ export function DisplayPreferencesProvider({
       currencyName: CURRENCY_NAMES[preferences.currency],
       volumeUnit: preferences.volumeUnit,
       weightUnit: preferences.weightUnit,
-      CURRENCY_OPTIONS: Object.entries(CURRENCY_SYMBOLS).map(
-        ([code, symbol]) => ({
-          code: code as CurrencyCode,
-          symbol,
-          name: CURRENCY_NAMES[code as CurrencyCode],
-        }),
-      ),
-      VOLUME_OPTIONS: [
-        { code: "L" as VolumeUnit, name: "Liters (L)" },
-        { code: "GAL" as VolumeUnit, name: "US Gallons (GAL)" },
-      ],
-      WEIGHT_OPTIONS: [
-        { code: "KG" as WeightUnit, name: "Kilograms (KG)" },
-        { code: "LB" as WeightUnit, name: "Pounds (LB)" },
-      ],
+      CURRENCY_OPTIONS,
+      VOLUME_OPTIONS,
+      WEIGHT_OPTIONS,
     }),
     [
       preferences,

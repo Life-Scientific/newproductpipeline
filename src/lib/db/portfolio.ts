@@ -1,10 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
+import { getBusinessCases } from "./business-cases";
 import type {
   ActivePortfolio,
   Formulation,
   FormulationCountryDetail,
   FormulationCountryUseGroup,
   BusinessCase,
+  EnrichedBusinessCase,
 } from "./types";
 
 export async function getActivePortfolio() {
@@ -32,7 +34,7 @@ export async function getPipelineTrackerData() {
     formulationsResult,
     countriesResult,
     useGroupsResult,
-    businessCasesResult,
+    businessCases,
   ] = await Promise.all([
     supabase
       .from("vw_formulations_with_ingredients")
@@ -49,12 +51,8 @@ export async function getPipelineTrackerData() {
       .order("formulation_code", { ascending: true })
       .order("country_name", { ascending: true })
       .order("use_group_variant", { ascending: true }),
-    supabase
-      .from("vw_business_case")
-      .select("*")
-      .order("formulation_code", { ascending: true })
-      .order("country_name", { ascending: true })
-      .order("fiscal_year", { ascending: true }),
+    // Use enriched business cases
+    getBusinessCases(),
   ]);
 
   if (formulationsResult.error) {
@@ -72,16 +70,11 @@ export async function getPipelineTrackerData() {
       `Failed to fetch use groups: ${useGroupsResult.error.message}`,
     );
   }
-  if (businessCasesResult.error) {
-    throw new Error(
-      `Failed to fetch business cases: ${businessCasesResult.error.message}`,
-    );
-  }
 
   return {
     formulations: formulationsResult.data as Formulation[],
     countries: countriesResult.data as FormulationCountryDetail[],
     useGroups: useGroupsResult.data as FormulationCountryUseGroup[],
-    businessCases: businessCasesResult.data as BusinessCase[],
+    businessCases: businessCases as EnrichedBusinessCase[],
   };
 }

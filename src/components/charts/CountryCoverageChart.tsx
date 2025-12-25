@@ -18,7 +18,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useRouter } from "next/navigation";
-import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import {
   chartTheme,
   chartColors,
@@ -27,7 +27,7 @@ import {
   getLegendFormatter,
 } from "@/lib/utils/chart-theme";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface CountryCoverageChartProps {
   businessCases: BusinessCase[];

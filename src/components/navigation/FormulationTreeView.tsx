@@ -22,12 +22,13 @@ import {
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 
 type FormulationCountryDetail =
   Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 type FormulationCountryUseGroup =
   Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface FormulationTreeViewProps {
   formulationId: string;
@@ -95,11 +96,12 @@ export function FormulationTreeView({
     {} as Record<string, FormulationCountryUseGroup[]>,
   );
 
-  // Group business cases by country ID (where formulation_country_id is not null)
+  // Group business cases by country_id
+  // Note: Using country_id instead of formulation_country_id which no longer exists
   const businessCasesByCountry = businessCases.reduce(
     (acc, bc) => {
-      if (bc.formulation_country_id) {
-        const countryId = bc.formulation_country_id;
+      if (bc.country_id) {
+        const countryId = bc.country_id;
         if (!acc[countryId]) {
           acc[countryId] = [];
         }
@@ -110,20 +112,10 @@ export function FormulationTreeView({
     {} as Record<string, BusinessCase[]>,
   );
 
-  // Group business cases by use group ID (where formulation_country_use_group_id is not null)
-  const businessCasesByUseGroup = businessCases.reduce(
-    (acc, bc) => {
-      if (bc.formulation_country_use_group_id) {
-        const useGroupId = bc.formulation_country_use_group_id;
-        if (!acc[useGroupId]) {
-          acc[useGroupId] = [];
-        }
-        acc[useGroupId].push(bc);
-      }
-      return acc;
-    },
-    {} as Record<string, BusinessCase[]>,
-  );
+  // Note: Business cases can now link to multiple use groups via junction table
+  // Cannot group by use group ID without querying the junction table
+  // TODO: Implement proper junction table-based grouping
+  const businessCasesByUseGroup: Record<string, BusinessCase[]> = {};
 
   // Use display preferences hook for currency formatting
   const { formatCurrencyCompact } = useDisplayPreferences();
@@ -271,8 +263,7 @@ export function FormulationTreeView({
                                   <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                                   <div className="flex-1 min-w-0">
                                     <div className="font-medium text-xs sm:text-sm truncate">
-                                      {bc.display_name ||
-                                        bc.business_case_name ||
+                                      {bc.business_case_name ||
                                         "Business Case"}
                                     </div>
                                     <div className="text-xs text-muted-foreground">
@@ -445,7 +436,7 @@ export function FormulationTreeView({
                                                     <DollarSign className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                                     <div className="flex-1 min-w-0">
                                                       <div className="font-medium truncate">
-                                                        {bc.display_name ||
+                                                        {
                                                           bc.business_case_name ||
                                                           "Business Case"}
                                                       </div>

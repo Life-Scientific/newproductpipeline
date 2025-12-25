@@ -15,9 +15,10 @@ import {
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import { getStatusVariant } from "@/lib/design-system";
 import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 type FormulationCountryDetail =
   Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 

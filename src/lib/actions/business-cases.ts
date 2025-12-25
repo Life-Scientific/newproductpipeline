@@ -510,50 +510,53 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
     );
   }
 
-  // Create 10 business case rows
-  // Set effective_start_fiscal_year to preserve fiscal year context at creation time
-  // This ensures data entered in FY26 always maps to FY26-FY35, even if viewed in FY27+
-  const businessCaseInserts = yearData.map((year) => ({
-    business_case_group_id: groupId,
-    business_case_name: formData.get("business_case_name") as string | null,
-    year_offset: year.year_offset,
-    volume: year.volume,
-    nsp: year.nsp,
-    cogs_per_unit: year.cogs_per_unit, // COGS value from lookup with carry-forward
-    effective_start_fiscal_year: finalEffectiveStartFiscalYear, // Preserves creation context
-    status: "active" as const,
-    created_by: userName,
-    // Audit fields
-    previous_group_id: previousGroupId,
-    change_reason: changeReason || null,
-    change_summary: changeSummary,
-  }));
+  // Build JSONB years_data object from 10 years
+  const yearsData: Record<string, any> = {};
+  const now = new Date().toISOString();
 
-  const { data: businessCases, error: bcError } = await supabase
+  for (const year of yearData) {
+    yearsData[year.year_offset.toString()] = {
+      volume: year.volume,
+      nsp: year.nsp,
+      cogs_per_unit: year.cogs_per_unit,
+      volume_last_updated_at: now,
+      volume_last_updated_by: userName || null,
+      nsp_last_updated_at: now,
+      nsp_last_updated_by: userName || null,
+      cogs_last_updated_at: now,
+      cogs_last_updated_by: userName || null,
+    };
+  }
+
+  // Create single business case row with JSONB structure
+  const { data: businessCase, error: bcError } = await supabase
     .from("business_case")
-    .insert(businessCaseInserts)
-    .select();
+    .insert({
+      business_case_id: groupId,
+      business_case_name: formData.get("business_case_name") as string | null,
+      years_data: yearsData,
+      effective_start_fiscal_year: finalEffectiveStartFiscalYear,
+      status: "active" as const,
+      created_by: userName,
+      previous_group_id: previousGroupId,
+      change_reason: changeReason || null,
+      change_summary: changeSummary,
+      assumptions: null,
+    })
+    .select()
+    .single();
 
-  if (bcError || !businessCases || businessCases.length !== 10) {
+  if (bcError || !businessCase) {
     return {
       error: bcError?.message || "Failed to create business case group",
     };
   }
 
-  // Link all business cases to the selected use groups via junction table
-  const junctionEntries: Array<{
-    business_case_id: string;
-    formulation_country_use_group_id: string;
-  }> = [];
-
-  businessCases.forEach((bc) => {
-    useGroupIds.forEach((useGroupId) => {
-      junctionEntries.push({
-        business_case_id: bc.business_case_id,
-        formulation_country_use_group_id: useGroupId,
-      });
-    });
-  });
+  // Link business case to the selected use groups via junction table
+  const junctionEntries = useGroupIds.map((useGroupId) => ({
+    business_case_id: businessCase.business_case_id,
+    formulation_country_use_group_id: useGroupId,
+  }));
 
   if (junctionEntries.length > 0) {
     const { error: junctionError } = await supabase
@@ -561,11 +564,11 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
       .insert(junctionEntries);
 
     if (junctionError) {
-      // Rollback: delete the business cases if junction insert fails
+      // Rollback: delete the business case if junction insert fails
       await supabase
         .from("business_case")
         .delete()
-        .eq("business_case_group_id", groupId);
+        .eq("business_case_id", groupId);
       return { error: `Failed to link use groups: ${junctionError.message}` };
     }
   }
@@ -577,7 +580,7 @@ export async function createBusinessCaseGroupAction(formData: FormData) {
   revalidatePath("/portfolio");
   revalidatePath("/");
   // No cache to invalidate - direct database queries
-  return { data: { business_case_group_id: groupId }, success: true };
+  return { data: { business_case_group_id: businessCase.business_case_id }, success: true };
 }
 
 /**
@@ -745,34 +748,48 @@ export async function updateBusinessCaseGroupAction(
     effectiveStartYear,
   );
 
-  // Build the final insert objects
-  const newBusinessCaseInserts = newYearDataWithCogs.map((year) => ({
-    business_case_group_id: newGroupId,
+  // Build JSONB years_data object
+  const yearsData: Record<string, any> = {};
+  const now = new Date().toISOString();
+
+  for (const year of newYearDataWithCogs) {
+    yearsData[year.year_offset.toString()] = {
+      volume: year.volume,
+      nsp: year.nsp,
+      cogs_per_unit: year.cogs_per_unit,
+      volume_last_updated_at: now,
+      volume_last_updated_by: userName || null,
+      nsp_last_updated_at: now,
+      nsp_last_updated_by: userName || null,
+      cogs_last_updated_at: now,
+      cogs_last_updated_by: userName || null,
+    };
+  }
+
+  // Build the single business case insert with JSONB
+  const newBusinessCaseInsert = {
+    business_case_id: newGroupId,
     business_case_name: businessCaseName,
-    year_offset: year.year_offset,
-    volume: year.volume,
-    nsp: year.nsp,
-    cogs_per_unit: year.cogs_per_unit,
+    years_data: yearsData,
     effective_start_fiscal_year: effectiveStartFiscalYear,
     status: "active" as const,
     created_by: userName,
-    // Audit fields
     previous_group_id: oldGroupId,
     change_reason: changeReason || null,
     change_summary: changeSummary,
-  }));
+    assumptions: null,
+  };
 
   // Start transaction: mark old as inactive, create new
   const result = await withUserContext(async (supabase) => {
-    // Mark old business cases as superseded (archived)
-    // Update ALL records in the old group that aren't already superseded
-    // This handles edge cases where records might be in "active" or "inactive" status
-    const { data: deactivatedData, error: deactivateError } = await supabase
+    // Mark old business case as superseded (archived)
+    const { data: deactivatedData, error: deactivateError} = await supabase
       .from("business_case")
       .update({ status: "superseded", updated_at: new Date().toISOString() })
-      .eq("business_case_group_id", oldGroupId)
+      .eq("business_case_id", oldGroupId)
       .neq("status", "superseded")
-      .select();
+      .select()
+      .single();
 
     if (deactivateError) {
       return {
@@ -780,61 +797,44 @@ export async function updateBusinessCaseGroupAction(
       };
     }
 
-    // Verify that we actually updated some records
-    // If no records were updated, it might mean the old group was already superseded
-    // or doesn't exist, which is fine - we'll still create the new version
-    if (deactivatedData && deactivatedData.length === 0) {
-      warn(
-        `No records found to supersede for group ${oldGroupId} - may already be superseded or not exist`,
-      );
-    }
-
-    // Create new business case records
-    const { data: newCases, error: insertError } = await supabase
+    // Create new business case record
+    const { data: newCase, error: insertError } = await supabase
       .from("business_case")
-      .insert(newBusinessCaseInserts)
-      .select();
+      .insert(newBusinessCaseInsert)
+      .select()
+      .single();
 
-    if (insertError || !newCases || newCases.length !== 10) {
-      // Rollback: reactivate old records (change back from superseded)
+    if (insertError || !newCase) {
+      // Rollback: reactivate old record (change back from superseded)
       await supabase
         .from("business_case")
         .update({ status: "active" })
-        .eq("business_case_group_id", oldGroupId);
+        .eq("business_case_id", oldGroupId);
       return {
         error: `Failed to create new version: ${insertError?.message || "Unknown error"}`,
       };
     }
 
-    // Link new business cases to the same use groups
-    const junctionEntries: Array<{
-      business_case_id: string;
-      formulation_country_use_group_id: string;
-    }> = [];
-
-    newCases.forEach((bc) => {
-      useGroupIds.forEach((useGroupId) => {
-        junctionEntries.push({
-          business_case_id: bc.business_case_id,
-          formulation_country_use_group_id: useGroupId,
-        });
-      });
-    });
+    // Link new business case to the same use groups
+    const junctionEntries = useGroupIds.map((useGroupId) => ({
+      business_case_id: newCase.business_case_id,
+      formulation_country_use_group_id: useGroupId,
+    }));
 
     const { error: junctionError } = await supabase
       .from("business_case_use_groups")
       .insert(junctionEntries);
 
     if (junctionError) {
-      // Rollback: delete new cases and reactivate old ones
+      // Rollback: delete new case and reactivate old one
       await supabase
         .from("business_case")
         .delete()
-        .eq("business_case_group_id", newGroupId);
+        .eq("business_case_id", newGroupId);
       await supabase
         .from("business_case")
         .update({ status: "active" })
-        .eq("business_case_group_id", oldGroupId);
+        .eq("business_case_id", oldGroupId);
       return { error: `Failed to link use groups: ${junctionError.message}` };
     }
 

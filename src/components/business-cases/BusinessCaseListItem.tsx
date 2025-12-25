@@ -67,7 +67,7 @@ export function BusinessCaseListItem({
         className="flex-1 min-w-0 space-y-1 group/link"
       >
         <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
-          {businessCase.display_name || businessCase.business_case_name || "—"}
+          { businessCase.business_case_name || "—"}
         </p>
         <div className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
           {/* Visual hierarchy: Formulation → Country → Use Group */}
@@ -112,7 +112,7 @@ export function BusinessCaseListItem({
                   <Globe className="h-3 w-3" />
                   <span>{businessCase.country_name}</span>
                 </button>
-                {businessCase.use_group_name && (
+                {false /* use_group_name removed */ && (
                   <ChevronRight className="h-3 w-3 text-muted-foreground/50" />
                 )}
               </>
@@ -122,16 +122,16 @@ export function BusinessCaseListItem({
                   <Globe className="h-3 w-3" />
                   <span>{businessCase.country_name}</span>
                 </div>
-                {businessCase.use_group_name && (
+                {false /* use_group_name removed */ && (
                   <ChevronRight className="h-3 w-3 text-muted-foreground/50" />
                 )}
               </>
             )
           ) : null}
-          {businessCase.use_group_name && (
+          {false /* use_group_name removed */ && (
             <div className="flex items-center gap-1">
               <FileText className="h-3 w-3" />
-              <span>{businessCase.use_group_name}</span>
+              <span>{false /* use_group_name removed */}</span>
             </div>
           )}
           {businessCase.fiscal_year && (

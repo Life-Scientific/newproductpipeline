@@ -1,9 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { log, warn, error, table } from "@/lib/logger";
+import { getBusinessCases } from "./business-cases";
 import type {
   Country,
   FormulationCountryDetail,
-  BusinessCase,
+  EnrichedBusinessCase,
   FormulationCountryUseGroup,
 } from "./types";
 
@@ -107,11 +108,8 @@ export async function getCountriesWithStats() {
     "vw_formulation_country_detail",
   );
 
-  // Get business case data with pagination
-  const businessCases = await fetchAllPaginated<BusinessCase>(
-    supabase,
-    "vw_business_case",
-  );
+  // Get business case data (use enriched version for display fields)
+  const businessCases = await getBusinessCases();
 
   // Aggregate stats by country
   const countryStats = new Map<
@@ -159,7 +157,7 @@ export async function getCountriesWithStats() {
   });
 
   // Aggregate business case data by country (just revenue/margin, skip counting)
-  businessCases.forEach((bc: BusinessCase) => {
+  businessCases.forEach((bc: EnrichedBusinessCase) => {
     if (!bc.country_name) return;
     const stats = countryStats.get(bc.country_name);
     if (stats) {
@@ -204,16 +202,14 @@ export async function getCountryDetails(countryId: string) {
   }
 
   // Get all related data with pagination (filter by country_name)
-  const [formulations, businessCases, useGroups] = await Promise.all([
+  const [formulations, allBusinessCases, useGroups] = await Promise.all([
     fetchAllPaginated<FormulationCountryDetail>(
       supabase,
       "vw_formulation_country_detail",
       "*",
       [{ column: "country_name", value: country.country_name }],
     ),
-    fetchAllPaginated<BusinessCase>(supabase, "vw_business_case", "*", [
-      { column: "country_name", value: country.country_name },
-    ]),
+    getBusinessCases(), // Use enriched business cases
     fetchAllPaginated<FormulationCountryUseGroup>(
       supabase,
       "vw_formulation_country_use_group",
@@ -221,6 +217,11 @@ export async function getCountryDetails(countryId: string) {
       [{ column: "country_name", value: country.country_name }],
     ),
   ]);
+
+  // Filter business cases by country_name (enriched business cases include country_name)
+  const businessCases = allBusinessCases.filter(
+    (bc) => bc.country_name === country.country_name,
+  );
 
   // Sort results (since pagination loses ordering)
   formulations.sort((a, b) =>

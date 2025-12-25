@@ -42,14 +42,12 @@ export default async function UseGroupDetailPage({
   }
 
   // Get business cases for this use group
+  // Get business cases for this formulation
+  // Note: Cannot filter by use_group_id since that link is now via junction table
+  // TODO: Query junction table to get business case IDs linked to this use group
   let businessCases: BusinessCase[] = [];
   if (useGroup.formulation_id) {
-    const allBusinessCases = await getFormulationBusinessCases(
-      useGroup.formulation_id,
-    );
-    businessCases = allBusinessCases.filter(
-      (bc) => bc.formulation_country_use_group_id === id,
-    );
+    businessCases = await getFormulationBusinessCases(useGroup.formulation_id);
   }
 
   // Calculate totals
@@ -420,8 +418,7 @@ export default async function UseGroupDetailPage({
                       <div className="space-y-1 flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className="font-medium">
-                            {bc.display_name ||
-                              bc.business_case_name ||
+                            {bc.business_case_name ||
                               "Business Case"}
                           </h4>
                           {/* scenario_name field removed from schema */}

@@ -59,8 +59,10 @@ export default async function FormulationCountryDetailPage({
     const allBusinessCases = await getFormulationBusinessCases(
       formulationCountry.formulation_id,
     );
+    // Filter by formulation_id only since formulation_country_id no longer exists
+    // TODO: Also filter by country once country_id is added to formulationCountry
     businessCases = allBusinessCases.filter(
-      (bc) => bc.formulation_country_id === id,
+      (bc) => bc.formulation_id === formulationCountry.formulation_id,
     );
   }
 
@@ -409,8 +411,7 @@ export default async function FormulationCountryDetailPage({
                       <div className="space-y-1 flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className="font-medium">
-                            {bc.display_name ||
-                              bc.business_case_name ||
+                            {bc.business_case_name ||
                               "Business Case"}
                           </h4>
                           {/* scenario_name field removed from schema */}

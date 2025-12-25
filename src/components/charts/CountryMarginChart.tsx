@@ -18,7 +18,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useRouter } from "next/navigation";
-import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import {
   chartTheme,
   chartColors,
@@ -28,7 +28,7 @@ import {
 } from "@/lib/utils/chart-theme";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface CountryMarginChartProps {
   businessCases: BusinessCase[];

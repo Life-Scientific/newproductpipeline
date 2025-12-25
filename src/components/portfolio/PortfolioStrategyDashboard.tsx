@@ -22,10 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 
 type Formulation =
   Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 type ProtectionStatus =
   Database["public"]["Views"]["vw_patent_protection_status"]["Row"];
 type ActivePortfolio =

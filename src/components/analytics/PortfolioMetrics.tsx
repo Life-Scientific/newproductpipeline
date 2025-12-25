@@ -4,10 +4,11 @@ import { CardGrid } from "@/components/layout/CardGrid";
 import { MetricCard } from "@/components/layout/MetricCard";
 import { ContentCard } from "@/components/layout/ContentCard";
 import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 
 type Formulation =
   Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface PortfolioMetricsProps {
   formulations: Formulation[];

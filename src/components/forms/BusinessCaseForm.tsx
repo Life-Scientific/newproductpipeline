@@ -77,14 +77,12 @@ export function BusinessCaseForm({
     formulation_id: "",
     country_id: "",
     business_case_name: businessCase?.business_case_name || "",
-    year_offset: businessCase?.year_offset?.toString() || "1",
-    volume: businessCase?.volume?.toString() || "",
-    nsp: businessCase?.nsp?.toString() || "",
-    cogs_per_unit: businessCase?.cogs_per_unit?.toString() || "",
-    fiscal_year:
-      ("fiscal_year" in (businessCase || {})
-        ? (businessCase as any).fiscal_year
-        : "") || "",
+    // Note: In JSONB structure, these fields are in years_data, not top-level
+    year_offset: (businessCase as any)?.year_offset?.toString() || "1",
+    volume: (businessCase as any)?.volume?.toString() || "",
+    nsp: (businessCase as any)?.nsp?.toString() || "",
+    cogs_per_unit: (businessCase as any)?.cogs_per_unit?.toString() || "",
+    fiscal_year: (businessCase as any)?.fiscal_year || "",
     assumptions: businessCase?.assumptions || "",
   });
 

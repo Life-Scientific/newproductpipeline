@@ -25,10 +25,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import type { CountryWithStats } from "@/lib/db/countries";
-import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface CountryListProps {
   countries: CountryWithStats[];

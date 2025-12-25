@@ -102,14 +102,10 @@ const BusinessCaseActionsCell = memo(function BusinessCaseActionsCell({
       return;
     }
     if (!businessCase.business_case_id) return;
-    // Get the business_case_group_id from the business case
-    const { data } = await supabase
-      .from("business_case")
-      .select("business_case_group_id")
-      .eq("business_case_id", businessCase.business_case_id)
-      .single();
-    if (data?.business_case_group_id) {
-      setGroupId(data.business_case_group_id);
+    // In the new JSONB structure, business_case_id IS the group ID
+    // (from vw_business_case, business_case_group_id maps to the actual business_case.business_case_id)
+    if (businessCase.business_case_group_id) {
+      setGroupId(businessCase.business_case_group_id);
       setEditOpen(true);
     } else {
       toast({
@@ -274,7 +270,7 @@ const createColumns = (): ColumnDef<EnrichedBusinessCase>[] => [
     header: "Volume",
     cell: ({ row }) => {
       const volume = row.getValue("volume") as number | null;
-      const uom = row.original.uom;
+      const uom = "units";
       return <VolumeCell volume={volume} uom={uom} />;
     },
   },
@@ -283,7 +279,7 @@ const createColumns = (): ColumnDef<EnrichedBusinessCase>[] => [
     header: "NSP",
     cell: ({ row }) => {
       const nsp = row.getValue("nsp") as number | null;
-      const uom = row.original.uom;
+      const uom = "units";
       return <PerUnitCell value={nsp} uom={uom} />;
     },
   },
@@ -292,7 +288,7 @@ const createColumns = (): ColumnDef<EnrichedBusinessCase>[] => [
     header: "COGS/Unit",
     cell: ({ row }) => {
       const cogs = row.getValue("cogs_per_unit") as number | null;
-      const uom = row.original.uom;
+      const uom = "units";
       return <PerUnitCell value={cogs} uom={uom} />;
     },
   },

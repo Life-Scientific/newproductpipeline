@@ -20,8 +20,9 @@ import {
 import { BusinessCaseModal } from "@/components/business-cases/BusinessCaseModal";
 import Link from "next/link";
 import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 type Formulation =
   Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 type Country = Database["public"]["Tables"]["countries"]["Row"];

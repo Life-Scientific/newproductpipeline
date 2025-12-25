@@ -23,12 +23,12 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
-import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { cn } from "@/lib/utils";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface FormulationBusinessCasesProps {
   businessCases: BusinessCase[];
@@ -83,11 +83,9 @@ export function FormulationBusinessCases({
     let totalRevenue = 0;
     let totalMargin = 0;
     const totalVolume = cases.reduce((sum, bc) => sum + (bc.volume || 0), 0);
-    const uniqueUseGroups = new Set(
-      cases
-        .map((bc) => bc.use_group_name || bc.formulation_country_use_group_id)
-        .filter(Boolean),
-    );
+    // Note: Business cases can now link to multiple use groups via junction table
+    // TODO: Implement proper junction table-based use group counting
+    const uniqueUseGroups = new Set<string>();
 
     cases.forEach((bc) => {
       // Data is already in EUR - no conversion needed
@@ -262,9 +260,8 @@ export function FormulationBusinessCases({
                                 </TableCell>
                                 <TableCell>
                                   <span className="text-sm font-medium">
-                                    {bc.use_group_name ||
-                                      bc.use_group_variant ||
-                                      "—"}
+                                    {/* Use group data not available - business cases can link to multiple use groups via junction table */}
+                                    —
                                   </span>
                                 </TableCell>
                                 <TableCell className="text-right">

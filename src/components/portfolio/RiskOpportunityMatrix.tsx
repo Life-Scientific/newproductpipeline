@@ -5,10 +5,11 @@ import {
   type ScatterDataPoint,
 } from "@/components/charts/ScatterPlotChart";
 import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 
 type Formulation =
   Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface RiskOpportunityMatrixProps {
   formulations: Formulation[];

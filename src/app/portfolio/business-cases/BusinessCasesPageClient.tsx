@@ -10,10 +10,15 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Suspense, useMemo, useState, lazy } from "react";
-import { BusinessCaseModal } from "@/components/business-cases/BusinessCaseModal";
 import { BusinessCasesProjectionTable } from "@/components/business-cases/BusinessCasesProjectionTable";
 
-// Lazy load the import modal (1,270 lines) - only loaded when user clicks import
+// Lazy load modals - only loaded when user opens them
+const BusinessCaseModal = lazy(() =>
+  import("@/components/business-cases/BusinessCaseModal").then((mod) => ({
+    default: mod.BusinessCaseModal,
+  })),
+);
+
 const BusinessCaseImportModal = lazy(() =>
   import("@/components/business-cases/BusinessCaseImportModal").then((mod) => ({
     default: mod.BusinessCaseImportModal,
@@ -412,14 +417,16 @@ function BusinessCasesContent({
 
       {canCreateBusinessCases && (
         <>
-          <BusinessCaseModal
-            open={createModalOpen}
-            onOpenChange={setCreateModalOpen}
-            onSuccess={() => {
-              // Use router.refresh() to get fresh data from the server
-              router.refresh();
-            }}
-          />
+          <Suspense fallback={null}>
+            <BusinessCaseModal
+              open={createModalOpen}
+              onOpenChange={setCreateModalOpen}
+              onSuccess={() => {
+                // Use router.refresh() to get fresh data from the server
+                router.refresh();
+              }}
+            />
+          </Suspense>
           <Suspense fallback={null}>
             <BusinessCaseImportModal
               open={importModalOpen}

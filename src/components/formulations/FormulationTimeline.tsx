@@ -34,13 +34,13 @@ import {
 } from "@/components/ui/tooltip";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
-import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import { TrendingUp, TrendingDown, Info } from "lucide-react";
 
 // Constants for unit conversion
 const VOLUME_TO_GAL = 0.264172; // 1 L = 0.264172 GAL
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface FormulationTimelineProps {
   businessCases: BusinessCase[];
@@ -181,13 +181,12 @@ export function FormulationTimeline({
       groupsByFiscalYear.get(fy)!.add(bc.business_case_group_id);
     }
 
-    // Track countries and use groups
+    // Track countries
     if (bc.country_name) {
       fyData.countries.add(bc.country_name);
     }
-    if (bc.use_group_name) {
-      fyData.useGroups.add(bc.use_group_name);
-    }
+    // Note: Use group data not available - business cases can link to multiple use groups via junction table
+    // TODO: Implement proper junction table-based use group tracking
 
     // Track NSP for weighted average calculation
     // We'll calculate weighted average NSP after all data is aggregated

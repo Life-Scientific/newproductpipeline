@@ -34,16 +34,13 @@ import {
 import { cn } from "@/lib/utils";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
 import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import { useTheme } from "@/contexts/ThemeContext";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"] & {
-  country_id?: string | null;
-  country_status?: string | null;
-  formulation_country_id?: string | null;
-};
+type BusinessCase = EnrichedBusinessCase;
 type Formulation =
   Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 

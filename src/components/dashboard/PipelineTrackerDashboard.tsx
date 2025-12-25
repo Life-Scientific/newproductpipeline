@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, lazy, Suspense } from "react";
 import Link from "next/link";
 import { ChevronRight, Download, X, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,18 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getStatusVariant } from "@/lib/design-system";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
 import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
-import { PipelineNetworkGraph } from "./PipelineNetworkGraph";
 import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
 import { type ColumnDef } from "@tanstack/react-table";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
+
+// Lazy load the network graph since it's only shown when view=network
+const PipelineNetworkGraph = lazy(() =>
+  import("./PipelineNetworkGraph").then((mod) => ({
+    default: mod.PipelineNetworkGraph,
+  })),
+);
 
 type Formulation =
   Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
@@ -23,7 +30,7 @@ type FormulationCountryDetail =
   Database["public"]["Views"]["vw_formulation_country_detail"]["Row"];
 type FormulationCountryUseGroup =
   Database["public"]["Views"]["vw_formulation_country_use_group"]["Row"];
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface PipelineTrackerDashboardProps {
   formulations: Formulation[];
@@ -101,13 +108,11 @@ export function PipelineTrackerDashboard({
       globalTotalRevenue += bc.total_revenue || 0;
       globalTotalMargin += bc.total_margin || 0;
 
-      if (bc.formulation_country_use_group_id) {
-        const ugid = bc.formulation_country_use_group_id;
-        if (!businessCasesByUseGroup.has(ugid))
-          businessCasesByUseGroup.set(ugid, []);
-        businessCasesByUseGroup.get(ugid)!.push(bc);
-      } else if (bc.formulation_country_id) {
-        const cid = bc.formulation_country_id;
+      // Note: Business cases can now link to multiple use groups via junction table
+      // For now, we'll group by country only
+      // TODO: Implement proper junction table-based grouping
+      if (bc.country_id) {
+        const cid = bc.country_id;
         if (!businessCasesByCountry.has(cid))
           businessCasesByCountry.set(cid, []);
         businessCasesByCountry.get(cid)!.push(bc);
@@ -736,18 +741,32 @@ export function PipelineTrackerDashboard({
           </CardContent>
         </Card>
       ) : (
-        <PipelineNetworkGraph
-          formulations={formulations.filter((f) =>
-            processedData
-              .map((p) => p.formulation_id)
-              .includes(f.formulation_id),
-          )}
-          countries={countries}
-          useGroups={useGroups}
-          businessCases={businessCases}
-          searchTerm=""
-          statusFilter={Array.from(statusFilters)[0] || "all"}
-        />
+        <Suspense
+          fallback={
+            <Card>
+              <CardContent className="p-12">
+                <div className="flex items-center justify-center">
+                  <div className="text-sm text-muted-foreground">
+                    Loading network view...
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          }
+        >
+          <PipelineNetworkGraph
+            formulations={formulations.filter((f) =>
+              processedData
+                .map((p) => p.formulation_id)
+                .includes(f.formulation_id),
+            )}
+            countries={countries}
+            useGroups={useGroups}
+            businessCases={businessCases}
+            searchTerm=""
+            statusFilter={Array.from(statusFilters)[0] || "all"}
+          />
+        </Suspense>
       )}
     </div>
   );

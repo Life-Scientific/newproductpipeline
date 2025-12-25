@@ -1,4 +1,5 @@
 "use client";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 
 import {
   HeatmapGrid,
@@ -7,7 +8,7 @@ import {
 import type { Database } from "@/lib/supabase/database.types";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface SegmentRevenueMatrixProps {
   businessCases: BusinessCase[];

@@ -25,10 +25,14 @@ export type IngredientUsage =
 export type ActivePortfolio =
   Database["public"]["Views"]["vw_active_portfolio"]["Row"];
 
-// Enriched BusinessCase type with formulation_id and country_id
+// Enriched BusinessCase type with formulation and country details
 export type EnrichedBusinessCase = BusinessCase & {
   formulation_id: string | null;
   country_id: string | null;
+  formulation_code: string | null;
+  formulation_name: string | null;
+  country_name: string | null;
+  country_code: string | null;
 };
 
 export interface FormulationWithNestedData extends Formulation {

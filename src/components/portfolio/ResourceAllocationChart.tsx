@@ -4,9 +4,9 @@ import {
   ScatterPlotChart,
   type ScatterDataPoint,
 } from "@/components/charts/ScatterPlotChart";
-import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface ResourceAllocationChartProps {
   businessCases: BusinessCase[];

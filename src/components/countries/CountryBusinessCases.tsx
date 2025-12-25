@@ -15,10 +15,10 @@ import {
 } from "@/components/ui/card";
 import { FormattedCurrency } from "@/components/ui/formatted-currency";
 import { useDisplayPreferences } from "@/hooks/use-display-preferences";
-import type { Database } from "@/lib/supabase/database.types";
+import type { EnrichedBusinessCase } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 
-type BusinessCase = Database["public"]["Views"]["vw_business_case"]["Row"];
+type BusinessCase = EnrichedBusinessCase;
 
 interface CountryBusinessCasesProps {
   businessCases: BusinessCase[];
@@ -119,24 +119,8 @@ export function CountryBusinessCases({
           );
         },
       },
-      {
-        accessorKey: "use_group_name",
-        header: "Use Group",
-        cell: ({ row }) => {
-          const name = row.getValue("use_group_name") as string | null;
-          const variant = row.original.use_group_variant;
-          return (
-            <div>
-              <span className="text-sm">{name || "—"}</span>
-              {variant && (
-                <span className="text-xs text-muted-foreground ml-1">
-                  ({variant})
-                </span>
-              )}
-            </div>
-          );
-        },
-      },
+      // Use group column removed - business cases can now link to multiple use groups via junction table
+      // TODO: Implement junction table-based display if needed
       {
         accessorKey: "fiscal_year",
         header: "FY",
@@ -158,7 +142,7 @@ export function CountryBusinessCases({
         header: "Volume",
         cell: ({ row }) => {
           const volume = row.getValue("volume") as number | null;
-          const uom = row.original.uom || "L";
+          const uom = "units";
           if (!volume)
             return <span className="text-sm text-muted-foreground">—</span>;
 
@@ -187,7 +171,7 @@ export function CountryBusinessCases({
         header: "NSP",
         cell: ({ row }) => {
           const nsp = row.getValue("nsp") as number | null;
-          const uom = row.original.uom || "L";
+          const uom = "units";
           if (!nsp)
             return <span className="text-sm text-muted-foreground">—</span>;
           const displayUnit = getDisplayUnit(uom);
@@ -203,7 +187,7 @@ export function CountryBusinessCases({
         header: "COGS",
         cell: ({ row }) => {
           const cogs = row.original.cogs_per_unit as number | null;
-          const uom = row.original.uom || "L";
+          const uom = "units";
           if (!cogs)
             return <span className="text-sm text-muted-foreground">—</span>;
           const displayUnit = getDisplayUnit(uom);
