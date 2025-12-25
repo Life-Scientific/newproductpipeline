@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 import {
   Table,
   TableBody,
@@ -69,20 +69,20 @@ export function BusinessCasesProjectionTable({
    * Parse fiscal year string to numeric year (2-digit format)
    * Follows the codebase pattern of using /FY(\d{2})/ regex for consistency
    * Includes fallback for 4-digit years (FY2026) as defensive programming
-   * 
+   *
    * @param fy Fiscal year string (e.g., "FY26" or "FY2026")
    * @returns Numeric year (e.g., 26) or null if invalid
    */
   const parseFiscalYear = (fy: string | null): number | null => {
     if (!fy) return null;
-    
+
     // Primary pattern: match 2-digit fiscal years (FY26, FY27, etc.)
     // This matches the pattern used throughout the codebase
     const match = fy.match(/FY(\d{2})/);
     if (match) {
       return parseInt(match[1], 10);
     }
-    
+
     // Fallback: handle 4-digit years (FY2026) as defensive programming
     // Database should always return 2-digit, but this handles edge cases
     const yearStr = fy.replace(/^FY/i, "");
@@ -90,7 +90,7 @@ export function BusinessCasesProjectionTable({
     if (!isNaN(yearNum) && yearNum >= 2000) {
       return yearNum - 2000;
     }
-    
+
     return null;
   };
 
@@ -383,7 +383,8 @@ export function BusinessCasesProjectionTable({
                     getValue: (fy: number) => {
                       const fyStr = getFiscalYearStr(fy);
                       const rawValue = bc.years_data[fyStr]?.volume;
-                      if (rawValue === null || rawValue === undefined) return "—";
+                      if (rawValue === null || rawValue === undefined)
+                        return "—";
                       // Convert based on product type
                       const converted = productIsWet
                         ? convertVolume(rawValue)
@@ -458,7 +459,9 @@ export function BusinessCasesProjectionTable({
                   // Helper to check if a column fiscal year has data for this business case
                   // The column fiscal year might be FY26, but if this business case starts at FY30,
                   // we need to calculate which year_offset corresponds to FY26 (or if it even exists)
-                  const getFiscalYearForColumn = (columnFy: number): string | null => {
+                  const getFiscalYearForColumn = (
+                    columnFy: number,
+                  ): string | null => {
                     // Calculate year_offset: columnFy = effectiveStartYear + (year_offset - 1)
                     // So: year_offset = columnFy - effectiveStartYear + 1
                     const yearOffset = columnFy - effectiveStartYear + 1;
@@ -568,9 +571,13 @@ export function BusinessCasesProjectionTable({
                       {fiscalYearColumns.map((col) => {
                         const isBeforeEffectiveStart =
                           col.fiscalYear < effectiveStartYear;
-                        const fiscalYearStr = getFiscalYearForColumn(col.fiscalYear);
-                        const hasData = fiscalYearStr !== null && bc.years_data[fiscalYearStr] !== undefined;
-                        
+                        const fiscalYearStr = getFiscalYearForColumn(
+                          col.fiscalYear,
+                        );
+                        const hasData =
+                          fiscalYearStr !== null &&
+                          bc.years_data[fiscalYearStr] !== undefined;
+
                         return (
                           <TableCell
                             key={col.key}
@@ -580,7 +587,7 @@ export function BusinessCasesProjectionTable({
                                 "bg-muted/50 text-muted-foreground",
                             )}
                           >
-                            {(isBeforeEffectiveStart || !hasData)
+                            {isBeforeEffectiveStart || !hasData
                               ? "—"
                               : metric.getValue(col.fiscalYear)}
                           </TableCell>
@@ -649,3 +656,6 @@ export function BusinessCasesProjectionTable({
     </>
   );
 }
+
+const MemoizedBusinessCasesProjectionTable = memo(BusinessCasesProjectionTable);
+export default MemoizedBusinessCasesProjectionTable;

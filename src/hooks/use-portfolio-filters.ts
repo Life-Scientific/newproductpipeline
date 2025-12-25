@@ -91,18 +91,19 @@ export function usePortfolioFilters(
     if (!hasAnyParams && !hasRedirected.current) {
       hasRedirected.current = true;
 
-      // Build URL with default params
+      // Build URL with default params - use defaultOverrides directly to avoid stale closure
+      const defaults = { ...DEFAULT_FILTERS, ...defaultOverrides };
       const params = new URLSearchParams();
-      if (effectiveDefaults.formulationStatuses?.length) {
+      if (defaults.formulationStatuses?.length) {
         params.set(
           PARAM_KEYS.formulationStatuses,
-          effectiveDefaults.formulationStatuses.join(","),
+          defaults.formulationStatuses.join(","),
         );
       }
-      if (effectiveDefaults.countryStatuses?.length) {
+      if (defaults.countryStatuses?.length) {
         params.set(
           PARAM_KEYS.countryStatuses,
-          effectiveDefaults.countryStatuses.join(","),
+          defaults.countryStatuses.join(","),
         );
       }
 
@@ -111,7 +112,7 @@ export function usePortfolioFilters(
         : pathname;
       router.replace(newUrl, { scroll: false });
     }
-  }, [hasAnyParams, effectiveDefaults, pathname, router]);
+  }, [hasAnyParams, defaultOverrides, pathname, router]);
 
   // Update filters in URL - use push for immediate URL update and state refresh
   const setFilters = useCallback(

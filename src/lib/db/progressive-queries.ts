@@ -145,8 +145,9 @@ export async function getBusinessCasesForProjectionTableProgressive(
  */
 export async function getBusinessCasesForProjectionTableRemaining(
   offset: number,
+  filters?: PortfolioFilters,
 ): Promise<BusinessCaseGroupData[]> {
   const { getBusinessCasesForProjectionTable } = await import("./queries");
-  const allData = await getBusinessCasesForProjectionTable();
+  const allData = await getBusinessCasesForProjectionTable(undefined, filters);
   return allData.slice(offset);
 }

@@ -1,12 +1,10 @@
-import {
-  getFormulations,
-  getFormulationCountries,
-} from "@/lib/db/queries";
+import { getFormulations, getFormulationCountries } from "@/lib/db/queries";
 import { getCountries } from "@/lib/db/countries";
 import { getBusinessCasesForProjectionTableProgressive } from "@/lib/db/progressive-queries";
 import { createClient } from "@/lib/supabase/server";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { BusinessCasesPageClient } from "./BusinessCasesPageClient";
+import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 
 // Use dynamic rendering to ensure fresh data after mutations
 export const dynamic = "force-dynamic";
@@ -130,33 +128,35 @@ export default async function BusinessCasesPage({ searchParams }: PageProps) {
   });
 
   return (
-    <div className="container mx-auto p-4 sm:p-6">
-      <AnimatedPage>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <h1 className="text-2xl sm:text-3xl font-bold">
-                Product Portfolio Long Range Plan
-              </h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                10-year revenue and margin projections. Each row represents a
-                formulation registered in a country for a specific use.
-              </p>
+    <ErrorBoundary>
+      <div className="container mx-auto p-4 sm:p-6">
+        <AnimatedPage>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <h1 className="text-2xl sm:text-3xl font-bold">
+                  Product Portfolio Long Range Plan
+                </h1>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  10-year revenue and margin projections. Each row represents a
+                  formulation registered in a country for a specific use.
+                </p>
+              </div>
             </div>
-          </div>
 
-          <BusinessCasesPageClient
-            initialBusinessCases={initialDataResult.initialData}
-            totalCount={initialDataResult.totalCount}
-            hasMore={initialDataResult.hasMore}
-            formulationStatuses={formulationStatusMap}
-            countryStatuses={countryStatusMap}
-            formulations={formulations}
-            countries={countries}
-            formulationCountries={formulationCountriesData}
-          />
-        </div>
-      </AnimatedPage>
-    </div>
+            <BusinessCasesPageClient
+              initialBusinessCases={initialDataResult.initialData}
+              totalCount={initialDataResult.totalCount}
+              hasMore={initialDataResult.hasMore}
+              formulationStatuses={formulationStatusMap}
+              countryStatuses={countryStatusMap}
+              formulations={formulations}
+              countries={countries}
+              formulationCountries={formulationCountriesData}
+            />
+          </div>
+        </AnimatedPage>
+      </div>
+    </ErrorBoundary>
   );
 }

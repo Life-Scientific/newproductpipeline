@@ -5,6 +5,7 @@ import {
   getFormulationsWithNestedDataRemaining,
   getBusinessCasesForProjectionTableProgressive,
   getBusinessCasesForProjectionTableRemaining,
+  type PortfolioFilters,
 } from "@/lib/db/progressive-queries";
 
 /**
@@ -31,7 +32,9 @@ export async function fetchBusinessCasesInitial(limit: number = 100) {
 /**
  * Server action: Fetch remaining business cases (for background loading)
  */
-export async function fetchBusinessCasesRemaining(offset: number) {
-  return await getBusinessCasesForProjectionTableRemaining(offset);
+export async function fetchBusinessCasesRemaining(
+  offset: number,
+  filters?: PortfolioFilters,
+) {
+  return await getBusinessCasesForProjectionTableRemaining(offset, filters);
 }
-

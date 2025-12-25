@@ -13,8 +13,7 @@ import {
   type FilterableFormulationCountry,
 } from "@/hooks/use-filter-options";
 import { computeFilteredCounts } from "@/lib/utils/filter-counts";
-import { useProgressiveLoad } from "@/hooks/use-progressive-load";
-import { fetchFormulationsInitial, fetchFormulationsRemaining } from "@/lib/actions/progressive-actions";
+import { fetchFormulationsInitial } from "@/lib/actions/progressive-actions";
 import type { FormulationWithNestedData } from "@/lib/db/queries";
 import type { Formulation } from "@/lib/db/types";
 import type { Country } from "@/lib/db/types";
@@ -38,23 +37,10 @@ function FormulationsContent({
   countries,
   formulationCountries,
 }: FormulationsClientProps) {
-  // OPTIMIZATION: Progressive loading - load remaining data in background
-  const {
-    data: formulationsWithNested,
-    isBackgroundLoading,
-    totalCount,
-  } = useProgressiveLoad(
-    initialFormulations,
-    initialTotalCount,
-    initialHasMore,
-    fetchFormulationsRemaining,
-    {
-      onProgress: (loaded, total) => {
-        // Optional: Could show progress indicator
-        log(`[Formulations] Loaded ${loaded} of ${total}`);
-      },
-    },
-  );
+  // Use server data directly - background loading handled by server actions
+  const formulationsWithNested = initialFormulations;
+  const totalCount = initialTotalCount;
+  const isBackgroundLoading = false;
 
   // Use global portfolio filters from URL
   const { filters } = usePortfolioFilters();
@@ -255,7 +241,8 @@ function FormulationsContent({
       />
       {isBackgroundLoading && (
         <div className="mb-4 text-sm text-muted-foreground text-center">
-          Loading more formulations... ({formulationsWithNested.length} of {totalCount})
+          Loading more formulations... ({formulationsWithNested.length} of{" "}
+          {totalCount})
         </div>
       )}
       <FormulationsPageContent formulationsWithNested={filteredFormulations} />

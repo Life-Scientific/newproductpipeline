@@ -45,7 +45,6 @@ import {
   generateBusinessCaseImportTemplate,
 } from "@/lib/actions/business-cases";
 import { useToast } from "@/components/ui/use-toast";
-import { useProgressiveLoad } from "@/hooks/use-progressive-load";
 import { fetchBusinessCasesRemaining } from "@/lib/actions/progressive-actions";
 import type { Country } from "@/lib/db/types";
 import type { Formulation } from "@/lib/db/types";
@@ -79,24 +78,11 @@ function BusinessCasesContent({
   countries,
   formulationCountries,
 }: BusinessCasesPageClientProps) {
-  // OPTIMIZATION: Progressive loading - load remaining data in background
-  const {
-    data: businessCases,
-    isBackgroundLoading,
-    totalCount,
-  } = useProgressiveLoad(
-    initialBusinessCases,
-    initialTotalCount,
-    initialHasMore,
-    fetchBusinessCasesRemaining,
-    {
-      onProgress: (loaded, total) => {
-        log(`[Business Cases] Loaded ${loaded} of ${total}`);
-      },
-    },
-  );
+  // Use server data directly - background loading deprecated pending JSONB condensing
+  const businessCases = initialBusinessCases;
+  const isBackgroundLoading = false;
+  const totalCount = initialTotalCount;
 
-  // Use global portfolio filters from URL
   const { filters } = usePortfolioFilters();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -198,50 +184,9 @@ function BusinessCasesContent({
   // filters.formulations now contains codes directly
   const selectedFormulationCodes = filters.formulations;
 
-  // Filter business cases based on global filters
-  const filteredBusinessCases = useMemo(() => {
-    return enrichedBusinessCases.filter((bc) => {
-      // Country filter - filters.countries now contains country codes
-      if (filters.countries.length > 0) {
-        if (!bc.country_code || !filters.countries.includes(bc.country_code)) {
-          return false;
-        }
-      }
-      // Formulation filter - filters.formulations now contains codes
-      if (selectedFormulationCodes.length > 0) {
-        if (
-          !bc.formulation_code ||
-          !selectedFormulationCodes.includes(bc.formulation_code)
-        ) {
-          return false;
-        }
-      }
-      // Use group filter (by name)
-      if (filters.useGroups.length > 0) {
-        if (
-          !bc.use_group_name ||
-          !filters.useGroups.includes(bc.use_group_name)
-        ) {
-          return false;
-        }
-      }
-      // Formulation status filter
-      if (filters.formulationStatuses.length > 0) {
-        const status = bc.formulation_status || "Not Yet Evaluated";
-        if (!filters.formulationStatuses.includes(status)) {
-          return false;
-        }
-      }
-      // Country status filter
-      if (filters.countryStatuses.length > 0) {
-        const countryStatus = bc.country_status || "Not yet evaluated";
-        if (!filters.countryStatuses.includes(countryStatus)) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [enrichedBusinessCases, filters, selectedFormulationCodes]);
+  // Note: Data is already filtered on the server via getBusinessCasesForProjectionTable(filters)
+  // No need for additional client-side filtering
+  const filteredBusinessCases = enrichedBusinessCases;
 
   // Filter formulation-countries based on global filters for accurate counts
   const filteredFormulationCountries = useMemo(() => {
@@ -451,11 +396,6 @@ function BusinessCasesContent({
 
           {/* Business Cases Table */}
           <div>
-            {isBackgroundLoading && (
-              <div className="mb-4 text-sm text-muted-foreground text-center">
-                Loading more business cases... ({businessCases.length} of {totalCount})
-              </div>
-            )}
             <BusinessCasesProjectionTable
               businessCases={filteredBusinessCases}
               canEdit={canEditBusinessCases}

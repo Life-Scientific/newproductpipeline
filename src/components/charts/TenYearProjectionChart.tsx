@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useId, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import {
   Card,
   CardContent,
@@ -60,20 +61,20 @@ const DEFAULT_YEAR_RANGE = 10;
  * Parse fiscal year string to numeric year (2-digit format)
  * Follows the codebase pattern of using /FY(\d{2})/ regex for consistency
  * Includes fallback for 4-digit years (FY2026) as defensive programming
- * 
+ *
  * @param fy Fiscal year string (e.g., "FY26" or "FY2026")
  * @returns Numeric year (e.g., 26) or null if invalid
  */
 function parseFiscalYear(fy: string | null | undefined): number | null {
   if (!fy) return null;
-  
+
   // Primary pattern: match 2-digit fiscal years (FY26, FY27, etc.)
   // This matches the pattern used throughout the codebase
   const match = fy.match(/FY(\d{2})/);
   if (match) {
     return parseInt(match[1], 10);
   }
-  
+
   // Fallback: handle 4-digit years (FY2026) as defensive programming
   // Database should always return 2-digit, but this handles edge cases
   const yearStr = fy.replace(/^FY/i, "");
@@ -81,7 +82,7 @@ function parseFiscalYear(fy: string | null | undefined): number | null {
   if (!isNaN(yearNum) && yearNum >= 2000) {
     return yearNum - 2000;
   }
-  
+
   return null;
 }
 
@@ -103,15 +104,15 @@ export function TenYearProjectionChart({
   const { filters, hasActiveFilters } = usePortfolioFilters();
   const [chartType, setChartType] = useState<"line" | "bar">("line");
   const chartId = useId().replace(/:/g, "-");
-  
+
   // Track navigation to force chart remount and animation
   const [mountKey, setMountKey] = useState(0);
-  
+
   // Force remount when pathname changes (even if data is the same)
   useEffect(() => {
     setMountKey((prev) => prev + 1);
   }, [pathname]);
-  
+
   // Create a key based on pathname, filters, and mount counter to ensure chart remounts and animates
   const chartKey = useMemo(() => {
     const filterKey = JSON.stringify(filters);
@@ -275,7 +276,7 @@ export function TenYearProjectionChart({
       // Parse fiscal year and normalize to 2-digit format for matching
       const bcFyNum = parseFiscalYear(bc.fiscal_year);
       if (bcFyNum === null) return; // Skip if fiscal year is invalid
-      
+
       // Find matching year by comparing numeric values (more robust than string matching)
       const yearIndex = years.findIndex((y) => y.fiscalYearNum === bcFyNum);
       if (yearIndex >= 0) {
@@ -519,7 +520,12 @@ export function TenYearProjectionChart({
             className="w-full h-full"
           >
             {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minHeight={400} key={chartKey}>
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                minHeight={400}
+                key={chartKey}
+              >
                 {chartType === "line" ? (
                   <AreaChart
                     key={`${chartKey}-area`} // Key ensures chart remounts for animation
@@ -1065,15 +1071,17 @@ export function TenYearProjectionChart({
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-    >
-      <Card className="w-full overflow-hidden">
-        <CardHeader className="pb-3">{headerContent}</CardHeader>
-        <CardContent className="space-y-4">{chartContent}</CardContent>
-      </Card>
-    </motion.div>
+    <ErrorBoundary>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+      >
+        <Card className="w-full overflow-hidden">
+          <CardHeader className="pb-3">{headerContent}</CardHeader>
+          <CardContent className="space-y-4">{chartContent}</CardContent>
+        </Card>
+      </motion.div>
+    </ErrorBoundary>
   );
 }

@@ -9,21 +9,22 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 interface MarketDetailPageProps {
-  params: {
+  params: Promise<{
     countryId: string;
-  };
+  }>;
 }
 
 export default async function MarketDetailPage({
   params,
 }: MarketDetailPageProps) {
   const supabase = await createClient();
+  const { countryId } = await params;
 
   // Get country details
   const { data: country, error: countryError } = await supabase
     .from("countries")
     .select("*")
-    .eq("country_id", params.countryId)
+    .eq("country_id", countryId)
     .single();
 
   if (countryError || !country) {
@@ -43,7 +44,7 @@ export default async function MarketDetailPage({
 
   // Filter business cases for this country
   const businessCases = allBusinessCases.filter(
-    (bc) => bc.country_id === params.countryId,
+    (bc) => bc.country_id === countryId,
   );
 
   const registrations = registrationPipeline.data || [];
