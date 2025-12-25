@@ -9,10 +9,16 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useState, lazy } from "react";
 import { BusinessCaseModal } from "@/components/business-cases/BusinessCaseModal";
-import { BusinessCaseImportModal } from "@/components/business-cases/BusinessCaseImportModal";
 import { BusinessCasesProjectionTable } from "@/components/business-cases/BusinessCasesProjectionTable";
+
+// Lazy load the import modal (1,270 lines) - only loaded when user clicks import
+const BusinessCaseImportModal = lazy(() =>
+  import("@/components/business-cases/BusinessCaseImportModal").then((mod) => ({
+    default: mod.BusinessCaseImportModal,
+  })),
+);
 import { GlobalFilterBar } from "@/components/filters/GlobalFilterBar";
 import { Button } from "@/components/ui/button";
 import {
@@ -414,14 +420,16 @@ function BusinessCasesContent({
               router.refresh();
             }}
           />
-          <BusinessCaseImportModal
-            open={importModalOpen}
-            onOpenChange={setImportModalOpen}
-            onSuccess={() => {
-              // Use router.refresh() to get fresh data from the server
-              router.refresh();
-            }}
-          />
+          <Suspense fallback={null}>
+            <BusinessCaseImportModal
+              open={importModalOpen}
+              onOpenChange={setImportModalOpen}
+              onSuccess={() => {
+                // Use router.refresh() to get fresh data from the server
+                router.refresh();
+              }}
+            />
+          </Suspense>
         </>
       )}
     </>
