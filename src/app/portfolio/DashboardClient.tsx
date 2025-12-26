@@ -71,8 +71,8 @@ const DashboardContent = memo(function DashboardContent({
     filters.formulationStatuses.length > 0 ||
     filters.countryStatuses.length > 0;
 
-  // Keep fetching business cases for filter counts (needed for GlobalFilterBar)
-  // These are pre-filtered by the server, so no redundant client-side filtering
+  // PERFORMANCE FIX: Only fetch when filters change, use server data as baseline
+  // Server already fetched unfiltered data, we use it as initialData for cache
   const {
     data: businessCases = initialBusinessCases,
     isLoading: isLoadingBusinessCases,
@@ -83,13 +83,16 @@ const DashboardContent = memo(function DashboardContent({
         ? fetchBusinessCasesForChartFilteredAction(filters)
         : fetchBusinessCasesForChartAction();
     },
-    initialData: !hasFilters ? initialBusinessCases : undefined,
+    initialData: initialBusinessCases, // Always use server data as starting point
     staleTime: 5 * 60 * 1000,
+    // Only refetch if filters are actually active
+    enabled: hasFilters,
   });
 
   // OPTIMIZED: Use aggregated chart data (99%+ payload reduction)
   // Returns pre-aggregated data by fiscal year instead of raw rows
-  // This reduces the chart rendering payload from ~2-3MB to ~2KB
+  // Reduces chart rendering payload from ~2-3MB to ~2KB
+  // PERFORMANCE FIX: Only fetch when needed (filters active)
   const {
     data: chartAggregates = [],
     isLoading: isLoadingChartData,
@@ -97,6 +100,8 @@ const DashboardContent = memo(function DashboardContent({
     queryKey: ["businessCases-chart-aggregates", filters],
     queryFn: () => fetchBusinessCaseChartAggregatesAction(filters),
     staleTime: 5 * 60 * 1000,
+    // Don't fetch on mount if no filters - server data is sufficient
+    enabled: hasFilters,
   });
 
   const formulationStatusMap = useMemo(() => {
