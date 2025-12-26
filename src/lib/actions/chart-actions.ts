@@ -1,6 +1,6 @@
 "use server";
 
-import { getBusinessCasesForChart } from "@/lib/db/queries";
+import { getBusinessCasesForChart, getBusinessCaseChartAggregates } from "@/lib/db/queries";
 import { revalidatePath } from "next/cache";
 import type { PortfolioFilters } from "@/lib/db/progressive-queries";
 
@@ -23,6 +23,19 @@ export async function fetchBusinessCasesForChartFilteredAction(
 ) {
   const { getBusinessCasesForChartFiltered } = await import("@/lib/db/queries");
   const data = await getBusinessCasesForChartFiltered(filters);
+  revalidatePath("/portfolio");
+  return data;
+}
+
+/**
+ * Server action to fetch AGGREGATED chart data (OPTIMIZED)
+ * Reduces payload from ~2-3MB to ~2KB by aggregating at database level
+ * Returns pre-aggregated data grouped by fiscal year
+ */
+export async function fetchBusinessCaseChartAggregatesAction(
+  filters?: PortfolioFilters,
+) {
+  const data = await getBusinessCaseChartAggregates(filters);
   revalidatePath("/portfolio");
   return data;
 }

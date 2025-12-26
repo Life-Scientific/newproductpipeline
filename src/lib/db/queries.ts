@@ -744,19 +744,20 @@ export async function getFormulationCountryDetails(formulationId: string) {
  * so fiscal_year MUST be part of the deduplication key.
  */
 function deduplicateBusinessCases(
-  businessCases: BusinessCase[],
-): BusinessCase[] {
+  businessCases: EnrichedBusinessCase[],
+): EnrichedBusinessCase[] {
   if (!businessCases || businessCases.length === 0) {
     return [];
   }
 
-  // Group by formulation_code + country_name + use_group_variant + year_offset + fiscal_year
+  // Group by business_case_group_id + year_offset + fiscal_year
   // fiscal_year is critical - each year is a separate projection that must be preserved
-  const groups = new Map<string, BusinessCase[]>();
+  // Note: use_group_variant removed - business cases now link to multiple use groups via junction table
+  const groups = new Map<string, EnrichedBusinessCase[]>();
 
   businessCases.forEach((bc) => {
     // Create a unique key for grouping - INCLUDE fiscal_year
-    const key = `${bc.formulation_code || ""}_${bc.country_name || ""}_${bc.use_group_variant || ""}_${bc.year_offset || ""}_${bc.fiscal_year || ""}`;
+    const key = `${bc.business_case_group_id || bc.business_case_id || ""}_${bc.year_offset || ""}_${bc.fiscal_year || ""}`;
 
     if (!groups.has(key)) {
       groups.set(key, []);
@@ -765,7 +766,7 @@ function deduplicateBusinessCases(
   });
 
   // For each group, keep only the latest one (by updated_at, then created_at)
-  const deduplicated: BusinessCase[] = [];
+  const deduplicated: EnrichedBusinessCase[] = [];
 
   groups.forEach((group) => {
     if (group.length === 1) {
@@ -793,11 +794,11 @@ function deduplicateBusinessCases(
 }
 
 /**
- * Helper function to enrich business cases with formulation_id and country_id
- * by looking them up through the junction table
+ * Helper function to enrich business cases with formulation_id, country_id and display names
+ * Updated for JSONB business_case structure
  */
 async function enrichBusinessCases(
-  businessCases: BusinessCase[],
+  businessCases: Array<BusinessCase & { formulation_id?: string | null; country_id?: string | null }>,
 ): Promise<EnrichedBusinessCase[]> {
   if (!businessCases || businessCases.length === 0) {
     return [];
@@ -805,187 +806,66 @@ async function enrichBusinessCases(
 
   const supabase = await createClient();
 
-  // Get unique business_case_ids
-  const businessCaseIds = [
+  // In the new JSONB structure, formulation_id and country_id are already in the business case
+  // Extract unique IDs for batch lookup of display names
+  const allFormulationIds = [
     ...new Set(
       businessCases
-        .map((bc) => bc.business_case_id)
+        .map((bc) => bc.formulation_id)
         .filter((id): id is string => Boolean(id)),
     ),
   ];
 
-  if (businessCaseIds.length === 0) {
-    return businessCases.map((bc) => ({
-      ...bc,
-      formulation_id: null,
-      country_id: null,
-    }));
-  }
-
-  // Fetch formulation_id and country_id through multiple paths:
-  // 1. Direct: business_case.formulation_country_id -> formulation_country
-  // 2. Via use groups: business_case_use_groups -> formulation_country_use_group -> formulation_country
-
-  // First, get direct formulation_country_ids from business cases
-  const directFormulationCountryIds = [
+  const allCountryIds = [
     ...new Set(
       businessCases
-        .map((bc) => bc.formulation_country_id)
+        .map((bc) => bc.country_id)
         .filter((id): id is string => Boolean(id)),
     ),
   ];
 
-  // Get formulation_id and country_id for direct links
-  const { data: directCountryData } = await supabase
-    .from("formulation_country")
-    .select("formulation_country_id, formulation_id, country_id")
-    .in("formulation_country_id", directFormulationCountryIds);
+  // Fetch formulation details
+  const { data: formulationData } = allFormulationIds.length > 0
+    ? await supabase
+        .from("formulation")
+        .select("formulation_id, formulation_code, formulation_name")
+        .in("formulation_id", allFormulationIds)
+    : { data: null };
 
-  // Create maps for direct links
-  const directFormulationCountryToFormulationId = new Map<string, string>();
-  const directFormulationCountryToCountryId = new Map<string, string>();
-  directCountryData?.forEach((fc) => {
-    if (fc.formulation_country_id) {
-      directFormulationCountryToFormulationId.set(
-        fc.formulation_country_id,
-        fc.formulation_id,
-      );
-      directFormulationCountryToCountryId.set(
-        fc.formulation_country_id,
-        fc.country_id,
-      );
-    }
-  });
+  // Fetch country details
+  const { data: countryData } = allCountryIds.length > 0
+    ? await supabase
+        .from("country")
+        .select("country_id, country_name, country_code")
+        .in("country_id", allCountryIds)
+    : { data: null };
 
-  // Now handle business cases linked via use groups
-  const { data: junctionData } = await supabase
-    .from("business_case_use_groups")
-    .select("business_case_id, formulation_country_use_group_id")
-    .in("business_case_id", businessCaseIds);
-
-  // Get unique formulation_country_use_group_ids
-  const useGroupIds = [
-    ...new Set(
-      junctionData
-        ?.map((j) => j.formulation_country_use_group_id)
-        .filter((id): id is string => Boolean(id)) || [],
-    ),
-  ];
-
-  // Get formulation_country_ids from use groups
-  const { data: useGroupData } = await supabase
-    .from("formulation_country_use_group")
-    .select("formulation_country_use_group_id, formulation_country_id")
-    .in("formulation_country_use_group_id", useGroupIds);
-
-  // Get unique formulation_country_ids from use groups
-  const useGroupFormulationCountryIds = [
-    ...new Set(
-      useGroupData
-        ?.map((ug) => ug.formulation_country_id)
-        .filter((id): id is string => Boolean(id)) || [],
-    ),
-  ];
-
-  // Get formulation_id and country_id for use group links (excluding ones we already have)
-  const useGroupCountryIdsToFetch = useGroupFormulationCountryIds.filter(
-    (id) => !directFormulationCountryIds.includes(id),
+  // Create lookup maps
+  const formulationMap = new Map(
+    formulationData?.map(f => [f.formulation_id, f]) ?? []
+  );
+  const countryMap = new Map(
+    countryData?.map(c => [c.country_id, c]) ?? []
   );
 
-  const { data: useGroupCountryData } =
-    useGroupCountryIdsToFetch.length > 0
-      ? await supabase
-          .from("formulation_country")
-          .select("formulation_country_id, formulation_id, country_id")
-          .in("formulation_country_id", useGroupCountryIdsToFetch)
-      : { data: null };
+  // Enrich business cases with display names
+  return businessCases.map((bc) => {
+    const formulationId = bc.formulation_id || null;
+    const countryId = bc.country_id || null;
 
-  // Merge country data
-  const allCountryData = [
-    ...(directCountryData || []),
-    ...(useGroupCountryData || []),
-  ];
+    const formulation = formulationId ? formulationMap.get(formulationId) : null;
+    const country = countryId ? countryMap.get(countryId) : null;
 
-  // Create maps for lookup
-  const useGroupToFormulationCountry = new Map<string, string>();
-  useGroupData?.forEach((ug) => {
-    if (ug.formulation_country_use_group_id && ug.formulation_country_id) {
-      useGroupToFormulationCountry.set(
-        ug.formulation_country_use_group_id,
-        ug.formulation_country_id,
-      );
-    }
+    return {
+      ...bc,
+      formulation_id: formulationId,
+      country_id: countryId,
+      formulation_code: formulation?.formulation_code ?? null,
+      formulation_name: formulation?.formulation_name ?? null,
+      country_name: country?.country_name ?? null,
+      country_code: country?.country_code ?? null,
+    };
   });
-
-  const formulationCountryToFormulationId = new Map<string, string>();
-  const formulationCountryToCountryId = new Map<string, string>();
-  allCountryData.forEach((fc) => {
-    if (fc.formulation_country_id) {
-      formulationCountryToFormulationId.set(
-        fc.formulation_country_id,
-        fc.formulation_id,
-      );
-      formulationCountryToCountryId.set(
-        fc.formulation_country_id,
-        fc.country_id,
-      );
-    }
-  });
-
-  // Create maps for business cases
-  const businessCaseToFormulationId = new Map<string, string>();
-  const businessCaseToCountryId = new Map<string, string>();
-
-  // First, handle direct links
-  businessCases.forEach((bc) => {
-    if (bc.business_case_id && bc.formulation_country_id) {
-      if (!businessCaseToFormulationId.has(bc.business_case_id)) {
-        businessCaseToFormulationId.set(
-          bc.business_case_id,
-          directFormulationCountryToFormulationId.get(
-            bc.formulation_country_id,
-          ) || "",
-        );
-        businessCaseToCountryId.set(
-          bc.business_case_id,
-          directFormulationCountryToCountryId.get(bc.formulation_country_id) ||
-            "",
-        );
-      }
-    }
-  });
-
-  // Then, handle use group links (only if not already set)
-  junctionData?.forEach((j) => {
-    if (j.business_case_id && j.formulation_country_use_group_id) {
-      if (!businessCaseToFormulationId.has(j.business_case_id)) {
-        const fcId = useGroupToFormulationCountry.get(
-          j.formulation_country_use_group_id,
-        );
-        if (fcId) {
-          businessCaseToFormulationId.set(
-            j.business_case_id,
-            formulationCountryToFormulationId.get(fcId) || "",
-          );
-          businessCaseToCountryId.set(
-            j.business_case_id,
-            formulationCountryToCountryId.get(fcId) || "",
-          );
-        }
-      }
-    }
-  });
-
-  // Enrich business cases
-  return businessCases.map((bc) => ({
-    ...bc,
-    formulation_id: bc.business_case_id
-      ? (businessCaseToFormulationId.get(bc.business_case_id) ?? null)
-      : null,
-    country_id: bc.business_case_id
-      ? (businessCaseToCountryId.get(bc.business_case_id) ?? null)
-      : null,
-  }));
 }
 
 /**
@@ -1387,6 +1267,45 @@ export async function getBusinessCasesForChartFiltered(
   }
 
   return allData;
+}
+
+/**
+ * Get pre-aggregated business case data for charts (OPTIMIZED)
+ * Uses database-side aggregation to reduce payload from ~2-3MB to ~2KB
+ * Returns data grouped by fiscal year with sums and counts
+ */
+export async function getBusinessCaseChartAggregates(
+  filters?: PortfolioFilters,
+) {
+  const supabase = await createClient();
+
+  // Prepare filter parameters for the database function
+  const countryCodesParam = filters?.countries?.length ? filters.countries : null;
+  const formulationCodesParam = filters?.formulations?.length ? filters.formulations : null;
+  const useGroupNamesParam = filters?.useGroups?.length ? filters.useGroups : null;
+  const formulationStatusesParam = filters?.formulationStatuses?.length ? filters.formulationStatuses : null;
+  const countryStatusesParam = filters?.countryStatuses?.length ? filters.countryStatuses : null;
+
+  // Call the database aggregation function
+  const { data, error: supabaseError } = await supabase.rpc(
+    'get_business_case_chart_aggregates',
+    {
+      p_country_codes: countryCodesParam,
+      p_formulation_codes: formulationCodesParam,
+      p_use_group_names: useGroupNamesParam,
+      p_formulation_statuses: formulationStatusesParam,
+      p_country_statuses: countryStatusesParam,
+    }
+  );
+
+  if (supabaseError) {
+    error('Failed to fetch aggregated chart data:', supabaseError);
+    throw new Error(
+      `Failed to fetch aggregated chart data: ${supabaseError.message}`,
+    );
+  }
+
+  return data || [];
 }
 
 // Countries functions moved to ./countries.ts

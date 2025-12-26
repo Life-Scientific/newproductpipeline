@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useId, useCallback } from "react";
+import { useState, useMemo, useEffect, useId, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
@@ -44,9 +44,28 @@ type BusinessCase = EnrichedBusinessCase;
 type Formulation =
   Database["public"]["Views"]["vw_formulations_with_ingredients"]["Row"];
 
+// Aggregated chart data type (from database function)
+interface ChartAggregate {
+  fiscal_year: string;
+  total_revenue: number;
+  total_margin: number;
+  total_cogs: number;
+  business_case_count: number;
+  unique_formulations: number;
+  unique_countries: number;
+  unique_business_case_groups: number;
+}
+
 interface TenYearProjectionChartProps {
-  businessCases: BusinessCase[];
+  /** Pre-aggregated chart data (OPTIMIZED - 99%+ smaller payload) */
+  chartData?: ChartAggregate[];
+  /** Legacy: raw business cases (DEPRECATED - use chartData instead) */
+  businessCases?: BusinessCase[];
   formulations: Formulation[];
+  /** Pre-calculated unique formulation count (when using chartData) */
+  uniqueFormulations?: number;
+  /** Pre-calculated unique business case groups (when using chartData) */
+  uniqueBusinessCaseGroups?: number;
   /** If true, removes the Card wrapper for integration into parent card */
   noCard?: boolean;
 }
@@ -83,11 +102,16 @@ function parseFiscalYear(fy: string | null | undefined): number | null {
   return null;
 }
 
-export function TenYearProjectionChart({
-  businessCases,
+export const TenYearProjectionChart = memo(function TenYearProjectionChart({
+  chartData,
+  businessCases = [],
   formulations,
+  uniqueFormulations: providedUniqueFormulations,
+  uniqueBusinessCaseGroups: providedUniqueBusinessCaseGroups,
   noCard = false,
 }: TenYearProjectionChartProps) {
+  // Use optimized path if chartData is provided, otherwise fall back to legacy aggregation
+  const useOptimizedPath = chartData && chartData.length > 0;
   const router = useRouter();
   const { currentTheme } = useTheme();
   const {
@@ -112,21 +136,23 @@ export function TenYearProjectionChart({
   const [endYear, setEndYear] = useState<number | null>(null);
 
   // Get chart colors from theme - compute hex values from CSS variables
-  const [revenueColor, setRevenueColor] = useState("#3b82f6");
-  const [marginColor, setMarginColor] = useState("#10b981");
-  const [axisColor, setAxisColor] = useState("#71717a");
-  const [borderColor, setBorderColor] = useState("#e4e4e7");
-  const [bgColor, setBgColor] = useState("#ffffff");
-  const [popoverColor, setPopoverColor] = useState("#ffffff");
-  const [mutedColor, setMutedColor] = useState("#f4f4f5");
-
-  // Update colors when theme changes
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  // OPTIMIZED: Single useMemo instead of 7 separate states + useEffect
+  const themeColors = useMemo(() => {
+    if (typeof window === "undefined") {
+      return {
+        revenue: "#3b82f6",
+        margin: "#10b981",
+        axis: "#71717a",
+        border: "#e4e4e7",
+        bg: "#ffffff",
+        popover: "#ffffff",
+        muted: "#f4f4f5",
+      };
+    }
 
     const computedStyle = getComputedStyle(document.documentElement);
 
-    // Convert oklch/color to hex using canvas
+    // Convert oklch/color to hex using canvas (cached per theme)
     const colorToHex = (colorStr: string, fallback: string): string => {
       if (!colorStr || colorStr === "") return fallback;
       try {
@@ -143,39 +169,42 @@ export function TenYearProjectionChart({
       }
     };
 
-    // Get all theme colors
-    const chart1 = computedStyle.getPropertyValue("--chart-1").trim();
-    const chart2 = computedStyle.getPropertyValue("--chart-2").trim();
-    const mutedFg = computedStyle.getPropertyValue("--muted-foreground").trim();
-    const border = computedStyle.getPropertyValue("--border").trim();
-    const bg = computedStyle.getPropertyValue("--background").trim();
-    const popover = computedStyle.getPropertyValue("--popover").trim();
-    const muted = computedStyle.getPropertyValue("--muted").trim();
-
-    setRevenueColor(colorToHex(chart1, "#3b82f6"));
-    setMarginColor(colorToHex(chart2, "#10b981"));
-    setAxisColor(colorToHex(mutedFg, "#71717a"));
-    setBorderColor(colorToHex(border, "#e4e4e7"));
-    setBgColor(colorToHex(bg, "#ffffff"));
-    setPopoverColor(colorToHex(popover, "#ffffff"));
-    setMutedColor(colorToHex(muted, "#f4f4f5"));
+    // Compute all colors once
+    return {
+      revenue: colorToHex(computedStyle.getPropertyValue("--chart-1").trim(), "#3b82f6"),
+      margin: colorToHex(computedStyle.getPropertyValue("--chart-2").trim(), "#10b981"),
+      axis: colorToHex(computedStyle.getPropertyValue("--muted-foreground").trim(), "#71717a"),
+      border: colorToHex(computedStyle.getPropertyValue("--border").trim(), "#e4e4e7"),
+      bg: colorToHex(computedStyle.getPropertyValue("--background").trim(), "#ffffff"),
+      popover: colorToHex(computedStyle.getPropertyValue("--popover").trim(), "#ffffff"),
+      muted: colorToHex(computedStyle.getPropertyValue("--muted").trim(), "#f4f4f5"),
+    };
   }, [currentTheme]);
-
-  // NOTE: businessCases are now PRE-FILTERED by DashboardClient for better performance
-  // This component just renders the data it receives
 
   // Calculate available year range from data
   const availableYearRange = useMemo(() => {
     let earliestYear = Infinity;
     let latestYear = -Infinity;
 
-    businessCases.forEach((bc) => {
-      const fyNum = parseFiscalYear(bc.fiscal_year);
-      if (fyNum !== null) {
-        if (fyNum < earliestYear) earliestYear = fyNum;
-        if (fyNum > latestYear) latestYear = fyNum;
-      }
-    });
+    if (useOptimizedPath && chartData) {
+      // OPTIMIZED: Get year range from aggregated data
+      chartData.forEach((agg) => {
+        const fyNum = parseFiscalYear(agg.fiscal_year);
+        if (fyNum !== null) {
+          if (fyNum < earliestYear) earliestYear = fyNum;
+          if (fyNum > latestYear) latestYear = fyNum;
+        }
+      });
+    } else {
+      // LEGACY: Calculate from individual business cases
+      businessCases.forEach((bc) => {
+        const fyNum = parseFiscalYear(bc.fiscal_year);
+        if (fyNum !== null) {
+          if (fyNum < earliestYear) earliestYear = fyNum;
+          if (fyNum > latestYear) latestYear = fyNum;
+        }
+      });
+    }
 
     // If no valid data, use current fiscal year as default
     if (earliestYear === Infinity || latestYear === -Infinity) {
@@ -184,7 +213,7 @@ export function TenYearProjectionChart({
     }
 
     return { minYear: earliestYear, maxYear: latestYear };
-  }, [businessCases]);
+  }, [useOptimizedPath, chartData, businessCases]);
 
   // Generate year options for dropdowns - show all available years
   const yearOptions = useMemo(() => {
@@ -219,21 +248,38 @@ export function TenYearProjectionChart({
   const yearCount = effectiveEndYear - effectiveStartYear + 1;
   const exceedsLimit = yearCount > 10;
 
-  // Generate chart data - show only years in selected range
-  const chartData = useMemo(() => {
-    // Use selected year range or default to data range
+  // Generate chart display data - show only years in selected range
+  const displayChartData = useMemo(() => {
     const displayStartYear = effectiveStartYear;
     const displayEndYear = effectiveEndYear;
 
-    // Generate fiscal years for the selected range
-    const fiscalYears: string[] = [];
-
-    for (let fyNum = displayStartYear; fyNum <= displayEndYear; fyNum++) {
-      const fyStr = `FY${String(fyNum).padStart(2, "0")}`;
-      fiscalYears.push(fyStr);
+    if (useOptimizedPath && chartData) {
+      // OPTIMIZED PATH: Use pre-aggregated data from database
+      // Filter to selected year range and convert to display format
+      return chartData
+        .filter((agg) => {
+          const fyNum = parseFiscalYear(agg.fiscal_year);
+          return fyNum !== null && fyNum >= displayStartYear && fyNum <= displayEndYear;
+        })
+        .map((agg) => ({
+          fiscalYear: agg.fiscal_year,
+          fiscalYearNum: parseFiscalYear(agg.fiscal_year) || 0,
+          revenue: agg.total_revenue / 1000000, // Convert to millions
+          margin: agg.total_margin / 1000000,
+          revenueEUR: convertCurrency(agg.total_revenue) / 1000000, // Convert currency
+          marginEUR: convertCurrency(agg.total_margin) / 1000000,
+          cogs: agg.total_cogs / 1000000,
+          count: agg.business_case_count,
+        }))
+        .sort((a, b) => a.fiscalYearNum - b.fiscalYearNum);
     }
 
-    // Initialize years array
+    // LEGACY PATH: Aggregate business cases client-side
+    const fiscalYears: string[] = [];
+    for (let fyNum = displayStartYear; fyNum <= displayEndYear; fyNum++) {
+      fiscalYears.push(`FY${String(fyNum).padStart(2, "0")}`);
+    }
+
     const years: Array<{
       fiscalYear: string;
       fiscalYearNum: number;
@@ -243,36 +289,27 @@ export function TenYearProjectionChart({
       marginEUR: number;
       cogs: number;
       count: number;
-    }> = [];
+    }> = fiscalYears.map((fyStr) => ({
+      fiscalYear: fyStr,
+      fiscalYearNum: parseInt(fyStr.replace("FY", ""), 10),
+      revenue: 0,
+      margin: 0,
+      revenueEUR: 0,
+      marginEUR: 0,
+      cogs: 0,
+      count: 0,
+    }));
 
-    fiscalYears.forEach((fyStr) => {
-      const fyNum = parseInt(fyStr.replace("FY", ""), 10);
-      years.push({
-        fiscalYear: fyStr,
-        fiscalYearNum: fyNum,
-        revenue: 0,
-        margin: 0,
-        revenueEUR: 0,
-        marginEUR: 0,
-        cogs: 0,
-        count: 0,
-      });
-    });
-
-    // Aggregate filtered business cases by fiscal year
     businessCases.forEach((bc) => {
-      // Parse fiscal year and normalize to 2-digit format for matching
       const bcFyNum = parseFiscalYear(bc.fiscal_year);
-      if (bcFyNum === null) return; // Skip if fiscal year is invalid
+      if (bcFyNum === null) return;
 
-      // Find matching year by comparing numeric values (more robust than string matching)
       const yearIndex = years.findIndex((y) => y.fiscalYearNum === bcFyNum);
       if (yearIndex >= 0) {
         const localRevenue = bc.total_revenue || 0;
         const localMargin = bc.total_margin || 0;
         const localCogs = bc.total_cogs || 0;
 
-        // Skip if values are invalid (e.g., NaN, Infinity)
         if (!Number.isFinite(localRevenue) || !Number.isFinite(localMargin)) {
           return;
         }
@@ -281,24 +318,20 @@ export function TenYearProjectionChart({
         years[yearIndex].margin += localMargin;
         years[yearIndex].cogs += localCogs;
         years[yearIndex].count += 1;
-
-        // Data is already in EUR - no conversion needed
         years[yearIndex].revenueEUR += localRevenue;
         years[yearIndex].marginEUR += localMargin;
       }
     });
 
-    // Convert to millions for display and apply user's currency preference
     return years.map((year) => ({
       ...year,
       revenue: year.revenue / 1000000,
       margin: year.margin / 1000000,
-      // Convert EUR values to user's preferred currency for display
       revenueEUR: convertCurrency(year.revenueEUR) / 1000000,
       marginEUR: convertCurrency(year.marginEUR) / 1000000,
       cogs: year.cogs / 1000000,
     }));
-  }, [businessCases, effectiveStartYear, effectiveEndYear, convertCurrency]);
+  }, [useOptimizedPath, chartData, businessCases, effectiveStartYear, effectiveEndYear, convertCurrency]);
 
   // Handle year range changes
   const handleStartYearChange = useCallback(
@@ -336,8 +369,13 @@ export function TenYearProjectionChart({
     router.push(`/portfolio/business-cases?fiscalYear=${fiscalYear}`);
   };
 
-  // Calculate unique formulations in the filtered view
+  // Calculate unique formulations
   const uniqueFormulations = useMemo(() => {
+    if (useOptimizedPath && providedUniqueFormulations !== undefined) {
+      // OPTIMIZED: Use pre-calculated value
+      return providedUniqueFormulations;
+    }
+    // LEGACY: Calculate from business cases
     const formulationSet = new Set<string>();
     businessCases.forEach((bc) => {
       if (bc.formulation_code) {
@@ -345,7 +383,7 @@ export function TenYearProjectionChart({
       }
     });
     return formulationSet.size;
-  }, [businessCases]);
+  }, [useOptimizedPath, providedUniqueFormulations, businessCases]);
 
   // Build code to name lookup from formulations data
   const formulationCodeToName = useMemo(() => {
@@ -370,8 +408,13 @@ export function TenYearProjectionChart({
 
   // Calculate unique business case groups (multi-year projections)
   const uniqueBusinessCaseGroups = useMemo(() => {
+    if (useOptimizedPath && providedUniqueBusinessCaseGroups !== undefined) {
+      // OPTIMIZED: Use pre-calculated value
+      return providedUniqueBusinessCaseGroups;
+    }
+    // LEGACY: Calculate from business cases
     return countUniqueBusinessCaseGroups(businessCases);
-  }, [businessCases]);
+  }, [useOptimizedPath, providedUniqueBusinessCaseGroups, businessCases]);
 
   const headerContent = (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -507,7 +550,7 @@ export function TenYearProjectionChart({
             transition={{ duration: 0.3 }}
             className="w-full h-full"
           >
-            {chartData.length > 0 ? (
+            {displayChartData.length > 0 ? (
               <ResponsiveContainer
                 width="100%"
                 height="100%"
@@ -517,7 +560,7 @@ export function TenYearProjectionChart({
                 {chartType === "line" ? (
                   <AreaChart
                     key={`${chartKey}-area`} // Key ensures chart remounts for animation
-                    data={chartData}
+                    data={displayChartData}
                     onClick={(data: any) => {
                       if (data?.activePayload?.[0]?.payload?.fiscalYear) {
                         handleDrillDown(
@@ -539,12 +582,12 @@ export function TenYearProjectionChart({
                       >
                         <stop
                           offset="5%"
-                          stopColor={revenueColor}
+                          stopColor={themeColors.revenue}
                           stopOpacity={0.4}
                         />
                         <stop
                           offset="95%"
-                          stopColor={revenueColor}
+                          stopColor={themeColors.revenue}
                           stopOpacity={0.08}
                         />
                       </linearGradient>
@@ -558,31 +601,31 @@ export function TenYearProjectionChart({
                       >
                         <stop
                           offset="5%"
-                          stopColor={marginColor}
+                          stopColor={themeColors.margin}
                           stopOpacity={0.4}
                         />
                         <stop
                           offset="95%"
-                          stopColor={marginColor}
+                          stopColor={themeColors.margin}
                           stopOpacity={0.08}
                         />
                       </linearGradient>
                     </defs>
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      stroke={borderColor}
+                      stroke={themeColors.border}
                       opacity={0.4}
                       vertical={true}
                       horizontal={true}
                     />
                     <XAxis
                       dataKey="fiscalYear"
-                      tick={{ fill: axisColor, fontSize: 11, fontWeight: 500 }}
-                      axisLine={{ stroke: borderColor, strokeWidth: 1 }}
-                      tickLine={{ stroke: borderColor }}
+                      tick={{ fill: themeColors.axis, fontSize: 11, fontWeight: 500 }}
+                      axisLine={{ stroke: themeColors.border, strokeWidth: 1 }}
+                      tickLine={{ stroke: themeColors.border }}
                       interval={
-                        chartData.length > 20
-                          ? Math.floor(chartData.length / 10)
+                        displayChartData.length > 20
+                          ? Math.floor(displayChartData.length / 10)
                           : 0
                       }
                       angle={-45}
@@ -596,19 +639,19 @@ export function TenYearProjectionChart({
                         angle: -90,
                         position: "insideLeft",
                         style: {
-                          fill: axisColor,
+                          fill: themeColors.axis,
                           fontSize: 12,
                           fontWeight: 500,
                         },
                       }}
-                      tick={{ fill: axisColor, fontSize: 12, fontWeight: 500 }}
-                      axisLine={{ stroke: borderColor, strokeWidth: 1 }}
-                      tickLine={{ stroke: borderColor }}
+                      tick={{ fill: themeColors.axis, fontSize: 12, fontWeight: 500 }}
+                      axisLine={{ stroke: themeColors.border, strokeWidth: 1 }}
+                      tickLine={{ stroke: themeColors.border }}
                     />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: popoverColor,
-                        border: `1px solid ${borderColor}`,
+                        backgroundColor: themeColors.popover,
+                        border: `1px solid ${themeColors.border}`,
                         borderRadius: "8px",
                         padding: "12px 16px",
                         boxShadow:
@@ -649,8 +692,8 @@ export function TenYearProjectionChart({
                                   const color =
                                     entry.color ||
                                     (entry.dataKey === "revenueEUR"
-                                      ? revenueColor
-                                      : marginColor);
+                                      ? themeColors.revenue
+                                      : themeColors.margin);
                                   const name = entry.name;
                                   return (
                                     <div
@@ -678,7 +721,7 @@ export function TenYearProjectionChart({
                         return null;
                       }}
                       cursor={{
-                        stroke: axisColor,
+                        stroke: themeColors.axis,
                         strokeWidth: 1,
                         strokeDasharray: "5 5",
                         opacity: 0.3,
@@ -701,21 +744,21 @@ export function TenYearProjectionChart({
                     <Area
                       type="monotone"
                       dataKey="revenueEUR"
-                      stroke={revenueColor}
+                      stroke={themeColors.revenue}
                       strokeWidth={2.5}
                       fill={`url(#colorRevenue-${chartId})`}
                       name={`Revenue (${preferences.currency})`}
                       dot={{
                         r: 3,
-                        fill: revenueColor,
+                        fill: themeColors.revenue,
                         strokeWidth: 2,
-                        stroke: bgColor,
+                        stroke: themeColors.bg,
                       }}
                       activeDot={{
                         r: 5,
-                        fill: revenueColor,
+                        fill: themeColors.revenue,
                         strokeWidth: 2,
-                        stroke: bgColor,
+                        stroke: themeColors.bg,
                       }}
                       isAnimationActive={true}
                       animationDuration={800}
@@ -725,21 +768,21 @@ export function TenYearProjectionChart({
                     <Area
                       type="monotone"
                       dataKey="marginEUR"
-                      stroke={marginColor}
+                      stroke={themeColors.margin}
                       strokeWidth={2.5}
                       fill={`url(#colorMargin-${chartId})`}
                       name={`Margin (${preferences.currency})`}
                       dot={{
                         r: 3,
-                        fill: marginColor,
+                        fill: themeColors.margin,
                         strokeWidth: 2,
-                        stroke: bgColor,
+                        stroke: themeColors.bg,
                       }}
                       activeDot={{
                         r: 5,
-                        fill: marginColor,
+                        fill: themeColors.margin,
                         strokeWidth: 2,
-                        stroke: bgColor,
+                        stroke: themeColors.bg,
                       }}
                       isAnimationActive={true}
                       animationDuration={800}
@@ -749,7 +792,7 @@ export function TenYearProjectionChart({
                 ) : (
                   <BarChart
                     key={`${chartKey}-bar`} // Key ensures chart remounts for animation
-                    data={chartData}
+                    data={displayChartData}
                     onClick={(data: any) => {
                       if (data?.activePayload?.[0]?.payload?.fiscalYear) {
                         handleDrillDown(
@@ -762,19 +805,19 @@ export function TenYearProjectionChart({
                   >
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      stroke={borderColor}
+                      stroke={themeColors.border}
                       opacity={0.4}
                       vertical={true}
                       horizontal={true}
                     />
                     <XAxis
                       dataKey="fiscalYear"
-                      tick={{ fill: axisColor, fontSize: 11, fontWeight: 500 }}
-                      axisLine={{ stroke: borderColor, strokeWidth: 1 }}
-                      tickLine={{ stroke: borderColor }}
+                      tick={{ fill: themeColors.axis, fontSize: 11, fontWeight: 500 }}
+                      axisLine={{ stroke: themeColors.border, strokeWidth: 1 }}
+                      tickLine={{ stroke: themeColors.border }}
                       interval={
-                        chartData.length > 20
-                          ? Math.floor(chartData.length / 10)
+                        displayChartData.length > 20
+                          ? Math.floor(displayChartData.length / 10)
                           : 0
                       }
                       angle={-45}
@@ -788,19 +831,19 @@ export function TenYearProjectionChart({
                         angle: -90,
                         position: "insideLeft",
                         style: {
-                          fill: axisColor,
+                          fill: themeColors.axis,
                           fontSize: 12,
                           fontWeight: 500,
                         },
                       }}
-                      tick={{ fill: axisColor, fontSize: 12, fontWeight: 500 }}
-                      axisLine={{ stroke: borderColor, strokeWidth: 1 }}
-                      tickLine={{ stroke: borderColor }}
+                      tick={{ fill: themeColors.axis, fontSize: 12, fontWeight: 500 }}
+                      axisLine={{ stroke: themeColors.border, strokeWidth: 1 }}
+                      tickLine={{ stroke: themeColors.border }}
                     />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: popoverColor,
-                        border: `1px solid ${borderColor}`,
+                        backgroundColor: themeColors.popover,
+                        border: `1px solid ${themeColors.border}`,
                         borderRadius: "8px",
                         padding: "12px 16px",
                         boxShadow:
@@ -840,8 +883,8 @@ export function TenYearProjectionChart({
                                   const color =
                                     entry.color ||
                                     (entry.dataKey === "revenueEUR"
-                                      ? revenueColor
-                                      : marginColor);
+                                      ? themeColors.revenue
+                                      : themeColors.margin);
                                   const name = entry.name;
                                   return (
                                     <div
@@ -868,7 +911,7 @@ export function TenYearProjectionChart({
                         }
                         return null;
                       }}
-                      cursor={{ fill: mutedColor, opacity: 0.1 }}
+                      cursor={{ fill: themeColors.muted, opacity: 0.1 }}
                     />
                     <Legend
                       wrapperStyle={{
@@ -884,7 +927,7 @@ export function TenYearProjectionChart({
                     />
                     <Bar
                       dataKey="revenueEUR"
-                      fill={revenueColor}
+                      fill={themeColors.revenue}
                       name={`Revenue (${preferences.currency})`}
                       radius={[4, 4, 0, 0]}
                       isAnimationActive={true}
@@ -893,7 +936,7 @@ export function TenYearProjectionChart({
                     />
                     <Bar
                       dataKey="marginEUR"
-                      fill={marginColor}
+                      fill={themeColors.margin}
                       name={`Margin (${preferences.currency})`}
                       radius={[4, 4, 0, 0]}
                       isAnimationActive={true}
@@ -920,14 +963,14 @@ export function TenYearProjectionChart({
       </motion.div>
 
       {/* Year-by-Year Metrics Table */}
-      {chartData.length > 0 &&
+      {displayChartData.length > 0 &&
         (() => {
           // Calculate totals for summary column
-          const totalRevenue = chartData.reduce(
+          const totalRevenue = displayChartData.reduce(
             (sum, y) => sum + y.revenueEUR,
             0,
           );
-          const totalMargin = chartData.reduce(
+          const totalMargin = displayChartData.reduce(
             (sum, y) => sum + y.marginEUR,
             0,
           );
@@ -948,7 +991,7 @@ export function TenYearProjectionChart({
                       <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap sticky left-0 bg-background z-10 min-w-[120px]">
                         Metric
                       </th>
-                      {chartData.map((year) => (
+                      {displayChartData.map((year) => (
                         <th
                           key={year.fiscalYear}
                           className="text-center py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap min-w-[80px]"
@@ -966,7 +1009,7 @@ export function TenYearProjectionChart({
                       <td className="py-3 px-3 text-sm font-medium sticky left-0 bg-background z-10 whitespace-nowrap">
                         Revenue ({preferences.currency})
                       </td>
-                      {chartData.map((year) => (
+                      {displayChartData.map((year) => (
                         <td
                           key={`revenue-${year.fiscalYear}`}
                           className="text-center py-3 px-3 text-sm tabular-nums whitespace-nowrap"
@@ -984,7 +1027,7 @@ export function TenYearProjectionChart({
                       <td className="py-3 px-3 text-sm font-medium sticky left-0 bg-background z-10 whitespace-nowrap">
                         Margin ({preferences.currency})
                       </td>
-                      {chartData.map((year) => (
+                      {displayChartData.map((year) => (
                         <td
                           key={`margin-${year.fiscalYear}`}
                           className="text-center py-3 px-3 text-sm tabular-nums whitespace-nowrap"
@@ -1002,7 +1045,7 @@ export function TenYearProjectionChart({
                       <td className="py-3 px-3 text-sm font-medium sticky left-0 bg-background z-10 whitespace-nowrap">
                         Margin %
                       </td>
-                      {chartData.map((year) => (
+                      {displayChartData.map((year) => (
                         <td
                           key={`margin-pct-${year.fiscalYear}`}
                           className="text-center py-3 px-3 text-sm tabular-nums whitespace-nowrap"
@@ -1072,4 +1115,4 @@ export function TenYearProjectionChart({
       </motion.div>
     </ErrorBoundary>
   );
-}
+});
