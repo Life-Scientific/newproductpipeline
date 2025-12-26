@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getBusinessCases } from "./business-cases";
 import type {
@@ -9,19 +10,23 @@ import type {
   EnrichedBusinessCase,
 } from "./types";
 
-export async function getActivePortfolio() {
+/**
+ * Get active portfolio
+ * PERFORMANCE: Wrapped in React cache() - called on every dashboard load
+ */
+export const getActivePortfolio = cache(async () => {
   const supabase = await createClient();
   const { data, error: supabaseError } = await supabase
     .from("vw_active_portfolio")
     .select("*")
-    .order("formulation_code", { ascending: true });
+    .order("formulation_code", { ascending: true});
 
   if (supabaseError) {
     throw new Error(`Failed to fetch active portfolio: ${supabaseError.message}`);
   }
 
   return data as ActivePortfolio[];
-}
+});
 
 /**
  * Get all data needed for Pipeline Tracker

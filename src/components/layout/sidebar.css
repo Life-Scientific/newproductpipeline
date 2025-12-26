@@ -1,0 +1,95 @@
+/* Clean, Linear Design */
+
+/* Subtle shadow for depth */
+[data-sidebar] {
+  box-shadow: 1px 0 8px
+    color-mix(in srgb, var(--sidebar-border), transparent 60%);
+}
+
+/* Clean, minimal menu items */
+[data-sidebar="menu-button"] {
+  border-radius: 6px;
+  margin: 1px 0;
+  font-weight: 400;
+  transition: all 0.1s ease;
+  border: 1px solid transparent;
+}
+
+[data-sidebar="menu-button"]:hover {
+  background: color-mix(in srgb, var(--sidebar-accent), transparent 70%);
+  border-color: color-mix(in srgb, var(--sidebar-border), transparent 40%);
+}
+
+[data-sidebar="menu-button"][data-active="true"] {
+  background: var(--sidebar-accent);
+  font-weight: 500;
+  border-color: var(--sidebar-border);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--primary), transparent 90%);
+}
+
+[data-sidebar="menu-button"][data-active="true"] svg {
+  color: var(--primary);
+}
+
+/* Minimal group labels */
+[data-sidebar="group-label"] {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--sidebar-foreground), transparent 35%);
+  padding: 8px 10px 4px;
+}
+
+/* Clean, minimal scrollbar */
+[data-sidebar="content"] {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(
+      in srgb,
+      var(--sidebar-foreground),
+      transparent 25%
+    )
+    transparent;
+}
+
+[data-sidebar="content"]::-webkit-scrollbar {
+  width: 3px;
+}
+
+[data-sidebar="content"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-sidebar="content"]::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--sidebar-foreground), transparent 25%);
+  border-radius: 2px;
+}
+
+/* Minimal header/footer borders */
+[data-sidebar="header"],
+[data-sidebar="footer"] {
+  border-color: color-mix(in srgb, var(--sidebar-border), transparent 40%);
+}
+
+/* Smooth collapse transition */
+[data-sidebar="wrapper"] {
+  transition: width 0.2s ease;
+}
+
+/* Clean collapsed state */
+[data-state="collapsed"] [data-sidebar="menu-button"] {
+  justify-content: center;
+  border-radius: 7px;
+  margin: 2px 0;
+}
+
+[data-state="collapsed"] [data-sidebar="menu-button"]:hover {
+  background: color-mix(in srgb, var(--sidebar-accent), transparent 50%);
+  border-color: color-mix(in srgb, var(--sidebar-border), transparent 30%);
+}
+
+[data-state="collapsed"] [data-sidebar="menu-button"][data-active="true"] {
+  background: var(--sidebar-accent);
+  border-color: var(--sidebar-border);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--primary), transparent 90%);
+}

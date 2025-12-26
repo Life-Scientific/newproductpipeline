@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { CURRENT_FISCAL_YEAR } from "@/lib/constants";
@@ -134,7 +135,7 @@ export async function getCountryReferenceData() {
   const supabase = await createClient();
 
   const { data, error: supabaseError } = await supabase
-    .from("country")
+    .from("countries")
     .select("country_code, country_name")
     .eq("is_active", true)
     .order("country_name");
@@ -150,7 +151,12 @@ export async function getCountryReferenceData() {
   }));
 }
 
-export async function getFormulations() {
+/**
+ * Get all formulations with ingredients
+ * PERFORMANCE: Wrapped in React cache() - called on every dashboard load
+ * Uses parallel pagination for datasets >10k rows
+ */
+export const getFormulations = cache(async () => {
   const supabase = await createClient();
 
   // Supabase limit is 10k rows - fetch all with parallel pagination
@@ -197,7 +203,7 @@ export async function getFormulations() {
   // Flatten all page results
   const allPages = await Promise.all(pagePromises);
   return allPages.flat() as Formulation[];
-}
+});
 
 // =============================================================================
 // Dashboard Optimization Queries
@@ -885,7 +891,7 @@ async function enrichBusinessCases(
   // Fetch country details
   const { data: countryData } = allCountryIds.length > 0
     ? await supabase
-        .from("country")
+        .from("countries")
         .select("country_id, country_name, country_code")
         .in("country_id", allCountryIds)
     : { data: null };
@@ -951,14 +957,12 @@ export async function getBusinessCasesForChart() {
         country_name,
         country_code,
         country_id,
-        formulation_country_id,
-        formulation_country_use_group_id,
         formulation_id,
         formulation_code,
         formulation_name,
-        use_group_name,
-        use_group_variant,
-        display_name,
+        use_group_ids,
+        use_group_names,
+        use_group_variants,
         business_case_name
       `)
       .eq("status", "active")
@@ -989,14 +993,12 @@ export async function getBusinessCasesForChart() {
           country_name,
           country_code,
           country_id,
-          formulation_country_id,
-          formulation_country_use_group_id,
           formulation_id,
           formulation_code,
           formulation_name,
-          use_group_name,
-          use_group_variant,
-          display_name,
+          use_group_ids,
+          use_group_names,
+          use_group_variants,
           business_case_name
         `)
         .eq("status", "active")
@@ -1023,29 +1025,17 @@ export async function getBusinessCasesForChart() {
   // (Rest of the function logic continues below)
 
   // Fetch country_status separately from formulation_country table
-  // Need to handle both direct links and use group links
-  const formulationCountryIds = [
-    ...new Set(
-      allData
-        .map((bc) => bc.formulation_country_id)
-        .filter((id): id is string => Boolean(id)),
-    ),
-  ];
-
-  // Also get formulation_country_ids from use groups
+  // Get all use group IDs from the use_group_ids array column
   const useGroupIds = [
     ...new Set(
       allData
-        .map((bc) => bc.formulation_country_use_group_id)
+        .flatMap((bc) => bc.use_group_ids || [])
         .filter((id): id is string => Boolean(id)),
     ),
   ];
 
   console.log(
     `[getBusinessCasesForChart] Total business cases: ${allData.length}`,
-  );
-  log(
-    `[getBusinessCasesForChart] Direct formulation_country_ids: ${formulationCountryIds.length}`,
   );
   log(
     `[getBusinessCasesForChart] Use group IDs to resolve: ${useGroupIds.length}`,
@@ -1056,7 +1046,7 @@ export async function getBusinessCasesForChart() {
   let useGroupFormulationCountryIds: string[] = [];
   const useGroupToFormulationCountryMap = new Map<string, string>();
   if (useGroupIds.length > 0) {
-    const batchSize = 5000;
+    const batchSize = 100; // Reduced from 5000 to avoid "Bad Request" errors
     const batches: string[][] = [];
     for (let i = 0; i < useGroupIds.length; i += batchSize) {
       batches.push(useGroupIds.slice(i, i + batchSize));
@@ -1073,8 +1063,17 @@ export async function getBusinessCasesForChart() {
     const batchResults = await Promise.all(batchPromises);
 
     // Process all results
-    batchResults.forEach(({ data: ugData }) => {
+    batchResults.forEach(({ data: ugData, error: ugError }) => {
+      if (ugError) {
+        error(
+          `[getBusinessCasesForChart] Error fetching use group data:`,
+          ugError,
+        );
+      }
       if (ugData) {
+        log(
+          `[getBusinessCasesForChart] Received ${ugData.length} use group records`,
+        );
         ugData.forEach((ug) => {
           if (
             ug.formulation_country_id &&
@@ -1091,9 +1090,9 @@ export async function getBusinessCasesForChart() {
     });
   }
 
-  // Combine all formulation_country_ids (direct + via use groups)
+  // Get all unique formulation_country_ids resolved from use groups
   const allFormulationCountryIds = [
-    ...new Set([...formulationCountryIds, ...useGroupFormulationCountryIds]),
+    ...new Set(useGroupFormulationCountryIds),
   ];
 
   // Fetch country_status for all formulation_country_ids
@@ -1181,20 +1180,20 @@ export async function getBusinessCasesForChart() {
   }
 
   // Enrich business cases with country_status and formulation_country_id
-  // Resolve formulation_country_id for each business case (direct or via use group)
+  // Resolve formulation_country_id from use group IDs
   const enrichedData = allData.map((bc) => {
     let fcId: string | null = null;
 
-    // First try direct link
-    if (bc.formulation_country_id) {
-      fcId = bc.formulation_country_id;
-    }
-    // Otherwise try via use group
-    else if (bc.formulation_country_use_group_id) {
-      fcId =
-        useGroupToFormulationCountryMap.get(
-          bc.formulation_country_use_group_id,
-        ) || null;
+    // Resolve formulation_country_id from use_group_ids array
+    if (bc.use_group_ids && bc.use_group_ids.length > 0) {
+      // Try to find the first use group that maps to a formulation_country_id
+      for (const ugId of bc.use_group_ids) {
+        const resolvedFcId = useGroupToFormulationCountryMap.get(ugId);
+        if (resolvedFcId) {
+          fcId = resolvedFcId;
+          break;
+        }
+      }
     }
 
     // Get country_status from map, handling undefined properly
@@ -1209,7 +1208,7 @@ export async function getBusinessCasesForChart() {
 
     return {
       ...bc,
-      formulation_country_id: fcId || bc.formulation_country_id || null,
+      formulation_country_id: fcId,
       country_status: countryStatus,
     };
   });
@@ -1276,7 +1275,7 @@ export async function getBusinessCasesForChartFiltered(
     query = query.in("formulation_code", filters.formulations);
   }
   if (filters?.useGroups && filters.useGroups.length > 0) {
-    query = query.in("use_group_name", filters.useGroups);
+    query = query.overlaps("use_group_names", filters.useGroups);
   }
 
   const { count } = await supabase
@@ -1600,7 +1599,7 @@ export async function getBusinessCasesForProjectionTable(
 
     // Apply use group filter
     if (filters?.useGroups && filters.useGroups.length > 0) {
-      query = query.in("use_group_name", filters.useGroups);
+      query = query.overlaps("use_group_names", filters.useGroups);
     }
 
     return query;
@@ -1623,7 +1622,6 @@ export async function getBusinessCasesForProjectionTable(
       .eq("status", "active")
       .order("formulation_name", { ascending: true })
       .order("country_name", { ascending: true })
-      .order("use_group_name", { ascending: true })
       .order("year_offset", { ascending: true })
       .range(page * pageSize, (page + 1) * pageSize - 1);
 
@@ -1635,7 +1633,7 @@ export async function getBusinessCasesForProjectionTable(
       query = query.in("formulation_code", filters.formulations);
     }
     if (filters?.useGroups && filters.useGroups.length > 0) {
-      query = query.in("use_group_name", filters.useGroups);
+      query = query.overlaps("use_group_names", filters.useGroups);
     }
 
     return query;
@@ -1765,7 +1763,7 @@ export async function getBusinessCasesForProjectionTable(
         country_code: bc.country_code || "",
         currency_code: bc.currency_code || "USD",
         use_group_id: "", // Will populate below
-        use_group_name: bc.use_group_name || null,
+        use_group_name: bc.use_group_names && bc.use_group_names.length > 0 ? bc.use_group_names[0] : null,
         use_group_variant: bc.use_group_variant || null,
         use_group_status: useGroupStatus, // Store use group status (Active/Inactive)
         target_market_entry: targetMarketEntry, // Store original target_market_entry
@@ -1954,7 +1952,7 @@ export async function getBusinessCaseGroup(
     uom: bc.uom || null,
     country_name: bc.country_name || null,
     currency_code: bc.currency_code || null,
-    use_group_name: bc.use_group_name || null,
+    use_group_name: bc.use_group_names && bc.use_group_names.length > 0 ? bc.use_group_names[0] : null,
     use_group_variant: bc.use_group_variant || null,
     formulation_country_use_group_id: useGroupId, // For version history lookup
   }));

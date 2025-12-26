@@ -35,7 +35,12 @@ export async function getFormulationsWithFilters(
   // Fetch formulations
   const { data: formulations, error } = await formulationQuery;
 
-  if (error || !formulations || formulations.length === 0) {
+  if (error) {
+    console.error("Error fetching formulations:", error);
+    throw new Error(`Failed to fetch formulations: ${error.message}`);
+  }
+
+  if (!formulations || formulations.length === 0) {
     return [];
   }
 

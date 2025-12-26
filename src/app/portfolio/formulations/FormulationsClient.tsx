@@ -55,7 +55,7 @@ function FormulationsContent({
     data: formulationsWithNested = initialFormulations,
     isLoading,
     isFetching,
-  } = useFormulationsWithPortfolioFilters(filters);
+  } = useFormulationsWithPortfolioFilters(filters, initialFormulations);
 
   const isBackgroundLoading = isFetching && !isLoading;
 

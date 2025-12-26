@@ -19,6 +19,13 @@ import { hasPermission } from "./user-management";
 import { PERMISSIONS } from "@/lib/permissions";
 import { computeBusinessCaseDiff } from "@/lib/utils/business-case-diff";
 
+// ============================================================================
+// DEPRECATED - DO NOT USE
+// ============================================================================
+// This function uses the old pre-JSONB table structure and is broken.
+// Use createBusinessCaseGroupAction() instead.
+// Kept for reference only - will be removed in future cleanup.
+// ============================================================================
 export async function createBusinessCase(formData: FormData) {
   // Permission check
   const canCreate = await hasPermission(PERMISSIONS.BUSINESS_CASE_CREATE);
@@ -131,6 +138,13 @@ export async function createBusinessCase(formData: FormData) {
   return { data: businessCase, success: true };
 }
 
+// ============================================================================
+// DEPRECATED - DO NOT USE
+// ============================================================================
+// This function uses the old pre-JSONB table structure and is broken.
+// Use updateBusinessCaseGroupAction() instead.
+// Kept for reference only - will be removed in future cleanup.
+// ============================================================================
 export async function updateBusinessCase(
   businessCaseId: string,
   formData: FormData,

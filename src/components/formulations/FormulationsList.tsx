@@ -131,9 +131,10 @@ const columns: ColumnDef<Formulation>[] = [
 
 interface FormulationsListProps {
   formulations: Formulation[];
+  pageSize?: number;
 }
 
-export function FormulationsList({ formulations }: FormulationsListProps) {
+export function FormulationsList({ formulations, pageSize = 25 }: FormulationsListProps) {
   // Memoize columns to prevent recreation
   const memoizedColumns = useMemo(() => columns, []);
 
@@ -143,7 +144,7 @@ export function FormulationsList({ formulations }: FormulationsListProps) {
       data={formulations}
       searchKey="product_name"
       searchPlaceholder="Search formulations..."
-      pageSize={25}
+      pageSize={pageSize}
       showPageSizeSelector={true}
       tableId="formulations"
       enableColumnReordering={true}

@@ -65,8 +65,40 @@ export function usePortfolioFilters(
     );
   }, [searchParams]);
 
-  // Track if we've already redirected to add defaults
+  // Track if we've already redirected to add defaults for this page
+  // Reset when pathname changes to handle navigation between pages
   const hasRedirected = useRef(false);
+  const lastPathname = useRef(pathname);
+  const isClearedByWorkspaceChange = useRef(false);
+
+  // Extract workspace from pathname for workspace-scoped filters
+  const workspaceSlug = useMemo(() => {
+    if (!pathname) return "portfolio";
+    const segments = pathname.split("/").filter(Boolean);
+    const knownWorkspaces = ["portfolio", "operations", "shorturl"];
+    return knownWorkspaces.includes(segments[0]) ? segments[0] : "portfolio";
+  }, [pathname]);
+
+  // Track last workspace to detect workspace changes
+  const lastWorkspace = useRef<string>(workspaceSlug);
+
+  // Reset redirect flag when pathname changes
+  if (lastPathname.current !== pathname) {
+    hasRedirected.current = false;
+    lastPathname.current = pathname;
+  }
+
+  // Clear filters when workspace changes (using useEffect to avoid synchronous router calls)
+  useEffect(() => {
+    if (lastWorkspace.current !== workspaceSlug) {
+      lastWorkspace.current = workspaceSlug;
+      // Clear all filter params when switching workspaces to prevent stale filters
+      if (searchParams.toString()) {
+        isClearedByWorkspaceChange.current = true;
+        router.replace(pathname, { scroll: false });
+      }
+    }
+  }, [workspaceSlug, pathname, searchParams, router]);
 
   // Parse filters from URL - always parse what's in URL, defaults are added via redirect
   const filters: PortfolioFilters = useMemo(() => {
@@ -87,13 +119,21 @@ export function usePortfolioFilters(
   }, [searchParams]);
 
   // On first load with no params, redirect to URL with defaults (makes defaults explicit)
+  // Only redirect if there are actual defaults to apply (non-empty arrays)
+  // Skip if we just cleared filters due to workspace change
   useEffect(() => {
-    if (!hasAnyParams && !hasRedirected.current) {
+    if (
+      !hasAnyParams &&
+      !hasRedirected.current &&
+      !isClearedByWorkspaceChange.current
+    ) {
       hasRedirected.current = true;
 
       // Build URL with default params - use defaultOverrides directly to avoid stale closure
       const defaults = { ...DEFAULT_FILTERS, ...defaultOverrides };
       const params = new URLSearchParams();
+
+      // Only add params if the default arrays have values
       if (defaults.formulationStatuses?.length) {
         params.set(
           PARAM_KEYS.formulationStatuses,
@@ -107,10 +147,12 @@ export function usePortfolioFilters(
         );
       }
 
-      const newUrl = params.toString()
-        ? `${pathname}?${params.toString()}`
-        : pathname;
-      router.replace(newUrl, { scroll: false });
+      // Only redirect if there are actual params to add
+      // This prevents redirect on pages that explicitly want no default filters
+      if (params.toString()) {
+        const newUrl = `${pathname}?${params.toString()}`;
+        router.replace(newUrl, { scroll: false });
+      }
     }
   }, [hasAnyParams, defaultOverrides, pathname, router]);
 

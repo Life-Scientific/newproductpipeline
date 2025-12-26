@@ -1,8 +1,9 @@
-import { Suspense } from "react";
+import { Suspense, lazy } from "react";
 import { getDashboardData } from "@/lib/db/dashboard-data";
+import { getBusinessCaseChartAggregates } from "@/lib/db/queries";
 import { log, warn, error, table } from "@/lib/logger";
 import { getCountries } from "@/lib/db/countries";
-import { FormulationsList } from "@/components/formulations/FormulationsList";
+const FormulationsList = lazy(() => import("@/components/formulations/FormulationsList").then(m => ({ default: m.FormulationsList })));
 import { PageLayout } from "@/components/layout/PageLayout";
 import { CardGrid } from "@/components/layout/CardGrid";
 import { ContentCard } from "@/components/layout/ContentCard";
@@ -32,8 +33,8 @@ export default async function Home() {
   // Still need supabase client for status history and registration pipeline queries
   const supabase = await createClient();
 
-  // Parallelize all data fetching - dashboard data, status history, and registration pipeline
-  const [dashboardDataResult, recentStatusChangesResult, registrationPipelineResult] = await Promise.all([
+  // Parallelize all data fetching - dashboard data, status history, registration pipeline, and chart aggregates
+  const [dashboardDataResult, recentStatusChangesResult, registrationPipelineResult, chartAggregates] = await Promise.all([
     getDashboardData().catch((err) => {
       error("Dashboard data fetch error:", err);
       return {
@@ -64,6 +65,10 @@ export default async function Home() {
       .from("vw_registration_pipeline")
       .select("*", { count: "exact" })
       .limit(1),
+    getBusinessCaseChartAggregates().catch((err) => {
+      error("Chart aggregates fetch error:", err);
+      return [];
+    }),
   ]);
 
   const dashboardData = dashboardDataResult;
@@ -239,6 +244,7 @@ export default async function Home() {
         businessCases={businessCases}
         formulationCountries={enrichedFormulationCountries}
         useGroups={enrichedUseGroups}
+        initialChartAggregates={chartAggregates}
       />
 
       {/* Status Overview Cards */}
@@ -502,7 +508,9 @@ export default async function Home() {
           </Link>
         }
       >
-        <FormulationsList formulations={formulations} />
+        <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
+          <FormulationsList formulations={formulations} pageSize={10} />
+        </Suspense>
       </ContentCard>
     </PageLayout>
   );

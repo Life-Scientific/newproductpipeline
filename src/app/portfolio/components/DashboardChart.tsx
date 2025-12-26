@@ -7,12 +7,15 @@ interface DashboardChartProps {
   businessCases: DashboardData["businessCases"];
   formulationCountries: any[];
   useGroups: any[];
+  initialChartAggregates: any[];
 }
 
 /**
  * DashboardChart - Receives data from page.tsx instead of fetching
  * PERFORMANCE FIX: Eliminated duplicate getDashboardData() call
  * Was fetching all dashboard data twice - now receives as props
+ * PERFORMANCE FIX (2025-12-26): Now receives pre-fetched chart aggregates from server
+ * Eliminates client-side chart redraw on initial load
  */
 export function DashboardChart({
   formulations,
@@ -20,6 +23,7 @@ export function DashboardChart({
   businessCases,
   formulationCountries,
   useGroups,
+  initialChartAggregates,
 }: DashboardChartProps) {
   return (
     <DashboardClient
@@ -28,6 +32,7 @@ export function DashboardChart({
       countries={countries}
       formulationCountries={formulationCountries}
       useGroups={useGroups}
+      initialChartAggregates={initialChartAggregates}
     />
   );
 }

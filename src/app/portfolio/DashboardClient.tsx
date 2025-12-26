@@ -53,6 +53,7 @@ interface DashboardClientProps {
     formulation_status?: string | null;
     country_status?: string | null;
   })[];
+  initialChartAggregates?: any[];
 }
 
 const DashboardContent = memo(function DashboardContent({
@@ -61,6 +62,7 @@ const DashboardContent = memo(function DashboardContent({
   countries,
   formulationCountries,
   useGroups = [],
+  initialChartAggregates = [],
 }: DashboardClientProps) {
   const { filters } = usePortfolioFilters();
 
@@ -76,6 +78,7 @@ const DashboardContent = memo(function DashboardContent({
   const {
     data: businessCases = initialBusinessCases,
     isLoading: isLoadingBusinessCases,
+    isInitialLoading: isInitialLoadingBusinessCases,
   } = useQuery({
     queryKey: ["businessCases-chart", filters],
     queryFn: () => {
@@ -87,21 +90,34 @@ const DashboardContent = memo(function DashboardContent({
     staleTime: 5 * 60 * 1000,
     // Only refetch if filters are actually active
     enabled: hasFilters,
+    // Prevent aggressive refetching
+    retry: 1,
+    retryDelay: 3000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   // OPTIMIZED: Use aggregated chart data (99%+ payload reduction)
   // Returns pre-aggregated data by fiscal year instead of raw rows
   // Reduces chart rendering payload from ~2-3MB to ~2KB
-  // PERFORMANCE FIX: Only fetch when needed (filters active)
+  // PERFORMANCE FIX (2025-12-26): Server-side initial data eliminates chart redraw
   const {
-    data: chartAggregates = [],
+    data: chartAggregates = initialChartAggregates,
     isLoading: isLoadingChartData,
+    isInitialLoading: isInitialLoadingChartData,
+    error: chartError,
   } = useQuery({
     queryKey: ["businessCases-chart-aggregates", filters],
     queryFn: () => fetchBusinessCaseChartAggregatesAction(filters),
+    initialData: initialChartAggregates, // Use server data to prevent initial redraw
     staleTime: 5 * 60 * 1000,
-    // Don't fetch on mount if no filters - server data is sufficient
+    // Only refetch when filters change
     enabled: hasFilters,
+    // Prevent aggressive refetching that causes 500 errors
+    retry: 1, // Only retry once on failure
+    retryDelay: 3000, // Wait 3s before retry
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    refetchOnReconnect: false, // Don't refetch on reconnect
   });
 
   const formulationStatusMap = useMemo(() => {
@@ -151,7 +167,11 @@ const DashboardContent = memo(function DashboardContent({
       formulation_code: bc.formulation_code || null,
       formulation_name: bc.formulation_name || null,
       formulation_country_id: bc.formulation_country_id || null,
-      use_group_name: bc.use_group_name || null,
+      // use_group_names is an array - convert to single string for filtering
+      use_group_name:
+        bc.use_group_names && bc.use_group_names.length > 0
+          ? bc.use_group_names[0]
+          : null,
     }));
   }, [enrichedBusinessCases]);
 
@@ -298,12 +318,20 @@ const DashboardContent = memo(function DashboardContent({
         />
 
         {/* Chart - using optimized aggregated data */}
-        <Suspense fallback={<Skeleton className="h-[400px] sm:h-[500px] w-full rounded-lg" />}>
+        <Suspense
+          fallback={
+            <Skeleton className="h-[400px] sm:h-[500px] w-full rounded-lg" />
+          }
+        >
           <TenYearProjectionChart
             chartData={chartAggregates}
             formulations={formulations}
             uniqueFormulations={filteredCounts.formulations}
-            uniqueBusinessCaseGroups={filteredCounts.businessCases ? countUniqueBusinessCaseGroups(filteredBusinessCases) : undefined}
+            uniqueBusinessCaseGroups={
+              filteredCounts.businessCases
+                ? countUniqueBusinessCaseGroups(filteredBusinessCases)
+                : undefined
+            }
             noCard={true}
           />
         </Suspense>

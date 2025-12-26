@@ -76,7 +76,7 @@ async function enrichBusinessCases(
   // Fetch country details
   const { data: countryData } = allCountryIds.length > 0
     ? await supabase
-        .from("country")
+        .from("countries")
         .select("country_id, country_name, country_code")
         .in("country_id", allCountryIds)
     : { data: null };
@@ -127,24 +127,32 @@ async function fetchBusinessCasesPaginated<T>(
   const supabase = await createClient();
   const { status = "active", orderBy } = options;
 
-  const baseQuery = supabase
-    .from("vw_business_case")
-    .select(selectQuery)
-    .eq("status", status);
+  // Helper to build query
+  const buildQuery = () => {
+    let query = supabase
+      .from("vw_business_case")
+      .select(selectQuery)
+      .eq("status", status);
 
-  if (orderBy) {
-    baseQuery.order(orderBy.column, { ascending: orderBy.ascending });
-  }
+    if (orderBy) {
+      query = query.order(orderBy.column, { ascending: orderBy.ascending });
+    }
+
+    return query;
+  };
 
   // Get count
-  const { count } = await (baseQuery as any).clone().select("*", { count: "exact", head: true });
+  const { count } = await supabase
+    .from("vw_business_case")
+    .select("*", { count: "exact", head: true })
+    .eq("status", status);
 
   const pageSize = 10000;
   const totalPages = Math.ceil((count || 0) / pageSize);
 
   // Early exit for single page results
   if (totalPages <= 1) {
-    const { data, error } = await baseQuery;
+    const { data, error } = await buildQuery();
     if (error) throw new Error(`Failed to fetch business cases: ${error.message}`);
     return (data as T[]) || [];
   }
@@ -154,8 +162,7 @@ async function fetchBusinessCasesPaginated<T>(
 
   for (let page = 0; page < totalPages; page++) {
     pagePromises.push(
-      (baseQuery as any)
-        .clone()
+      buildQuery()
         .range(page * pageSize, (page + 1) * pageSize - 1)
         .then(({ data, error }: { data: T[] | null; error: Error | null }) => {
           if (error) throw new Error(`Failed to fetch business cases: ${error.message}`);
@@ -322,18 +329,15 @@ export async function getBusinessCaseGroupsUsingFormulation(
       formulation_id,
       formulation_name,
       formulation_code,
-      uom,
       country_id,
       country_name,
       country_code,
       currency_code,
-      use_group_id,
-      use_group_name,
-      use_group_variant,
-      use_group_status,
-      target_market_entry,
+      use_group_ids,
+      use_group_names,
+      use_group_variants,
+      earliest_market_entry_date,
       effective_start_fiscal_year,
-      years_data,
       updated_at,
       created_by,
       change_reason,
@@ -342,8 +346,7 @@ export async function getBusinessCaseGroupsUsingFormulation(
     )
     .eq("formulation_id", formulationId)
     .eq("status", "active")
-    .order("country_name", { ascending: true })
-    .order("use_group_name", { ascending: true });
+    .order("country_name", { ascending: true });
 
   if (bcError) {
     error("Error fetching business case groups:", bcError);
@@ -364,16 +367,16 @@ export async function getBusinessCaseGroupsUsingFormulation(
         formulation_id: row.formulation_id,
         formulation_name: row.formulation_name,
         formulation_code: row.formulation_code,
-        uom: row.uom,
+        uom: null,
         country_id: row.country_id,
         country_name: row.country_name,
         country_code: row.country_code,
         currency_code: row.currency_code,
-        use_group_id: row.use_group_id,
-        use_group_name: row.use_group_name,
-        use_group_variant: row.use_group_variant,
-        use_group_status: row.use_group_status,
-        target_market_entry: row.target_market_entry,
+        use_group_id: row.use_group_ids && row.use_group_ids.length > 0 ? row.use_group_ids[0] : "",
+        use_group_name: row.use_group_names && row.use_group_names.length > 0 ? row.use_group_names[0] : null,
+        use_group_variant: row.use_group_variants && row.use_group_variants.length > 0 ? row.use_group_variants[0] : null,
+        use_group_status: "Active",
+        target_market_entry: row.earliest_market_entry_date,
         effective_start_fiscal_year: row.effective_start_fiscal_year,
         years_data: {},
         updated_at: row.updated_at,

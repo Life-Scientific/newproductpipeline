@@ -202,7 +202,15 @@ const MemoizedTableCell = React.memo(
  */
 // useDebounce is now imported from use-debounce package at top of file
 
-export function EnhancedDataTable<TData, TValue>({
+// PERFORMANCE: Create stable empty arrays/objects to prevent useMemo recalculations
+// Default parameters with [] create NEW arrays on every render, breaking memo dependencies
+const EMPTY_FILTER_CONFIGS: FilterConfig<any>[] = [];
+const EMPTY_COLUMN_VISIBILITY: Record<string, boolean> = {};
+const EMPTY_COLUMN_ORDER: string[] = [];
+const EMPTY_COLUMN_SIZING: Record<string, number> = {};
+const EMPTY_SORTING: any[] = [];
+
+function EnhancedDataTableComponent<TData, TValue>({
   columns,
   data,
   searchKey,
@@ -215,12 +223,12 @@ export function EnhancedDataTable<TData, TValue>({
   enableColumnReordering = true,
   enableViewManagement = true,
   enableUrlPagination = false,
-  filterConfigs = [],
+  filterConfigs = EMPTY_FILTER_CONFIGS,
   showFilterCount = true,
-  defaultColumnVisibility = {},
-  defaultColumnOrder = [],
-  defaultColumnSizing = {},
-  defaultSorting = [],
+  defaultColumnVisibility = EMPTY_COLUMN_VISIBILITY,
+  defaultColumnOrder = EMPTY_COLUMN_ORDER,
+  defaultColumnSizing = EMPTY_COLUMN_SIZING,
+  defaultSorting = EMPTY_SORTING,
   initialSettings = null,
   getRowClassName,
 }: EnhancedDataTableProps<TData, TValue>) {
@@ -1273,3 +1281,9 @@ export function EnhancedDataTable<TData, TValue>({
     </div>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders when props haven't changed
+// This significantly reduces the number of times filteredData useMemo runs
+export const EnhancedDataTable = React.memo(
+  EnhancedDataTableComponent,
+) as typeof EnhancedDataTableComponent;

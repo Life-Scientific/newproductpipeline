@@ -16,7 +16,7 @@ import {
   LayoutDashboard,
   Link as LinkIcon,
   type LucideIcon,
-  Map,
+  Map as MapIcon,
   MapPin,
   PieChart,
   Shield,
@@ -24,7 +24,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { log, warn, error, table } from "@/lib/logger";
+import { error } from "@/lib/logger";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +44,7 @@ import {
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaces, type Workspace } from "@/lib/actions/workspaces";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Icon map for dynamic icon lookup - only includes icons actually used in workspaces
 const iconMap: Record<string, LucideIcon> = {
@@ -59,7 +60,7 @@ const iconMap: Record<string, LucideIcon> = {
   Database,
   Calculator,
   Target,
-  Map,
+  Map: MapIcon,
   Shield,
   PieChart,
   MapPin,
@@ -76,7 +77,8 @@ function getIconComponent(iconName: string | null): LucideIcon {
 
 export function WorkspaceSwitcher() {
   const router = useRouter();
-  const { currentWorkspace, switchWorkspace, isLoading } = useWorkspace();
+  const { currentWorkspace, switchWorkspace, isLoading, isCacheHit } =
+    useWorkspace();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -100,8 +102,8 @@ export function WorkspaceSwitcher() {
     ? getIconComponent(currentWorkspace.icon)
     : LayoutDashboard;
 
-  // Loading state
-  if (isLoadingWorkspaces || isLoading) {
+  // Loading state - only show skeleton if not loading from cache
+  if (isLoadingWorkspaces || (isLoading && !isCacheHit)) {
     return (
       <div
         className={cn(
@@ -127,32 +129,45 @@ export function WorkspaceSwitcher() {
   }
 
   const triggerButton = (
-    <Button
-      variant="ghost"
-      className={cn(
-        "transition-all hover:bg-sidebar-accent",
-        isCollapsed
-          ? "h-9 w-9 p-0 justify-center"
-          : "w-full justify-start gap-2 h-9 px-2",
-      )}
-    >
-      <div
-        className={cn(
-          "flex shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground",
-          isCollapsed ? "h-7 w-7" : "h-6 w-6",
-        )}
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={currentWorkspace?.slug || "default"}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 20 }}
+        transition={{ duration: 0.2 }}
+        className="inline-flex"
       >
-        <CurrentIcon className={cn(isCollapsed ? "h-4 w-4" : "h-3.5 w-3.5")} />
-      </div>
-      {!isCollapsed && (
-        <>
-          <span className="flex-1 truncate text-left text-sm font-medium">
-            {currentWorkspace?.name || "Select Workspace"}
-          </span>
-          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-        </>
-      )}
-    </Button>
+        <Button
+          variant="ghost"
+          className={cn(
+            "transition-all hover:bg-sidebar-accent",
+            isCollapsed
+              ? "h-9 w-9 p-0 justify-center"
+              : "w-full justify-start gap-2 h-9 px-2",
+          )}
+        >
+          <div
+            className={cn(
+              "flex shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground",
+              isCollapsed ? "h-7 w-7" : "h-6 w-6",
+            )}
+          >
+            <CurrentIcon
+              className={cn(isCollapsed ? "h-4 w-4" : "h-3.5 w-3.5")}
+            />
+          </div>
+          {!isCollapsed && (
+            <>
+              <span className="flex-1 truncate text-left text-sm font-medium">
+                {currentWorkspace?.name || "Select Workspace"}
+              </span>
+              <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+            </>
+          )}
+        </Button>
+      </motion.div>
+    </AnimatePresence>
   );
 
   return (

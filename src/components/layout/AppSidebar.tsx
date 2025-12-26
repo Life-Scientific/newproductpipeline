@@ -1,182 +1,51 @@
 "use client";
 
-import {
-  Ban,
-  BarChart3,
-  Beaker,
-  Calculator,
-  Check,
-  Database,
-  DollarSign,
-  FileText,
-  FlaskConical,
-  GitBranch,
-  GitCompare,
-  Globe,
-  LayoutDashboard,
-  Link as LinkIcon,
-  Loader2,
-  LogOut,
-  type LucideIcon,
-  Map as MapIcon,
-  MapPin,
-  Palette,
-  PanelLeft,
-  PanelLeftClose,
-  PieChart,
-  Plus,
-  RefreshCw,
-  Settings,
-  Shield,
-  Sparkles,
-  Target,
-  TrendingUp,
-  User,
-} from "lucide-react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { DARK_THEME_SLUGS, useTheme } from "@/contexts/ThemeContext";
-import { useWorkspace } from "@/contexts/WorkspaceContext";
-import {
-  useForesightInit,
-  usePrefetchOnIntent,
-} from "@/hooks/use-prefetch-on-intent";
+import { useForesightInit } from "@/hooks/use-prefetch-on-intent";
 import { useSupabase } from "@/hooks/use-supabase";
-import { useDisplayPreferences } from "@/hooks/use-display-preferences";
-import type { WorkspaceMenuItem } from "@/lib/actions/workspaces";
-import { revalidateAllCaches } from "@/lib/actions/cache";
-import { routes, WORKSPACE_BASE } from "@/lib/routes";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
+import { log } from "@/lib/logger";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
-import { log, error } from "@/lib/logger";
+import { FooterActions } from "./FooterActions";
+import { UserMenu, SignInButton } from "./UserMenu";
+import {
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenu,
+} from "@/components/ui/sidebar";
+import type { WorkspaceMenuItem } from "@/lib/actions/workspaces";
 
-// Icon map for dynamic icon lookup - only includes icons actually used in menus
-const iconMap: Record<string, LucideIcon> = {
-  LayoutDashboard,
-  GitBranch,
-  FlaskConical,
-  Globe,
-  FileText,
-  TrendingUp,
-  DollarSign,
-  BarChart3,
-  GitCompare,
-  Database,
-  Calculator,
-  Target,
-  Map: MapIcon,
-  Shield,
-  PieChart,
-  MapPin,
-  Beaker,
-  Ban,
-  Settings,
-  Sparkles,
-  Link: LinkIcon,
-  Plus,
+const iconMap: Record<string, any> = {
+  LayoutDashboard: require("lucide-react").LayoutDashboard,
+  GitBranch: require("lucide-react").GitBranch,
+  FlaskConical: require("lucide-react").FlaskConical,
+  Globe: require("lucide-react").Globe,
+  FileText: require("lucide-react").FileText,
+  TrendingUp: require("lucide-react").TrendingUp,
+  DollarSign: require("lucide-react").DollarSign,
+  BarChart3: require("lucide-react").BarChart3,
+  GitCompare: require("lucide-react").GitCompare,
+  Database: require("lucide-react").Database,
+  Calculator: require("lucide-react").Calculator,
+  Target: require("lucide-react").Target,
+  Map: require("lucide-react").Map,
+  Shield: require("lucide-react").Shield,
+  PieChart: require("lucide-react").PieChart,
+  MapPin: require("lucide-react").MapPin,
+  Beaker: require("lucide-react").Beaker,
+  Ban: require("lucide-react").Ban,
+  Settings: require("lucide-react").Settings,
 };
 
-// Theme color previews for visual selection
-const themeColors: Record<
-  string,
-  { bg: string; primary: string; accent: string; sidebar?: string }
-> = {
-  light: {
-    bg: "#ffffff",
-    primary: "#09090b",
-    accent: "#f4f4f5",
-    sidebar: "#f4f4f5",
-  },
-  dark: {
-    bg: "#09090b",
-    primary: "#fafafa",
-    accent: "#27272a",
-    sidebar: "#09090b",
-  },
-  "prof-blue": {
-    bg: "#fdfdfe",
-    primary: "#4a6ee0",
-    accent: "#e8edfc",
-    sidebar: "#f8f9fc",
-  },
-  "nature-green": {
-    bg: "#fcfdfc",
-    primary: "#2e7d32",
-    accent: "#e8f5e9",
-    sidebar: "#f6f9f6",
-  },
-  "high-contrast": {
-    bg: "#ffffff",
-    primary: "#4b0082",
-    accent: "#f0e6ff",
-    sidebar: "#000000",
-  },
-  "dark-exec": {
-    bg: "#1a1a1a",
-    primary: "#d4af37",
-    accent: "#2b2b2b",
-    sidebar: "#111111",
-  },
-  "joshs-theme": {
-    bg: "#0a0f0a",
-    primary: "#00ff41",
-    accent: "#0f150f",
-    sidebar: "#050805",
-  },
-  bloomberg: {
-    bg: "#000000",
-    primary: "#ff9500",
-    accent: "#121212",
-    sidebar: "#080808",
-  },
-};
-
-// Helper function to get icon component from string name
-function getIconComponent(iconName: string | null): LucideIcon {
-  if (!iconName) return LayoutDashboard;
-  return iconMap[iconName] || LayoutDashboard;
-}
-
-// NavItem component with predictive prefetching
 function NavItem({
   item,
   isActive,
@@ -184,28 +53,17 @@ function NavItem({
   item: WorkspaceMenuItem;
   isActive: boolean;
 }) {
-  const IconComponent = getIconComponent(item.icon);
-  const prefetchRef = usePrefetchOnIntent(item.url);
-  const linkRef = useRef<HTMLAnchorElement>(null);
-
-  // Combine refs - attach prefetch tracking to the link element
-  const setRefs = useCallback(
-    (node: HTMLAnchorElement | null) => {
-      linkRef.current = node;
-      if (node) {
-        prefetchRef(node);
-      }
-    },
-    [prefetchRef],
-  );
+  const IconComponent = item.icon
+    ? iconMap[item.icon] || iconMap.LayoutDashboard
+    : iconMap.LayoutDashboard;
 
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-        <Link ref={setRefs} href={item.url}>
-          <IconComponent className="size-4" />
-          <span>{item.title}</span>
-        </Link>
+        <a href={item.url} className="flex items-center gap-2.5">
+          <IconComponent className="size-4 shrink-0" />
+          <span className="truncate">{item.title}</span>
+        </a>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
@@ -213,97 +71,44 @@ function NavItem({
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const supabase = useSupabase();
-  const { state, toggleSidebar } = useSidebar();
+  const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const {
-    currentWorkspace,
-    workspaceWithMenu,
-    isLoading: workspaceLoading,
-  } = useWorkspace();
-  const { currentTheme, availableThemes, setTheme } = useTheme();
-  const {
-    preferences,
-    updatePreferences,
-    currencySymbol,
-    CURRENCY_OPTIONS,
-    VOLUME_OPTIONS,
-    WEIGHT_OPTIONS,
-  } = useDisplayPreferences();
-  const [user, setUser] = useState<any>(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [santaHatOpen, setSantaHatOpen] = useState(false);
-  const [santaHatDropdownOpen, setSantaHatDropdownOpen] = useState(false);
-
-  // Handle cache refresh
-  const handleRefreshData = useCallback(async () => {
-    setIsRefreshing(true);
-    try {
-      const result = await revalidateAllCaches();
-      if (result.success) {
-        // Invalidate server cache - Next.js will refetch on next navigation
-        // Use router.refresh() only as a background refresh, not blocking
-        // This allows the UI to remain responsive
-        router.refresh();
-      }
-    } catch (err) {
-      error("Failed to refresh data:", err);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [router]);
-
-  // Initialize ForesightJS for predictive prefetching
-  useForesightInit();
+  const { workspaceWithMenu, isLoading: workspaceLoading } = useWorkspace();
+  const supabase = useSupabase();
+  const [user, setUser] = useState<{ email?: string } | null>(null);
 
   useEffect(() => {
     let mounted = true;
-    
-    // Get initial user state from session (no network request)
-    // We use getSession() instead of getUser() to avoid redundant auth calls
-    // The middleware already validates auth on every request
+
     async function checkAuth() {
       try {
-        setIsCheckingAuth(true);
-        const { data: { session }, error: authError } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error: authError,
+        } = await supabase.auth.getSession();
         if (authError) {
-          error("[AppSidebar] getSession error:", authError);
+          log("[AppSidebar] getSession error:", authError);
         }
         if (mounted) {
-      setUser(session?.user ?? null);
-          if (!session?.user) {
-            // Fallback: try getUser() if getSession() returns null
-            // This might happen if cookies aren't being read correctly
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
-            if (userError) {
-              error("[AppSidebar] getUser error:", userError);
-            } else if (user && mounted) {
-              log("[AppSidebar] Found user via getUser() fallback");
-              setUser(user);
-            }
-          }
+          setUser(session?.user ?? null);
         }
       } catch (err) {
-        error("[AppSidebar] Auth check failed:", err);
-      } finally {
-        if (mounted) {
-          setIsCheckingAuth(false);
-        }
+        log("[AppSidebar] Auth check failed:", err);
       }
     }
-    
+
     checkAuth();
 
-    // Listen for auth state changes - this handles login/logout reactively
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      log("[AppSidebar] Auth state changed:", _event, session?.user?.email || "no user");
+      log(
+        "[AppSidebar] Auth state changed:",
+        _event,
+        session?.user?.email || "no user",
+      );
       if (mounted) {
-      setUser(session?.user ?? null);
-        setIsCheckingAuth(false);
+        setUser(session?.user ?? null);
       }
     });
 
@@ -311,60 +116,36 @@ export function AppSidebar() {
       mounted = false;
       subscription.unsubscribe();
     };
-    // supabase is a singleton from useSupabase() - it never changes, so we don't need it in deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [supabase]);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    // Navigate to home - no need for refresh since we're leaving the app
-    router.push("/");
-  };
+  useForesightInit();
 
-  const isActive = (url: string) => {
-    if (url === WORKSPACE_BASE) {
-      return pathname === WORKSPACE_BASE;
-    }
-    return pathname?.startsWith(url);
-  };
-
-  // OPTIMIZATION: Use stable keys for memoization to prevent unnecessary re-renders
-  // Only re-compute when workspace_id or menu_items count changes, not on object reference changes
-  const workspaceId = workspaceWithMenu?.workspace_id;
-  const menuItemsLength = workspaceWithMenu?.menu_items?.length ?? 0;
   const menuItems = workspaceWithMenu?.menu_items ?? [];
-  
-  // Create a stable key from menu items for comparison
-  // This prevents re-computation when the array reference changes but content is the same
-  const menuItemsKey = useMemo(() => {
-    if (!menuItems || menuItems.length === 0) return '';
-    // Create a stable key from menu item IDs and their order
-    return menuItems.map(item => `${item.menu_item_id}-${item.display_order}`).join('|');
-  }, [menuItems]);
 
-  // Get menu items from database (respects is_active flag)
   const menuGroups = useMemo(() => {
-    if (!workspaceWithMenu || !menuItems || menuItems.length === 0) return [];
+    if (!workspaceWithMenu || !menuItems || menuItems.length === 0) {
+      return [];
+    }
 
-    // Group items by group_name
-    const grouped = new Map<string, WorkspaceMenuItem[]>();
+    const grouped = new Map<string, typeof menuItems>();
 
     menuItems.forEach((item) => {
       if (!grouped.has(item.group_name)) {
         grouped.set(item.group_name, []);
       }
-      grouped.get(item.group_name)!.push(item);
+      const groupItems = grouped.get(item.group_name);
+      if (groupItems) {
+        groupItems.push(item);
+      }
     });
 
-    // Sort items within each group by display_order
     grouped.forEach((items) => {
       items.sort((a, b) => a.display_order - b.display_order);
     });
 
-    // Return groups in the desired order
     const orderedGroups: Array<{
       groupName: string;
-      items: WorkspaceMenuItem[];
+      items: typeof menuItems;
     }> = [];
     const groupOrder = [
       "Overview",
@@ -378,14 +159,16 @@ export function AppSidebar() {
 
     for (const groupName of groupOrder) {
       if (grouped.has(groupName)) {
-        orderedGroups.push({
-          groupName,
-          items: grouped.get(groupName)!,
-        });
+        const group = grouped.get(groupName);
+        if (group) {
+          orderedGroups.push({
+            groupName,
+            items: group,
+          });
+        }
       }
     }
 
-    // Add any remaining groups not in the order list
     grouped.forEach((items, groupName) => {
       if (!groupOrder.includes(groupName)) {
         orderedGroups.push({ groupName, items });
@@ -393,80 +176,10 @@ export function AppSidebar() {
     });
 
     return orderedGroups;
-  }, [workspaceId, menuItemsKey]);
+  }, [workspaceWithMenu, menuItems]);
 
   const userInitial = user?.email?.charAt(0).toUpperCase() || "U";
   const userName = user?.email?.split("@")[0] || "User";
-
-  // Separate light and dark themes
-  const lightThemes = availableThemes.filter(
-    (t) => !DARK_THEME_SLUGS.includes(t.slug),
-  );
-  const darkThemes = availableThemes.filter((t) =>
-    DARK_THEME_SLUGS.includes(t.slug),
-  );
-
-  // Collapse/Expand button component for reuse
-  const CollapseButton = ({ className }: { className?: string }) => (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn("h-8 w-8 shrink-0", className)}
-          onClick={toggleSidebar}
-        >
-          {isCollapsed ? (
-            <PanelLeft className="h-4 w-4" />
-          ) : (
-            <PanelLeftClose className="h-4 w-4" />
-          )}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="right">
-        {isCollapsed ? "Expand" : "Collapse"}{" "}
-        <kbd className="ml-1 text-[10px] opacity-60">⌘B</kbd>
-      </TooltipContent>
-    </Tooltip>
-  );
-
-  // Theme swatch component - improved with circular design
-  const ThemeSwatch = ({
-    slug,
-    isActive,
-  }: {
-    slug: string;
-    isActive: boolean;
-  }) => {
-    const colors = themeColors[slug] || themeColors.light;
-    const isDark = DARK_THEME_SLUGS.includes(slug);
-    return (
-      <div
-        className={cn(
-          "relative h-6 w-6 rounded-full border-2 overflow-hidden shrink-0 transition-all",
-          isActive
-            ? "ring-2 ring-primary ring-offset-1 border-primary"
-            : "border-border hover:border-primary/50",
-        )}
-        style={{ backgroundColor: colors.bg }}
-      >
-        {/* Sidebar preview - circular segment */}
-        <div
-          className="absolute left-0 top-0 bottom-0 w-1/3 rounded-l-full"
-          style={{ backgroundColor: colors.sidebar || colors.accent }}
-        />
-        {/* Primary accent bar - circular at bottom */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-2.5 rounded-b-full"
-          style={{ backgroundColor: colors.primary }}
-        />
-        {/* Dark theme indicator - circular dot */}
-        {isDark && (
-          <div className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-foreground/20" />
-        )}
-      </div>
-    );
-  };
 
   return (
     <Sidebar collapsible="icon">
@@ -476,36 +189,34 @@ export function AppSidebar() {
 
       <SidebarContent>
         {workspaceLoading ? (
-          <div className="flex flex-col gap-1 p-2">
-            {[...Array(6)].map((_, i) => (
+          <div className="flex flex-col gap-2 p-3">
+            {Array.from({ length: 6 }).map(() => (
               <div
-                key={i}
-                className={cn(
-                  "rounded-lg bg-sidebar-accent/50 animate-pulse",
-                  isCollapsed ? "h-9 w-9 mx-auto" : "h-9 w-full",
-                )}
+                key={`skeleton-${crypto.randomUUID()}`}
+                className="h-9 w-full rounded-md bg-sidebar-accent/40 animate-pulse"
               />
             ))}
           </div>
         ) : (
-          menuGroups.map((group, groupIndex) => (
-            <SidebarGroup key={group.groupName}>
-              <SidebarGroupLabel>{group.groupName}</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {group.items.map((item) => (
-                    <NavItem
-                      key={item.menu_item_id}
-                      item={item}
-                      isActive={isActive(item.url)}
-                    />
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-              {groupIndex < menuGroups.length - 1 && isCollapsed && (
-                <SidebarSeparator className="my-1" />
-              )}
-            </SidebarGroup>
+          menuGroups.map((group) => (
+            <div key={group.groupName} className="mb-4">
+              <div className="px-3 pb-1.5 pt-3">
+                <div className="text-xs font-medium uppercase tracking-wide text-sidebar-foreground/40">
+                  {group.groupName}
+                </div>
+              </div>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <NavItem
+                    key={item.menu_item_id}
+                    item={item}
+                    isActive={
+                      item.url === pathname || pathname?.startsWith(item.url)
+                    }
+                  />
+                ))}
+              </SidebarMenu>
+            </div>
           ))
         )}
       </SidebarContent>
@@ -514,468 +225,26 @@ export function AppSidebar() {
         {user ? (
           <div
             className={cn(
-              "flex items-center gap-1",
+              "flex items-center gap-1.5",
               isCollapsed ? "flex-col" : "flex-row",
             )}
           >
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "transition-all",
-                    isCollapsed
-                      ? "h-9 w-9 p-0"
-                      : "flex-1 h-9 justify-start gap-2 px-2",
-                  )}
-                >
-                  <div className="relative shrink-0">
-                    <Avatar className={cn(isCollapsed ? "h-7 w-7" : "h-6 w-6")}>
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-[10px] font-semibold">
-                        {userInitial}
-                      </AvatarFallback>
-                    </Avatar>
-                    {/* Santa Hat - Clickable */}
-                    <Popover open={santaHatOpen} onOpenChange={setSantaHatOpen}>
-                      <PopoverTrigger asChild>
-                        <div
-                          className="absolute left-1/2 -translate-x-1/2 z-50 cursor-pointer hover:scale-110 transition-transform"
-                          style={{ top: isCollapsed ? "-0.5rem" : "-0.375rem" }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSantaHatOpen(true);
-                          }}
-                        >
-                          <svg
-                            className="h-9 w-9 drop-shadow-lg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <defs>
-                              <filter id="hat-shadow-footer">
-                                <feDropShadow
-                                  dx="0"
-                                  dy="2"
-                                  stdDeviation="2"
-                                  floodColor="#000000"
-                                  floodOpacity="0.3"
-                                />
-                              </filter>
-                            </defs>
-                            {/* Complete hat shape - top triangle */}
-                            <path
-                              d="M12 2 L6 10 L18 10 Z"
-                              fill="#EF4444"
-                              stroke="#B91C1C"
-                              strokeWidth="0.5"
-                              filter="url(#hat-shadow-footer)"
-                            />
-                            {/* Hat brim/base */}
-                            <path
-                              d="M3 10 L21 10 L21 12 L3 12 Z"
-                              fill="#EF4444"
-                              stroke="#B91C1C"
-                              strokeWidth="0.5"
-                              filter="url(#hat-shadow-footer)"
-                            />
-                            {/* White trim band - thicker */}
-                            <path
-                              d="M3 10 L21 10 L21 11.5 L3 11.5 Z"
-                              fill="#FFFFFF"
-                              stroke="#DC2626"
-                              strokeWidth="0.3"
-                            />
-                            {/* Pom pom on the side - bigger */}
-                            <circle
-                              cx="5.5"
-                              cy="9.5"
-                              r="2.2"
-                              fill="#FFFFFF"
-                              stroke="#DC2626"
-                              strokeWidth="0.3"
-                              filter="url(#hat-shadow-footer)"
-                            />
-                          </svg>
-                        </div>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="w-auto p-3 text-center"
-                        side={isCollapsed ? "right" : "top"}
-                        align="center"
-                      >
-                        <div className="space-y-2">
-                          <div className="text-2xl">🎄</div>
-                          <div className="text-lg font-bold text-primary">
-                            Merry Christmas!
-                          </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 ring-1 ring-sidebar z-10" />
-                  </div>
-                  {!isCollapsed && (
-                    <span className="flex-1 truncate text-left text-sm font-medium">
-                      {userName}
-                    </span>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-64"
-                align={isCollapsed ? "center" : "start"}
-                side="right"
-                sideOffset={8}
-              >
-                {/* User info header */}
-                <div className="px-2 py-2">
-                  <div className="flex items-center gap-2">
-                    <div className="relative shrink-0">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
-                          {userInitial}
-                        </AvatarFallback>
-                      </Avatar>
-                      {/* Santa Hat - Clickable */}
-                      <Popover
-                        open={santaHatDropdownOpen}
-                        onOpenChange={setSantaHatDropdownOpen}
-                      >
-                        <PopoverTrigger asChild>
-                          <button
-                            type="button"
-                            className="absolute left-1/2 -translate-x-1/2 z-50 cursor-pointer hover:scale-110 transition-transform"
-                            style={{ top: "-0.5rem" }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSantaHatDropdownOpen(true);
-                            }}
-                          >
-                            <svg
-                              className="h-9 w-9 drop-shadow-lg"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <defs>
-                                <filter id="hat-shadow-dropdown">
-                                  <feDropShadow
-                                    dx="0"
-                                    dy="2"
-                                    stdDeviation="2"
-                                    floodColor="#000000"
-                                    floodOpacity="0.3"
-                                  />
-                                </filter>
-                              </defs>
-                              {/* Complete hat shape - top triangle */}
-                              <path
-                                d="M12 2 L6 10 L18 10 Z"
-                                fill="#EF4444"
-                                stroke="#B91C1C"
-                                strokeWidth="0.5"
-                                filter="url(#hat-shadow-dropdown)"
-                              />
-                              {/* Hat brim/base */}
-                              <path
-                                d="M3 10 L21 10 L21 12 L3 12 Z"
-                                fill="#EF4444"
-                                stroke="#B91C1C"
-                                strokeWidth="0.5"
-                                filter="url(#hat-shadow-dropdown)"
-                              />
-                              {/* White trim band - thicker */}
-                              <path
-                                d="M3 10 L21 10 L21 11.5 L3 11.5 Z"
-                                fill="#FFFFFF"
-                                stroke="#DC2626"
-                                strokeWidth="0.3"
-                              />
-                              {/* Pom pom on the side - bigger */}
-                              <circle
-                                cx="5.5"
-                                cy="9.5"
-                                r="2.2"
-                                fill="#FFFFFF"
-                                stroke="#DC2626"
-                                strokeWidth="0.3"
-                                filter="url(#hat-shadow-dropdown)"
-                              />
-                            </svg>
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          className="w-auto p-3 text-center"
-                          side="top"
-                          align="center"
-                        >
-                          <div className="space-y-2">
-                            <div className="text-2xl">🎄</div>
-                            <div className="text-lg font-bold text-primary">
-                              Merry Christmas!
-                            </div>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <p className="text-sm font-medium truncate">{userName}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {user.email}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <DropdownMenuSeparator />
-
-                {/* Theme Submenu - Improved */}
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="cursor-pointer">
-                    <Palette className="mr-2 h-4 w-4" />
-                    <span className="flex-1">Theme</span>
-                    <ThemeSwatch
-                      slug={currentTheme?.slug || "light"}
-                      isActive={false}
-                    />
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent className="w-64 max-h-[400px] overflow-y-auto">
-                      {/* Light Themes */}
-                      {lightThemes.length > 0 && (
-                        <>
-                          <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1.5">
-                            Light Themes
-                          </DropdownMenuLabel>
-                          {lightThemes.map((theme) => {
-                            const isThemeActive =
-                              currentTheme?.slug === theme.slug;
-                            return (
-                              <DropdownMenuItem
-                                key={theme.theme_id}
-                                onClick={() => setTheme(theme.slug)}
-                                className={cn(
-                                  "cursor-pointer gap-3 px-2 py-2.5 transition-colors",
-                                  isThemeActive && "bg-accent",
-                                )}
-                              >
-                                <ThemeSwatch
-                                  slug={theme.slug}
-                                  isActive={isThemeActive}
-                                />
-                                <span className="flex-1 text-sm font-medium">
-                                  {theme.name}
-                                </span>
-                                {isThemeActive && (
-                                  <Check className="h-4 w-4 text-primary shrink-0" />
-                                )}
-                              </DropdownMenuItem>
-                            );
-                          })}
-                        </>
-                      )}
-
-                      {lightThemes.length > 0 && darkThemes.length > 0 && (
-                        <DropdownMenuSeparator className="my-1" />
-                      )}
-
-                      {/* Dark Themes */}
-                      {darkThemes.length > 0 && (
-                        <>
-                          <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1.5">
-                            Dark Themes
-                          </DropdownMenuLabel>
-                          {darkThemes.map((theme) => {
-                            const isThemeActive =
-                              currentTheme?.slug === theme.slug;
-                            return (
-                              <DropdownMenuItem
-                                key={theme.theme_id}
-                                onClick={() => setTheme(theme.slug)}
-                                className={cn(
-                                  "cursor-pointer gap-3 px-2 py-2.5 transition-colors",
-                                  isThemeActive && "bg-accent",
-                                )}
-                              >
-                                <ThemeSwatch
-                                  slug={theme.slug}
-                                  isActive={isThemeActive}
-                                />
-                                <span className="flex-1 text-sm font-medium">
-                                  {theme.name}
-                                </span>
-                                {isThemeActive && (
-                                  <Check className="h-4 w-4 text-primary shrink-0" />
-                                )}
-                              </DropdownMenuItem>
-                            );
-                          })}
-                        </>
-                      )}
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
-
-                {/* Display Preferences Submenu */}
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="cursor-pointer">
-                    <DollarSign className="mr-2 h-4 w-4" />
-                    <span className="flex-1">Display</span>
-                    <span className="text-xs text-muted-foreground ml-2">
-                      {currencySymbol} / {preferences.volumeUnit}
-                    </span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent className="w-56">
-                      {/* Currency Options */}
-                      <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1.5">
-                        Currency
-                      </DropdownMenuLabel>
-                      {CURRENCY_OPTIONS.map((option) => {
-                        const isActive = preferences.currency === option.code;
-                        return (
-                          <DropdownMenuItem
-                            key={option.code}
-                            onClick={() =>
-                              updatePreferences({ currency: option.code })
-                            }
-                            className={cn(
-                              "cursor-pointer gap-2 px-2 py-2 transition-colors",
-                              isActive && "bg-accent",
-                            )}
-                          >
-                            <span className="w-6 text-center font-medium">
-                              {option.symbol}
-                            </span>
-                            <span className="flex-1 text-sm">
-                              {option.name}
-                            </span>
-                            {isActive && (
-                              <Check className="h-4 w-4 text-primary shrink-0" />
-                            )}
-                          </DropdownMenuItem>
-                        );
-                      })}
-
-                      <DropdownMenuSeparator className="my-1" />
-
-                      {/* Volume Options */}
-                      <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1.5">
-                        Volume Unit
-                      </DropdownMenuLabel>
-                      {VOLUME_OPTIONS.map((option) => {
-                        const isActive = preferences.volumeUnit === option.code;
-                        return (
-                          <DropdownMenuItem
-                            key={option.code}
-                            onClick={() =>
-                              updatePreferences({ volumeUnit: option.code })
-                            }
-                            className={cn(
-                              "cursor-pointer gap-2 px-2 py-2 transition-colors",
-                              isActive && "bg-accent",
-                            )}
-                          >
-                            <span className="flex-1 text-sm">
-                              {option.name}
-                            </span>
-                            {isActive && (
-                              <Check className="h-4 w-4 text-primary shrink-0" />
-                            )}
-                          </DropdownMenuItem>
-                        );
-                      })}
-
-                      <DropdownMenuSeparator className="my-1" />
-
-                      {/* Weight Options */}
-                      <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1.5">
-                        Weight Unit
-                      </DropdownMenuLabel>
-                      {WEIGHT_OPTIONS.map((option) => {
-                        const isActive = preferences.weightUnit === option.code;
-                        return (
-                          <DropdownMenuItem
-                            key={option.code}
-                            onClick={() =>
-                              updatePreferences({ weightUnit: option.code })
-                            }
-                            className={cn(
-                              "cursor-pointer gap-2 px-2 py-2 transition-colors",
-                              isActive && "bg-accent",
-                            )}
-                          >
-                            <span className="flex-1 text-sm">
-                              {option.name}
-                            </span>
-                            {isActive && (
-                              <Check className="h-4 w-4 text-primary shrink-0" />
-                            )}
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
-
-                <DropdownMenuSeparator />
-
-                {/* Refresh Data */}
-                <DropdownMenuItem
-                  onClick={handleRefreshData}
-                  disabled={isRefreshing}
-                  className="cursor-pointer"
-                >
-                  {isRefreshing ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                  )}
-                  <span>Refresh all data</span>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link
-                    href={routes.settings()}
-                    className="flex items-center gap-2"
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </Link>
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Collapse Button - Always in footer, next to user */}
-            <CollapseButton />
+            <UserMenu
+              userInitial={userInitial}
+              userName={userName}
+              isCollapsed={isCollapsed}
+            />
+            <FooterActions isCollapsed={isCollapsed} />
           </div>
         ) : (
           <div
             className={cn(
-              "flex items-center gap-1",
+              "flex items-center gap-1.5",
               isCollapsed ? "flex-col" : "flex-row",
             )}
           >
-            <Button
-              variant="outline"
-              size={isCollapsed ? "icon" : "default"}
-              className={cn(isCollapsed ? "h-9 w-9" : "flex-1 h-9")}
-              onClick={() => router.push("/login")}
-            >
-              {isCollapsed ? <User className="h-4 w-4" /> : "Sign In"}
-            </Button>
-            <CollapseButton />
+            <SignInButton isCollapsed={isCollapsed} />
+            <FooterActions isCollapsed={isCollapsed} />
           </div>
         )}
       </SidebarFooter>

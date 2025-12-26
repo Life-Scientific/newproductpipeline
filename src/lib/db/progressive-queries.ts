@@ -91,9 +91,10 @@ function buildFilteredBusinessCaseQuery(
     query = query.in("formulation_code", filters.formulations);
   }
 
-  // Filter by use group names
+  // Filter by use group names (use_group_names is an array column)
   if (filters.useGroups.length > 0) {
-    query = query.in("use_group_name", filters.useGroups);
+    // Use overlaps operator (&&) to check if any of the filter values exist in the array
+    query = query.overlaps("use_group_names", filters.useGroups);
   }
 
   // Filter by formulation statuses (requires join - simplified here)

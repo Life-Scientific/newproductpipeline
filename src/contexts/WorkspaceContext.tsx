@@ -1,7 +1,16 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import type {
   Workspace,
   WorkspaceWithMenuItems,
@@ -13,6 +22,8 @@ interface WorkspaceContextType {
   currentWorkspace: Workspace | null;
   workspaceWithMenu: WorkspaceWithMenuItems | null;
   isLoading: boolean;
+  isCacheHit: boolean;
+  isTransitioning: boolean;
   switchWorkspace: (slug: string) => Promise<string>; // Returns default route
   refreshWorkspace: () => Promise<void>;
 }
@@ -33,17 +44,17 @@ const knownWorkspaces = ["portfolio", "operations", "shorturl"];
  */
 function getWorkspaceSlugFromPath(pathname: string | null): string | null {
   if (!pathname) return null;
-  
+
   // Remove leading slash and split
   const parts = pathname.slice(1).split("/");
   if (parts.length === 0) return null;
-  
+
   const firstSegment = parts[0];
-  
+
   if (knownWorkspaces.includes(firstSegment)) {
     return firstSegment;
   }
-  
+
   return null;
 }
 
@@ -52,32 +63,34 @@ function getWorkspaceSlugFromPath(pathname: string | null): string | null {
  * IMPORTANT: Menu items are already filtered by can_access_url RLS policy,
  * so we can safely use the first available item
  */
-function getDefaultRouteForWorkspace(workspace: WorkspaceWithMenuItems | null): string {
+function getDefaultRouteForWorkspace(
+  workspace: WorkspaceWithMenuItems | null,
+): string {
   if (!workspace) {
     return "/portfolio";
   }
-  
+
   if (!workspace.menu_items || workspace.menu_items.length === 0) {
     return `/${workspace.slug}`;
   }
-  
+
   // Find first menu item in "Overview" group, or first item overall
   // Note: menu_items are already filtered by RLS (can_access_url), so
   // only items the user can access will be here
   const overviewItem = workspace.menu_items.find(
-    (item) => item.group_name === "Overview" && item.is_active
+    (item) => item.group_name === "Overview" && item.is_active,
   );
-  
+
   if (overviewItem) {
     return overviewItem.url;
   }
-  
+
   // Fallback to first active menu item
   const firstItem = workspace.menu_items.find((item) => item.is_active);
   if (firstItem) {
     return firstItem.url;
   }
-  
+
   // Last resort: workspace root
   return `/${workspace.slug}`;
 }
@@ -100,10 +113,13 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [workspaceWithMenu, setWorkspaceWithMenu] =
     useState<WorkspaceWithMenuItems | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCacheHit, setIsCacheHit] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const loadingRef = useRef(false);
   const currentWorkspaceRef = useRef<Workspace | null>(null);
   const pathnameRef = useRef<string | null>(null);
+  const queryClient = useQueryClient();
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -118,146 +134,158 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
    * Load workspace with menu items in a single optimized query.
    * Priority: pathname -> localStorage -> "portfolio" fallback
    */
-  const loadWorkspace = useCallback(async (workspaceSlug?: string, skipPathnameCheck = false) => {
-    // Prevent concurrent loads
-    if (loadingRef.current) {
-      log("[WorkspaceContext] Skipping load - already loading");
-      return;
-    }
-    
-    loadingRef.current = true;
-    setIsLoading(true);
-    
-    try {
-      let slugToTry = workspaceSlug;
-      
-      // If no slug provided, try to detect from pathname (unless we're skipping this check)
-      if (!slugToTry && !skipPathnameCheck && typeof window !== "undefined") {
-        const pathSlug = getWorkspaceSlugFromPath(pathnameRef.current);
-        if (pathSlug) {
-          slugToTry = pathSlug;
-        }
-      }
-      
-      // Try localStorage
-      if (!slugToTry && typeof window !== "undefined") {
-        const stored = localStorage.getItem("current_workspace");
-        if (stored) {
-          slugToTry = stored;
-        }
-      }
-      
-      // Final fallback
-      if (!slugToTry) {
-        slugToTry = "portfolio";
-      }
-
-      // Don't reload if we already have this workspace loaded
-      if (currentWorkspaceRef.current?.slug === slugToTry) {
-        loadingRef.current = false;
-        setIsLoading(false);
+  const loadWorkspace = useCallback(
+    async (workspaceSlug?: string, skipPathnameCheck = false) => {
+      // Prevent concurrent loads
+      if (loadingRef.current) {
+        log("[WorkspaceContext] Skipping load - already loading");
         return;
       }
 
-      // OPTIMIZATION: Check client-side cache first
-      const cached = workspaceCacheRef.current.get(slugToTry);
-      const now = Date.now();
-      
-      if (cached && (now - cached.timestamp) < WORKSPACE_CACHE_TTL) {
-        // Cache hit - use cached data (instant, no API call)
-        log(`[WorkspaceContext] Cache hit for "${slugToTry}"`);
-        setCurrentWorkspace(cached.data);
-        setWorkspaceWithMenu(cached.data);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("current_workspace", cached.data.slug);
-        }
-        loadingRef.current = false;
-        setIsLoading(false);
-        return;
-      }
+      loadingRef.current = true;
+      setIsLoading(true);
 
-      // Cache miss or expired - fetch from server
-      log(`[WorkspaceContext] Cache miss for "${slugToTry}" - fetching`);
-      let workspaceData = await getWorkspaceWithMenuBySlug(slugToTry);
-      
-      // Cache the result (even if null, to prevent repeated failed lookups)
-      if (workspaceData) {
-        workspaceCacheRef.current.set(slugToTry, {
-          data: workspaceData,
-          timestamp: now,
-        });
-        
-        // Limit cache size (keep last 5 workspaces)
-        if (workspaceCacheRef.current.size > 5) {
-          const firstKey = workspaceCacheRef.current.keys().next().value;
-          if (firstKey) {
-            workspaceCacheRef.current.delete(firstKey);
+      try {
+        let slugToTry = workspaceSlug;
+
+        // If no slug provided, try to detect from pathname (unless we're skipping this check)
+        if (!slugToTry && !skipPathnameCheck && typeof window !== "undefined") {
+          const pathSlug = getWorkspaceSlugFromPath(pathnameRef.current);
+          if (pathSlug) {
+            slugToTry = pathSlug;
           }
         }
-      }
 
-      // Only fallback to portfolio if we're not already on a specific workspace route
-      // This prevents redirecting away from valid workspace pages
-      if (!workspaceData) {
-        if (slugToTry !== "portfolio") {
-          // If we're trying to load a specific workspace (from pathname) and it doesn't exist,
-          // don't fallback - let the page handle the error (e.g., 404 or permission check)
-          warn(`Workspace "${slugToTry}" not found`);
-          // Only fallback if we're not on a workspace-specific route
-          const currentPath = pathnameRef.current || "";
-          const isOnWorkspaceRoute = knownWorkspaces.some(ws => currentPath.startsWith(`/${ws}/`));
-          
-          if (!isOnWorkspaceRoute) {
-            // We're not on a workspace route, safe to fallback
+        // Try localStorage
+        if (!slugToTry && typeof window !== "undefined") {
+          const stored = localStorage.getItem("current_workspace");
+          if (stored) {
+            slugToTry = stored;
+          }
+        }
+
+        // Final fallback
+        if (!slugToTry) {
+          slugToTry = "portfolio";
+        }
+
+        // Don't reload if we already have this workspace loaded
+        if (currentWorkspaceRef.current?.slug === slugToTry) {
+          loadingRef.current = false;
+          setIsLoading(false);
+          return;
+        }
+
+        // OPTIMIZATION: Check client-side cache first
+        const cached = workspaceCacheRef.current.get(slugToTry);
+        const now = Date.now();
+
+        if (cached && now - cached.timestamp < WORKSPACE_CACHE_TTL) {
+          // Cache hit - use cached data (instant, no API call)
+          log(`[WorkspaceContext] Cache hit for "${slugToTry}"`);
+          setCurrentWorkspace(cached.data);
+          setWorkspaceWithMenu(cached.data);
+          setIsCacheHit(true);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("current_workspace", cached.data.slug);
+          }
+          loadingRef.current = false;
+          setIsLoading(false);
+          return;
+        }
+
+        // Cache miss or expired - fetch from server
+        log(`[WorkspaceContext] Cache miss for "${slugToTry}" - fetching`);
+        setIsCacheHit(false);
+        let workspaceData = await getWorkspaceWithMenuBySlug(slugToTry);
+
+        // Cache the result (even if null, to prevent repeated failed lookups)
+        if (workspaceData) {
+          workspaceCacheRef.current.set(slugToTry, {
+            data: workspaceData,
+            timestamp: now,
+          });
+
+          // Limit cache size (keep last 5 workspaces)
+          if (workspaceCacheRef.current.size > 5) {
+            const firstKey = workspaceCacheRef.current.keys().next().value;
+            if (firstKey) {
+              workspaceCacheRef.current.delete(firstKey);
+            }
+          }
+        }
+
+        // Only fallback to portfolio if we're not already on a specific workspace route
+        // This prevents redirecting away from valid workspace pages
+        if (!workspaceData) {
+          if (slugToTry !== "portfolio") {
+            // If we're trying to load a specific workspace (from pathname) and it doesn't exist,
+            // don't fallback - let the page handle the error (e.g., 404 or permission check)
+            warn(`Workspace "${slugToTry}" not found`);
+            // Only fallback if we're not on a workspace-specific route
+            const currentPath = pathnameRef.current || "";
+            const isOnWorkspaceRoute = knownWorkspaces.some((ws) =>
+              currentPath.startsWith(`/${ws}/`),
+            );
+
+            if (!isOnWorkspaceRoute) {
+              // We're not on a workspace route, safe to fallback
+              workspaceData = await getWorkspaceWithMenuBySlug("portfolio");
+            }
+          } else {
+            // Last resort: try portfolio
             workspaceData = await getWorkspaceWithMenuBySlug("portfolio");
           }
-        } else {
-          // Last resort: try portfolio
-          workspaceData = await getWorkspaceWithMenuBySlug("portfolio");
         }
-      }
 
-      if (workspaceData) {
-        setCurrentWorkspace(workspaceData);
-        setWorkspaceWithMenu(workspaceData);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("current_workspace", workspaceData.slug);
-        }
-        
-        // IMPORTANT: Do NOT navigate here - let the current page handle routing
-        // Navigation should only happen when explicitly switching workspaces via WorkspaceSwitcher
-        // This prevents redirect loops when users are on valid pages (like /operations placeholder)
-      } else {
-        error("Could not load any workspace - all fallbacks failed");
-      }
-    } catch (err) {
-      error("Failed to load workspace:", err);
-      // Only fallback to portfolio if we're not on a workspace-specific route
-      // This prevents redirecting away from valid pages
-      const currentPath = pathnameRef.current || "";
-      const isOnWorkspaceRoute = knownWorkspaces.some(ws => currentPath.startsWith(`/${ws}/`) || currentPath === `/${ws}`);
-      
-      if (!isOnWorkspaceRoute) {
-        // Last resort fallback - but only if we're not on a workspace route
-        try {
-          const fallback = await getWorkspaceWithMenuBySlug("portfolio");
-          if (fallback) {
-            setCurrentWorkspace(fallback);
-            setWorkspaceWithMenu(fallback);
+        if (workspaceData) {
+          setCurrentWorkspace(workspaceData);
+          setWorkspaceWithMenu(workspaceData);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("current_workspace", workspaceData.slug);
           }
-        } catch (e) {
-          error("Absolute fallback also failed:", e);
+
+          // IMPORTANT: Do NOT navigate here - let the current page handle routing
+          // Navigation should only happen when explicitly switching workspaces via WorkspaceSwitcher
+          // This prevents redirect loops when users are on valid pages (like /operations placeholder)
+        } else {
+          error("Could not load any workspace - all fallbacks failed");
         }
-      } else {
-        // We're on a workspace route but failed to load - don't redirect, just log
-        warn("Failed to load workspace but staying on current route:", currentPath);
+      } catch (err) {
+        error("Failed to load workspace:", err);
+        // Only fallback to portfolio if we're not on a workspace-specific route
+        // This prevents redirecting away from valid pages
+        const currentPath = pathnameRef.current || "";
+        const isOnWorkspaceRoute = knownWorkspaces.some(
+          (ws) => currentPath.startsWith(`/${ws}/`) || currentPath === `/${ws}`,
+        );
+
+        if (!isOnWorkspaceRoute) {
+          // Last resort fallback - but only if we're not on a workspace route
+          try {
+            const fallback = await getWorkspaceWithMenuBySlug("portfolio");
+            if (fallback) {
+              setCurrentWorkspace(fallback);
+              setWorkspaceWithMenu(fallback);
+            }
+          } catch (e) {
+            error("Absolute fallback also failed:", e);
+          }
+        } else {
+          // We're on a workspace route but failed to load - don't redirect, just log
+          warn(
+            "Failed to load workspace but staying on current route:",
+            currentPath,
+          );
+        }
+      } finally {
+        setIsLoading(false);
+        setIsInitialLoad(false);
+        loadingRef.current = false;
       }
-    } finally {
-      setIsLoading(false);
-      setIsInitialLoad(false);
-      loadingRef.current = false;
-    }
-  }, []); // No dependencies - use refs instead
+    },
+    [],
+  ); // No dependencies - use refs instead
 
   /**
    * Switch to a different workspace - single optimized query
@@ -265,29 +293,32 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
    */
   const switchWorkspace = useCallback(async (slug: string): Promise<string> => {
     setIsLoading(true);
+    setIsTransitioning(true);
     try {
       // OPTIMIZATION: Check cache first
       const cached = workspaceCacheRef.current.get(slug);
       const now = Date.now();
-      
+
       let workspaceData: WorkspaceWithMenuItems | null = null;
-      
-      if (cached && (now - cached.timestamp) < WORKSPACE_CACHE_TTL) {
+
+      if (cached && now - cached.timestamp < WORKSPACE_CACHE_TTL) {
         // Cache hit - use cached data
         log(`[WorkspaceContext] Cache hit for switch to "${slug}"`);
         workspaceData = cached.data;
+        setIsCacheHit(true);
       } else {
         // Cache miss - fetch from server
         log(`[WorkspaceContext] Cache miss for switch to "${slug}" - fetching`);
+        setIsCacheHit(false);
         workspaceData = await getWorkspaceWithMenuBySlug(slug);
-        
+
         // Cache the result
         if (workspaceData) {
           workspaceCacheRef.current.set(slug, {
             data: workspaceData,
             timestamp: now,
           });
-          
+
           // Limit cache size
           if (workspaceCacheRef.current.size > 5) {
             const firstKey = workspaceCacheRef.current.keys().next().value;
@@ -297,8 +328,13 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           }
         }
       }
-      
+
       if (workspaceData) {
+        // Clear previous workspace's cache before switching
+        if (currentWorkspaceRef.current?.slug !== workspaceData.slug) {
+          queryClient.invalidateQueries();
+        }
+
         setCurrentWorkspace(workspaceData);
         setWorkspaceWithMenu(workspaceData);
         if (typeof window !== "undefined") {
@@ -314,6 +350,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       return `/${slug}`;
     } finally {
       setIsLoading(false);
+      setIsTransitioning(false);
     }
   }, []);
 
@@ -322,7 +359,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     if (currentWorkspaceRef.current?.slug) {
       workspaceCacheRef.current.delete(currentWorkspaceRef.current.slug);
     }
-    
+
     if (currentWorkspaceRef.current) {
       await loadWorkspace(currentWorkspaceRef.current.slug);
     } else {
@@ -345,14 +382,14 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     if (isInitialLoad || isLoading || loadingRef.current) {
       return;
     }
-    
+
     // Skip if no pathname (shouldn't happen, but safety check)
     if (!pathname || typeof window === "undefined") {
       return;
     }
-    
+
     const pathSlug = getWorkspaceSlugFromPath(pathname);
-    
+
     // Only reload if we detect a different workspace
     // This is just for syncing the sidebar/context - it should NOT redirect
     if (pathSlug && currentWorkspaceRef.current?.slug !== pathSlug) {
@@ -372,10 +409,20 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       currentWorkspace,
       workspaceWithMenu,
       isLoading,
+      isCacheHit,
+      isTransitioning,
       switchWorkspace,
       refreshWorkspace,
     }),
-    [currentWorkspace, workspaceWithMenu, isLoading, switchWorkspace, refreshWorkspace],
+    [
+      currentWorkspace,
+      workspaceWithMenu,
+      isLoading,
+      isCacheHit,
+      isTransitioning,
+      switchWorkspace,
+      refreshWorkspace,
+    ],
   );
 
   return (

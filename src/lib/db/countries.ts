@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { log, warn, error, table } from "@/lib/logger";
 import { getBusinessCases } from "./business-cases";
@@ -8,9 +9,13 @@ import type {
   FormulationCountryUseGroup,
 } from "./types";
 
-export async function getCountries() {
+/**
+ * Get all active countries
+ * PERFORMANCE: Wrapped in React cache() - called on every dashboard load
+ */
+export const getCountries = cache(async () => {
   const supabase = await createClient();
-  const { data, error: supabaseError } = await supabase
+  const { data, error: supabaseError} = await supabase
     .from("countries")
     .select("*")
     .eq("is_active", true)
@@ -21,7 +26,7 @@ export async function getCountries() {
   }
 
   return data as Country[];
-}
+});
 
 /**
  * Get a single country by ID
@@ -274,7 +279,13 @@ export async function getCountryDetails(countryId: string) {
   };
 }
 
-export async function getExchangeRates() {
+/**
+ * Get all exchange rates with country details
+ * CRITICAL PERFORMANCE: Wrapped in React cache() to prevent repeated fetches
+ * This is called from root layout on EVERY page load, so caching is essential
+ * Exchange rates change infrequently (daily at most), making cache safe
+ */
+export const getExchangeRates = cache(async () => {
   const supabase = await createClient();
   const { data, error: supabaseError } = await supabase
     .from("exchange_rates")
@@ -295,7 +306,7 @@ export async function getExchangeRates() {
   }
 
   return data || [];
-}
+});
 
 export async function getLatestExchangeRate(
   countryId: string,
