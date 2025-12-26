@@ -6,8 +6,9 @@ import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { BusinessCasesPageClient } from "./BusinessCasesPageClient";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 
-// Use dynamic rendering to ensure fresh data after mutations
-export const dynamic = "force-dynamic";
+// Use ISR with 60 second revalidation instead of force-dynamic
+// Business cases don't need real-time updates - 1 min cache improves performance significantly
+export const revalidate = 60;
 
 interface PageProps {
   searchParams: Promise<{

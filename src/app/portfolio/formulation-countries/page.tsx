@@ -3,8 +3,8 @@ import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { Card, CardContent } from "@/components/ui/card";
 import { getFormulationCountries } from "@/lib/db/queries";
 
-// Force dynamic rendering to ensure fresh data
-export const dynamic = "force-dynamic";
+// Use ISR with 60 second revalidation for better performance
+export const revalidate = 60;
 
 export default async function FormulationCountriesPage() {
   const countries = await getFormulationCountries();

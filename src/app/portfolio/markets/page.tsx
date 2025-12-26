@@ -3,9 +3,8 @@ import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { MarketsClient } from "./MarketsClient";
 import { createClient } from "@/lib/supabase/server";
 
-// Force dynamic rendering
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// Use ISR with 60 second revalidation instead of force-dynamic
+export const revalidate = 60;
 
 export default async function MarketsPage() {
   const supabase = await createClient();
