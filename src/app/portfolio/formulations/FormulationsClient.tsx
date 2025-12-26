@@ -15,16 +15,26 @@ import {
 import { computeFilteredCounts } from "@/lib/utils/filter-counts";
 import { useFormulationsWithPortfolioFilters } from "@/lib/queries/formulations";
 import type { FormulationWithNestedData } from "@/lib/db/queries";
-import type { Formulation } from "@/lib/db/types";
-import type { Country } from "@/lib/db/types";
 import type { FormulationCountryDetail } from "@/lib/db/types";
+
+// Lightweight reference types for filters (only fields needed)
+interface FormulationReference {
+  formulation_code: string | null;
+  product_name: string | null;
+  status: string | null;
+}
+
+interface CountryReference {
+  country_code: string;
+  country_name: string;
+}
 
 interface FormulationsClientProps {
   initialFormulations: FormulationWithNestedData[];
   totalCount: number;
   hasMore: boolean;
-  formulations: Formulation[];
-  countries: Country[];
+  formulations: FormulationReference[];
+  countries: CountryReference[];
   formulationCountries: FormulationCountryDetail[];
 }
 

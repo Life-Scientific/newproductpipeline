@@ -100,6 +100,56 @@ import type {
   BusinessCaseVersionHistoryEntry,
 } from "./types";
 
+/**
+ * Get lightweight formulation reference data for filters
+ * Only fetches fields needed for filter dropdowns (much faster than getFormulations)
+ * Returns: { formulation_code, product_name, status }
+ */
+export async function getFormulationReferenceData() {
+  const supabase = await createClient();
+
+  const { data, error: supabaseError } = await supabase
+    .from("vw_formulations_with_ingredients")
+    .select("formulation_code, product_name, status")
+    .order("formulation_code");
+
+  if (supabaseError) {
+    error("Supabase error fetching formulation reference data:", supabaseError);
+    throw supabaseError;
+  }
+
+  return (data || []).map(f => ({
+    formulation_code: f.formulation_code,
+    product_name: f.product_name,
+    status: f.status,
+  }));
+}
+
+/**
+ * Get lightweight country reference data for filters
+ * Only fetches fields needed for filter dropdowns
+ * Returns: { country_code, country_name }
+ */
+export async function getCountryReferenceData() {
+  const supabase = await createClient();
+
+  const { data, error: supabaseError } = await supabase
+    .from("country")
+    .select("country_code, country_name")
+    .eq("is_active", true)
+    .order("country_name");
+
+  if (supabaseError) {
+    error("Supabase error fetching country reference data:", supabaseError);
+    throw supabaseError;
+  }
+
+  return (data || []).map(c => ({
+    country_code: c.country_code,
+    country_name: c.country_name,
+  }));
+}
+
 export async function getFormulations() {
   const supabase = await createClient();
 

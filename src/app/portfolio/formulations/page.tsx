@@ -3,8 +3,7 @@ import { FormulationFormButton } from "@/components/forms/FormulationFormButton"
 import { FormulationsViewSwitcher } from "@/components/formulations/FormulationsViewSwitcher";
 import { AnimatedPage } from "@/components/layout/AnimatedPage";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
-import { getFormulations, getFormulationCountries } from "@/lib/db/queries";
-import { getCountries } from "@/lib/db/countries";
+import { getFormulationReferenceData, getCountryReferenceData, getFormulationCountries } from "@/lib/db/queries";
 import { getFormulationsWithNestedDataProgressive } from "@/lib/db/progressive-queries";
 import { FormulationsClient } from "./FormulationsClient";
 
@@ -13,12 +12,13 @@ export const revalidate = 60;
 
 export default async function FormulationsPage() {
   // OPTIMIZATION: Fetch initial batch (100 formulations) for fast first load
+  // Use lightweight reference queries for filters (only fetch needed fields)
   const INITIAL_LIMIT = 100;
   const [initialDataResult, formulations, countries, formulationCountries] =
     await Promise.all([
       getFormulationsWithNestedDataProgressive(INITIAL_LIMIT),
-      getFormulations(), // Reference data for filter lookups
-      getCountries(), // Reference data for filter lookups
+      getFormulationReferenceData(), // OPTIMIZED: Only formulation_code, product_name, status
+      getCountryReferenceData(), // OPTIMIZED: Only country_code, country_name
       getFormulationCountries(), // For accurate filter counts
     ]);
 

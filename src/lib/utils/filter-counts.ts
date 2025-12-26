@@ -1,5 +1,4 @@
 import type { PortfolioFilters } from "@/hooks/use-portfolio-filters";
-import type { Formulation } from "@/lib/db/types";
 import type { FormulationCountryDetail } from "@/lib/db/types";
 import { countUniqueBusinessCaseGroups } from "./business-case-utils";
 
@@ -15,6 +14,12 @@ export interface CountingContext {
   includeOrphanFormulations: boolean; // Only true for Formulations page
 }
 
+// Minimal formulation data needed for filtering (performance optimization)
+export interface FormulationForCounting {
+  formulation_code?: string | null;
+  status?: string | null;
+}
+
 /**
  * Compute filtered counts for portfolio pages.
  *
@@ -22,14 +27,14 @@ export interface CountingContext {
  * - When formulation filters are active and no country filters: count from formulations table (includes orphans)
  * - When country-related filters are active: count from junction table (intersection only)
  *
- * @param formulations - All formulations from the database
+ * @param formulations - All formulations (or lightweight reference data with formulation_code and status)
  * @param filteredFormulationCountries - Already filtered formulation-country pairs
  * @param filters - Active portfolio filters
  * @param context - Context about whether to include orphan formulations
  * @param additionalData - Optional additional data for counts (useGroups, businessCases)
  */
 export function computeFilteredCounts(
-  formulations: Formulation[],
+  formulations: FormulationForCounting[],
   filteredFormulationCountries: (FormulationCountryDetail & {
     formulation_status?: string | null;
   })[],

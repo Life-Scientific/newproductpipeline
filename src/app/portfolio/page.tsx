@@ -232,8 +232,14 @@ export default async function Home() {
       description="Navigator overview"
       variant="multi"
     >
-      {/* 10-Year Projection Chart with Global Filters - Streams in independently */}
-      <DashboardChart />
+      {/* 10-Year Projection Chart with Global Filters */}
+      <DashboardChart
+        formulations={formulations}
+        countries={countries}
+        businessCases={businessCases}
+        formulationCountries={enrichedFormulationCountries}
+        useGroups={enrichedUseGroups}
+      />
 
       {/* Status Overview Cards */}
       <CardGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }} gap="md">
