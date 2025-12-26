@@ -75,7 +75,7 @@ const SidebarProvider = React.forwardRef<
   React.ComponentProps<"div"> & {
     defaultOpen?: boolean;
   }
->(({ defaultOpen = false, children, ...props }, ref) => {
+>(({ defaultOpen = true, children, ...props }, ref) => {
   const [openMobile, setOpenMobile] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
   const [isHydrated, setIsHydrated] = React.useState(false);
@@ -97,9 +97,20 @@ const SidebarProvider = React.forwardRef<
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+
+    // Debounce resize events to avoid excessive re-renders
+    let timeoutId: NodeJS.Timeout;
+    const debouncedCheckMobile = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkMobile, 150);
+    };
+
+    checkMobile(); // Initial check
+    window.addEventListener("resize", debouncedCheckMobile);
+    return () => {
+      window.removeEventListener("resize", debouncedCheckMobile);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   // Persist state to localStorage (only after hydration)

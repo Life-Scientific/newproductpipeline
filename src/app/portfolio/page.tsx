@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getDashboardData } from "@/lib/db/dashboard-data";
 import { log, warn, error, table } from "@/lib/logger";
 import { getCountries } from "@/lib/db/countries";
@@ -7,7 +8,7 @@ import { CardGrid } from "@/components/layout/CardGrid";
 import { ContentCard } from "@/components/layout/ContentCard";
 import { TimelineCard } from "@/components/relationships/TimelineCard";
 import { BusinessCaseListItem } from "@/components/business-cases/BusinessCaseListItem";
-import { DashboardClient } from "./DashboardClient";
+import { DashboardChart } from "./components/DashboardChart";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { countUniqueBusinessCaseGroups } from "@/lib/utils/business-case-utils";
@@ -19,6 +20,7 @@ import {
 import { getStatusVariant } from "@/lib/design-system";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 
 // No caching - direct database queries
@@ -27,23 +29,44 @@ type StatusHistory =
   Database["public"]["Tables"]["formulation_status_history"]["Row"];
 
 export default async function Home() {
-  // Single unified call - gets all dashboard data in one function
-  let dashboardData;
-  try {
-    dashboardData = await getDashboardData();
-  } catch (err) {
-    error("Dashboard data fetch error:", error);
-    // Set defaults on error
-    dashboardData = {
-      formulations: [],
-      countries: [],
-      businessCases: [],
-      activePortfolio: [],
-      allExchangeRates: [],
-      formulationCountries: [],
-      useGroups: [],
-    };
-  }
+  // Still need supabase client for status history and registration pipeline queries
+  const supabase = await createClient();
+
+  // Parallelize all data fetching - dashboard data, status history, and registration pipeline
+  const [dashboardDataResult, recentStatusChangesResult, registrationPipelineResult] = await Promise.all([
+    getDashboardData().catch((err) => {
+      error("Dashboard data fetch error:", err);
+      return {
+        formulations: [],
+        countries: [],
+        businessCases: [],
+        activePortfolio: [],
+        allExchangeRates: [],
+        formulationCountries: [],
+        useGroups: [],
+        formulationCountryStatuses: [],
+        useGroupStatuses: [],
+      };
+    }),
+    supabase
+      .from("formulation_status_history")
+      .select(`
+        *,
+        formulations!inner (
+          formulation_id,
+          formulation_code,
+          formulation_name
+        )
+      `)
+      .order("changed_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("vw_registration_pipeline")
+      .select("*", { count: "exact" })
+      .limit(1),
+  ]);
+
+  const dashboardData = dashboardDataResult;
 
   const {
     formulations,
@@ -88,9 +111,6 @@ export default async function Home() {
 
   // OPTIMIZATION: Status counts are now included in getDashboardData()
   // No need to fetch them separately - they're already parallelized
-
-  // Still need supabase client for status history and registration pipeline queries
-  const supabase = await createClient();
 
   // Calculate formulation status counts
   const formulationStatusCounts = formulations.reduce(
@@ -163,19 +183,8 @@ export default async function Home() {
       : null,
   }));
 
-  // Get recent status changes
-  const { data: recentStatusChanges } = await supabase
-    .from("formulation_status_history")
-    .select(`
-      *,
-      formulations!inner (
-        formulation_id,
-        formulation_code,
-        formulation_name
-      )
-    `)
-    .order("changed_at", { ascending: false })
-    .limit(10);
+  // Get recent status changes (already fetched in parallel)
+  const { data: recentStatusChanges } = recentStatusChangesResult;
 
   // Calculate business case metrics
   // Note: getBusinessCases() already filters out orphaned business cases
@@ -196,12 +205,8 @@ export default async function Home() {
     businessCases.map((bc) => bc.country_name).filter(Boolean),
   ).size;
 
-  // Get registration pipeline count
-  const { data: registrationPipeline } = await supabase
-    .from("vw_registration_pipeline")
-    .select("*", { count: "exact" })
-    .limit(1);
-
+  // Get registration pipeline count (already fetched in parallel)
+  const { data: registrationPipeline } = registrationPipelineResult;
   const registrationCount = registrationPipeline?.length || 0;
 
   // Transform status changes for TimelineCard
@@ -227,14 +232,8 @@ export default async function Home() {
       description="Navigator overview"
       variant="multi"
     >
-      {/* 10-Year Projection Chart with Global Filters */}
-      <DashboardClient
-        businessCases={businessCases}
-        formulations={formulations}
-        countries={countries}
-        formulationCountries={enrichedFormulationCountries}
-        useGroups={enrichedUseGroups}
-      />
+      {/* 10-Year Projection Chart with Global Filters - Streams in independently */}
+      <DashboardChart />
 
       {/* Status Overview Cards */}
       <CardGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }} gap="md">

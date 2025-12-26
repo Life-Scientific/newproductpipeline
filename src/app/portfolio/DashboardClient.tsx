@@ -1,12 +1,19 @@
 "use client";
 
-import { Suspense, useMemo, memo } from "react";
+import { Suspense, useMemo, memo, lazy } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { log, warn, error, table } from "@/lib/logger";
 import { GlobalFilterBar } from "@/components/filters/GlobalFilterBar";
-import { TenYearProjectionChart } from "@/components/charts/TenYearProjectionChart";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load the chart component to reduce initial bundle size
+// Recharts is heavy (~200KB) and not needed for initial render
+const TenYearProjectionChart = lazy(() =>
+  import("@/components/charts/TenYearProjectionChart").then((mod) => ({
+    default: mod.TenYearProjectionChart,
+  })),
+);
 import { usePortfolioFilters } from "@/hooks/use-portfolio-filters";
 import {
   useFilterOptions,
@@ -286,13 +293,15 @@ const DashboardContent = memo(function DashboardContent({
         />
 
         {/* Chart - using optimized aggregated data */}
-        <TenYearProjectionChart
-          chartData={chartAggregates}
-          formulations={formulations}
-          uniqueFormulations={filteredCounts.formulations}
-          uniqueBusinessCaseGroups={filteredCounts.businessCases ? countUniqueBusinessCaseGroups(filteredBusinessCases) : undefined}
-          noCard={true}
-        />
+        <Suspense fallback={<Skeleton className="h-[400px] sm:h-[500px] w-full rounded-lg" />}>
+          <TenYearProjectionChart
+            chartData={chartAggregates}
+            formulations={formulations}
+            uniqueFormulations={filteredCounts.formulations}
+            uniqueBusinessCaseGroups={filteredCounts.businessCases ? countUniqueBusinessCaseGroups(filteredBusinessCases) : undefined}
+            noCard={true}
+          />
+        </Suspense>
       </CardContent>
     </Card>
   );
