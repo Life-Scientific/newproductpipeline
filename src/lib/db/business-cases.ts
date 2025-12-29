@@ -158,18 +158,13 @@ async function fetchBusinessCasesPaginated<T>(
   }
 
   // Fetch all pages in parallel
-  const pagePromises: Promise<T[]>[] = [];
+  const pagePromises = Array.from({ length: totalPages }, async (_, page) => {
+    const { data, error } = await buildQuery()
+      .range(page * pageSize, (page + 1) * pageSize - 1);
 
-  for (let page = 0; page < totalPages; page++) {
-    pagePromises.push(
-      buildQuery()
-        .range(page * pageSize, (page + 1) * pageSize - 1)
-        .then(({ data, error }: { data: T[] | null; error: Error | null }) => {
-          if (error) throw new Error(`Failed to fetch business cases: ${error.message}`);
-          return (data as T[]) || [];
-        }),
-    );
-  }
+    if (error) throw new Error(`Failed to fetch business cases: ${error.message}`);
+    return (data as T[]) || [];
+  });
 
   const allPages = await Promise.all(pagePromises);
   return allPages.flat();

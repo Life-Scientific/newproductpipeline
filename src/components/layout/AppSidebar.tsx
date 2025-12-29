@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState, memo } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarInput,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useForesightInit } from "@/hooks/use-prefetch-on-intent";
@@ -23,6 +24,10 @@ import {
   SidebarMenu,
 } from "@/components/ui/sidebar";
 import type { WorkspaceMenuItem } from "@/lib/actions/workspaces";
+import { useSearch } from "@/hooks/use-search";
+import { Search, X, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { routes } from "@/lib/routes";
 
 const iconMap: Record<string, any> = {
   LayoutDashboard: require("lucide-react").LayoutDashboard,
@@ -46,6 +51,96 @@ const iconMap: Record<string, any> = {
   Settings: require("lucide-react").Settings,
 };
 
+// Search bar component
+const SearchBar = memo(function SearchBar({ isCollapsed }: { isCollapsed: boolean }) {
+  const router = useRouter();
+  const { query, setQuery, results, isSearching, clearSearch } = useSearch({
+    debounceMs: 300,
+    minQueryLength: 2,
+    limit: 20,
+  });
+
+  const handleResultClick = (result: typeof results[0]) => {
+    // Navigate based on entity type
+    if (result.entity_type === "formulation") {
+      router.push(`/portfolio/formulations/${result.entity_id}`);
+    } else if (result.entity_type === "country") {
+      router.push(`/portfolio/countries/${result.entity_id}`);
+    } else if (result.entity_type === "reference_product") {
+      router.push(`/portfolio/reference`);
+    }
+    clearSearch();
+  };
+
+  if (isCollapsed) {
+    return null;
+  }
+
+  return (
+    <div className="relative px-2 pb-2">
+      <div className="relative">
+        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-sidebar-foreground/50" />
+        <SidebarInput
+          type="text"
+          placeholder="Search..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="h-8 pl-8 pr-8 text-xs"
+        />
+        {query && (
+          <button
+            onClick={clearSearch}
+            className="absolute right-2.5 top-2.5 text-sidebar-foreground/50 hover:text-sidebar-foreground"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
+      {/* Search results dropdown */}
+      {query.length >= 2 && (
+        <div className="absolute left-2 right-2 top-full z-50 mt-1 max-h-[300px] overflow-y-auto rounded-lg border border-sidebar-border bg-sidebar shadow-lg">
+          {isSearching ? (
+            <div className="p-3 text-center text-xs text-sidebar-foreground/50">
+              Searching...
+            </div>
+          ) : results.length === 0 ? (
+            <div className="p-3 text-center text-xs text-sidebar-foreground/50">
+              No results found
+            </div>
+          ) : (
+            <div className="py-1">
+              {results.map((result) => (
+                <button
+                  key={`${result.entity_type}-${result.entity_id}`}
+                  onClick={() => handleResultClick(result)}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-sidebar-accent transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sidebar-foreground truncate">
+                      {result.entity_code}
+                    </div>
+                    <div className="text-sidebar-foreground/60 truncate">
+                      {result.entity_name}
+                    </div>
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wide text-sidebar-foreground/40 shrink-0">
+                    {result.entity_type === "formulation"
+                      ? "Form"
+                      : result.entity_type === "country"
+                      ? "Country"
+                      : "Ref"}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+});
+
 function NavItem({
   item,
   isActive,
@@ -60,7 +155,7 @@ function NavItem({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-        <a href={item.url} className="flex items-center gap-2.5">
+        <a href={item.url} className="flex items-center gap-2">
           <IconComponent className="size-4 shrink-0" />
           <span className="truncate">{item.title}</span>
         </a>
@@ -69,7 +164,8 @@ function NavItem({
   );
 }
 
-export function AppSidebar() {
+// Unwrapped component for memoization
+function AppSidebarComponent() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -183,41 +279,60 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
+      <SidebarHeader className="gap-0">
         <WorkspaceSwitcher />
+        <SearchBar isCollapsed={isCollapsed} />
       </SidebarHeader>
 
       <SidebarContent>
         {workspaceLoading ? (
-          <div className="flex flex-col gap-2 p-3">
+          <div className="flex flex-col gap-1.5 p-2">
             {Array.from({ length: 6 }).map(() => (
               <div
                 key={`skeleton-${crypto.randomUUID()}`}
-                className="h-9 w-full rounded-md bg-sidebar-accent/40 animate-pulse"
+                className="h-8 w-full rounded-md bg-sidebar-accent/40 animate-pulse"
               />
             ))}
           </div>
         ) : (
-          menuGroups.map((group) => (
-            <div key={group.groupName} className="mb-4">
-              <div className="px-3 pb-1.5 pt-3">
-                <div className="text-xs font-medium uppercase tracking-wide text-sidebar-foreground/40">
-                  {group.groupName}
+          <>
+            {menuGroups.map((group) => (
+              <div key={group.groupName} className="mb-3">
+                <div className="px-3 pb-1 pt-2">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
+                    {group.groupName}
+                  </div>
                 </div>
+                <SidebarMenu>
+                  {group.items.map((item) => (
+                    <NavItem
+                      key={item.menu_item_id}
+                      item={item}
+                      isActive={
+                        item.url === pathname || pathname?.startsWith(item.url)
+                      }
+                    />
+                  ))}
+                </SidebarMenu>
               </div>
-              <SidebarMenu>
-                {group.items.map((item) => (
-                  <NavItem
-                    key={item.menu_item_id}
-                    item={item}
-                    isActive={
-                      item.url === pathname || pathname?.startsWith(item.url)
-                    }
-                  />
-                ))}
-              </SidebarMenu>
-            </div>
-          ))
+            ))}
+
+            {/* Settings button - relocated from footer */}
+            {!isCollapsed && (
+              <div className="mt-auto px-2 pb-2">
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild tooltip="Settings">
+                      <a href={routes.settings()} className="flex items-center gap-2">
+                        <Settings className="size-4 shrink-0" />
+                        <span className="truncate">Settings</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </div>
+            )}
+          </>
         )}
       </SidebarContent>
 
@@ -251,3 +366,6 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+// Export memoized version to prevent unnecessary re-renders
+export const AppSidebar = memo(AppSidebarComponent);

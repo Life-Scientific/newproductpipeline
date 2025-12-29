@@ -24,7 +24,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 
-// No caching - direct database queries
+// Enable ISR caching with 30-second revalidation
+// This caches the page for 30 seconds, then revalidates in the background
+// Expected impact: 1000-1500ms reduction for cached requests
+// Trade-off: Data may be up to 30s stale (acceptable for dashboard metrics)
+export const revalidate = 30;
 
 type StatusHistory =
   Database["public"]["Tables"]["formulation_status_history"]["Row"];
