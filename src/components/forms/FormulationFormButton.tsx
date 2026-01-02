@@ -17,7 +17,7 @@ export function FormulationFormButton() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
+      <Button onClick={() => setOpen(true)} size="lg">
         <Plus className="mr-2 h-4 w-4" />
         New Formulation
       </Button>

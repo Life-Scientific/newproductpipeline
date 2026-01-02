@@ -921,8 +921,8 @@ function AdjustmentControl({
             className={cn(
               "text-xs font-medium",
               value > 0
-                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+                ? "bg-success/10 text-success"
+                : "bg-destructive/10 text-destructive",
             )}
           >
             {value > 0 ? "+" : ""}
@@ -965,7 +965,7 @@ function ComparisonSummaryTable({
             <th className="text-left py-3 px-4 font-medium text-sm">Metric</th>
             <th className="text-right py-3 px-4 font-medium text-sm">
               <div className="flex items-center justify-end gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500" />
+                <div className="w-3 h-3 rounded-full bg-primary" />
                 Baseline
               </div>
             </th>
@@ -1007,8 +1007,8 @@ function ComparisonSummaryTable({
                     className={cn(
                       "text-xs font-medium",
                       totalRevenue >= baseline.totalRevenue
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-red-600 dark:text-red-400",
+                        ? "text-success"
+                        : "text-destructive",
                     )}
                   >
                     {formatChange(baseline.totalRevenue, totalRevenue)}
@@ -1039,8 +1039,8 @@ function ComparisonSummaryTable({
                     className={cn(
                       "text-xs font-medium",
                       totalMargin >= baseline.totalMargin
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-red-600 dark:text-red-400",
+                        ? "text-success"
+                        : "text-destructive",
                     )}
                   >
                     {formatChange(baseline.totalMargin, totalMargin)}
@@ -1071,8 +1071,8 @@ function ComparisonSummaryTable({
                     className={cn(
                       "text-xs font-medium",
                       marginPercent >= baseline.marginPercent
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-red-600 dark:text-red-400",
+                        ? "text-success"
+                        : "text-destructive",
                     )}
                   >
                     {marginPercent - baseline.marginPercent >= 0 ? "+" : ""}
@@ -1154,7 +1154,7 @@ function ComparisonByYear({
             <th className="text-left py-2 px-3 font-medium">Year</th>
             <th className="text-right py-2 px-3 font-medium" colSpan={2}>
               <div className="flex items-center justify-end gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                <div className="w-2.5 h-2.5 rounded-full bg-primary" />
                 Baseline
               </div>
             </th>
@@ -1213,9 +1213,9 @@ function ComparisonByYear({
                     <span
                       className={cn(
                         revenue > baseline.revenue &&
-                          "text-green-600 dark:text-green-400",
+                          "text-success",
                         revenue < baseline.revenue &&
-                          "text-red-600 dark:text-red-400",
+                          "text-destructive",
                       )}
                     >
                       {formatCurrency(revenue)}
@@ -1225,9 +1225,9 @@ function ComparisonByYear({
                     <span
                       className={cn(
                         margin > baseline.margin &&
-                          "text-green-600 dark:text-green-400",
+                          "text-success",
                         margin < baseline.margin &&
-                          "text-red-600 dark:text-red-400",
+                          "text-destructive",
                       )}
                     >
                       {formatCurrency(margin)}

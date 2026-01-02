@@ -17,8 +17,8 @@ export function FormulationCountryUseGroupFormButton() {
 
   return (
     <>
-      <Button size="lg" className="h-12 px-6" onClick={() => setOpen(true)}>
-        <Plus className="mr-2 h-5 w-5" />
+      <Button size="lg" onClick={() => setOpen(true)}>
+        <Plus className="mr-2 h-4 w-4" />
         New Use Group
       </Button>
       <FormulationCountryUseGroupForm

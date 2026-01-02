@@ -9,10 +9,7 @@ import { getFormulationsWithFilters } from "@/lib/actions/formulations-filtered"
 
 function serializeFilters(filters: FormulationFilters): string {
   // Serialize filters for stable query key (avoid reference equality issues)
-  return JSON.stringify(
-    filters,
-    Object.keys(filters).sort(),
-  );
+  return JSON.stringify(filters, Object.keys(filters).sort());
 }
 
 export const formulationKeys = {
@@ -20,9 +17,16 @@ export const formulationKeys = {
   allList: () => [...formulationKeys.all, "list"] as const,
   active: () => [...formulationKeys.all, "active"] as const,
   detail: (id: string) => [...formulationKeys.all, "detail", id] as const,
-  withCountries: (id: string) => [...formulationKeys.all, "with-countries", id] as const,
-  filtered: (filters: FormulationFilters) => [...formulationKeys.all, "filtered", serializeFilters(filters)] as const,
-  portfolioFiltered: (filters: PortfolioFilters) => [...formulationKeys.all, "portfolio-filtered", JSON.stringify(filters)] as const,
+  withCountries: (id: string) =>
+    [...formulationKeys.all, "with-countries", id] as const,
+  filtered: (filters: FormulationFilters) =>
+    [...formulationKeys.all, "filtered", serializeFilters(filters)] as const,
+  portfolioFiltered: (filters: PortfolioFilters) =>
+    [
+      ...formulationKeys.all,
+      "portfolio-filtered",
+      JSON.stringify(filters),
+    ] as const,
 };
 
 // =============================================================================
@@ -40,7 +44,9 @@ export interface FormulationFilters {
 // API Functions (Server-side - called from client hooks)
 // =============================================================================
 
-async function fetchFormulations(filters?: FormulationFilters): Promise<Formulation[]> {
+async function fetchFormulations(
+  filters?: FormulationFilters,
+): Promise<Formulation[]> {
   const params = new URLSearchParams();
   if (filters?.search) params.set("search", filters.search);
   if (filters?.status) params.set("status", filters.status);
@@ -48,7 +54,9 @@ async function fetchFormulations(filters?: FormulationFilters): Promise<Formulat
   if (filters?.ingredientId) params.set("ingredient_id", filters.ingredientId);
 
   const queryString = params.toString();
-  const url = queryString ? `/api/formulations?${queryString}` : "/api/formulations";
+  const url = queryString
+    ? `/api/formulations?${queryString}`
+    : "/api/formulations";
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -57,7 +65,9 @@ async function fetchFormulations(filters?: FormulationFilters): Promise<Formulat
   return response.json();
 }
 
-async function fetchFormulationById(id: string): Promise<FormulationWithNestedData> {
+async function fetchFormulationById(
+  id: string,
+): Promise<FormulationWithNestedData> {
   const response = await fetch(`/api/formulations/${id}`);
   if (!response.ok) {
     throw new Error("Failed to fetch formulation");
@@ -65,7 +75,9 @@ async function fetchFormulationById(id: string): Promise<FormulationWithNestedDa
   return response.json();
 }
 
-async function fetchFormulationsWithNested(): Promise<FormulationWithNestedData[]> {
+async function fetchFormulationsWithNested(): Promise<
+  FormulationWithNestedData[]
+> {
   const response = await fetch("/api/formulations?nested=true");
   if (!response.ok) {
     throw new Error("Failed to fetch formulations with nested data");
@@ -82,7 +94,9 @@ async function fetchFormulationsWithNested(): Promise<FormulationWithNestedData[
  */
 export function useFormulations(filters?: FormulationFilters) {
   return useQuery({
-    queryKey: filters ? formulationKeys.filtered(filters) : formulationKeys.allList(),
+    queryKey: filters
+      ? formulationKeys.filtered(filters)
+      : formulationKeys.allList(),
     queryFn: () => fetchFormulations(filters),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
@@ -120,11 +134,16 @@ export function useFormulationsWithNested() {
  * Filters are applied at the database level before data is returned.
  *
  * @param filters - Portfolio filters from URL params
+ * @param initialData - Optional initial data from SSR to prevent loading state
  */
-export function useFormulationsWithPortfolioFilters(filters: PortfolioFilters) {
+export function useFormulationsWithPortfolioFilters(
+  filters: PortfolioFilters,
+  initialData?: FormulationWithNestedData[],
+) {
   return useQuery({
     queryKey: formulationKeys.portfolioFiltered(filters),
     queryFn: () => getFormulationsWithFilters(filters),
+    initialData, // Use SSR data as initial data to prevent loading state
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
   });
@@ -135,7 +154,9 @@ export function useFormulationsWithPortfolioFilters(filters: PortfolioFilters) {
  */
 export function useFormulation(formulationId: string | null) {
   return useQuery({
-    queryKey: formulationId ? formulationKeys.detail(formulationId) : ["formulations", "detail", null],
+    queryKey: formulationId
+      ? formulationKeys.detail(formulationId)
+      : ["formulations", "detail", null],
     queryFn: () => {
       if (!formulationId) throw new Error("Formulation ID is required");
       return fetchFormulationById(formulationId);
@@ -151,7 +172,9 @@ export function useFormulation(formulationId: string | null) {
  */
 export function useFormulationWithCountries(formulationId: string | null) {
   return useQuery({
-    queryKey: formulationId ? formulationKeys.withCountries(formulationId) : ["formulations", "with-countries", null],
+    queryKey: formulationId
+      ? formulationKeys.withCountries(formulationId)
+      : ["formulations", "with-countries", null],
     queryFn: () => {
       if (!formulationId) throw new Error("Formulation ID is required");
       return fetchFormulationById(formulationId);
@@ -283,10 +306,14 @@ export async function prefetchFormulation(
  */
 export function useFormulationBusinessCases(formulationId: string | null) {
   return useQuery({
-    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "business-cases"] : ["formulations", "business-cases", null],
+    queryKey: formulationId
+      ? [...formulationKeys.detail(formulationId), "business-cases"]
+      : ["formulations", "business-cases", null],
     queryFn: async () => {
       if (!formulationId) throw new Error("Formulation ID is required");
-      const response = await fetch(`/api/formulations/${formulationId}/business-cases`);
+      const response = await fetch(
+        `/api/formulations/${formulationId}/business-cases`,
+      );
       if (!response.ok) throw new Error("Failed to fetch business cases");
       return response.json();
     },
@@ -301,10 +328,14 @@ export function useFormulationBusinessCases(formulationId: string | null) {
  */
 export function useFormulationIngredients(formulationId: string | null) {
   return useQuery({
-    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "ingredients"] : ["formulations", "ingredients", null],
+    queryKey: formulationId
+      ? [...formulationKeys.detail(formulationId), "ingredients"]
+      : ["formulations", "ingredients", null],
     queryFn: async () => {
       if (!formulationId) throw new Error("Formulation ID is required");
-      const response = await fetch(`/api/formulations/${formulationId}/ingredients`);
+      const response = await fetch(
+        `/api/formulations/${formulationId}/ingredients`,
+      );
       if (!response.ok) throw new Error("Failed to fetch ingredients");
       return response.json();
     },
@@ -319,10 +350,14 @@ export function useFormulationIngredients(formulationId: string | null) {
  */
 export function useFormulationCountries(formulationId: string | null) {
   return useQuery({
-    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "countries"] : ["formulations", "countries", null],
+    queryKey: formulationId
+      ? [...formulationKeys.detail(formulationId), "countries"]
+      : ["formulations", "countries", null],
     queryFn: async () => {
       if (!formulationId) throw new Error("Formulation ID is required");
-      const response = await fetch(`/api/formulations/${formulationId}/countries`);
+      const response = await fetch(
+        `/api/formulations/${formulationId}/countries`,
+      );
       if (!response.ok) throw new Error("Failed to fetch countries");
       return response.json();
     },
@@ -337,10 +372,14 @@ export function useFormulationCountries(formulationId: string | null) {
  */
 export function useFormulationUseGroups(formulationId: string | null) {
   return useQuery({
-    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "use-groups"] : ["formulations", "use-groups", null],
+    queryKey: formulationId
+      ? [...formulationKeys.detail(formulationId), "use-groups"]
+      : ["formulations", "use-groups", null],
     queryFn: async () => {
       if (!formulationId) throw new Error("Formulation ID is required");
-      const response = await fetch(`/api/formulations/${formulationId}/use-groups`);
+      const response = await fetch(
+        `/api/formulations/${formulationId}/use-groups`,
+      );
       if (!response.ok) throw new Error("Failed to fetch use groups");
       return response.json();
     },
@@ -355,7 +394,9 @@ export function useFormulationUseGroups(formulationId: string | null) {
  */
 export function useFormulationCogs(formulationId: string | null) {
   return useQuery({
-    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "cogs"] : ["formulations", "cogs", null],
+    queryKey: formulationId
+      ? [...formulationKeys.detail(formulationId), "cogs"]
+      : ["formulations", "cogs", null],
     queryFn: async () => {
       if (!formulationId) throw new Error("Formulation ID is required");
       const response = await fetch(`/api/formulations/${formulationId}/cogs`);
@@ -373,10 +414,14 @@ export function useFormulationCogs(formulationId: string | null) {
  */
 export function useFormulationProtection(formulationId: string | null) {
   return useQuery({
-    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "protection"] : ["formulations", "protection", null],
+    queryKey: formulationId
+      ? [...formulationKeys.detail(formulationId), "protection"]
+      : ["formulations", "protection", null],
     queryFn: async () => {
       if (!formulationId) throw new Error("Formulation ID is required");
-      const response = await fetch(`/api/formulations/${formulationId}/protection`);
+      const response = await fetch(
+        `/api/formulations/${formulationId}/protection`,
+      );
       if (!response.ok) throw new Error("Failed to fetch protection status");
       return response.json();
     },
@@ -391,10 +436,14 @@ export function useFormulationProtection(formulationId: string | null) {
  */
 export function useFormulationStatusHistory(formulationId: string | null) {
   return useQuery({
-    queryKey: formulationId ? [...formulationKeys.detail(formulationId), "status-history"] : ["formulations", "status-history", null],
+    queryKey: formulationId
+      ? [...formulationKeys.detail(formulationId), "status-history"]
+      : ["formulations", "status-history", null],
     queryFn: async () => {
       if (!formulationId) throw new Error("Formulation ID is required");
-      const response = await fetch(`/api/formulations/${formulationId}/status-history`);
+      const response = await fetch(
+        `/api/formulations/${formulationId}/status-history`,
+      );
       if (!response.ok) throw new Error("Failed to fetch status history");
       return response.json();
     },
@@ -425,11 +474,24 @@ export function useFormulationCompleteData(formulationId: string | null) {
     cogs: cogs.data || [],
     protection: protection.data || [],
     statusHistory: statusHistory.data || [],
-    isLoading: businessCases.isLoading || ingredients.isLoading || countries.isLoading ||
-               useGroups.isLoading || cogs.isLoading || protection.isLoading || statusHistory.isLoading,
-    isError: businessCases.isError || ingredients.isError || countries.isError ||
-             useGroups.isError || cogs.isError || protection.isError || statusHistory.isError,
+    isLoading:
+      businessCases.isLoading ||
+      ingredients.isLoading ||
+      countries.isLoading ||
+      useGroups.isLoading ||
+      cogs.isLoading ||
+      protection.isLoading ||
+      statusHistory.isLoading,
+    isError:
+      businessCases.isError ||
+      ingredients.isError ||
+      countries.isError ||
+      useGroups.isError ||
+      cogs.isError ||
+      protection.isError ||
+      statusHistory.isError,
   };
 }
+
 
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, memo } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, memo, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
@@ -9,6 +9,9 @@ import {
   SidebarHeader,
   SidebarInput,
   useSidebar,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenu,
 } from "@/components/ui/sidebar";
 import { useForesightInit } from "@/hooks/use-prefetch-on-intent";
 import { useSupabase } from "@/hooks/use-supabase";
@@ -18,16 +21,9 @@ import { log } from "@/lib/logger";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { FooterActions } from "./FooterActions";
 import { UserMenu, SignInButton } from "./UserMenu";
-import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenu,
-} from "@/components/ui/sidebar";
 import type { WorkspaceMenuItem } from "@/lib/actions/workspaces";
 import { useSearch } from "@/hooks/use-search";
-import { Search, X, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { routes } from "@/lib/routes";
+import { Search, X, ChevronRight } from "lucide-react";
 
 const iconMap: Record<string, any> = {
   LayoutDashboard: require("lucide-react").LayoutDashboard,
@@ -49,104 +45,114 @@ const iconMap: Record<string, any> = {
   Beaker: require("lucide-react").Beaker,
   Ban: require("lucide-react").Ban,
   Settings: require("lucide-react").Settings,
+  MessageSquare: require("lucide-react").MessageSquare,
 };
 
-// Search bar component
+// Search bar
 const SearchBar = memo(function SearchBar({ isCollapsed }: { isCollapsed: boolean }) {
-  const router = useRouter();
   const { query, setQuery, results, isSearching, clearSearch } = useSearch({
     debounceMs: 300,
     minQueryLength: 2,
     limit: 20,
   });
 
-  const handleResultClick = (result: typeof results[0]) => {
-    // Navigate based on entity type
-    if (result.entity_type === "formulation") {
-      router.push(`/portfolio/formulations/${result.entity_id}`);
-    } else if (result.entity_type === "country") {
-      router.push(`/portfolio/countries/${result.entity_id}`);
-    } else if (result.entity_type === "reference_product") {
-      router.push(`/portfolio/reference`);
+  const handleResultClick = useCallback((entityType: string, entityId: string) => {
+    if (entityType === "formulation") {
+      window.location.href = `/portfolio/formulations/${entityId}`;
+    } else if (entityType === "country") {
+      window.location.href = `/portfolio/countries/${entityId}`;
+    } else if (entityType === "reference_product") {
+      window.location.href = `/portfolio/reference`;
     }
     clearSearch();
-  };
+  }, [clearSearch]);
+
+  const openCommandPalette = useCallback(() => {
+    const event = new KeyboardEvent("keydown", {
+      key: "k",
+      metaKey: true,
+      bubbles: true,
+    });
+    document.dispatchEvent(event);
+  }, []);
 
   if (isCollapsed) {
     return null;
   }
 
   return (
-    <div className="relative px-2 pb-2">
+    <div className="relative px-3 py-2">
       <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-sidebar-foreground/50" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sidebar-foreground/40" />
         <SidebarInput
           type="text"
           placeholder="Search..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="h-8 pl-8 pr-8 text-xs"
+          onClick={openCommandPalette}
+          className="h-8 pl-9 pr-12 text-sm bg-sidebar-accent/30 border-0 rounded-md placeholder:text-sidebar-foreground/40"
         />
-        {query && (
+        {query ? (
           <button
             onClick={clearSearch}
-            className="absolute right-2.5 top-2.5 text-sidebar-foreground/50 hover:text-sidebar-foreground"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-sidebar-foreground/40 hover:text-sidebar-foreground"
           >
             <X className="h-3.5 w-3.5" />
           </button>
+        ) : (
+          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-sidebar-border/30 bg-sidebar px-1 font-mono text-[10px] text-sidebar-foreground/50">
+            ⌘K
+          </kbd>
         )}
       </div>
 
-      {/* Search results dropdown */}
       {query.length >= 2 && (
-        <div className="absolute left-2 right-2 top-full z-50 mt-1 max-h-[300px] overflow-y-auto rounded-lg border border-sidebar-border bg-sidebar shadow-lg">
-          {isSearching ? (
-            <div className="p-3 text-center text-xs text-sidebar-foreground/50">
-              Searching...
-            </div>
-          ) : results.length === 0 ? (
-            <div className="p-3 text-center text-xs text-sidebar-foreground/50">
-              No results found
-            </div>
-          ) : (
-            <div className="py-1">
-              {results.map((result) => (
-                <button
-                  key={`${result.entity_type}-${result.entity_id}`}
-                  onClick={() => handleResultClick(result)}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-sidebar-accent transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sidebar-foreground truncate">
-                      {result.entity_code}
+        <div className="absolute left-3 right-3 top-full z-[30] mt-1 overflow-hidden rounded-md border border-sidebar-border/40 bg-sidebar shadow-lg">
+          <div className="overflow-y-auto max-h-[300px]">
+            {isSearching ? (
+              <div className="p-4 text-center text-xs text-sidebar-foreground/50">
+                Searching...
+              </div>
+            ) : results.length === 0 ? (
+              <div className="p-4 text-center text-xs text-sidebar-foreground/50">
+                No results found
+              </div>
+            ) : (
+              <div className="py-1">
+                {results.map((result) => (
+                  <button
+                    key={`${result.entity_type}-${result.entity_id}`}
+                    onClick={() => handleResultClick(result.entity_type, result.entity_id)}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-sidebar-accent/50"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sidebar-foreground truncate">
+                        {result.entity_name}
+                      </div>
+                      <div className="text-sidebar-foreground/50 truncate text-xs">
+                        {result.entity_code}
+                      </div>
                     </div>
-                    <div className="text-sidebar-foreground/60 truncate">
-                      {result.entity_name}
-                    </div>
-                  </div>
-                  <div className="text-[10px] uppercase tracking-wide text-sidebar-foreground/40 shrink-0">
-                    {result.entity_type === "formulation"
-                      ? "Form"
-                      : result.entity_type === "country"
-                      ? "Country"
-                      : "Ref"}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
   );
 });
 
-function NavItem({
+// Thin nav item (Linear style)
+const NavItem = memo(function NavItem({
   item,
   isActive,
+  indent = 0,
 }: {
   item: WorkspaceMenuItem;
   isActive: boolean;
+  indent?: number;
 }) {
   const IconComponent = item.icon
     ? iconMap[item.icon] || iconMap.LayoutDashboard
@@ -154,17 +160,69 @@ function NavItem({
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-        <a href={item.url} className="flex items-center gap-2">
-          <IconComponent className="size-4 shrink-0" />
+      <SidebarMenuButton
+        asChild
+        isActive={isActive}
+        tooltip={item.title}
+        size="sm"
+        className="h-6 py-1 px-1.5 gap-1.5 text-[13px]"
+      >
+        <a href={item.url} className="flex items-center">
+          <IconComponent className="shrink-0 opacity-60 h-3.5 w-3.5" />
           <span className="truncate">{item.title}</span>
         </a>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
-}
+});
 
-// Unwrapped component for memoization
+// Category group header (non-clickable)
+const NavGroup = memo(function NavGroup({
+  groupName,
+  items,
+  pathname,
+}: {
+  groupName: string;
+  items: WorkspaceMenuItem[];
+  pathname: string | null;
+}) {
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
+
+  return (
+    <div className={cn(isCollapsed && "mb-3")}>
+      {!isCollapsed && (
+        <div className="px-1 py-0.5 text-[10px] font-semibold text-sidebar-foreground/40 uppercase tracking-wide">
+          {groupName}
+        </div>
+      )}
+      <SidebarMenu className={cn(isCollapsed ? "space-y-1" : "space-y-0.5")}>
+        {items.map((item) => {
+          // Exact match OR direct child detail page (for list pages only)
+          // Workspace root pages (1 segment) should only match exactly
+          // This prevents /portfolio from matching /portfolio/formulations
+          // but allows /portfolio/formulations to match /portfolio/formulations/123
+          const itemSegments = item.url.split('/').filter(Boolean).length;
+          const pathSegments = pathname?.split('/').filter(Boolean).length ?? 0;
+          const isWorkspaceRoot = itemSegments <= 1;
+          const isDirectChild = !isWorkspaceRoot && pathSegments === itemSegments + 1 && (pathname?.startsWith(item.url + '/') ?? false);
+          const isActive = pathname === item.url || isDirectChild;
+
+          return (
+            <NavItem
+              key={item.menu_item_id}
+              item={item}
+              isActive={isActive}
+              indent={0}
+            />
+          );
+        })}
+      </SidebarMenu>
+    </div>
+  );
+});
+
+// Main sidebar component
 function AppSidebarComponent() {
   const pathname = usePathname();
   const { state } = useSidebar();
@@ -198,11 +256,6 @@ function AppSidebarComponent() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      log(
-        "[AppSidebar] Auth state changed:",
-        _event,
-        session?.user?.email || "no user",
-      );
       if (mounted) {
         setUser(session?.user ?? null);
       }
@@ -216,33 +269,22 @@ function AppSidebarComponent() {
 
   useForesightInit();
 
-  const menuItems = workspaceWithMenu?.menu_items ?? [];
-
   const menuGroups = useMemo(() => {
-    if (!workspaceWithMenu || !menuItems || menuItems.length === 0) {
-      return [];
-    }
+    if (!workspaceWithMenu?.menu_items) return [];
 
-    const grouped = new Map<string, typeof menuItems>();
+    const grouped = new Map<string, WorkspaceMenuItem[]>();
 
-    menuItems.forEach((item) => {
+    workspaceWithMenu.menu_items.forEach((item) => {
       if (!grouped.has(item.group_name)) {
         grouped.set(item.group_name, []);
       }
-      const groupItems = grouped.get(item.group_name);
-      if (groupItems) {
-        groupItems.push(item);
-      }
+      grouped.get(item.group_name)?.push(item);
     });
 
     grouped.forEach((items) => {
       items.sort((a, b) => a.display_order - b.display_order);
     });
 
-    const orderedGroups: Array<{
-      groupName: string;
-      items: typeof menuItems;
-    }> = [];
     const groupOrder = [
       "Overview",
       "Market & Strategy",
@@ -253,15 +295,12 @@ function AppSidebarComponent() {
       "System",
     ];
 
+    const orderedGroups: Array<{ groupName: string; items: WorkspaceMenuItem[] }> = [];
+
     for (const groupName of groupOrder) {
-      if (grouped.has(groupName)) {
-        const group = grouped.get(groupName);
-        if (group) {
-          orderedGroups.push({
-            groupName,
-            items: group,
-          });
-        }
+      const items = grouped.get(groupName);
+      if (items) {
+        orderedGroups.push({ groupName, items });
       }
     }
 
@@ -272,76 +311,49 @@ function AppSidebarComponent() {
     });
 
     return orderedGroups;
-  }, [workspaceWithMenu, menuItems]);
+  }, [workspaceWithMenu?.menu_items]);
 
   const userInitial = user?.email?.charAt(0).toUpperCase() || "U";
   const userName = user?.email?.split("@")[0] || "User";
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="gap-0">
+      <SidebarHeader className="border-b border-sidebar-border/50">
         <WorkspaceSwitcher />
         <SearchBar isCollapsed={isCollapsed} />
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-1.5 py-1.5">
         {workspaceLoading ? (
-          <div className="flex flex-col gap-1.5 p-2">
-            {Array.from({ length: 6 }).map(() => (
+          <div className="flex flex-col gap-0.5">
+            {Array.from({ length: 12 }).map((_, i) => (
               <div
-                key={`skeleton-${crypto.randomUUID()}`}
-                className="h-8 w-full rounded-md bg-sidebar-accent/40 animate-pulse"
+                key={i}
+                className="w-full rounded bg-sidebar-accent/20 animate-pulse"
+                style={{ height: '24px' }}
               />
             ))}
           </div>
         ) : (
-          <>
+          <div className="space-y-2">
             {menuGroups.map((group) => (
-              <div key={group.groupName} className="mb-3">
-                <div className="px-3 pb-1 pt-2">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
-                    {group.groupName}
-                  </div>
-                </div>
-                <SidebarMenu>
-                  {group.items.map((item) => (
-                    <NavItem
-                      key={item.menu_item_id}
-                      item={item}
-                      isActive={
-                        item.url === pathname || pathname?.startsWith(item.url)
-                      }
-                    />
-                  ))}
-                </SidebarMenu>
-              </div>
+              <NavGroup
+                key={group.groupName}
+                groupName={group.groupName}
+                items={group.items}
+                pathname={pathname}
+              />
             ))}
-
-            {/* Settings button - relocated from footer */}
-            {!isCollapsed && (
-              <div className="mt-auto px-2 pb-2">
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Settings">
-                      <a href={routes.settings()} className="flex items-center gap-2">
-                        <Settings className="size-4 shrink-0" />
-                        <span className="truncate">Settings</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </div>
-            )}
-          </>
+          </div>
         )}
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="p-2">
         {user ? (
           <div
             className={cn(
               "flex items-center gap-1.5",
-              isCollapsed ? "flex-col" : "flex-row",
+              isCollapsed ? "flex-col" : "flex-row"
             )}
           >
             <UserMenu
@@ -355,7 +367,7 @@ function AppSidebarComponent() {
           <div
             className={cn(
               "flex items-center gap-1.5",
-              isCollapsed ? "flex-col" : "flex-row",
+              isCollapsed ? "flex-col" : "flex-row"
             )}
           >
             <SignInButton isCollapsed={isCollapsed} />
@@ -367,5 +379,4 @@ function AppSidebarComponent() {
   );
 }
 
-// Export memoized version to prevent unnecessary re-renders
 export const AppSidebar = memo(AppSidebarComponent);

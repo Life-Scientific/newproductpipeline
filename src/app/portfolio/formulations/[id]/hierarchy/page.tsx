@@ -40,7 +40,7 @@ export default async function FormulationHierarchyPage({
   ];
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
+    <div className="container mx-auto p-4 sm:p-6 space-y-6">
       <AnimatedPage>
         <HierarchicalBreadcrumb items={breadcrumbs} />
 

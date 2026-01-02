@@ -118,13 +118,19 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const loadingRef = useRef(false);
   const currentWorkspaceRef = useRef<Workspace | null>(null);
+  const workspaceWithMenuRef = useRef<WorkspaceWithMenuItems | null>(null);
   const pathnameRef = useRef<string | null>(null);
+  const lastPathSlugRef = useRef<string | null>(null);
   const queryClient = useQueryClient();
 
   // Keep refs in sync with state
   useEffect(() => {
     currentWorkspaceRef.current = currentWorkspace;
   }, [currentWorkspace]);
+
+  useEffect(() => {
+    workspaceWithMenuRef.current = workspaceWithMenu;
+  }, [workspaceWithMenu]);
 
   useEffect(() => {
     pathnameRef.current = pathname;
@@ -169,48 +175,49 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           slugToTry = "portfolio";
         }
 
-        // Don't reload if we already have this workspace loaded
-        if (currentWorkspaceRef.current?.slug === slugToTry) {
-          loadingRef.current = false;
-          setIsLoading(false);
-          return;
-        }
-
         // OPTIMIZATION: Check client-side cache first
         const cached = workspaceCacheRef.current.get(slugToTry);
         const now = Date.now();
 
+        let workspaceData: WorkspaceWithMenuItems | null = null;
+
+        // Check if we already have this workspace loaded (prevent unnecessary updates)
+        if (
+          currentWorkspaceRef.current?.slug === slugToTry &&
+          workspaceWithMenuRef.current
+        ) {
+          // Use current workspace data to return default route WITHOUT updating state
+          log(
+            `[WorkspaceContext] Already on workspace "${slugToTry}", returning default route`,
+          );
+          return getDefaultRouteForWorkspace(workspaceWithMenuRef.current);
+        }
+
+        // OPTIMIZATION: Check client-side cache first
         if (cached && now - cached.timestamp < WORKSPACE_CACHE_TTL) {
           // Cache hit - use cached data (instant, no API call)
           log(`[WorkspaceContext] Cache hit for "${slugToTry}"`);
-          setCurrentWorkspace(cached.data);
-          setWorkspaceWithMenu(cached.data);
+          workspaceData = cached.data;
           setIsCacheHit(true);
-          if (typeof window !== "undefined") {
-            localStorage.setItem("current_workspace", cached.data.slug);
-          }
-          loadingRef.current = false;
-          setIsLoading(false);
-          return;
-        }
+        } else {
+          // Cache miss or expired - fetch from server
+          log(`[WorkspaceContext] Cache miss for "${slugToTry}" - fetching`);
+          setIsCacheHit(false);
+          workspaceData = await getWorkspaceWithMenuBySlug(slugToTry);
 
-        // Cache miss or expired - fetch from server
-        log(`[WorkspaceContext] Cache miss for "${slugToTry}" - fetching`);
-        setIsCacheHit(false);
-        let workspaceData = await getWorkspaceWithMenuBySlug(slugToTry);
+          // Cache result (even if null, to prevent repeated failed lookups)
+          if (workspaceData) {
+            workspaceCacheRef.current.set(slugToTry, {
+              data: workspaceData,
+              timestamp: now,
+            });
 
-        // Cache the result (even if null, to prevent repeated failed lookups)
-        if (workspaceData) {
-          workspaceCacheRef.current.set(slugToTry, {
-            data: workspaceData,
-            timestamp: now,
-          });
-
-          // Limit cache size (keep last 5 workspaces)
-          if (workspaceCacheRef.current.size > 5) {
-            const firstKey = workspaceCacheRef.current.keys().next().value;
-            if (firstKey) {
-              workspaceCacheRef.current.delete(firstKey);
+            // Limit cache size (keep last 5 workspaces)
+            if (workspaceCacheRef.current.size > 5) {
+              const firstKey = workspaceCacheRef.current.keys().next().value;
+              if (firstKey) {
+                workspaceCacheRef.current.delete(firstKey);
+              }
             }
           }
         }
@@ -292,7 +299,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
    * Returns the default route for the workspace
    */
   const switchWorkspace = useCallback(async (slug: string): Promise<string> => {
-    setIsLoading(true);
     setIsTransitioning(true);
     try {
       // OPTIMIZATION: Check cache first
@@ -302,17 +308,19 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       let workspaceData: WorkspaceWithMenuItems | null = null;
 
       if (cached && now - cached.timestamp < WORKSPACE_CACHE_TTL) {
-        // Cache hit - use cached data
+        // Cache hit - use cached data (instant, no loading state needed)
         log(`[WorkspaceContext] Cache hit for switch to "${slug}"`);
         workspaceData = cached.data;
         setIsCacheHit(true);
+        // Don't set isLoading=true for cache hits - prevents sidebar flicker
       } else {
-        // Cache miss - fetch from server
+        // Cache miss - fetch from server (needs loading state)
         log(`[WorkspaceContext] Cache miss for switch to "${slug}" - fetching`);
         setIsCacheHit(false);
+        setIsLoading(true);
         workspaceData = await getWorkspaceWithMenuBySlug(slug);
 
-        // Cache the result
+        // Cache result
         if (workspaceData) {
           workspaceCacheRef.current.set(slug, {
             data: workspaceData,
@@ -330,11 +338,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (workspaceData) {
-        // Clear previous workspace's cache before switching
-        if (currentWorkspaceRef.current?.slug !== workspaceData.slug) {
-          queryClient.invalidateQueries();
-        }
-
         setCurrentWorkspace(workspaceData);
         setWorkspaceWithMenu(workspaceData);
         if (typeof window !== "undefined") {
@@ -390,15 +393,21 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
     const pathSlug = getWorkspaceSlugFromPath(pathname);
 
-    // Only reload if we detect a different workspace
-    // This is just for syncing the sidebar/context - it should NOT redirect
-    if (pathSlug && currentWorkspaceRef.current?.slug !== pathSlug) {
-      // Load the workspace but don't navigate - the user is already on the correct page
-      // Use skipPathnameCheck=true to prevent any navigation logic
-      loadWorkspace(pathSlug, true).catch((err) => {
-        error("Failed to sync workspace from pathname:", err);
-        // Don't fallback or redirect - let the current page handle it
-      });
+    // Only reload if workspace slug actually changed (not just any pathname change)
+    // This prevents unnecessary reloads when navigating within the same workspace
+    if (pathSlug && lastPathSlugRef.current !== pathSlug) {
+      lastPathSlugRef.current = pathSlug;
+
+      // Only reload if we detect a different workspace
+      // This is just for syncing the sidebar/context - it should NOT redirect
+      if (pathSlug && currentWorkspaceRef.current?.slug !== pathSlug) {
+        // Load workspace but don't navigate - user is already on the correct page
+        // Use skipPathnameCheck=true to prevent any navigation logic
+        loadWorkspace(pathSlug, true).catch((err) => {
+          error("Failed to sync workspace from pathname:", err);
+          // Don't fallback or redirect - let the current page handle it
+        });
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]); // Only depend on pathname - don't include loadWorkspace to avoid loops

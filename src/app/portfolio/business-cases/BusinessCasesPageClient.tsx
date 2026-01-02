@@ -337,7 +337,7 @@ function BusinessCasesContent({
               <CardTitle>Business Cases</CardTitle>
               <CardDescription className="flex items-center gap-2">
                 View and manage financial projections
-                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100">
+                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                   <GitBranch className="h-3 w-3" />
                   Git-style field tracking
                 </span>
@@ -348,8 +348,8 @@ function BusinessCasesContent({
                 <>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="lg" className="h-12 px-6">
-                        <FileSpreadsheet className="mr-2 h-5 w-5" />
+                      <Button variant="outline" size="lg">
+                        <FileSpreadsheet className="mr-2 h-4 w-4" />
                         Data
                         <ChevronDown className="ml-2 h-4 w-4" />
                       </Button>
@@ -382,9 +382,8 @@ function BusinessCasesContent({
                   <Button
                     onClick={() => setCreateModalOpen(true)}
                     size="lg"
-                    className="h-12 px-6"
                   >
-                    <Plus className="mr-2 h-5 w-5" />
+                    <Plus className="mr-2 h-4 w-4" />
                     New Business Case
                   </Button>
                 </>
@@ -396,9 +395,8 @@ function BusinessCasesContent({
                     variant="outline"
                     onClick={handleExport}
                     size="lg"
-                    className="h-12 px-6"
                   >
-                    <Download className="mr-2 h-5 w-5" />
+                    <Download className="mr-2 h-4 w-4" />
                     Export
                   </Button>
                 )}

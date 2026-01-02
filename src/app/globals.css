@@ -438,8 +438,12 @@ html[data-theme="light"]:not(.dark) [data-sidebar="inset"] {
 }
 
 /* Hide text in collapsed sidebar menu items */
-[data-state="collapsed"] [data-sidebar="menu-button"] span:not(:first-child) {
+[data-state="collapsed"] [data-sidebar="menu-button"] > span {
   display: none;
+}
+
+[data-state="collapsed"] [data-sidebar="menu-button"] > svg {
+  margin: 0 auto;
 }
 
 /* Business Case Table Styles */

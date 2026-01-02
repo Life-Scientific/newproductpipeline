@@ -71,10 +71,10 @@ export default async function ActiveIngredientDetailPage({
       <AnimatedPage>
         <HierarchicalBreadcrumb items={breadcrumbs} />
 
-        <div className="flex items-center justify-between mb-8">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold tracking-tight">
+        <div className="flex items-center justify-between mb-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-bold">
                 {ingredient.ingredient_name}
               </h1>
               <Badge

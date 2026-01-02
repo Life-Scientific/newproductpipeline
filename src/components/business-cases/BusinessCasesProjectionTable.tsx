@@ -320,19 +320,19 @@ function BusinessCasesProjectionTableComponent({
           <Table className="w-max">
             <TableHeader>
               <TableRow className="bg-muted">
-                <TableHead className="sticky left-0 top-0 bg-muted z-30 min-w-[150px]">
+                <TableHead className="sticky left-0 top-0 bg-muted z-[15]min-w-[150px]">
                   Formulation
                 </TableHead>
-                <TableHead className="sticky left-[150px] top-0 bg-muted z-30 min-w-[120px]">
+                <TableHead className="sticky left-[150px] top-0 bg-muted z-[15]min-w-[120px]">
                   Country
                 </TableHead>
-                <TableHead className="sticky left-[270px] top-0 bg-muted z-30 min-w-[150px]">
+                <TableHead className="sticky left-[270px] top-0 bg-muted z-[15]min-w-[150px]">
                   Use Group
                 </TableHead>
-                <TableHead className="sticky left-[420px] top-0 bg-muted z-30 min-w-[100px]">
+                <TableHead className="sticky left-[420px] top-0 bg-muted z-[15]min-w-[100px]">
                   Eff. FY Start
                 </TableHead>
-                <TableHead className="sticky left-[520px] top-0 bg-muted z-30 min-w-[120px]">
+                <TableHead className="sticky left-[520px] top-0 bg-muted z-[15]min-w-[120px]">
                   Metric
                 </TableHead>
                 {fiscalYearColumns.map((col) => (
@@ -486,7 +486,7 @@ function BusinessCasesProjectionTableComponent({
                       {metricIndex === 0 ? (
                         <>
                           <TableCell
-                            className="sticky left-0 bg-background z-20 font-medium text-sm"
+                            className="sticky left-0 bg-background z-[10]font-medium text-sm"
                             rowSpan={6}
                           >
                             <div className="max-w-[140px]">
@@ -522,13 +522,13 @@ function BusinessCasesProjectionTableComponent({
                             </div>
                           </TableCell>
                           <TableCell
-                            className="sticky left-[150px] bg-background z-20 text-sm"
+                            className="sticky left-[150px] bg-background z-[10]text-sm"
                             rowSpan={6}
                           >
                             {bc.country_name || "—"}
                           </TableCell>
                           <TableCell
-                            className="sticky left-[270px] bg-background z-20 text-sm"
+                            className="sticky left-[270px] bg-background z-[10]text-sm"
                             rowSpan={6}
                           >
                             <div className="flex items-center gap-1.5">
@@ -558,14 +558,14 @@ function BusinessCasesProjectionTableComponent({
                             </div>
                           </TableCell>
                           <TableCell
-                            className="sticky left-[420px] bg-background z-20 text-sm"
+                            className="sticky left-[420px] bg-background z-[10]text-sm"
                             rowSpan={6}
                           >
                             {bc.effective_start_fiscal_year || "—"}
                           </TableCell>
                         </>
                       ) : null}
-                      <TableCell className="sticky left-[520px] bg-background z-20 font-medium text-sm">
+                      <TableCell className="sticky left-[520px] bg-background z-[10]font-medium text-sm">
                         {metric.label}
                       </TableCell>
                       {fiscalYearColumns.map((col) => {

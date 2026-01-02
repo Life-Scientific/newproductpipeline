@@ -17,8 +17,8 @@ export function IngredientFormButton() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} size="lg" className="h-12 px-6">
-        <Plus className="mr-2 h-5 w-5" />
+      <Button onClick={() => setOpen(true)} size="lg">
+        <Plus className="mr-2 h-4 w-4" />
         New Ingredient
       </Button>
       <IngredientForm open={open} onOpenChange={setOpen} />

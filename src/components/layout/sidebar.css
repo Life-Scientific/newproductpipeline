@@ -79,7 +79,7 @@
 /* Clean collapsed state */
 [data-state="collapsed"] [data-sidebar="menu-button"] {
   justify-content: center;
-  border-radius: 7px;
+  border-radius: 4px;
   margin: 2px 0;
 }
 
@@ -92,4 +92,25 @@
   background: var(--sidebar-accent);
   border-color: var(--sidebar-border);
   box-shadow: 0 1px 0 color-mix(in srgb, var(--primary), transparent 90%);
+}
+
+/* Compact Linear-style size variant (24px) */
+[data-sidebar="menu-button"][data-size="compact"] {
+  height: 24px;
+  padding: 4px 6px;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+[data-sidebar="menu-button"][data-size="compact"] svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Collapsed compact state */
+[data-state="collapsed"] [data-sidebar="menu-button"][data-size="compact"] {
+  width: 44px;
+  height: 44px;
+  padding: 0;
 }

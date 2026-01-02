@@ -23,7 +23,7 @@ import {
   Target,
   TrendingUp,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { error } from "@/lib/logger";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,6 @@ import {
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaces, type Workspace } from "@/lib/actions/workspaces";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
 
 // Icon map for dynamic icon lookup - only includes icons actually used in workspaces
 const iconMap: Record<string, LucideIcon> = {
@@ -81,6 +80,7 @@ export function WorkspaceSwitcher() {
     useWorkspace();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+  const pathname = usePathname();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(true);
 
@@ -129,45 +129,32 @@ export function WorkspaceSwitcher() {
   }
 
   const triggerButton = (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={currentWorkspace?.slug || "default"}
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 20 }}
-        transition={{ duration: 0.2 }}
-        className="inline-flex"
+    <Button
+      variant="ghost"
+      className={cn(
+        "transition-all hover:bg-sidebar-accent",
+        isCollapsed
+          ? "h-9 w-9 p-0 justify-center"
+          : "w-full justify-start gap-2 h-9 px-2",
+      )}
+    >
+      <div
+        className={cn(
+          "flex shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground",
+          isCollapsed ? "h-7 w-7" : "h-6 w-6",
+        )}
       >
-        <Button
-          variant="ghost"
-          className={cn(
-            "transition-all hover:bg-sidebar-accent",
-            isCollapsed
-              ? "h-9 w-9 p-0 justify-center"
-              : "w-full justify-start gap-2 h-9 px-2",
-          )}
-        >
-          <div
-            className={cn(
-              "flex shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground",
-              isCollapsed ? "h-7 w-7" : "h-6 w-6",
-            )}
-          >
-            <CurrentIcon
-              className={cn(isCollapsed ? "h-4 w-4" : "h-3.5 w-3.5")}
-            />
-          </div>
-          {!isCollapsed && (
-            <>
-              <span className="flex-1 truncate text-left text-sm font-medium">
-                {currentWorkspace?.name || "Select Workspace"}
-              </span>
-              <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-            </>
-          )}
-        </Button>
-      </motion.div>
-    </AnimatePresence>
+        <CurrentIcon className={cn(isCollapsed ? "h-4 w-4" : "h-3.5 w-3.5")} />
+      </div>
+      {!isCollapsed && (
+        <>
+          <span className="flex-1 truncate text-left text-sm font-medium">
+            {currentWorkspace?.name || "Select Workspace"}
+          </span>
+          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+        </>
+      )}
+    </Button>
   );
 
   return (
@@ -203,9 +190,9 @@ export function WorkspaceSwitcher() {
             try {
               // Switch workspace and get the default route
               const defaultRoute = await switchWorkspace(workspace.slug);
-              // Only navigate if we got a valid default route
-              // If user has no permissions, defaultRoute will be workspace root (e.g., /operations)
-              if (defaultRoute) {
+              // Only navigate if we got a valid default route AND we're not already on that route
+              // This prevents unnecessary page remounts and double data fetching
+              if (defaultRoute && pathname !== defaultRoute) {
                 // Use replace to avoid adding to history and prevent full page reload
                 router.replace(defaultRoute);
                 // REMOVED: router.refresh() - let Next.js handle client-side navigation

@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Check, LogOut, RefreshCw, User } from "lucide-react";
+import { Check, LogOut, RefreshCw, User, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSupabase } from "@/hooks/use-supabase";
@@ -18,6 +18,7 @@ import { useDisplayPreferences } from "@/hooks/use-display-preferences";
 import { revalidateAllCaches } from "@/lib/actions/cache";
 import { error } from "@/lib/logger";
 import { cn } from "@/lib/utils";
+import { routes } from "@/lib/routes";
 
 interface UserMenuProps {
   userInitial: string;
@@ -175,6 +176,18 @@ export function UserMenu({
         })}
 
         <DropdownMenuSeparator />
+
+        <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium px-2 py-1.5">
+          Actions
+        </DropdownMenuLabel>
+
+        <DropdownMenuItem
+          onClick={() => router.push(routes.settings())}
+          className="cursor-pointer"
+        >
+          <Settings className="mr-2 h-4 w-4" />
+          <span>Settings</span>
+        </DropdownMenuItem>
 
         <DropdownMenuItem
           onClick={handleRefreshData}
